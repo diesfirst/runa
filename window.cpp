@@ -1,15 +1,17 @@
 #include "window.hpp"
+#include <stdlib.h>
 
 Window::Window()
 {
+	connection = xcb_connect(NULL,NULL);
+	screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
+	window = xcb_generate_id(connection);
+	setEvents();
 	createWindow();
 }
 
 void Window::createWindow()
 {
-	connection = xcb_connect(NULL,NULL);
-	screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
-	window = xcb_generate_id(connection);
 	//create window
 	xcb_create_window(
 			connection,
@@ -21,9 +23,39 @@ void Window::createWindow()
 			5, //border width
 			XCB_WINDOW_CLASS_INPUT_OUTPUT,
 			screen->root_visual,
-			0, NULL);
-	//Map window to screen
+			mask, values);
+}
+
+void Window::setEvents()
+{
+	mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
+	values[0] = screen->white_pixel;
+	values[1] = XCB_EVENT_MASK_EXPOSURE |
+		XCB_EVENT_MASK_POINTER_MOTION |
+		XCB_EVENT_MASK_ENTER_WINDOW |
+		XCB_EVENT_MASK_LEAVE_WINDOW;
+}
+
+void Window::pollEvents()
+{
+	xcb_generic_event_t* event;
+	while ((event = xcb_poll_for_event(connection)))
+	{
+		//stuff
+	}
+}
+
+void Window::waitForEvents()
+{
+	while ((event = xcb_wait_for_event(connection)))
+	{
+		free(event);
+	}
+}
+
+void Window::open()
+{
 	xcb_map_window(connection, window);
 	xcb_flush(connection);
-	pause();
+	waitForEvents();
 }

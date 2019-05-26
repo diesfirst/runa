@@ -6,10 +6,22 @@ class Window
 public:
 	Window ();
 
+	void open();
+
 private:
 	xcb_connection_t* connection;
 	xcb_screen_t* screen;
 	xcb_window_t window;
+	uint32_t values[2];
+	uint32_t mask = 0;
+	xcb_generic_event_t* event;
 
 	void createWindow();
+
+	void setEvents();
+
+	void pollEvents();
+
+	void waitForEvents();
+
 };
