@@ -1,6 +1,8 @@
 #ifndef CONTEXT_H
 #define CONTEXT_H
 
+#define VK_USE_PLATFORM_XCB_KHR
+
 #include <vulkan/vulkan.hpp>
 #include <iostream>
 #include <vector>
@@ -17,10 +19,12 @@ public:
 
 	vk::Device getDevice();
 
-private:
-	vk::Instance instance;
-	//physical device properties
 	vk::PhysicalDevice physicalDevice;
+
+	vk::Instance instance;
+
+private:
+	//physical device properties
 	vk::PhysicalDeviceProperties physicalDeviceProperties;
 	vk::PhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
 	vk::PhysicalDeviceFeatures physicalDeviceFeatures;

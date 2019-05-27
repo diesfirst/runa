@@ -1,14 +1,15 @@
 #include "context.hpp"
+#include "window.hpp"
 
 class Swapchain
 {
 public:
 	Swapchain (const Context& context);
-	virtual ~Swapchain ();
 
 private:
 	const Context& context;
 	vk::SurfaceKHR surface;
+	Window window;
 	
 	void createSurface();
 };

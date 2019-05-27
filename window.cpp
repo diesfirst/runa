@@ -10,6 +10,16 @@ Window::Window()
 	createWindow();
 }
 
+xcb_connection_t* Window::getConnection()
+{
+	return connection;
+}
+
+xcb_window_t Window::getWindow()
+{
+	return window;
+}
+
 void Window::createWindow()
 {
 	//create window

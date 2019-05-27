@@ -8,6 +8,10 @@ public:
 
 	void open();
 
+	xcb_connection_t* getConnection();
+
+	xcb_window_t getWindow();
+
 private:
 	xcb_connection_t* connection;
 	xcb_screen_t* screen;

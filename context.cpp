@@ -46,6 +46,11 @@ void Context::destroyContext()
 void Context::createInstance()
 {
 	vk::InstanceCreateInfo createInstanceInfo;
+	createInstanceInfo.enabledExtensionCount = 2;
+	const char* names[2];
+	names[0] = "VK_KHR_surface";
+	names[1] = "VK_KHR_xcb_surface";
+	createInstanceInfo.ppEnabledExtensionNames = names;
 	instance = vk::createInstance(createInstanceInfo);
 }
 
