@@ -19,9 +19,12 @@ public:
 
 	vk::Device getDevice();
 
+	uint32_t pickQueueFamilyIndex(vk::SurfaceKHR surface) const;
+
 	vk::PhysicalDevice physicalDevice;
 
 	vk::Instance instance;
+
 
 private:
 	//physical device properties
@@ -29,9 +32,10 @@ private:
 	vk::PhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
 	vk::PhysicalDeviceFeatures physicalDeviceFeatures;
 	std::vector<vk::ExtensionProperties> instanceExtensionProperties;
-	std::vector<vk::QueueFamilyProperties> queueFamilyProperties;
+	std::vector<vk::QueueFamilyProperties> queueFamilies;
 	std::vector<vk::ExtensionProperties> deviceExtensionProperties;
 	vk::Device device;
+	vk::Queue graphicsQueue;
 
 	void createContext();
 
@@ -60,6 +64,10 @@ private:
 	void printDeviceExtensionProperties();
 
 	void getSurfaceCapabilities();
+
+	void setInstanceExtensions(vk::InstanceCreateInfo&);
+
+	void setDeviceExtensions(vk::DeviceCreateInfo&);
 };
 
 #endif /* ifndef CONTEXT_H */

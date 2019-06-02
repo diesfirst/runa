@@ -46,10 +46,11 @@ void Context::destroyContext()
 void Context::createInstance()
 {
 	vk::InstanceCreateInfo createInstanceInfo;
-	createInstanceInfo.enabledExtensionCount = 2;
 	const char* names[2];
-	names[0] = "VK_KHR_surface";
-	names[1] = "VK_KHR_xcb_surface";
+	names[0] = VK_KHR_SURFACE_EXTENSION_NAME;
+	names[1] = VK_KHR_XCB_SURFACE_EXTENSION_NAME;
+//	setInstanceExtensions(createInstanceInfo);
+	createInstanceInfo.enabledExtensionCount = 2;
 	createInstanceInfo.ppEnabledExtensionNames = names;
 	instance = vk::createInstance(createInstanceInfo);
 }
@@ -65,7 +66,7 @@ void Context::createPhysicalDevice()
 	physicalDeviceProperties = physicalDevice.getProperties();
 	physicalDeviceMemoryProperties = physicalDevice.getMemoryProperties();
 	physicalDeviceFeatures = physicalDevice.getFeatures();
-	queueFamilyProperties = physicalDevice.getQueueFamilyProperties();
+	queueFamilies = physicalDevice.getQueueFamilyProperties();
 	deviceExtensionProperties = physicalDevice.enumerateDeviceExtensionProperties();
 }
 
@@ -81,6 +82,13 @@ void Context::createDevice()
 	deviceInfo.pEnabledFeatures = &physicalDeviceFeatures;
 	deviceInfo.queueCreateInfoCount = 1;
 	deviceInfo.pQueueCreateInfos = &queueInfo;
+
+//	setDeviceExtensions(deviceInfo);
+	const uint8_t extCount = 1;
+	const char* names[extCount];
+	names[0] = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+	deviceInfo.enabledExtensionCount = extCount;
+	deviceInfo.ppEnabledExtensionNames = names;
 
 	device = physicalDevice.createDevice(deviceInfo);
 }
@@ -133,12 +141,12 @@ void Context::printDeviceFeatures()
 void Context::printDeviceQueueFamilyInfo()
 {
 	std::cout << "Queues: "	<< std::endl;
-	for (int i = 0; i < queueFamilyProperties.size(); ++i) {
-		const auto& queueFamilyProperty = queueFamilyProperties[i];
+	for (int i = 0; i < queueFamilies.size(); ++i) {
+		const auto& queueFamilyProperties = queueFamilies[i];
 		std::cout << "Queue Family: " << i << std::endl;
 		std::cout << "Queue Family Flags: " << 
-			vk::to_string(queueFamilyProperty.queueFlags) << std::endl;
-		std::cout << "QueueCount: " << queueFamilyProperty.queueCount << std::endl;
+			vk::to_string(queueFamilyProperties.queueFlags) << std::endl;
+		std::cout << "QueueCount: " << queueFamilyProperties.queueCount << std::endl;
 	}
 }
 
@@ -149,4 +157,40 @@ void Context::printDeviceExtensionProperties()
 		std::cout << "Name: " << exProp.extensionName << std::endl;
 	}
 }
+
+uint32_t Context::pickQueueFamilyIndex(vk::SurfaceKHR surface) const
+{
+	uint32_t index = 0;
+	vk::QueueFamilyProperties familyProperties = queueFamilies[0];
+	const vk::QueueFlags& desiredFlags = vk::QueueFlagBits::eGraphics;
+	if (familyProperties.queueFlags & desiredFlags)
+	{
+		std::cout << "Is graphics suitable" << std::endl;
+	}
+	if (physicalDevice.getSurfaceSupportKHR(index, surface))
+	{
+		std::cout << "Is presentation suitable" << std::endl;
+	}
+
+}
+
+void Context::setInstanceExtensions(vk::InstanceCreateInfo& createInfo)
+{
+	const uint8_t extCount = 0;
+	const char* names[extCount];
+	names[0] = VK_KHR_SURFACE_EXTENSION_NAME;
+	names[1] = VK_KHR_XCB_SURFACE_EXTENSION_NAME;
+	createInfo.enabledExtensionCount = extCount;
+	createInfo.ppEnabledExtensionNames = names;
+}
+
+void Context::setDeviceExtensions(vk::DeviceCreateInfo& createInfo)
+{
+	const uint8_t extCount = 1;
+	const char* names[extCount];
+	names[0] = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+	createInfo.enabledExtensionCount = extCount;
+	createInfo.ppEnabledExtensionNames = names;
+}
+
 
