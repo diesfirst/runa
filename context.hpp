@@ -25,29 +25,9 @@ public:
 
 	vk::Instance instance;
 
-
-private:
-	//physical device properties
-	vk::PhysicalDeviceProperties physicalDeviceProperties;
-	vk::PhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
-	vk::PhysicalDeviceFeatures physicalDeviceFeatures;
-	std::vector<vk::ExtensionProperties> instanceExtensionProperties;
-	std::vector<vk::QueueFamilyProperties> queueFamilies;
-	std::vector<vk::ExtensionProperties> deviceExtensionProperties;
 	vk::Device device;
-	vk::Queue graphicsQueue;
 
-	void createContext();
-
-	void destroyContext();
-
-	void checkInstanceExtensionProperties();
-
-	void createInstance();
-
-	void createPhysicalDevice();
-
-	void createDevice();
+	bool enableValidation = true;
 
 	void printInstanceExtensionProperties();
 
@@ -63,11 +43,46 @@ private:
 
 	void printDeviceExtensionProperties();
 
+private:
+	//physical device properties
+	vk::PhysicalDeviceProperties physicalDeviceProperties;
+	vk::PhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
+	vk::PhysicalDeviceFeatures physicalDeviceFeatures;
+	std::vector<vk::ExtensionProperties> instanceExtensionProperties;
+	std::vector<vk::QueueFamilyProperties> queueFamilies;
+	std::vector<vk::ExtensionProperties> deviceExtensionProperties;
+	vk::Queue graphicsQueue;
+	vk::DispatchLoaderDynamic dispatcher;
+
+	void createContext();
+
+	void destroyContext();
+
+	void checkInstanceExtensionProperties();
+
+	void createInstance();
+
+	void createPhysicalDevice();
+
+	void createDevice();
+
 	void getSurfaceCapabilities();
 
-	void setInstanceExtensions(vk::InstanceCreateInfo&);
-
 	void setDeviceExtensions(vk::DeviceCreateInfo&);
+
+	void setValidationLayers();
+
+	void setupDebugMessenger();
+
+	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+			VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+			VkDebugUtilsMessageTypeFlagsEXT messageType,
+			const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+			void* pUserData) 
+	{
+	    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+	    return VK_FALSE;
+	}
 };
 
 #endif /* ifndef CONTEXT_H */

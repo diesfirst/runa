@@ -5,6 +5,9 @@ Swapchain::Swapchain(const Context& context) :
 {
 	createSurface();
 	queueFamilyIndex = context.pickQueueFamilyIndex(surface);
+	setColorFormat();
+//	setGraphicsQueue();
+//	setPresentQueue();
 }
 
 Swapchain::~Swapchain()
@@ -20,12 +23,19 @@ void Swapchain::createSurface()
 	surface = context.instance.createXcbSurfaceKHR(surfaceCreateInfo);
 }
 
-void Swapchain::setGraphicsQueue(vk::Device device)
+void Swapchain::setColorFormat()
 {
-	graphicsQueue = device.getQueue(queueFamilyIndex, 0); // we'll use first queue
+	std::vector<vk::SurfaceFormatKHR> surfaceFormats =
+		context.physicalDevice.getSurfaceFormatsKHR(surface);
+	auto formatCount = surfaceFormats.size();
+	vk::SurfaceFormatKHR firstFormat = surfaceFormats[0];
+	if ((formatCount == 1) && (firstFormat.format == vk::Format::eUndefined)) colorFormat = vk::Format::eB8G8R8A8Unorm;
+	else colorFormat = firstFormat.format;
+	colorSpace = firstFormat.colorSpace;
 }
 
-void Swapchain::setPresentQueue(vk::Device device)
+void getSurfaceCapabilities()
 {
-	presentQueue = device.getQueue(queueFamilyIndex, 1); //we'll grab the second queue for this
+
 }
+

@@ -34,6 +34,7 @@ void Context::createContext()
 	checkInstanceExtensionProperties();
 	printInstanceExtensionProperties();
 	createInstance();
+	if (enableValidation) setupDebugMessenger();
 	createPhysicalDevice();
 	createDevice();
 }
@@ -45,14 +46,20 @@ void Context::destroyContext()
 
 void Context::createInstance()
 {
-	vk::InstanceCreateInfo createInstanceInfo;
-	const char* names[2];
-	names[0] = VK_KHR_SURFACE_EXTENSION_NAME;
-	names[1] = VK_KHR_XCB_SURFACE_EXTENSION_NAME;
-//	setInstanceExtensions(createInstanceInfo);
-	createInstanceInfo.enabledExtensionCount = 2;
-	createInstanceInfo.ppEnabledExtensionNames = names;
-	instance = vk::createInstance(createInstanceInfo);
+	std::vector<const char*> extensions;
+	extensions.push_back("VK_EXT_debug_utils");
+	extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+	extensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
+	std::vector<const char*> layers;
+	layers.push_back("VK_LAYER_LUNARG_standard_validation");
+
+	vk::InstanceCreateInfo instanceInfo;
+	instanceInfo.enabledExtensionCount = extensions.size();
+	instanceInfo.ppEnabledExtensionNames = extensions.data();
+	instanceInfo.enabledLayerCount = layers.size();
+	instanceInfo.ppEnabledLayerNames = layers.data();
+
+	instance = vk::createInstance(instanceInfo);
 }
 
 void Context::checkInstanceExtensionProperties()
@@ -74,21 +81,19 @@ void Context::createDevice()
 {
 	float queuePriority = 1.0; //apparently necesary? 
 	vk::DeviceQueueCreateInfo queueInfo;
+	queueInfo.flags = vk::DeviceQueueCreateFlags();
 	queueInfo.queueCount = 1;
 	queueInfo.queueFamilyIndex = 0; //should be the one with graphics capabilities
 	queueInfo.pQueuePriorities = &queuePriority;
 	
 	vk::DeviceCreateInfo deviceInfo;
-	deviceInfo.pEnabledFeatures = &physicalDeviceFeatures;
 	deviceInfo.queueCreateInfoCount = 1;
 	deviceInfo.pQueueCreateInfos = &queueInfo;
 
-//	setDeviceExtensions(deviceInfo);
-	const uint8_t extCount = 1;
-	const char* names[extCount];
-	names[0] = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
-	deviceInfo.enabledExtensionCount = extCount;
-	deviceInfo.ppEnabledExtensionNames = names;
+	std::vector<const char*> extensions;
+	extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+	deviceInfo.enabledExtensionCount = extensions.size();
+	deviceInfo.ppEnabledExtensionNames = extensions.data();
 
 	device = physicalDevice.createDevice(deviceInfo);
 }
@@ -152,7 +157,7 @@ void Context::printDeviceQueueFamilyInfo()
 
 void Context::printDeviceExtensionProperties()
 {
-	std::cout << "Extension Properties: " << std::endl;
+	std::cout << "Device Extension Properties: " << std::endl;
 	for (const auto exProp : deviceExtensionProperties) {
 		std::cout << "Name: " << exProp.extensionName << std::endl;
 	}
@@ -161,27 +166,25 @@ void Context::printDeviceExtensionProperties()
 uint32_t Context::pickQueueFamilyIndex(vk::SurfaceKHR surface) const
 {
 	uint32_t index = 0;
-	vk::QueueFamilyProperties familyProperties = queueFamilies[0];
+	vk::QueueFamilyProperties familyProperties = queueFamilies[index];
 	const vk::QueueFlags& desiredFlags = vk::QueueFlagBits::eGraphics;
 	if (familyProperties.queueFlags & desiredFlags)
 	{
-		std::cout << "Is graphics suitable" << std::endl;
+		std::cout << 
+			"QueueFamily index " <<
+			index <<
+			" is graphics suitable" << 
+			std::endl;
 	}
 	if (physicalDevice.getSurfaceSupportKHR(index, surface))
 	{
-		std::cout << "Is presentation suitable" << std::endl;
+		std::cout << 
+			"QueueFamily index " <<
+			index <<
+			" is presentation suitable" << 
+			std::endl;
 	}
-
-}
-
-void Context::setInstanceExtensions(vk::InstanceCreateInfo& createInfo)
-{
-	const uint8_t extCount = 0;
-	const char* names[extCount];
-	names[0] = VK_KHR_SURFACE_EXTENSION_NAME;
-	names[1] = VK_KHR_XCB_SURFACE_EXTENSION_NAME;
-	createInfo.enabledExtensionCount = extCount;
-	createInfo.ppEnabledExtensionNames = names;
+	return index;
 }
 
 void Context::setDeviceExtensions(vk::DeviceCreateInfo& createInfo)
@@ -193,4 +196,23 @@ void Context::setDeviceExtensions(vk::DeviceCreateInfo& createInfo)
 	createInfo.ppEnabledExtensionNames = names;
 }
 
+void Context::setupDebugMessenger()
+{
+	vk::DebugUtilsMessengerCreateInfoEXT dbCreateInfo;
+	dbCreateInfo.messageSeverity =
+		vk::DebugUtilsMessageSeverityFlagBitsEXT::eError |
+		vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
+		vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose;
+	dbCreateInfo.messageType =
+		vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
+		vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
+	dbCreateInfo.pfnUserCallback = (PFN_vkDebugUtilsMessengerCallbackEXT)debugCallback;
+	std::cout << "going for it" << std::endl;
+	dispatcher.init(instance);
+	auto messenger = instance.createDebugUtilsMessengerEXT(
+			dbCreateInfo, 
+			nullptr,
+			dispatcher);
+	std::cout << "Made it" << std::endl;
+}
 

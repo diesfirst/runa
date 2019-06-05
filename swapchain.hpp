@@ -14,10 +14,13 @@ private:
 	uint32_t queueFamilyIndex;
 	vk::Queue graphicsQueue;
 	vk::Queue presentQueue;
+	vk::Format colorFormat;
+	vk::ColorSpaceKHR colorSpace;
 	
 	void createSurface();
-	
-	void setGraphicsQueue(vk::Device device);
 
-	void setPresentQueue(vk::Device device);
+	void setColorFormat();
+	
+	void getSurfaceCapabilities();
+
 };
