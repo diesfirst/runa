@@ -34,8 +34,8 @@ void Swapchain::setColorFormat()
 	colorSpace = firstFormat.colorSpace;
 }
 
-void getSurfaceCapabilities()
+void Swapchain::getSurfaceCapabilities()
 {
-
+	context.physicalDevice.getSurfaceCapabilitiesKHR(surface);
 }
 

@@ -14,8 +14,8 @@ private:
 	uint32_t queueFamilyIndex;
 	vk::Queue graphicsQueue;
 	vk::Queue presentQueue;
-	vk::Format colorFormat;
-	vk::ColorSpaceKHR colorSpace;
+	vk::Format colorFormat = vk::Format::eB8G8R8A8Snorm;
+	vk::ColorSpaceKHR colorSpace = vk::ColorSpaceKHR::eSrgbNonlinear;
 	
 	void createSurface();
 
