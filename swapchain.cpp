@@ -6,13 +6,33 @@ Swapchain::Swapchain(const Context& context) :
 	createSurface();
 	queueFamilyIndex = context.pickQueueFamilyIndex(surface);
 	setColorFormat();
-//	setGraphicsQueue();
-//	setPresentQueue();
 }
 
 Swapchain::~Swapchain()
 {
 	context.instance.destroySurfaceKHR(surface);
+}
+
+void Swapchain::checkPresentModes()
+{
+	std::vector<vk::PresentModeKHR> availablePresentModes;
+	availablePresentModes = context.physicalDevice.getSurfacePresentModesKHR(surface);
+	int numberOfModes = availablePresentModes.size();
+	std::cout << "Number of present modes: " << numberOfModes << std::endl;
+	for (int i = 0; i < numberOfModes; ++i)
+	{
+		const auto mode = availablePresentModes[i];
+		if (mode == vk::PresentModeKHR::eFifo) 
+		{
+			std::cout << "Fifo mode available at index " << 
+				i << std::endl;
+		}
+		if (mode == vk::PresentModeKHR::eMailbox) 
+		{
+			std::cout << "Mailbox mode at index" <<
+			        i << std::endl;	
+		}
+	}
 }
 
 void Swapchain::createSurface()
@@ -38,4 +58,5 @@ void Swapchain::getSurfaceCapabilities()
 {
 	context.physicalDevice.getSurfaceCapabilitiesKHR(surface);
 }
+
 

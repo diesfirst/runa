@@ -41,6 +41,7 @@ void Context::createContext()
 
 void Context::destroyContext()
 {
+	device.destroy();
 	instance.destroy();
 }
 
@@ -96,6 +97,16 @@ void Context::createDevice()
 	deviceInfo.ppEnabledExtensionNames = extensions.data();
 
 	device = physicalDevice.createDevice(deviceInfo);
+}
+
+void Context::setGraphicsQueue()
+{
+	graphicsQueue = device.getQueue(0, 0);
+}
+
+void Context::setPresentQueue()
+{
+	presentQueue = device.getQueue(0, 0);
 }
 
 void Context::printInstanceExtensionProperties()
