@@ -6,7 +6,6 @@ int main(int argc, char *argv[])
 	context.setGraphicsQueue();
 	context.setPresentQueue();
 	Swapchain swapchain(context);
-	swapchain.checkPresentModes();
 	std::cout << "No errors" << std::endl;
 	return 0;
 }

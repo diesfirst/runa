@@ -5,11 +5,15 @@ Swapchain::Swapchain(const Context& context) :
 {
 	createSurface();
 	queueFamilyIndex = context.pickQueueFamilyIndex(surface);
-	setColorFormat();
+	getSurfaceCapabilities();
+	chooseSwapExtent();
+	chooseFormat();
+	createSwapchain();
 }
 
 Swapchain::~Swapchain()
-{
+{	
+	context.device.destroySwapchainKHR(swapchain);
 	context.instance.destroySurfaceKHR(surface);
 }
 
@@ -56,7 +60,69 @@ void Swapchain::setColorFormat()
 
 void Swapchain::getSurfaceCapabilities()
 {
-	context.physicalDevice.getSurfaceCapabilitiesKHR(surface);
+	surfCaps = context.physicalDevice.getSurfaceCapabilitiesKHR(surface);
 }
 
+void Swapchain::chooseSwapExtent()
+{
+	if (surfCaps.currentExtent == -1) 
+	{
+		swapchainExtent.width = window.size[0];
+		swapchainExtent.height = window.size[1];
+	}
+	else
+	{
+		swapchainExtent.width = surfCaps.currentExtent.width;
+		swapchainExtent.height = surfCaps.currentExtent.height;
+	}
+}
 
+void Swapchain::chooseFormat()
+{
+	context.physicalDevice.getSurfaceFormatsKHR(surface);
+	colorFormat = vk::Format::eB8G8R8A8Snorm;
+}
+
+void Swapchain::checkImageCounts()
+{
+	int minImageCount = surfCaps.minImageCount;
+	int maxImageCount = surfCaps.maxImageCount;
+	std::cout << "Min image count = " << minImageCount << std::endl;
+	std::cout << "Max image count = " << maxImageCount << std::endl;
+}
+
+void Swapchain::checkCurrentExtent()
+{
+	int width = surfCaps.currentExtent.width;
+	int height = surfCaps.currentExtent.height;
+	std::cout << "Surf width: " << 
+		width << " height: " << 
+		height << std::endl;
+}
+
+void Swapchain::createSwapchain()
+{
+	vk::SwapchainCreateInfoKHR createInfo;
+	createInfo.setSurface(surface);
+	createInfo.setImageExtent(swapchainExtent);
+	createInfo.setImageFormat(colorFormat);
+	createInfo.setImageColorSpace(colorSpace);
+	createInfo.setPresentMode(presentMode);
+	//request one more image than min to avoid
+	//wait times on images
+	createInfo.setMinImageCount(surfCaps.minImageCount + 1);
+	createInfo.setImageArrayLayers(1); //more than 1 for VR applications
+	//we will be drawing directly to the image
+	//as opposed to transfering data to it
+	createInfo.setImageUsage(vk::ImageUsageFlagBits::eColorAttachment);
+	//this is so that each queue has exclusive 
+	//ownership of an image at a time
+	createInfo.setImageSharingMode(vk::SharingMode::eExclusive);
+	createInfo.setPreTransform(surfCaps.currentTransform);
+	createInfo.setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque);
+	//means we dont care about the color of obscured pixels
+	createInfo.setClipped(true); 
+//	createInfo.setOldSwapchain(nullptr);
+	swapchain = context.device.createSwapchainKHR(createInfo);
+	std::cout << "Swapchain created!" << std::endl;
+}

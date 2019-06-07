@@ -1,5 +1,7 @@
 #include <unistd.h>
 #include <xcb/xcb.h>
+#include <vector>
+#include <iostream>
 
 class Window
 {
@@ -12,6 +14,8 @@ public:
 
 	xcb_window_t getWindow();
 
+	std::vector<int> size;
+
 private:
 	xcb_connection_t* connection;
 	xcb_screen_t* screen;
@@ -20,7 +24,7 @@ private:
 	uint32_t mask = 0;
 	xcb_generic_event_t* event;
 
-	void createWindow();
+	void createWindow(const int width, const int height);
 
 	void setEvents();
 

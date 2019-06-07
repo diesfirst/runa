@@ -1,5 +1,4 @@
 #include "window.hpp"
-#include <stdlib.h>
 
 Window::Window()
 {
@@ -7,7 +6,7 @@ Window::Window()
 	screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
 	window = xcb_generate_id(connection);
 	setEvents();
-	createWindow();
+	createWindow(500, 500);
 }
 
 xcb_connection_t* Window::getConnection()
@@ -20,16 +19,19 @@ xcb_window_t Window::getWindow()
 	return window;
 }
 
-void Window::createWindow()
+void Window::createWindow(const int width, const int height)
 {
 	//create window
+	size.push_back(width);
+	size.push_back(height);
+	std::cout << "set size"  << std::endl;
 	xcb_create_window(
 			connection,
 			XCB_COPY_FROM_PARENT,
 			window,
 			screen->root,
 			0,0, //x, y
-			500,500, //width, height
+			width, height, //width, height
 			5, //border width
 			XCB_WINDOW_CLASS_INPUT_OUTPUT,
 			screen->root_visual,

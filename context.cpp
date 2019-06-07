@@ -216,7 +216,8 @@ void Context::setupDebugMessenger()
 		vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose;
 	dbCreateInfo.messageType =
 		vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
-		vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
+		vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance |
+		vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation;
 	dbCreateInfo.pfnUserCallback = (PFN_vkDebugUtilsMessengerCallbackEXT)debugCallback;
 	std::cout << "going for it" << std::endl;
 	dispatcher.init(instance);
