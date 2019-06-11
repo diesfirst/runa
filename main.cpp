@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 	commander.renderFrame(swapchain);
 	std::this_thread::sleep_for(std::chrono::milliseconds(500));
 	commander.renderFrame(swapchain);
-	std::this_thread::sleep_for(std::chrono::milliseconds(50000));
+	std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
 	commander.cleanUp();
 	return 0;
