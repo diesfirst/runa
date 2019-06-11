@@ -37,6 +37,7 @@ void Context::createContext()
 	if (enableValidation) setupDebugMessenger();
 	createPhysicalDevice();
 	createDevice();
+	setQueue();
 }
 
 void Context::destroyContext()
@@ -99,14 +100,9 @@ void Context::createDevice()
 	device = physicalDevice.createDevice(deviceInfo);
 }
 
-void Context::setGraphicsQueue()
+void Context::setQueue()
 {
-	graphicsQueue = device.getQueue(0, 0);
-}
-
-void Context::setPresentQueue()
-{
-	presentQueue = device.getQueue(0, 0);
+	queue = device.getQueue(0, 0);
 }
 
 void Context::printInstanceExtensionProperties()
@@ -198,6 +194,11 @@ uint32_t Context::pickQueueFamilyIndex(vk::SurfaceKHR surface) const
 	return index;
 }
 
+uint32_t Context::getGraphicsQueueFamilyIndex() const
+{
+	return 0;
+}
+
 void Context::setDeviceExtensions(vk::DeviceCreateInfo& createInfo)
 {
 	const uint8_t extCount = 1;
@@ -228,3 +229,10 @@ void Context::setupDebugMessenger()
 	std::cout << "Made it" << std::endl;
 }
 
+void Context::printAvailableDevices()
+{
+	for (const auto device : instance.enumeratePhysicalDevices()) {
+		std::string name = device.getProperties().deviceName;
+		std::cout << "Device name: " << name << std::endl;
+	}
+}

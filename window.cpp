@@ -3,20 +3,13 @@
 Window::Window()
 {
 	connection = xcb_connect(NULL,NULL);
-	screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
+	screen = xcb_setup_roots_iterator(
+			xcb_get_setup(connection)).data;
 	window = xcb_generate_id(connection);
 	setEvents();
 	createWindow(500, 500);
-}
-
-xcb_connection_t* Window::getConnection()
-{
-	return connection;
-}
-
-xcb_window_t Window::getWindow()
-{
-	return window;
+	setName();
+	setClass();
 }
 
 void Window::createWindow(const int width, const int height)
@@ -41,11 +34,37 @@ void Window::createWindow(const int width, const int height)
 void Window::setEvents()
 {
 	mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
-	values[0] = screen->white_pixel;
+	values[0] = screen->black_pixel;
 	values[1] = XCB_EVENT_MASK_EXPOSURE |
 		XCB_EVENT_MASK_POINTER_MOTION |
 		XCB_EVENT_MASK_ENTER_WINDOW |
 		XCB_EVENT_MASK_LEAVE_WINDOW;
+}
+
+void Window::setName()
+{	
+	xcb_change_property(
+		connection,
+		XCB_PROP_MODE_REPLACE,
+		window,
+		XCB_ATOM_WM_NAME,
+		XCB_ATOM_STRING,
+		8,
+		appName.length(),
+		appName.c_str());
+}
+
+void Window::setClass()
+{
+	xcb_change_property(
+		connection,
+		XCB_PROP_MODE_REPLACE,
+		window,
+		XCB_ATOM_WM_CLASS,
+		XCB_ATOM_STRING,
+		8,
+		appClass.length(),
+		appClass.c_str());
 }
 
 void Window::pollEvents()
@@ -57,17 +76,32 @@ void Window::pollEvents()
 	}
 }
 
-void Window::waitForEvents()
+xcb_generic_event_t Window::waitForEvent()
 {
-	while ((event = xcb_wait_for_event(connection)))
-	{
-		free(event);
-	}
+	event = xcb_wait_for_event(connection);
 }
 
 void Window::open()
 {
+	sendNotifications();
 	xcb_map_window(connection, window);
 	xcb_flush(connection);
-	waitForEvents();
 }
+
+void Window::sendNotifications() 
+{
+	xcb_intern_atom_cookie_t wmDeleteCookie = xcb_intern_atom(
+			connection, 0, strlen("WM_DELETE_WINDOW"), "WM_DELETE_WINDOW");
+	xcb_intern_atom_cookie_t wmProtocolsCookie =
+	    xcb_intern_atom(connection, 0, strlen("WM_PROTOCOLS"), "WM_PROTOCOLS");
+	xcb_intern_atom_reply_t *wmDeleteReply =
+	    xcb_intern_atom_reply(connection, wmDeleteCookie, NULL);
+	xcb_intern_atom_reply_t *wmProtocolsReply =
+	    xcb_intern_atom_reply(connection, wmProtocolsCookie, NULL);
+	wmDeleteWin = wmDeleteReply->atom;
+	wmProtocols = wmProtocolsReply->atom;
+
+	xcb_change_property(connection, XCB_PROP_MODE_REPLACE, window,
+			    wmProtocolsReply->atom, 4, 32, 1, &wmDeleteReply->atom);
+}
+

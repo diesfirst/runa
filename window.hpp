@@ -1,7 +1,9 @@
 #include <unistd.h>
 #include <xcb/xcb.h>
+#include <xcb/xcb_icccm.h>
 #include <vector>
 #include <iostream>
+#include <string.h>
 
 class Window
 {
@@ -10,19 +12,23 @@ public:
 
 	void open();
 
-	xcb_connection_t* getConnection();
-
-	xcb_window_t getWindow();
-
 	std::vector<int> size;
+	
+	xcb_generic_event_t waitForEvent();
 
-private:
 	xcb_connection_t* connection;
-	xcb_screen_t* screen;
+
 	xcb_window_t window;
+private:
+	xcb_screen_t* screen;
 	uint32_t values[2];
 	uint32_t mask = 0;
 	xcb_generic_event_t* event;
+	xcb_atom_t wmProtocols;
+	xcb_atom_t wmDeleteWin;
+	xcb_icccm_wm_hints_t hints;
+	std::string appName = "runa";
+	std::string appClass = "floating";
 
 	void createWindow(const int width, const int height);
 
@@ -30,6 +36,9 @@ private:
 
 	void pollEvents();
 
-	void waitForEvents();
+	void sendNotifications();
+	
+	void setName();
 
+	void setClass();
 };

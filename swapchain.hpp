@@ -1,10 +1,13 @@
-#include "context.hpp"
+#ifndef SWAPCHAIN_H
+#define SWAPCHAIN_H
+
 #include "window.hpp"
+#include "context.hpp"
 
 class Swapchain
 {
 public:
-	Swapchain (const Context& context);
+	Swapchain (const Context& context, const Window& window);
 	virtual ~Swapchain();
 
 	void checkPresentModes();
@@ -13,29 +16,73 @@ public:
 
 	void checkCurrentExtent();
 
+	void checkFormatsAvailable();
+
 	void createSwapchain();
 
+	std::vector<vk::ImageView> imageViews;
+
+	void createRenderPass();
+
+	void createFramebuffers();
+
+	std::vector<vk::Framebuffer> framebuffers;
+	vk::Extent2D swapchainExtent;
+
+	vk::RenderPass renderPass;
+
+	uint32_t acquireNextImage(const vk::Semaphore&);
+
+	void checkSurfaceCapabilities();
+
+	const vk::Fence& getSubmitFence();
+
+	void initializeImageFences();
+
+	void prepareForRender();
+
+	uint32_t currentImage{0};
+
+	vk::PresentInfoKHR presentInfo;
+
+	const Window& window;
+	 
 private:
 	const Context& context;
 	vk::SurfaceKHR surface;
-	Window window;
 	uint32_t queueFamilyIndex;
 	vk::Queue graphicsQueue;
 	vk::Queue presentQueue;
-	vk::Format colorFormat = vk::Format::eB8G8R8A8Snorm;
-	vk::ColorSpaceKHR colorSpace = vk::ColorSpaceKHR::eSrgbNonlinear;
+	vk::Format colorFormat;
+	vk::ColorSpaceKHR colorSpace;
 	vk::PresentModeKHR presentMode = vk::PresentModeKHR::eFifo;
-	vk::Extent2D swapchainExtent;
 	vk::SurfaceCapabilitiesKHR surfCaps;
 	vk::SwapchainKHR swapchain;
+	bool swapchainCreated = false;
+	std::vector<vk::Image> images;
+	std::vector<vk::AttachmentDescription> attachments;
+	std::vector<vk::Fence> imageFences;
 	
 	void createSurface();
 
-	void setColorFormat();
-	
 	void getSurfaceCapabilities();
 	
 	void chooseSwapExtent();
 
 	void chooseFormat();
+
+	void grabImages();
+
+	void createImageViews();
+
+	void destroyImageViews();
+
+	void createColorAttachment();
+
+	void destroyFramebuffers();
+
+	void initializePresentInfo();
+
 };
+
+#endif /* ifndef SWAPCHAIN_H */

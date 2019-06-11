@@ -28,10 +28,10 @@ public:
 	vk::Device device;
 
 	bool enableValidation = true;
+
+	uint32_t getGraphicsQueueFamilyIndex() const;
 	
-	void setGraphicsQueue();
-	
-	void setPresentQueue();
+	void setQueue();
 
 	void printInstanceExtensionProperties();
 
@@ -46,6 +46,10 @@ public:
 	void printDeviceQueueFamilyInfo();
 
 	void printDeviceExtensionProperties();
+	
+	void printAvailableDevices();
+
+	vk::Queue queue;
 
 private:
 	//physical device properties
@@ -55,8 +59,6 @@ private:
 	std::vector<vk::ExtensionProperties> instanceExtensionProperties;
 	std::vector<vk::QueueFamilyProperties> queueFamilies;
 	std::vector<vk::ExtensionProperties> deviceExtensionProperties;
-	vk::Queue graphicsQueue;
-	vk::Queue presentQueue;
 	vk::DispatchLoaderDynamic dispatcher;
 
 	void createContext();

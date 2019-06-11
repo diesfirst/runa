@@ -1,7 +1,8 @@
 #include "swapchain.hpp"
 
-Swapchain::Swapchain(const Context& context) :
-	context(context)
+Swapchain::Swapchain(const Context& context, const Window& window) :
+	context(context),
+	window(window)
 {
 	createSurface();
 	queueFamilyIndex = context.pickQueueFamilyIndex(surface);
@@ -9,10 +10,22 @@ Swapchain::Swapchain(const Context& context) :
 	chooseSwapExtent();
 	chooseFormat();
 	createSwapchain();
+	grabImages();
+	createImageViews();
+	initializePresentInfo();
 }
 
 Swapchain::~Swapchain()
 {	
+	for (auto fence : imageFences) {
+		if (fence) {
+			context.device.waitForFences(fence, VK_TRUE, UINT64_MAX);
+			context.device.destroyFence(fence);
+		}
+	}
+	destroyFramebuffers();
+	destroyImageViews();
+	context.device.destroyRenderPass(renderPass);
 	context.device.destroySwapchainKHR(swapchain);
 	context.instance.destroySurfaceKHR(surface);
 }
@@ -42,20 +55,17 @@ void Swapchain::checkPresentModes()
 void Swapchain::createSurface()
 {
 	vk::XcbSurfaceCreateInfoKHR surfaceCreateInfo;
-	surfaceCreateInfo.connection  = window.getConnection();
-	surfaceCreateInfo.window = window.getWindow();
+	surfaceCreateInfo.connection  = window.connection;
+	surfaceCreateInfo.window = window.window;
 	surface = context.instance.createXcbSurfaceKHR(surfaceCreateInfo);
 }
 
-void Swapchain::setColorFormat()
+void Swapchain::chooseFormat()
 {
 	std::vector<vk::SurfaceFormatKHR> surfaceFormats =
 		context.physicalDevice.getSurfaceFormatsKHR(surface);
-	auto formatCount = surfaceFormats.size();
-	vk::SurfaceFormatKHR firstFormat = surfaceFormats[0];
-	if ((formatCount == 1) && (firstFormat.format == vk::Format::eUndefined)) colorFormat = vk::Format::eB8G8R8A8Unorm;
-	else colorFormat = firstFormat.format;
-	colorSpace = firstFormat.colorSpace;
+	colorFormat = vk::Format::eB8G8R8A8Unorm; //availabe
+	colorSpace = vk::ColorSpaceKHR::eSrgbNonlinear; //available
 }
 
 void Swapchain::getSurfaceCapabilities()
@@ -77,12 +87,6 @@ void Swapchain::chooseSwapExtent()
 	}
 }
 
-void Swapchain::chooseFormat()
-{
-	context.physicalDevice.getSurfaceFormatsKHR(surface);
-	colorFormat = vk::Format::eB8G8R8A8Snorm;
-}
-
 void Swapchain::checkImageCounts()
 {
 	int minImageCount = surfCaps.minImageCount;
@@ -98,6 +102,17 @@ void Swapchain::checkCurrentExtent()
 	std::cout << "Surf width: " << 
 		width << " height: " << 
 		height << std::endl;
+}
+
+void Swapchain::checkFormatsAvailable()
+{
+	std::vector<vk::SurfaceFormatKHR> surfaceFormats =
+		context.physicalDevice.getSurfaceFormatsKHR(surface);
+	for (const auto format : surfaceFormats) {
+		std::cout << "Format: " << (uint32_t)format.format 
+			<< " Colorspace: " << (uint32_t)format.colorSpace 
+			<< std::endl;
+	}
 }
 
 void Swapchain::createSwapchain()
@@ -125,4 +140,172 @@ void Swapchain::createSwapchain()
 //	createInfo.setOldSwapchain(nullptr);
 	swapchain = context.device.createSwapchainKHR(createInfo);
 	std::cout << "Swapchain created!" << std::endl;
+	swapchainCreated = true;
+}
+
+void Swapchain::grabImages()
+{
+	if (!swapchainCreated) {
+		std::cout << "Attempted to get images"
+		       << " from nonexistant swapchain"
+	       	       << std::endl;
+	}
+	images = context.device.getSwapchainImagesKHR(swapchain);
+}
+
+void Swapchain::createImageViews()
+{
+	vk::ImageViewCreateInfo createInfo;
+	createInfo.setViewType(vk::ImageViewType::e2D);
+	createInfo.setFormat(colorFormat);
+	
+	vk::ImageSubresourceRange subResRange;
+	subResRange.setAspectMask(vk::ImageAspectFlagBits::eColor);
+	subResRange.setLayerCount(1);
+	subResRange.setLevelCount(1);
+
+	createInfo.setSubresourceRange(subResRange);
+
+	for (const auto image : images) {
+		createInfo.setImage(image);
+		imageViews.push_back(context.device.createImageView(createInfo));
+	}
+}
+
+void Swapchain::destroyImageViews()
+{
+	for (auto imageView : imageViews) {
+		context.device.destroyImageView(imageView);
+	}
+}
+
+
+void Swapchain::createColorAttachment()
+{
+	vk::AttachmentDescription attachment;
+	attachment.setFormat(colorFormat);
+	attachment.setSamples(vk::SampleCountFlagBits::e1);
+	//Sets what to do with data in the attachment
+	//before rendering
+	attachment.setLoadOp(vk::AttachmentLoadOp::eClear);
+	//Sets what we do with the data after rendering
+	//We want to show it so we will store it
+	attachment.setStoreOp(vk::AttachmentStoreOp::eStore);
+	attachment.setInitialLayout(vk::ImageLayout::eUndefined);
+	attachment.setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
+
+	attachments.push_back(attachment);
+}
+
+void Swapchain::createRenderPass()
+{
+	createColorAttachment();
+
+	std::vector<vk::AttachmentReference> references;
+
+	vk::AttachmentReference colorRef;
+	colorRef.setAttachment(0); //our first attachment is color
+	colorRef.setLayout(vk::ImageLayout::eColorAttachmentOptimal);
+	references.push_back(colorRef);
+
+	std::vector<vk::SubpassDescription> subpasses;
+
+	vk::SubpassDescription subpass;
+	subpass.setPipelineBindPoint(vk::PipelineBindPoint::eGraphics);
+	subpass.setColorAttachmentCount(1);
+	subpass.setPColorAttachments(references.data());
+	subpasses.push_back(subpass);
+
+	vk::RenderPassCreateInfo createInfo;
+	createInfo.setAttachmentCount(attachments.size());
+	createInfo.setPAttachments(attachments.data());
+	createInfo.setSubpassCount(subpasses.size());
+	createInfo.setPSubpasses(subpasses.data());
+	renderPass = context.device.createRenderPass(createInfo);
+}
+
+void Swapchain::createFramebuffers()
+{
+	vk::FramebufferCreateInfo createInfo;
+	createInfo.setWidth(swapchainExtent.width);
+	createInfo.setHeight(swapchainExtent.height);
+	createInfo.setRenderPass(renderPass);
+	createInfo.setAttachmentCount(attachments.size());
+	createInfo.setLayers(1);
+	std::array<vk::ImageView, 1> imageViewsTemp;
+	createInfo.setPAttachments(imageViewsTemp.data());
+	for (const auto image : imageViews) {
+		imageViewsTemp[0] = image;
+		framebuffers.push_back(
+				context.device.createFramebuffer(createInfo));
+	}
+}
+
+void Swapchain::destroyFramebuffers()
+{
+	for (auto framebuffer : framebuffers) {
+		context.device.destroyFramebuffer(framebuffer);
+	}
+}
+
+uint32_t Swapchain::acquireNextImage(const vk::Semaphore& semaphore)
+{
+	auto result = context.device.acquireNextImageKHR(
+			swapchain,
+			UINT64_MAX, //so it will wait forever
+			semaphore, //will be signalled when we can present
+			vk::Fence()); //empty fence
+	if (result.result != vk::Result::eSuccess) {
+		std::cerr << 
+		"Invalid acquire result: " << 
+		vk::to_string(result.result);
+		throw std::error_code(result.result);
+	}
+
+	currentImage = result.value;
+	return result.value;
+}
+
+void Swapchain::checkSurfaceCapabilities()
+{
+	const auto suf = surfCaps.supportedUsageFlags;
+	std::cout << vk::to_string(suf) << std::endl;
+}
+
+void Swapchain::initializeImageFences()
+{
+	imageFences.resize(images.size());
+}
+
+const vk::Fence& Swapchain::getSubmitFence()
+{
+	auto& curFence = imageFences[currentImage];
+	if (curFence) {
+		vk::Result fenceResult = vk::Result::eTimeout;
+		while (fenceResult == vk::Result::eTimeout) {
+			fenceResult = context.device.waitForFences(
+				curFence,
+				VK_TRUE, //wait for all (just 1 here)
+				UINT64_MAX); //wait forever
+		}
+		context.device.resetFences(curFence);
+	}
+	else {
+		curFence = context.device.createFence(vk::FenceCreateFlags());
+	}
+	return curFence;
+}
+
+void Swapchain::prepareForRender()
+{
+	createRenderPass();
+	createFramebuffers();
+	initializeImageFences();
+}
+
+void Swapchain::initializePresentInfo()
+{
+	presentInfo.setSwapchainCount(1);
+	presentInfo.setPSwapchains(&swapchain);
+	presentInfo.setPImageIndices(&currentImage);
 }
