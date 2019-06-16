@@ -18,20 +18,11 @@ int main(int argc, char *argv[])
 	
 
 	std::cout << "about to render" << std::endl;
-	commander.renderFrame(swapchain);
-	std::this_thread::sleep_for(std::chrono::milliseconds(500));
-	commander.renderFrame(swapchain);
-	std::this_thread::sleep_for(std::chrono::milliseconds(500));
-	commander.renderFrame(swapchain);
-	std::this_thread::sleep_for(std::chrono::milliseconds(500));
-	commander.renderFrame(swapchain);
-	std::this_thread::sleep_for(std::chrono::milliseconds(500));
-	commander.renderFrame(swapchain);
-	std::this_thread::sleep_for(std::chrono::milliseconds(500));
-	commander.renderFrame(swapchain);
-	std::this_thread::sleep_for(std::chrono::milliseconds(500));
-	commander.renderFrame(swapchain);
-	std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	while (true)
+	{
+		commander.renderFrame(swapchain);
+		window.waitForEvent();
+	}
 
 	commander.cleanUp();
 	return 0;

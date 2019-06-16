@@ -38,6 +38,7 @@ void Window::setEvents()
 	values[1] = XCB_EVENT_MASK_EXPOSURE |
 		XCB_EVENT_MASK_POINTER_MOTION |
 		XCB_EVENT_MASK_ENTER_WINDOW |
+		XCB_EVENT_MASK_KEY_PRESS |
 		XCB_EVENT_MASK_LEAVE_WINDOW;
 }
 
@@ -76,9 +77,25 @@ void Window::pollEvents()
 	}
 }
 
-xcb_generic_event_t Window::waitForEvent()
+void Window::waitForEvent()
 {
 	event = xcb_wait_for_event(connection);
+	switch (event->response_type & ~0x80)
+	{
+		case XCB_MOTION_NOTIFY: 
+		{
+			xcb_motion_notify_event_t* motion =
+				(xcb_motion_notify_event_t*)event;
+			mouseX = motion->event_x;
+			mouseY = motion->event_y;
+			break;
+		}
+		case XCB_KEY_PRESS:
+		{
+			std::cout << "Key pressed" << std::endl;
+		}
+	}
+	free(event);
 }
 
 void Window::open()

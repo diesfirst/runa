@@ -14,11 +14,14 @@ public:
 
 	std::vector<int> size;
 	
-	xcb_generic_event_t waitForEvent();
+	void waitForEvent();
 
 	xcb_connection_t* connection;
 
 	xcb_window_t window;
+	int16_t mouseX = 0;
+	int16_t mouseY = 0;
+
 private:
 	xcb_screen_t* screen;
 	uint32_t values[2];

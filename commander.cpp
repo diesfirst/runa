@@ -59,7 +59,7 @@ void Commander::recordCommandBuffers(const Swapchain& swapchain)
 			eSimultaneousUse);
 
 	for (int i = 0; i < commandBuffers.size(); ++i) {
-		clearValue.color = clearColors[ i % clearColors.size()];
+		clearValue.color = clearColors[0];
 		renderPassBeginInfo.setFramebuffer(swapchain.framebuffers[i]);
 
 		commandBuffers[i].begin(commandBufferBeginInfo);
@@ -76,7 +76,7 @@ void Commander::createClearColors()
 	vk::ClearColorValue red;
 	vk::ClearColorValue blue;
 	vk::ClearColorValue white;
-	red.setFloat32({1.0, 0.0, 0.0, 1.0});
+	red.setFloat32({0.7, 0.4, 0.2, 1.0});
 	blue.setFloat32({0.0, 0.0, 1.0, 1.0});
 	white.setFloat32({1.0, 1.0, 1.0, 1.0});
 	clearColors.push_back(red);
@@ -117,7 +117,6 @@ void Commander::renderFrame(Swapchain& swapchain)
 			&renderFinishedSemaphore);
 
 	context.queue.presentKHR(swapchain.presentInfo);
-	std::cout << "Render frame complete" << std::endl;
 }
  
 void Commander::cleanUp()
