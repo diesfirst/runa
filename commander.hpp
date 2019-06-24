@@ -3,6 +3,7 @@
 
 #include "context.hpp"
 #include "swapchain.hpp"
+#include "painter.hpp"
 
 
 class Commander
@@ -13,7 +14,7 @@ public:
 
 	void setSwapchain(const Swapchain&);
 
-	void initializeCommandBuffers(const Swapchain&);
+	void initializeCommandBuffers(const Swapchain&, const Painter&);
 
 	void renderFrame(Swapchain&);
 
@@ -34,7 +35,7 @@ private:
 
 	void createClearColors();
 
-	void recordCommandBuffers(const Swapchain&);
+	void recordCommandBuffers(const Swapchain&, const Painter&);
 
 	void allocateCommandBuffers(const Swapchain&);
 

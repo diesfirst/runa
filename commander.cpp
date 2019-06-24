@@ -26,10 +26,10 @@ void Commander::createCommandPool()
 	commandPoolCreated = true;
 }
 
-void Commander::initializeCommandBuffers(const Swapchain& swapchain)
+void Commander::initializeCommandBuffers(const Swapchain& swapchain, const Painter& painter)
 {
 	allocateCommandBuffers(swapchain);
-	recordCommandBuffers(swapchain);
+	recordCommandBuffers(swapchain, painter);
 }
 
 void Commander::allocateCommandBuffers(const Swapchain& swapchain)
@@ -42,7 +42,7 @@ void Commander::allocateCommandBuffers(const Swapchain& swapchain)
 	commandBuffers = context.device.allocateCommandBuffers(allocInfo);
 }
 
-void Commander::recordCommandBuffers(const Swapchain& swapchain)
+void Commander::recordCommandBuffers(const Swapchain& swapchain, const Painter& painter)
 {
 	vk::RenderPassBeginInfo renderPassBeginInfo;
 	vk::Rect2D area;
@@ -58,14 +58,37 @@ void Commander::recordCommandBuffers(const Swapchain& swapchain)
 			vk::CommandBufferUsageFlagBits::
 			eSimultaneousUse);
 
+	vk::BufferImageCopy region;
+	region.setImageExtent({
+			swapchain.swapchainExtent.width,
+			swapchain.swapchainExtent.height,
+			1});
+	region.setImageOffset({0,0,0});
+	vk::ImageSubresourceLayers imgSubResrc;
+	imgSubResrc.setAspectMask(vk::ImageAspectFlagBits::eColor);
+	imgSubResrc.setLayerCount(1);
+	region.setImageSubresource(imgSubResrc);
+	region.setBufferRowLength(0);
+	region.setBufferImageHeight(0);
+	region.setBufferOffset(0);
+
+	clearValue.color = clearColors[0];
+
 	for (int i = 0; i < commandBuffers.size(); ++i) {
-		clearValue.color = clearColors[0];
 		renderPassBeginInfo.setFramebuffer(swapchain.framebuffers[i]);
 
 		commandBuffers[i].begin(commandBufferBeginInfo);
+
+		commandBuffers[i].copyBufferToImage(
+				painter.imageBuffer, 
+				swapchain.images[i],
+				vk::ImageLayout::eTransferDstOptimal,
+				region);
+
 		commandBuffers[i].beginRenderPass(
 				renderPassBeginInfo, 
 				vk::SubpassContents::eInline);
+
 		commandBuffers[i].endRenderPass();
 		commandBuffers[i].end();
 	}

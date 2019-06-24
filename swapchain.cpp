@@ -129,7 +129,9 @@ void Swapchain::createSwapchain()
 	createInfo.setImageArrayLayers(1); //more than 1 for VR applications
 	//we will be drawing directly to the image
 	//as opposed to transfering data to it
-	createInfo.setImageUsage(vk::ImageUsageFlagBits::eColorAttachment);
+	createInfo.setImageUsage(
+			vk::ImageUsageFlagBits::eColorAttachment |
+			vk::ImageUsageFlagBits::eTransferDst);
 	//this is so that each queue has exclusive 
 	//ownership of an image at a time
 	createInfo.setImageSharingMode(vk::SharingMode::eExclusive);
@@ -191,8 +193,8 @@ void Swapchain::createColorAttachment()
 	//Sets what we do with the data after rendering
 	//We want to show it so we will store it
 	attachment.setStoreOp(vk::AttachmentStoreOp::eStore);
-	attachment.setInitialLayout(vk::ImageLayout::eUndefined);
-	attachment.setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
+	attachment.setInitialLayout(vk::ImageLayout::eTransferDstOptimal);
+	attachment.setFinalLayout(vk::ImageLayout::eTransferDstOptimal);
 
 	attachments.push_back(attachment);
 }

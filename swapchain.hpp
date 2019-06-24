@@ -47,8 +47,11 @@ public:
 
 	const Window& window;
 	 
-private:
 	const Context& context;
+
+	std::vector<vk::Image> images;
+
+private:
 	vk::SurfaceKHR surface;
 	uint32_t queueFamilyIndex;
 	vk::Queue graphicsQueue;
@@ -59,7 +62,6 @@ private:
 	vk::SurfaceCapabilitiesKHR surfCaps;
 	vk::SwapchainKHR swapchain;
 	bool swapchainCreated = false;
-	std::vector<vk::Image> images;
 	std::vector<vk::AttachmentDescription> attachments;
 	std::vector<vk::Fence> imageFences;
 	

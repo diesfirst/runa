@@ -1,3 +1,6 @@
+#ifndef WINDOW_H
+#define WINDOW_H
+
 #include <unistd.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_icccm.h>
@@ -45,3 +48,4 @@ private:
 
 	void setClass();
 };
+#endif /* ifndef WINDOW_H */
