@@ -118,13 +118,12 @@ void Swapchain::checkFormatsAvailable()
 void Swapchain::createSwapchain()
 {
 	vk::SwapchainCreateInfoKHR createInfo;
+
 	createInfo.setSurface(surface);
 	createInfo.setImageExtent(swapchainExtent);
 	createInfo.setImageFormat(colorFormat);
 	createInfo.setImageColorSpace(colorSpace);
 	createInfo.setPresentMode(presentMode);
-	//request one more image than min to avoid
-	//wait times on images
 	createInfo.setMinImageCount(surfCaps.minImageCount + 1);
 	createInfo.setImageArrayLayers(1); //more than 1 for VR applications
 	//we will be drawing directly to the image
@@ -139,7 +138,6 @@ void Swapchain::createSwapchain()
 	createInfo.setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque);
 	//means we dont care about the color of obscured pixels
 	createInfo.setClipped(true); 
-//	createInfo.setOldSwapchain(nullptr);
 	swapchain = context.device.createSwapchainKHR(createInfo);
 	std::cout << "Swapchain created!" << std::endl;
 	swapchainCreated = true;
@@ -182,7 +180,8 @@ void Swapchain::destroyImageViews()
 }
 
 
-void Swapchain::createColorAttachment()
+void Swapchain::createColorAttachment(
+		std::vector<vk::AttachmentDescription>& attachments)
 {
 	vk::AttachmentDescription attachment;
 	attachment.setFormat(colorFormat);
@@ -193,24 +192,37 @@ void Swapchain::createColorAttachment()
 	//Sets what we do with the data after rendering
 	//We want to show it so we will store it
 	attachment.setStoreOp(vk::AttachmentStoreOp::eStore);
-	attachment.setInitialLayout(vk::ImageLayout::eTransferDstOptimal);
-	attachment.setFinalLayout(vk::ImageLayout::eTransferDstOptimal);
+	attachment.setInitialLayout(vk::ImageLayout::eUndefined);
+	attachment.setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
 
 	attachments.push_back(attachment);
 }
 
 void Swapchain::createRenderPass()
 {
-	createColorAttachment();
-
+	std::vector<vk::AttachmentDescription> attachments;
 	std::vector<vk::AttachmentReference> references;
+	std::vector<vk::SubpassDescription> subpasses;
+	std::vector<vk::SubpassDependency> subpassDependencies;
+
+	vk::AttachmentDescription attachment;
+	attachment.setFormat(colorFormat);
+	attachment.setSamples(vk::SampleCountFlagBits::e1);
+	//Sets what to do with data in the attachment
+	//before rendering
+	attachment.setLoadOp(vk::AttachmentLoadOp::eClear);
+	//Sets what we do with the data after rendering
+	//We want to show it so we will store it
+	attachment.setStoreOp(vk::AttachmentStoreOp::eStore);
+	attachment.setInitialLayout(vk::ImageLayout::eUndefined);
+	attachment.setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
+
+	attachments.push_back(attachment);
 
 	vk::AttachmentReference colorRef;
 	colorRef.setAttachment(0); //our first attachment is color
 	colorRef.setLayout(vk::ImageLayout::eColorAttachmentOptimal);
 	references.push_back(colorRef);
-
-	std::vector<vk::SubpassDescription> subpasses;
 
 	vk::SubpassDescription subpass;
 	subpass.setPipelineBindPoint(vk::PipelineBindPoint::eGraphics);
@@ -218,11 +230,28 @@ void Swapchain::createRenderPass()
 	subpass.setPColorAttachments(references.data());
 	subpasses.push_back(subpass);
 
+	vk::SubpassDependency dependency;
+	dependency.setSrcSubpass(
+			VK_SUBPASS_EXTERNAL);
+	dependency.setSrcAccessMask(
+			vk::AccessFlagBits::eColorAttachmentWrite);
+	dependency.setSrcStageMask(
+			vk::PipelineStageFlagBits::eColorAttachmentOutput);
+	dependency.setDstSubpass(
+			0);
+	dependency.setDstAccessMask(
+			vk::AccessFlagBits::eColorAttachmentRead);
+	dependency.setDstStageMask(
+			vk::PipelineStageFlagBits::eColorAttachmentOutput);
+	subpassDependencies.push_back(dependency);
+
 	vk::RenderPassCreateInfo createInfo;
 	createInfo.setAttachmentCount(attachments.size());
 	createInfo.setPAttachments(attachments.data());
 	createInfo.setSubpassCount(subpasses.size());
 	createInfo.setPSubpasses(subpasses.data());
+	createInfo.setDependencyCount(subpassDependencies.size());
+	createInfo.setPDependencies(subpassDependencies.data());
 	renderPass = context.device.createRenderPass(createInfo);
 }
 
@@ -232,7 +261,7 @@ void Swapchain::createFramebuffers()
 	createInfo.setWidth(swapchainExtent.width);
 	createInfo.setHeight(swapchainExtent.height);
 	createInfo.setRenderPass(renderPass);
-	createInfo.setAttachmentCount(attachments.size());
+	createInfo.setAttachmentCount(1);
 	createInfo.setLayers(1);
 	std::array<vk::ImageView, 1> imageViewsTemp;
 	createInfo.setPAttachments(imageViewsTemp.data());
@@ -250,7 +279,7 @@ void Swapchain::destroyFramebuffers()
 	}
 }
 
-uint32_t Swapchain::acquireNextImage(const vk::Semaphore& semaphore)
+void Swapchain::acquireNextImage(const vk::Semaphore& semaphore)
 {
 	auto result = context.device.acquireNextImageKHR(
 			swapchain,
@@ -265,7 +294,6 @@ uint32_t Swapchain::acquireNextImage(const vk::Semaphore& semaphore)
 	}
 
 	currentImage = result.value;
-	return result.value;
 }
 
 void Swapchain::checkSurfaceCapabilities()

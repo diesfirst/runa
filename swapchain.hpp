@@ -31,7 +31,7 @@ public:
 
 	vk::RenderPass renderPass;
 
-	uint32_t acquireNextImage(const vk::Semaphore&);
+	void acquireNextImage(const vk::Semaphore&);
 
 	void checkSurfaceCapabilities();
 
@@ -51,6 +51,8 @@ public:
 
 	std::vector<vk::Image> images;
 
+	vk::SwapchainKHR swapchain;
+
 private:
 	vk::SurfaceKHR surface;
 	uint32_t queueFamilyIndex;
@@ -60,9 +62,7 @@ private:
 	vk::ColorSpaceKHR colorSpace;
 	vk::PresentModeKHR presentMode = vk::PresentModeKHR::eFifo;
 	vk::SurfaceCapabilitiesKHR surfCaps;
-	vk::SwapchainKHR swapchain;
 	bool swapchainCreated = false;
-	std::vector<vk::AttachmentDescription> attachments;
 	std::vector<vk::Fence> imageFences;
 	
 	void createSurface();
@@ -79,7 +79,7 @@ private:
 
 	void destroyImageViews();
 
-	void createColorAttachment();
+	void createColorAttachment(std::vector<vk::AttachmentDescription>&);
 
 	void destroyFramebuffers();
 

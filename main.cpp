@@ -22,18 +22,31 @@ int main(int argc, char *argv[])
 	Commander commander(context);
 
 	painter.prepare();
+	painter.fillCanvas();
 
 	swapchain.prepareForRender();
 	commander.initializeCommandBuffers(swapchain, painter);
 	
-
-	std::cout << "about to render" << std::endl;
-	while (true)
-	{
-		window.waitForEvent();
-		painter.paint();
-		commander.renderFrame(swapchain);
-	}
+	//render iteration
+	std::chrono::milliseconds interval = 
+		std::chrono::milliseconds(500);
+	commander.renderFrame(swapchain);
+	std::cout << "Frame done" << std::endl;
+	std::this_thread::sleep_for(interval);
+	commander.renderFrame(swapchain);
+	std::cout << "Frame done" << std::endl;
+	std::this_thread::sleep_for(interval);
+	commander.renderFrame(swapchain);
+	std::cout << "Frame done" << std::endl;
+	std::this_thread::sleep_for(interval);
+	commander.renderFrame(swapchain);
+	std::cout << "Frame done" << std::endl;
+	std::this_thread::sleep_for(interval);
+	commander.renderFrame(swapchain);
+	std::cout << "Frame done" << std::endl;
+	std::this_thread::sleep_for(interval);
+	window.waitForEvent();
+	//render end
 
 	commander.cleanUp();
 	

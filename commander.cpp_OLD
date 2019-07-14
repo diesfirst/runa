@@ -73,11 +73,16 @@ void Commander::recordCommandBuffers(
 			swapchain.swapchainExtent.width,
 			swapchain.swapchainExtent.height,
 			1});
+	std::cout << "Swapchain height: " << 
+	       swapchain.swapchainExtent.height	<< std::endl;
+	std::cout << "Swapchain width: " << 
+	       swapchain.swapchainExtent.width	<< std::endl;
 	region.setImageOffset({0,0,0});
 	region.setImageSubresource(imgSubResrc);
 	region.setBufferRowLength(0);
 	region.setBufferImageHeight(0);
 	region.setBufferOffset(0);
+	std::cout << "Region size: " << sizeof(region) << std::endl;
 
 	for (int i = 0; i < commandBuffers.size(); ++i) 
 	{
@@ -104,7 +109,7 @@ void Commander::recordCommandBuffers(
 		commandBuffers[i].pipelineBarrier(
 				vk::PipelineStageFlagBits::eTopOfPipe,
 				vk::PipelineStageFlagBits::eTransfer,
-				{},
+				vk::DependencyFlagBits::eByRegion,
 				nullptr,
 				nullptr,
 				barrier);
@@ -126,20 +131,20 @@ void Commander::recordCommandBuffers(
 		barrier.setSrcAccessMask(
 			vk::AccessFlagBits::eTransferWrite);
 		barrier.setDstAccessMask(
-			vk::AccessFlagBits::eMemoryRead);
+			vk::AccessFlagBits::eColorAttachmentRead);
 
 		commandBuffers[i].pipelineBarrier(
 			vk::PipelineStageFlagBits::eTransfer,
 			vk::PipelineStageFlagBits::eColorAttachmentOutput,
-			{},
+			vk::DependencyFlagBits::eByRegion,
 			nullptr,
 			nullptr,
 			barrier);
 
 		//end image layout transition
 
-//		clearValue.color = clearColors[i];
-//		renderPassBeginInfo.setFramebuffer(swapchain.framebuffers[i]);
+		clearValue.color = clearColors[i];
+		renderPassBeginInfo.setFramebuffer(swapchain.framebuffers[i]);
 
 //		commandBuffers[i].beginRenderPass(
 //				renderPassBeginInfo, 
@@ -193,17 +198,13 @@ void Commander::renderFrame(Swapchain& swapchain)
 
 	context.queue.submit(submitInfo, submitFence);
 	
-	context.queue.waitIdle();
-
 	swapchain.presentInfo.setWaitSemaphoreCount(1);
 	swapchain.presentInfo.setPWaitSemaphores(
 			&renderFinishedSemaphore);
-	swapchain.presentInfo.setSwapchainCount(1);
-	swapchain.presentInfo.setPImageIndices(&swapchain.currentImage);
-	swapchain.presentInfo.setPSwapchains(&swapchain.swapchain);
 
 	context.queue.presentKHR(swapchain.presentInfo);
 
+//	context.queue.waitIdle();
 }
  
 void Commander::cleanUp()
