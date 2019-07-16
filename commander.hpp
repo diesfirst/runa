@@ -20,6 +20,8 @@ public:
 
 	void cleanUp();
 
+	void singleCommand();
+
 	vk::Semaphore imageAvailableSemaphore;
 	vk::Semaphore renderFinishedSemaphore;
 

@@ -59,8 +59,7 @@ void Commander::recordCommandBuffers(
 
 	vk::CommandBufferBeginInfo commandBufferBeginInfo;
 	commandBufferBeginInfo.setFlags(
-			vk::CommandBufferUsageFlagBits::
-			eSimultaneousUse);
+			vk::CommandBufferUsageFlagBits::eSimultaneousUse);
 
 	vk::ImageSubresourceLayers imgSubResrc;
 	imgSubResrc.setAspectMask(vk::ImageAspectFlagBits::eColor);
@@ -130,7 +129,7 @@ void Commander::recordCommandBuffers(
 
 		commandBuffers[i].pipelineBarrier(
 			vk::PipelineStageFlagBits::eTransfer,
-			vk::PipelineStageFlagBits::eColorAttachmentOutput,
+			vk::PipelineStageFlagBits::eBottomOfPipe,
 			{},
 			nullptr,
 			nullptr,
@@ -201,6 +200,8 @@ void Commander::renderFrame(Swapchain& swapchain)
 	swapchain.presentInfo.setSwapchainCount(1);
 	swapchain.presentInfo.setPImageIndices(&swapchain.currentImage);
 	swapchain.presentInfo.setPSwapchains(&swapchain.swapchain);
+
+	context.device.waitForFences(submitFence, VK_TRUE, UINT64_MAX);
 
 	context.queue.presentKHR(swapchain.presentInfo);
 

@@ -26,7 +26,7 @@ void Painter::prepare()
 
 void Painter::paint()
 {
-	writeToCanvas();
+//	writeToCanvas();
 	writeCanvasToBuffer();
 }
 
@@ -43,11 +43,15 @@ void Painter::createImage()
 	createInfo.setArrayLayers(1);
 	createInfo.setFormat(vk::Format::eR8G8B8A8Unorm);
 	createInfo.setTiling(vk::ImageTiling::eLinear);
-	createInfo.setInitialLayout(vk::ImageLayout::ePreinitialized);
+	createInfo.setInitialLayout(vk::ImageLayout::eUndefined);
 	createInfo.setUsage(
-			vk::ImageUsageFlagBits::eStorage |
 			vk::ImageUsageFlagBits::eTransferSrc);
+	image = context.device.createImage(createInfo);
 
+	auto imgMemReq = context.device.getImageMemoryRequirements(image); 
+	auto typeBits = imgMemReq.memoryTypeBits;
+	std::cout << "Image memory type bits:" << 
+	       std::bitset<32>(typeBits) << std::endl; 
 	//unfinished
 }
 

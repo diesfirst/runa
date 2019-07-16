@@ -23,6 +23,7 @@ int main(int argc, char *argv[])
 
 	painter.prepare();
 	painter.fillCanvas();
+	painter.paint();
 
 	swapchain.prepareForRender();
 	commander.initializeCommandBuffers(swapchain, painter);
