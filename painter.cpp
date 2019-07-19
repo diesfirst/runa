@@ -14,6 +14,7 @@ Painter::Painter (const Swapchain& swapchain) :
 
 Painter::~Painter ()
 {
+	unMapMemory();
 	context.device.destroyBuffer(imageBuffer);
 	context.device.freeMemory(imageBufferMemory);
 }
@@ -21,13 +22,14 @@ Painter::~Painter ()
 void Painter::prepare()
 {
 	createBuffer();
+	mapMemory();
 	std::cout << "Painter prepared!" << std::endl;
 }
 
-void Painter::paint()
+void Painter::paint(int16_t x, int16_t y)
 {
-//	writeToCanvas();
-	writeCanvasToBuffer();
+	writeToHostMemory(x,y);
+//	writeCheckersToHostMemory(x,y);
 }
 
 void Painter::createImage()
@@ -89,13 +91,11 @@ void Painter::initializeCanvas()
 void Painter::fillCanvas()
 {
 	int i = 0;
-	while (i < canvas.size())
+	while (i < imageSize) 
 	{
 		i++;
 		canvas[i] = UINT32_MAX;
 	}
-	std::cout << "Part of canvas: " << std::endl;
-	std::cout << (unsigned char)canvas[55] << std::endl;
 }
 
 void Painter::writeToCanvas()
@@ -103,12 +103,55 @@ void Painter::writeToCanvas()
 	canvas[window.mouseY*imageWidth + window.mouseX] = UINT32_MAX; //should set to white
 }
 
+void Painter::mapMemory()
+{
+	pHostImageMemory = context.device.mapMemory(
+			imageBufferMemory,
+			0,
+			imageSize);
+	std::cout << "memory mapped" << std::endl;
+}
+
+void Painter::writeToHostMemory(int16_t x, int16_t y)
+{
+	static_cast<uint32_t*>(pHostImageMemory)[y * imageWidth + x] = UINT32_MAX; //should set to white
+}
+
+void Painter::writeCheckersToHostMemory(float x, float y)
+{
+	unsigned char* pImgMem = static_cast<unsigned char*>(pHostImageMemory);
+	float r = x / imageWidth;
+	float g = y / imageHeight;
+	for (int row = 0; row < imageHeight; row++)
+	{
+		for (int col = 0; col < imageWidth; col++)
+		{
+			unsigned char rgb = (((row & 0x8) == 0) ^ ((col & 0x8) == 0)) * 255;
+			pImgMem[0] = rgb * r;
+			pImgMem[1] = rgb * g;
+			pImgMem[2] = rgb;
+			pImgMem[3] = 255;
+			pImgMem += 4;
+		}
+	}
+}
+
+void Painter::unMapMemory()
+{
+	context.device.unmapMemory(imageBufferMemory);
+}
+
 void Painter::writeCanvasToBuffer()
 {
 	auto memory = context.device.mapMemory(imageBufferMemory, 0, imageSize);
-//	memcpy(memory, canvas.data(), imageSize);
-	unsigned char* pImgMem = static_cast<unsigned char*>(memory);
+	memcpy(memory, canvas.data(), imageSize * 4);
+	context.device.unmapMemory(imageBufferMemory);
+}
 
+void Painter::writeCheckersToBuffer()
+{
+	auto memory = context.device.mapMemory(imageBufferMemory, 0, imageSize);
+	unsigned char* pImgMem = static_cast<unsigned char*>(memory);
 
 	for (int row = 0; row < imageHeight; row++)
 	{
@@ -122,12 +165,12 @@ void Painter::writeCanvasToBuffer()
 			pImgMem += 4;
 		}
 	}
-	//flush it to see if it helps?
-	vk::MappedMemoryRange memRange;
-	memRange.setSize(memReqsSize);
-	memRange.setMemory(imageBufferMemory);
-	memRange.setOffset(0);
-	context.device.flushMappedMemoryRanges(memRange);
+//	//flush it to see if it helps?
+//	vk::MappedMemoryRange memRange;
+//	memRange.setSize(memReqsSize);
+//	memRange.setMemory(imageBufferMemory);
+//	memRange.setOffset(0);
+//	context.device.flushMappedMemoryRanges(memRange);
 
 	context.device.unmapMemory(imageBufferMemory);
 }

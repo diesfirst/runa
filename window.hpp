@@ -25,6 +25,8 @@ public:
 	int16_t mouseX = 0;
 	int16_t mouseY = 0;
 
+	void printMousePosition();
+
 private:
 	xcb_screen_t* screen;
 	uint32_t values[2];

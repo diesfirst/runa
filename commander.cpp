@@ -192,16 +192,12 @@ void Commander::renderFrame(Swapchain& swapchain)
 
 	context.queue.submit(submitInfo, submitFence);
 	
-	context.queue.waitIdle();
-
 	swapchain.presentInfo.setWaitSemaphoreCount(1);
 	swapchain.presentInfo.setPWaitSemaphores(
 			&renderFinishedSemaphore);
 	swapchain.presentInfo.setSwapchainCount(1);
 	swapchain.presentInfo.setPImageIndices(&swapchain.currentImage);
 	swapchain.presentInfo.setPSwapchains(&swapchain.swapchain);
-
-	context.device.waitForFences(submitFence, VK_TRUE, UINT64_MAX);
 
 	context.queue.presentKHR(swapchain.presentInfo);
 

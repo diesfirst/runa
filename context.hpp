@@ -27,7 +27,7 @@ public:
 
 	vk::Device device;
 
-	bool enableValidation = true;
+	bool enableValidation = false;
 
 	uint32_t getGraphicsQueueFamilyIndex() const;
 	

@@ -98,6 +98,12 @@ void Window::waitForEvent()
 	free(event);
 }
 
+void Window::printMousePosition()
+{
+	std::cout << "Mouse X: " << mouseX << std::endl;
+	std::cout << "Mouse Y: " << mouseY << std::endl;
+}
+
 void Window::open()
 {
 	sendNotifications();

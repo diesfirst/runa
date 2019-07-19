@@ -4,6 +4,20 @@
 #include <thread>
 #include <chrono>
 
+void paintLoop(
+	Window window, 
+	Painter painter, 
+	Commander commander,
+	Swapchain swapchain)
+{
+	while (true)
+	{
+		window.waitForEvent();
+		painter.paint(window.mouseX, window.mouseY);
+		commander.renderFrame(swapchain);
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	Context context;
@@ -22,32 +36,14 @@ int main(int argc, char *argv[])
 	Commander commander(context);
 
 	painter.prepare();
-	painter.fillCanvas();
-	painter.paint();
 
 	swapchain.prepareForRender();
 	commander.initializeCommandBuffers(swapchain, painter);
 	
-	//render iteration
-	std::chrono::milliseconds interval = 
-		std::chrono::milliseconds(500);
+	paintLoop(window, painter, commander, swapchain);
+
 	commander.renderFrame(swapchain);
-	std::cout << "Frame done" << std::endl;
-	std::this_thread::sleep_for(interval);
-	commander.renderFrame(swapchain);
-	std::cout << "Frame done" << std::endl;
-	std::this_thread::sleep_for(interval);
-	commander.renderFrame(swapchain);
-	std::cout << "Frame done" << std::endl;
-	std::this_thread::sleep_for(interval);
-	commander.renderFrame(swapchain);
-	std::cout << "Frame done" << std::endl;
-	std::this_thread::sleep_for(interval);
-	commander.renderFrame(swapchain);
-	std::cout << "Frame done" << std::endl;
-	std::this_thread::sleep_for(interval);
 	window.waitForEvent();
-	//render end
 
 	commander.cleanUp();
 	
