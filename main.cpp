@@ -14,6 +14,7 @@ void paintLoop(
 	{
 		window.waitForEvent();
 		painter.paint(window.mouseX, window.mouseY);
+//		window.printMousePosition();
 		commander.renderFrame(swapchain);
 	}
 }
@@ -36,17 +37,12 @@ int main(int argc, char *argv[])
 	Commander commander(context);
 
 	painter.prepare();
-
 	swapchain.prepareForRender();
 	commander.initializeCommandBuffers(swapchain, painter);
 	
 	paintLoop(window, painter, commander, swapchain);
 
-	commander.renderFrame(swapchain);
-	window.waitForEvent();
-
 	commander.cleanUp();
 	
-	std::cout << std::bitset<32>(UINT32_MAX) << std::endl;
 	return 0;
 }

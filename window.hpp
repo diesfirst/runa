@@ -8,6 +8,9 @@
 #include <iostream>
 #include <string.h>
 
+constexpr int WIDTH = 500;
+constexpr int HEIGHT = 500;
+
 class Window
 {
 public:

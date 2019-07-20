@@ -31,7 +31,7 @@ public:
 
 	vk::RenderPass renderPass;
 
-	void acquireNextImage(const vk::Semaphore&);
+	uint32_t acquireNextImage(const vk::Semaphore&);
 
 	void checkSurfaceCapabilities();
 
@@ -41,7 +41,7 @@ public:
 
 	void prepareForRender();
 
-	uint32_t currentImage{0};
+	uint32_t currentIndex{0};
 
 	vk::PresentInfoKHR presentInfo;
 
@@ -78,8 +78,6 @@ private:
 	void createImageViews();
 
 	void destroyImageViews();
-
-	void createColorAttachment(std::vector<vk::AttachmentDescription>&);
 
 	void destroyFramebuffers();
 

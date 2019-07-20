@@ -78,27 +78,31 @@ void Commander::recordCommandBuffers(
 	region.setBufferImageHeight(0);
 	region.setBufferOffset(0);
 
+	vk::ImageSubresourceRange subResRange;
+	subResRange.setAspectMask(vk::ImageAspectFlagBits::eColor);
+	subResRange.setLayerCount(1);
+	subResRange.setLevelCount(1);
+	subResRange.setBaseMipLevel(0);
+	subResRange.setBaseArrayLayer(0);
+
+	vk::ImageMemoryBarrier barrier;
+	barrier.setSubresourceRange(subResRange);
+	barrier.setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
+	barrier.setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
+
 	for (int i = 0; i < commandBuffers.size(); ++i) 
 	{
-		commandBuffers[i].begin(commandBufferBeginInfo);
 
 		//begin image layout transition
 		
-		vk::ImageSubresourceRange subResRange;
-		subResRange.setAspectMask(vk::ImageAspectFlagBits::eColor);
-		subResRange.setLayerCount(1);
-		subResRange.setLevelCount(1);
-		subResRange.setBaseMipLevel(0);
-		subResRange.setBaseArrayLayer(0);
+		barrier.setImage(swapchain.images[i]);
 
-		vk::ImageMemoryBarrier barrier;
 		barrier.setOldLayout(vk::ImageLayout::eUndefined);
 		barrier.setNewLayout(vk::ImageLayout::eTransferDstOptimal);
-		barrier.setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
-		barrier.setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
-		barrier.setImage(swapchain.images[i]);
-		barrier.setSubresourceRange(subResRange);
+		barrier.setSrcAccessMask({});
 		barrier.setDstAccessMask(vk::AccessFlagBits::eTransferWrite);
+
+		commandBuffers[i].begin(commandBufferBeginInfo);
 
 		commandBuffers[i].pipelineBarrier(
 				vk::PipelineStageFlagBits::eTopOfPipe,
@@ -118,14 +122,10 @@ void Commander::recordCommandBuffers(
 		
 		//begin image layout transition
 		
-		barrier.setOldLayout(
-			vk::ImageLayout::eTransferDstOptimal);
-		barrier.setNewLayout(
-			vk::ImageLayout::ePresentSrcKHR);
-		barrier.setSrcAccessMask(
-			vk::AccessFlagBits::eTransferWrite);
-		barrier.setDstAccessMask(
-			vk::AccessFlagBits::eMemoryRead);
+		barrier.setOldLayout(vk::ImageLayout::eTransferDstOptimal);
+		barrier.setNewLayout(vk::ImageLayout::ePresentSrcKHR);
+		barrier.setSrcAccessMask(vk::AccessFlagBits::eTransferWrite);
+		barrier.setDstAccessMask(vk::AccessFlagBits::eMemoryRead);
 
 		commandBuffers[i].pipelineBarrier(
 			vk::PipelineStageFlagBits::eTransfer,
@@ -135,17 +135,6 @@ void Commander::recordCommandBuffers(
 			nullptr,
 			barrier);
 
-		//end image layout transition
-
-//		clearValue.color = clearColors[i];
-//		renderPassBeginInfo.setFramebuffer(swapchain.framebuffers[i]);
-
-//		commandBuffers[i].beginRenderPass(
-//				renderPassBeginInfo, 
-//				vk::SubpassContents::eInline);
-//
-//
-//		commandBuffers[i].endRenderPass();
 		commandBuffers[i].end();
 		std::cout << "Command Buffer " << commandBuffers[i]
 		       << "recorded"	<< std::endl;
@@ -175,15 +164,15 @@ void Commander::createSemaphores()
 
 void Commander::renderFrame(Swapchain& swapchain)
 {
-	swapchain.acquireNextImage(imageAvailableSemaphore);
+	uint32_t currentIndex = swapchain.acquireNextImage(imageAvailableSemaphore);
 
 	vk::Fence submitFence = swapchain.getSubmitFence();
 	
 	vk::SubmitInfo submitInfo;
 	vk::PipelineStageFlags flags = 
-		vk::PipelineStageFlagBits::eBottomOfPipe;
-	submitInfo.setCommandBufferCount(commandBuffers.size());
-	submitInfo.setPCommandBuffers(commandBuffers.data());
+		vk::PipelineStageFlagBits::eColorAttachmentOutput;
+	submitInfo.setCommandBufferCount(1);
+	submitInfo.setPCommandBuffers(&commandBuffers[currentIndex]);
 	submitInfo.setWaitSemaphoreCount(1);
 	submitInfo.setPWaitSemaphores(&imageAvailableSemaphore);
 	submitInfo.setPWaitDstStageMask(&flags);
@@ -196,10 +185,13 @@ void Commander::renderFrame(Swapchain& swapchain)
 	swapchain.presentInfo.setPWaitSemaphores(
 			&renderFinishedSemaphore);
 	swapchain.presentInfo.setSwapchainCount(1);
-	swapchain.presentInfo.setPImageIndices(&swapchain.currentImage);
+	swapchain.presentInfo.setPImageIndices(&currentIndex);
 	swapchain.presentInfo.setPSwapchains(&swapchain.swapchain);
 
+//	context.queue.waitIdle();
+
 	context.queue.presentKHR(swapchain.presentInfo);
+
 
 }
  

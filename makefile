@@ -1,23 +1,25 @@
+CFLAGS = -O3
+
 app : main.o commander.o swapchain.o painter.o context.o window.o 
-	g++ -o app main.o context.o commander.o swapchain.o painter.o window.o -lxcb -lvulkan
+	g++ $(CFLAGS) -o app main.o context.o commander.o swapchain.o painter.o window.o -lxcb -lvulkan
 
 window.o : window.cpp window.hpp
-	g++ -c window.cpp
+	g++ -c $(CFLAGS) window.cpp
 
 context.o : context.cpp context.hpp
-	g++ -c context.cpp
+	g++ -c $(CFLAGS) context.cpp
 
 swapchain.o : swapchain.cpp swapchain.hpp context.hpp window.hpp
-	g++ -c swapchain.cpp 
+	g++ -c $(CFLAGS) swapchain.cpp 
 
 painter.o : painter.cpp painter.hpp swapchain.hpp
-	g++ -c painter.cpp
+	g++ -c $(CFLAGS) painter.cpp
 
 commander.o : commander.cpp commander.hpp context.hpp swapchain.hpp painter.hpp
-	g++ -c commander.cpp
+	g++ -c $(CFLAGS) commander.cpp
 
 main.o : main.cpp swapchain.hpp commander.hpp painter.hpp
-	g++ -c main.cpp 
+	g++ -c $(CFLAGS) main.cpp 
 
 .PHONY: clean
 

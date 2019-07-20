@@ -179,25 +179,6 @@ void Swapchain::destroyImageViews()
 	}
 }
 
-
-void Swapchain::createColorAttachment(
-		std::vector<vk::AttachmentDescription>& attachments)
-{
-	vk::AttachmentDescription attachment;
-	attachment.setFormat(colorFormat);
-	attachment.setSamples(vk::SampleCountFlagBits::e1);
-	//Sets what to do with data in the attachment
-	//before rendering
-	attachment.setLoadOp(vk::AttachmentLoadOp::eClear);
-	//Sets what we do with the data after rendering
-	//We want to show it so we will store it
-	attachment.setStoreOp(vk::AttachmentStoreOp::eStore);
-	attachment.setInitialLayout(vk::ImageLayout::eUndefined);
-	attachment.setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
-
-	attachments.push_back(attachment);
-}
-
 void Swapchain::createRenderPass()
 {
 	std::vector<vk::AttachmentDescription> attachments;
@@ -279,7 +260,7 @@ void Swapchain::destroyFramebuffers()
 	}
 }
 
-void Swapchain::acquireNextImage(const vk::Semaphore& semaphore)
+uint32_t Swapchain::acquireNextImage(const vk::Semaphore& semaphore)
 {
 	auto result = context.device.acquireNextImageKHR(
 			swapchain,
@@ -293,7 +274,9 @@ void Swapchain::acquireNextImage(const vk::Semaphore& semaphore)
 		throw std::error_code(result.result);
 	}
 
-	currentImage = result.value;
+	currentIndex = result.value;
+
+	return currentIndex;
 }
 
 void Swapchain::checkSurfaceCapabilities()
@@ -309,7 +292,7 @@ void Swapchain::initializeImageFences()
 
 const vk::Fence& Swapchain::getSubmitFence()
 {
-	auto& curFence = imageFences[currentImage];
+	auto& curFence = imageFences[currentIndex];
 	if (curFence) {
 		vk::Result fenceResult = vk::Result::eTimeout;
 		while (fenceResult == vk::Result::eTimeout) {
@@ -337,5 +320,5 @@ void Swapchain::initializePresentInfo()
 {
 	presentInfo.setSwapchainCount(1);
 	presentInfo.setPSwapchains(&swapchain);
-	presentInfo.setPImageIndices(&currentImage);
+	presentInfo.setPImageIndices(&currentIndex);
 }

@@ -7,7 +7,7 @@ Window::Window()
 			xcb_get_setup(connection)).data;
 	window = xcb_generate_id(connection);
 	setEvents();
-	createWindow(500, 500);
+	createWindow(WIDTH, HEIGHT);
 	setName();
 	setClass();
 }
