@@ -3,9 +3,8 @@
 
 #include "context.hpp"
 #include "swapchain.hpp"
-#include "painter.hpp"
 
-constexpr int MAX_FRAMES_IN_FLIGHT = 2;
+constexpr int MAX_FRAMES_IN_FLIGHT = 8;
 
 class Commander
 {
@@ -15,16 +14,28 @@ public:
 
 	void setSwapchain(const Swapchain&);
 
-	void initializeCommandBuffers(const Swapchain&, const Painter&);
+	void initializeCommandBuffers(const Swapchain&);
 
 	void renderFrame(Swapchain&);
 
 	void cleanUp();
 
-	void singleCommand();
+	vk::CommandBuffer beginSingleTimeCommand();
 
-	vk::Semaphore imageAvailableSemaphore;
-	vk::Semaphore renderFinishedSemaphore;
+	void endSingleTimeCommand(vk::CommandBuffer);
+
+	void recordCopyBufferToSwapImages(const Swapchain&, vk::Buffer);
+
+	void allocateCommandBuffersForSwapchain(const Swapchain&);
+
+	void transitionImageLayout(
+			vk::Image,
+			vk::ImageLayout oldLayout,
+			vk::ImageLayout newLayout);
+
+	std::vector<vk::Semaphore> imageAvailableSemaphores;
+	std::vector<vk::Semaphore> renderFinishedSemaphores;
+	std::vector<vk::Fence> inFlightFences;
 
 private:
 	vk::CommandPool commandPool;
@@ -33,14 +44,12 @@ private:
 	bool commandPoolCreated = false;
 	bool semaphoresCreated = false;
 	std::vector<vk::ClearColorValue> clearColors;
+	size_t currentFrame = 0;
+	uint32_t currentIndex = 0;
 
 	void createCommandPool();
 
 	void createClearColors();
-
-	void recordCommandBuffers(const Swapchain&, const Painter&);
-
-	void allocateCommandBuffers(const Swapchain&);
 
 	void createSemaphores();
 	 

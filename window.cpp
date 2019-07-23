@@ -90,6 +90,18 @@ void Window::waitForEvent()
 			mouseY = motion->event_y;
 			break;
 		}
+		case XCB_BUTTON_PRESS:
+		{
+			mButtonDown = true;
+			std::cout << "Button down" << std::endl;
+			break;
+		}
+		case XCB_BUTTON_RELEASE:
+		{
+			mButtonDown = false;
+			std::cout << "Button up" << std::endl;
+			break;
+		}
 		case XCB_KEY_PRESS:
 		{
 			std::cout << "Key pressed" << std::endl;

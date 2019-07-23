@@ -25,8 +25,10 @@ public:
 	xcb_connection_t* connection;
 
 	xcb_window_t window;
+
 	int16_t mouseX = 0;
 	int16_t mouseY = 0;
+	bool mButtonDown = false;
 
 	void printMousePosition();
 

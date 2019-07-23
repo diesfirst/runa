@@ -11,8 +11,11 @@ Commander::Commander(const Context& context) :
 Commander::~Commander()
 {
 	if (semaphoresCreated) {
-		context.device.destroySemaphore(imageAvailableSemaphore);
-		context.device.destroySemaphore(renderFinishedSemaphore);
+			for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
+					context.device.destroySemaphore(imageAvailableSemaphores[i]);
+					context.device.destroySemaphore(renderFinishedSemaphores[i]);
+					context.device.destroyFence(inFlightFences[i]);
+			}
 	}
 	if (commandPoolCreated)
 		context.device.destroyCommandPool(commandPool);
@@ -26,13 +29,7 @@ void Commander::createCommandPool()
 	commandPoolCreated = true;
 }
 
-void Commander::initializeCommandBuffers(const Swapchain& swapchain, const Painter& painter)
-{
-	allocateCommandBuffers(swapchain);
-	recordCommandBuffers(swapchain, painter);
-}
-
-void Commander::allocateCommandBuffers(const Swapchain& swapchain)
+void Commander::allocateCommandBuffersForSwapchain(const Swapchain& swapchain)
 {
 	commandBuffers.resize(swapchain.framebuffers.size());
 	vk::CommandBufferAllocateInfo allocInfo;
@@ -42,9 +39,77 @@ void Commander::allocateCommandBuffers(const Swapchain& swapchain)
 	commandBuffers = context.device.allocateCommandBuffers(allocInfo);
 }
 
-void Commander::recordCommandBuffers(
+vk::CommandBuffer Commander::beginSingleTimeCommand()
+{
+	vk::CommandBufferAllocateInfo allocInfo;
+	allocInfo.setCommandPool(commandPool);
+	allocInfo.setCommandBufferCount(1);
+	allocInfo.setLevel(vk::CommandBufferLevel::ePrimary);
+
+	auto commandBuffers = 
+		context.device.allocateCommandBuffers(allocInfo);
+
+	vk::CommandBuffer commandBuffer = commandBuffers[0];
+
+	vk::CommandBufferBeginInfo beginInfo;
+	beginInfo.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+
+	commandBuffer.begin(beginInfo);
+
+	return commandBuffer;
+}
+
+void Commander::endSingleTimeCommand(vk::CommandBuffer commandBuffer)
+{
+	commandBuffer.end();
+
+	vk::SubmitInfo submitInfo;
+	submitInfo.setCommandBufferCount(1);
+	submitInfo.setPCommandBuffers(&commandBuffer);
+
+	context.queue.submit(submitInfo, {}); //null for a fence
+
+	context.device.freeCommandBuffers(commandPool, commandBuffer);
+}
+
+void Commander::transitionImageLayout(
+		vk::Image image,
+		vk::ImageLayout oldLayout,
+		vk::ImageLayout newLayout)
+{
+	vk::ImageSubresourceRange subResRange;
+	subResRange.setAspectMask(vk::ImageAspectFlagBits::eColor);
+	subResRange.setLayerCount(1);
+	subResRange.setLevelCount(1);
+	subResRange.setBaseMipLevel(0);
+	subResRange.setBaseArrayLayer(0);
+
+	vk::ImageMemoryBarrier barrier;
+	barrier.setImage(image);
+	barrier.setOldLayout(oldLayout);
+	barrier.setNewLayout(newLayout);
+	barrier.setSrcAccessMask({});
+	barrier.setDstAccessMask({});
+	//this is kind of specific for the purpose of transitioning
+	//the painter image for mapping
+	barrier.setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
+	barrier.setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
+	barrier.setSubresourceRange(subResRange);
+
+	vk::CommandBuffer commandBuffer = beginSingleTimeCommand();
+	commandBuffer.pipelineBarrier(
+			vk::PipelineStageFlagBits::eTopOfPipe,
+			vk::PipelineStageFlagBits::eHost,
+			{},
+			nullptr,
+			nullptr,
+			barrier);
+	endSingleTimeCommand(commandBuffer);
+}
+
+void Commander::recordCopyBufferToSwapImages(
 		const Swapchain& swapchain, 
-		const Painter& painter)
+		vk::Buffer buffer)
 {
 	vk::Rect2D area;
 	area.setExtent(swapchain.swapchainExtent);
@@ -115,7 +180,7 @@ void Commander::recordCommandBuffers(
 		//end image layout transition
 
 		commandBuffers[i].copyBufferToImage(
-				painter.imageBuffer, 
+				buffer, 
 				swapchain.images[i],
 				vk::ImageLayout::eTransferDstOptimal,
 				region);
@@ -156,43 +221,64 @@ void Commander::createClearColors()
 
 void Commander::createSemaphores()
 {
-	vk::SemaphoreCreateInfo createInfo;
-	imageAvailableSemaphore = context.device.createSemaphore(createInfo);
-	renderFinishedSemaphore = context.device.createSemaphore(createInfo);
+	vk::SemaphoreCreateInfo semaphoreInfo;
+	vk::FenceCreateInfo fenceCreateInfo;
+
+	fenceCreateInfo.setFlags(vk::FenceCreateFlagBits::eSignaled);
+
+	imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+	renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+	inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+	for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
+		imageAvailableSemaphores[i] = 
+			context.device.createSemaphore(semaphoreInfo);
+		renderFinishedSemaphores[i] = 
+			context.device.createSemaphore(semaphoreInfo);
+		inFlightFences[i] = 
+			context.device.createFence(fenceCreateInfo);
+	}
 	semaphoresCreated = true;
 }
 
 void Commander::renderFrame(Swapchain& swapchain)
 {
-	uint32_t currentIndex = swapchain.acquireNextImage(imageAvailableSemaphore);
+	context.device.waitForFences(
+			1, 
+			&inFlightFences[currentFrame], 
+			true, 
+			UINT64_MAX);
+	context.device.resetFences(
+			1, 
+			&inFlightFences[currentFrame]);
 
-	vk::Fence submitFence = swapchain.getSubmitFence();
-	
+	currentIndex = swapchain.acquireNextImage(
+			imageAvailableSemaphores[currentFrame]);
+
 	vk::SubmitInfo submitInfo;
 	vk::PipelineStageFlags flags = 
 		vk::PipelineStageFlagBits::eColorAttachmentOutput;
 	submitInfo.setCommandBufferCount(1);
 	submitInfo.setPCommandBuffers(&commandBuffers[currentIndex]);
 	submitInfo.setWaitSemaphoreCount(1);
-	submitInfo.setPWaitSemaphores(&imageAvailableSemaphore);
 	submitInfo.setPWaitDstStageMask(&flags);
 	submitInfo.setSignalSemaphoreCount(1);
-	submitInfo.setPSignalSemaphores(&renderFinishedSemaphore);
+	submitInfo.setPWaitSemaphores(
+			&imageAvailableSemaphores[currentFrame]);
+	submitInfo.setPSignalSemaphores(
+			&renderFinishedSemaphores[currentFrame]);
 
-	context.queue.submit(submitInfo, submitFence);
+	context.queue.submit(submitInfo, inFlightFences[currentFrame]);
 	
 	swapchain.presentInfo.setWaitSemaphoreCount(1);
 	swapchain.presentInfo.setPWaitSemaphores(
-			&renderFinishedSemaphore);
+			&renderFinishedSemaphores[currentFrame]);
 	swapchain.presentInfo.setSwapchainCount(1);
 	swapchain.presentInfo.setPImageIndices(&currentIndex);
 	swapchain.presentInfo.setPSwapchains(&swapchain.swapchain);
 
-//	context.queue.waitIdle();
-
 	context.queue.presentKHR(swapchain.presentInfo);
 
-
+	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
  
 void Commander::cleanUp()

@@ -124,7 +124,7 @@ void Swapchain::createSwapchain()
 	createInfo.setImageFormat(colorFormat);
 	createInfo.setImageColorSpace(colorSpace);
 	createInfo.setPresentMode(presentMode);
-	createInfo.setMinImageCount(surfCaps.minImageCount + 1);
+	createInfo.setMinImageCount(surfCaps.maxImageCount);
 	createInfo.setImageArrayLayers(1); //more than 1 for VR applications
 	//we will be drawing directly to the image
 	//as opposed to transfering data to it
@@ -285,35 +285,10 @@ void Swapchain::checkSurfaceCapabilities()
 	std::cout << vk::to_string(suf) << std::endl;
 }
 
-void Swapchain::initializeImageFences()
-{
-	imageFences.resize(images.size());
-}
-
-const vk::Fence& Swapchain::getSubmitFence()
-{
-	auto& curFence = imageFences[currentIndex];
-	if (curFence) {
-		vk::Result fenceResult = vk::Result::eTimeout;
-		while (fenceResult == vk::Result::eTimeout) {
-			fenceResult = context.device.waitForFences(
-				curFence,
-				VK_TRUE, //wait for all (just 1 here)
-				UINT64_MAX); //wait forever
-		}
-		context.device.resetFences(curFence);
-	}
-	else {
-		curFence = context.device.createFence(vk::FenceCreateFlags());
-	}
-	return curFence;
-}
-
 void Swapchain::prepareForRender()
 {
 	createRenderPass();
 	createFramebuffers();
-	initializeImageFences();
 }
 
 void Swapchain::initializePresentInfo()

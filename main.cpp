@@ -5,10 +5,10 @@
 #include <chrono>
 
 void paintLoop(
-	Window window, 
-	Painter painter, 
-	Commander commander,
-	Swapchain swapchain)
+	Window &window, 
+	Painter &painter, 
+	Commander &commander,
+	Swapchain &swapchain)
 {
 	while (true)
 	{
@@ -31,16 +31,15 @@ int main(int argc, char *argv[])
 	window.waitForEvent();
 
 	Swapchain swapchain(context, window);
-
-	Painter painter(swapchain);
-
 	Commander commander(context);
 
-	painter.prepare();
+	Painter painter(swapchain, commander);
+
 	swapchain.prepareForRender();
-	commander.initializeCommandBuffers(swapchain, painter);
+	commander.allocateCommandBuffersForSwapchain(swapchain);
+	painter.prepare();
 	
-	paintLoop(window, painter, commander, swapchain);
+//	paintLoop(window, painter, commander, swapchain);
 
 	commander.cleanUp();
 	
