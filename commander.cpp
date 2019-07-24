@@ -69,6 +69,8 @@ void Commander::endSingleTimeCommand(vk::CommandBuffer commandBuffer)
 
 	context.queue.submit(submitInfo, {}); //null for a fence
 
+	context.queue.waitIdle();
+
 	context.device.freeCommandBuffers(commandPool, commandBuffer);
 }
 
@@ -105,6 +107,128 @@ void Commander::transitionImageLayout(
 			nullptr,
 			barrier);
 	endSingleTimeCommand(commandBuffer);
+}
+
+void Commander::recordCopyImageToSwapImages(
+		const Swapchain& swapchain, 
+		vk::Image image)
+{
+	vk::Rect2D area;
+	area.setExtent(swapchain.swapchainExtent);
+
+	vk::CommandBufferBeginInfo commandBufferBeginInfo;
+	commandBufferBeginInfo.setFlags(
+			vk::CommandBufferUsageFlagBits::eSimultaneousUse);
+
+	vk::ImageSubresourceLayers imgSubResrc;
+	imgSubResrc.setAspectMask(vk::ImageAspectFlagBits::eColor);
+	imgSubResrc.setLayerCount(1);
+	imgSubResrc.setMipLevel(0);
+	imgSubResrc.setBaseArrayLayer(0);
+
+	vk::Offset3D offset; //assuming this will be 0
+
+	vk::ImageCopy region;
+	region.setExtent({
+			swapchain.swapchainExtent.width,
+			swapchain.swapchainExtent.height,
+			1});
+	region.setSrcOffset(offset);
+	region.setDstOffset(offset);
+	region.setSrcSubresource(imgSubResrc);
+	region.setDstSubresource(imgSubResrc);
+
+	vk::ImageSubresourceRange subResRange;
+	subResRange.setAspectMask(vk::ImageAspectFlagBits::eColor);
+	subResRange.setLayerCount(1);
+	subResRange.setLevelCount(1);
+	subResRange.setBaseMipLevel(0);
+	subResRange.setBaseArrayLayer(0);
+
+	vk::ImageMemoryBarrier barrier;
+	barrier.setSubresourceRange(subResRange);
+	barrier.setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
+	barrier.setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
+
+	for (int i = 0; i < commandBuffers.size(); ++i) 
+	{
+
+		//begin image layout transition
+		
+		barrier.setImage(swapchain.images[i]);
+
+		barrier.setOldLayout(vk::ImageLayout::eUndefined);
+		barrier.setNewLayout(vk::ImageLayout::eTransferDstOptimal);
+		barrier.setSrcAccessMask({});
+		barrier.setDstAccessMask(vk::AccessFlagBits::eTransferWrite);
+
+		commandBuffers[i].begin(commandBufferBeginInfo);
+
+		commandBuffers[i].pipelineBarrier(
+				vk::PipelineStageFlagBits::eTopOfPipe,
+				vk::PipelineStageFlagBits::eTransfer,
+				{},
+				nullptr,
+				nullptr,
+				barrier);
+
+		barrier.setImage(image);
+		barrier.setOldLayout(vk::ImageLayout::eGeneral);
+		barrier.setNewLayout(vk::ImageLayout::eTransferSrcOptimal);
+		barrier.setDstAccessMask(vk::AccessFlagBits::eTransferRead);
+
+		commandBuffers[i].pipelineBarrier(
+				vk::PipelineStageFlagBits::eHost,
+				vk::PipelineStageFlagBits::eTransfer,
+				{},
+				nullptr,
+				nullptr,
+				barrier);
+
+		//end image layout transition
+
+		commandBuffers[i].copyImage(
+				image,
+				vk::ImageLayout::eTransferSrcOptimal,
+				swapchain.images[i],
+				vk::ImageLayout::eTransferDstOptimal,
+				region);
+		
+		//begin image layout transition
+		//
+
+		barrier.setImage(image);
+		barrier.setOldLayout(vk::ImageLayout::eTransferSrcOptimal);
+		barrier.setNewLayout(vk::ImageLayout::eGeneral);
+		barrier.setSrcAccessMask(vk::AccessFlagBits::eTransferRead);
+		barrier.setDstAccessMask({});
+
+		commandBuffers[i].pipelineBarrier(
+			vk::PipelineStageFlagBits::eTransfer,
+			vk::PipelineStageFlagBits::eHost,
+			{},
+			nullptr,
+			nullptr,
+			barrier);
+
+		barrier.setImage(swapchain.images[i]);
+		barrier.setOldLayout(vk::ImageLayout::eTransferDstOptimal);
+		barrier.setNewLayout(vk::ImageLayout::ePresentSrcKHR);
+		barrier.setSrcAccessMask(vk::AccessFlagBits::eTransferWrite);
+		barrier.setDstAccessMask(vk::AccessFlagBits::eMemoryRead);
+
+		commandBuffers[i].pipelineBarrier(
+			vk::PipelineStageFlagBits::eTransfer,
+			vk::PipelineStageFlagBits::eBottomOfPipe,
+			{},
+			nullptr,
+			nullptr,
+			barrier);
+
+		commandBuffers[i].end();
+		std::cout << "Command Buffer " << commandBuffers[i]
+		       << "recorded"	<< std::endl;
+	}
 }
 
 void Commander::recordCopyBufferToSwapImages(
@@ -176,6 +300,7 @@ void Commander::recordCopyBufferToSwapImages(
 				nullptr,
 				nullptr,
 				barrier);
+
 
 		//end image layout transition
 

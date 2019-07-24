@@ -26,6 +26,8 @@ public:
 
 	void recordCopyBufferToSwapImages(const Swapchain&, vk::Buffer);
 
+	void recordCopyImageToSwapImages(const Swapchain&, vk::Image);
+
 	void allocateCommandBuffersForSwapchain(const Swapchain&);
 
 	void transitionImageLayout(

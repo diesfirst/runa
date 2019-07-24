@@ -50,6 +50,8 @@ private:
 	uint32_t memReqsSize;
 	bool imageBufferCreated = false;
 	bool imageCreated = false;
+	
+	void getImageSubresourceLayout();
 
 	void createImage();
 

@@ -32,22 +32,23 @@ Painter::~Painter ()
 
 void Painter::prepare()
 {
-//	createBuffer();
+	createBuffer();
 	createImage();
-//	mapBufferMemory();
+	mapBufferMemory();
 	commander.transitionImageLayout(
 			image,
 			vk::ImageLayout::eUndefined,
 			vk::ImageLayout::eGeneral);
 	mapImageMemory();
 //	commander.recordCopyBufferToSwapImages(swapchain, imageBuffer);
-//	commander.recordCopyImageToSwapImages(swapchain, image);
+	commander.recordCopyImageToSwapImages(swapchain, image);
 	std::cout << "Painter prepared!" << std::endl;
+	getImageSubresourceLayout();
 }
 
 void Painter::paint(int16_t x, int16_t y)
 {
-	writeToHostBufferMemory(x,y);
+	writeToHostImageMemory(x, y);
 //	if (window.mButtonDown)
 //	{
 //	}
@@ -153,7 +154,7 @@ void Painter::writeToHostBufferMemory(int16_t x, int16_t y)
 
 void Painter::writeToHostImageMemory(int16_t x, int16_t y)
 {
-	static_cast<uint32_t*>(pHostImageMemory)[y * imageWidth + x] = UINT32_MAX; //should set to white
+	static_cast<uint32_t*>(pHostImageMemory)[y * 504 + x] = UINT32_MAX; //should set to white
 }
 
 void Painter::writeCheckersToHostMemory(float x, float y)
@@ -180,4 +181,15 @@ void Painter::checkBufferMemReqs(vk::Buffer buffer)
 	auto memReqs = context.device.getBufferMemoryRequirements(buffer);
 	std::cout << "Required memory type bits" << std::endl;
 	std::cout << std::bitset<32>(memReqs.memoryTypeBits) << std::endl;
+}
+
+void Painter::getImageSubresourceLayout()
+{
+	vk::ImageSubresource subresource;
+	subresource.setMipLevel(0);
+	subresource.setArrayLayer(0);
+	subresource.setAspectMask(vk::ImageAspectFlagBits::eColor);
+	vk::SubresourceLayout subresLayout = 
+		context.device.getImageSubresourceLayout(image, subresource);
+	std::cout << "Row pitch: " << subresLayout.rowPitch << std::endl;
 }

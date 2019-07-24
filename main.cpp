@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 	commander.allocateCommandBuffersForSwapchain(swapchain);
 	painter.prepare();
 	
-//	paintLoop(window, painter, commander, swapchain);
+	paintLoop(window, painter, commander, swapchain);
 
 	commander.cleanUp();
 	
