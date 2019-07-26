@@ -255,8 +255,7 @@ void Commander::recordCopyBufferToSwapImages(
 	imgSubResrc.setLayerCount(1);
 	imgSubResrc.setMipLevel(0);
 	imgSubResrc.setBaseArrayLayer(0);
-
-	vk::BufferImageCopy region;
+vk::BufferImageCopy region;
 	region.setImageExtent({
 			swapchain.swapchainExtent.width,
 			swapchain.swapchainExtent.height,
@@ -365,6 +364,16 @@ void Commander::createSemaphores()
 	semaphoresCreated = true;
 }
 
+void Commander::setSwapchainImagesToPresent(Swapchain& swapchain)
+{
+	for (auto image : swapchain.images) {
+		transitionImageLayout(
+				image,
+				vk::ImageLayout::eUndefined,
+				vk::ImageLayout::ePresentSrcKHR);
+	}
+}
+
 void Commander::renderFrame(Swapchain& swapchain)
 {
 	context.device.waitForFences(
@@ -377,7 +386,7 @@ void Commander::renderFrame(Swapchain& swapchain)
 			&inFlightFences[currentFrame]);
 
 	currentIndex = swapchain.acquireNextImage(
-			imageAvailableSemaphores[currentFrame]);
+      		imageAvailableSemaphores[currentFrame]);
 
 	vk::SubmitInfo submitInfo;
 	vk::PipelineStageFlags flags = 
@@ -391,10 +400,11 @@ void Commander::renderFrame(Swapchain& swapchain)
 			&imageAvailableSemaphores[currentFrame]);
 	submitInfo.setPSignalSemaphores(
 			&renderFinishedSemaphores[currentFrame]);
-
 	context.queue.submit(submitInfo, inFlightFences[currentFrame]);
-	
+      
 	swapchain.presentInfo.setWaitSemaphoreCount(1);
+	swapchain.presentInfo.setPWaitSemaphores(
+      		&imageAvailableSemaphores[currentFrame]);
 	swapchain.presentInfo.setPWaitSemaphores(
 			&renderFinishedSemaphores[currentFrame]);
 	swapchain.presentInfo.setSwapchainCount(1);
@@ -403,7 +413,12 @@ void Commander::renderFrame(Swapchain& swapchain)
 
 	context.queue.presentKHR(swapchain.presentInfo);
 
+//	std::cout << "Current index: " << currentIndex << std::endl;
+//	std::cout << "Current frame: " << currentFrame << std::endl;
+//	std::cout << "True frame: " << trueFrame << std::endl;
+
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+	trueFrame++;
 }
  
 void Commander::cleanUp()

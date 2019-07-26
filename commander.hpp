@@ -30,6 +30,8 @@ public:
 
 	void allocateCommandBuffersForSwapchain(const Swapchain&);
 
+	void setSwapchainImagesToPresent(Swapchain&);
+
 	void transitionImageLayout(
 			vk::Image,
 			vk::ImageLayout oldLayout,
@@ -47,6 +49,7 @@ private:
 	bool semaphoresCreated = false;
 	std::vector<vk::ClearColorValue> clearColors;
 	size_t currentFrame = 0;
+	size_t trueFrame = 0;
 	uint32_t currentIndex = 0;
 
 	void createCommandPool();

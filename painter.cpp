@@ -30,29 +30,35 @@ Painter::~Painter ()
 	}
 }
 
-void Painter::prepare()
+void Painter::prepareForBufferPaint()
 {
 	createBuffer();
-	createImage();
 	mapBufferMemory();
+	commander.recordCopyBufferToSwapImages(swapchain, imageBuffer);
+	std::cout << "Painter prepared!" << std::endl;
+}
+
+void Painter::paintBuffer(int16_t x, int16_t y)
+{
+	writeToHostBufferMemory(x, y);
+}
+
+void Painter::prepareForImagePaint()
+{
+	createImage();
 	commander.transitionImageLayout(
 			image,
 			vk::ImageLayout::eUndefined,
 			vk::ImageLayout::eGeneral);
 	mapImageMemory();
-//	commander.recordCopyBufferToSwapImages(swapchain, imageBuffer);
 	commander.recordCopyImageToSwapImages(swapchain, image);
 	std::cout << "Painter prepared!" << std::endl;
 	getImageSubresourceLayout();
 }
 
-void Painter::paint(int16_t x, int16_t y)
+void Painter::paintImage(int16_t x, int16_t y)
 {
 	writeToHostImageMemory(x, y);
-//	if (window.mButtonDown)
-//	{
-//	}
-//	writeCheckersToHostMemory(x,y);
 }
 
 void Painter::createImage()

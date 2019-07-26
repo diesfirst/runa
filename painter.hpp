@@ -12,9 +12,13 @@ public:
 	Painter(const Swapchain& swapchain, Commander& commander);
 	virtual ~Painter();
 
-	void prepare();
+	void prepareForImagePaint();
 
-	void paint(int16_t x, int16_t y);
+	void prepareForBufferPaint();
+
+	void paintImage(int16_t x, int16_t y);
+	
+	void paintBuffer(int16_t x, int16_t y);
 
 	const size_t imageSize;
 	

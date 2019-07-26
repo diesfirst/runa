@@ -60,7 +60,7 @@ private:
 	vk::Queue presentQueue;
 	vk::Format colorFormat;
 	vk::ColorSpaceKHR colorSpace;
-	vk::PresentModeKHR presentMode = vk::PresentModeKHR::eFifo;
+	vk::PresentModeKHR presentMode = vk::PresentModeKHR::eImmediate;
 	vk::SurfaceCapabilitiesKHR surfCaps;
 	bool swapchainCreated = false;
 	std::vector<vk::Fence> imageFences;
@@ -80,8 +80,6 @@ private:
 	void destroyImageViews();
 
 	void destroyFramebuffers();
-
-	void initializePresentInfo();
 
 };
 

@@ -3,6 +3,7 @@
 #include "painter.hpp"
 #include <thread>
 #include <chrono>
+#include <ctime>
 
 void paintLoop(
 	Window &window, 
@@ -10,12 +11,20 @@ void paintLoop(
 	Commander &commander,
 	Swapchain &swapchain)
 {
+//	std::clock_t start, end;
+//	int i = 0;
 	while (true)
 	{
 		window.waitForEvent();
-		painter.paint(window.mouseX, window.mouseY);
+		if (window.mButtonDown)
+			painter.paintBuffer(window.mouseX, window.mouseY);
 //		window.printMousePosition();
+//		start = std::clock();
 		commander.renderFrame(swapchain);
+//		end = std::clock();
+//		std::cout << "Delta = " << (start - end) / (double) CLOCKS_PER_SEC << std::endl;
+//		std::cout << "Loop iteration: " << i << std::endl;
+//		i++;
 	}
 }
 
@@ -28,7 +37,6 @@ int main(int argc, char *argv[])
 
 	Window window;
 	window.open();
-	window.waitForEvent();
 
 	Swapchain swapchain(context, window);
 	Commander commander(context);
@@ -37,7 +45,8 @@ int main(int argc, char *argv[])
 
 	swapchain.prepareForRender();
 	commander.allocateCommandBuffersForSwapchain(swapchain);
-	painter.prepare();
+	painter.prepareForBufferPaint();
+	commander.setSwapchainImagesToPresent(swapchain);
 	
 	paintLoop(window, painter, commander, swapchain);
 

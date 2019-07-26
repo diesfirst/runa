@@ -9,10 +9,10 @@ Swapchain::Swapchain(const Context& context, const Window& window) :
 	getSurfaceCapabilities();
 	chooseSwapExtent();
 	chooseFormat();
+	checkPresentModes();
 	createSwapchain();
 	grabImages();
 	createImageViews();
-	initializePresentInfo();
 }
 
 Swapchain::~Swapchain()
@@ -48,6 +48,10 @@ void Swapchain::checkPresentModes()
 		{
 			std::cout << "Mailbox mode at index" <<
 			        i << std::endl;	
+		}
+		if (mode == vk::PresentModeKHR::eImmediate)
+		{
+			std::cout << "Immediate mode at index " << i << std::endl;
 		}
 	}
 }
@@ -265,7 +269,7 @@ uint32_t Swapchain::acquireNextImage(const vk::Semaphore& semaphore)
 	auto result = context.device.acquireNextImageKHR(
 			swapchain,
 			UINT64_MAX, //so it will wait forever
-			semaphore, //will be signalled when we can present
+			semaphore, //will be signalled when we can do something with this
 			vk::Fence()); //empty fence
 	if (result.result != vk::Result::eSuccess) {
 		std::cerr << 
@@ -289,11 +293,4 @@ void Swapchain::prepareForRender()
 {
 	createRenderPass();
 	createFramebuffers();
-}
-
-void Swapchain::initializePresentInfo()
-{
-	presentInfo.setSwapchainCount(1);
-	presentInfo.setPSwapchains(&swapchain);
-	presentInfo.setPImageIndices(&currentIndex);
 }
