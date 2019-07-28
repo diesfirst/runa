@@ -1,85 +1,64 @@
 #ifndef SWAPCHAIN_H
 #define SWAPCHAIN_H
 
-#include "window.hpp"
 #include "context.hpp"
+
+class Window; //forward declaration
 
 class Swapchain
 {
 public:
 	Swapchain (const Context& context, const Window& window);
+
 	virtual ~Swapchain();
 
 	void checkPresentModes();
-
-	void checkImageCounts();
-
-	void checkCurrentExtent();
 
 	void checkFormatsAvailable();
 
 	void createSwapchain();
 
-	std::vector<vk::ImageView> imageViews;
-
-	void createRenderPass();
-
 	void createFramebuffers();
-
-	std::vector<vk::Framebuffer> framebuffers;
-	vk::Extent2D swapchainExtent;
-
-	vk::RenderPass renderPass;
 
 	uint32_t acquireNextImage(const vk::Semaphore&);
 
-	void checkSurfaceCapabilities();
-
-	const vk::Fence& getSubmitFence();
-
-	void initializeImageFences();
-
-	void prepareForRender();
-
-	uint32_t currentIndex{0};
-
-	vk::PresentInfoKHR presentInfo;
-
 	const Window& window;
-	 
 	const Context& context;
-
 	std::vector<vk::Image> images;
-
+	std::vector<vk::ImageView> imageViews;
 	vk::SwapchainKHR swapchain;
+	vk::SurfaceCapabilitiesKHR surfCaps;
+	vk::SurfaceKHR surface;
+	std::vector<vk::Framebuffer> framebuffers;
+	vk::Extent2D swapchainExtent;
+	uint32_t currentIndex{0};
+	int imageCount;
 
 private:
-	vk::SurfaceKHR surface;
-	uint32_t queueFamilyIndex;
-	vk::Queue graphicsQueue;
-	vk::Queue presentQueue;
 	vk::Format colorFormat;
 	vk::ColorSpaceKHR colorSpace;
-	vk::PresentModeKHR presentMode = vk::PresentModeKHR::eImmediate;
-	vk::SurfaceCapabilitiesKHR surfCaps;
+	vk::PresentModeKHR presentMode;
 	bool swapchainCreated = false;
-	std::vector<vk::Fence> imageFences;
+
+	void setImageCount(int count = 3);
+
+	void setQueueFamilyIndex();
 	
 	void createSurface();
 
-	void getSurfaceCapabilities();
+	void setSurfaceCapabilities();
 	
-	void chooseSwapExtent();
+	void setSwapExtent(int width=0, int height=0);
 
-	void chooseFormat();
+	void setFormat();
 
-	void grabImages();
+	void setImages();
+
+	void setPresentMode();
 
 	void createImageViews();
 
 	void destroyImageViews();
-
-	void destroyFramebuffers();
 
 };
 

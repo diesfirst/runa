@@ -2,9 +2,10 @@
 #define COMMANDER_H
 
 #include "context.hpp"
-#include "swapchain.hpp"
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 8;
+
+class Swapchain; //forward declaration
 
 class Commander
 {
@@ -24,9 +25,18 @@ public:
 
 	void endSingleTimeCommand(vk::CommandBuffer);
 
-	void recordCopyBufferToSwapImages(const Swapchain&, vk::Buffer);
+	void recordCopyBufferToImages(
+			vk::Buffer,
+			const std::vector<vk::Image>,
+			uint32_t width, uint32_t height, uint32_t depth);
 
 	void recordCopyImageToSwapImages(const Swapchain&, vk::Image);
+
+	void copyImageToBuffer(
+			vk::Image,
+			vk::ImageLayout,
+			vk::Buffer,
+			uint32_t width, uint32_t height, uint32_t depth);
 
 	void allocateCommandBuffersForSwapchain(const Swapchain&);
 
@@ -54,9 +64,7 @@ private:
 
 	void createCommandPool();
 
-	void createClearColors();
-
-	void createSemaphores();
+	void createSyncObjects();
 	 
 };
 

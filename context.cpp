@@ -102,6 +102,7 @@ void Context::createDevice()
 
 void Context::setQueue()
 {
+	//this should be based on the surface requirements, but 0 works
 	queue = device.getQueue(0, 0);
 }
 
@@ -148,7 +149,6 @@ void Context::printDeviceFeatures()
 {
 
 }
-
 
 void Context::printDeviceQueueFamilyInfo()
 {

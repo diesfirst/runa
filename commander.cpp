@@ -1,11 +1,11 @@
 #include "commander.hpp"
+#include "swapchain.hpp"
 
 Commander::Commander(const Context& context) :
 	context(context)
 {
 	createCommandPool();
-	createClearColors();
-	createSemaphores();
+	createSyncObjects();
 }
 
 Commander::~Commander()
@@ -31,7 +31,7 @@ void Commander::createCommandPool()
 
 void Commander::allocateCommandBuffersForSwapchain(const Swapchain& swapchain)
 {
-	commandBuffers.resize(swapchain.framebuffers.size());
+	commandBuffers.resize(swapchain.imageCount);
 	vk::CommandBufferAllocateInfo allocInfo;
 	allocInfo.setCommandPool(commandPool);
 	allocInfo.setCommandBufferCount(commandBuffers.size());
@@ -231,21 +231,11 @@ void Commander::recordCopyImageToSwapImages(
 	}
 }
 
-void Commander::recordCopyBufferToSwapImages(
-		const Swapchain& swapchain, 
-		vk::Buffer buffer)
+void Commander::recordCopyBufferToImages(
+		vk::Buffer buffer,
+		std::vector<vk::Image> images,
+		uint32_t width, uint32_t height, uint32_t depth)
 {
-	vk::Rect2D area;
-	area.setExtent(swapchain.swapchainExtent);
-
-	vk::ClearValue clearValue;
-
-	vk::RenderPassBeginInfo renderPassBeginInfo;
-	renderPassBeginInfo.setRenderArea(area);
-	renderPassBeginInfo.setRenderPass(swapchain.renderPass);
-	renderPassBeginInfo.setPClearValues(&clearValue);
-	renderPassBeginInfo.setClearValueCount(1);
-
 	vk::CommandBufferBeginInfo commandBufferBeginInfo;
 	commandBufferBeginInfo.setFlags(
 			vk::CommandBufferUsageFlagBits::eSimultaneousUse);
@@ -255,10 +245,10 @@ void Commander::recordCopyBufferToSwapImages(
 	imgSubResrc.setLayerCount(1);
 	imgSubResrc.setMipLevel(0);
 	imgSubResrc.setBaseArrayLayer(0);
-vk::BufferImageCopy region;
+	vk::BufferImageCopy region;
 	region.setImageExtent({
-			swapchain.swapchainExtent.width,
-			swapchain.swapchainExtent.height,
+			width,
+			height,
 			1});
 	region.setImageOffset({0,0,0});
 	region.setImageSubresource(imgSubResrc);
@@ -283,7 +273,7 @@ vk::BufferImageCopy region;
 
 		//begin image layout transition
 		
-		barrier.setImage(swapchain.images[i]);
+		barrier.setImage(images[i]);
 
 		barrier.setOldLayout(vk::ImageLayout::eUndefined);
 		barrier.setNewLayout(vk::ImageLayout::eTransferDstOptimal);
@@ -300,12 +290,11 @@ vk::BufferImageCopy region;
 				nullptr,
 				barrier);
 
-
 		//end image layout transition
 
 		commandBuffers[i].copyBufferToImage(
 				buffer, 
-				swapchain.images[i],
+				images[i],
 				vk::ImageLayout::eTransferDstOptimal,
 				region);
 		
@@ -330,20 +319,42 @@ vk::BufferImageCopy region;
 	}
 }
 
-void Commander::createClearColors()
+void Commander::copyImageToBuffer(
+		vk::Image image,
+		vk::ImageLayout layout,
+		vk::Buffer buffer,
+		uint32_t width, uint32_t height, uint32_t depth)
 {
-	vk::ClearColorValue red;
-	vk::ClearColorValue blue;
-	vk::ClearColorValue white;
-	red.setFloat32({0.7, 0.4, 0.2, 1.0});
-	blue.setFloat32({0.0, 0.0, 1.0, 1.0});
-	white.setFloat32({1.0, 1.0, 1.0, 1.0});
-	clearColors.push_back(red);
-	clearColors.push_back(white);
-	clearColors.push_back(blue);
+	vk::ImageSubresourceLayers imgSubResLayers;
+	imgSubResLayers.setAspectMask(vk::ImageAspectFlagBits::eColor);
+	imgSubResLayers.setMipLevel(0);
+	imgSubResLayers.setBaseArrayLayer(0);
+	imgSubResLayers.setLayerCount(1);
+
+	vk::BufferImageCopy region;
+	region.setImageExtent({
+			width,
+			height,
+			depth});
+	region.setImageOffset({	0,0,0});
+	region.setBufferOffset(0);
+	region.setBufferRowLength(0);
+	region.setBufferImageHeight(0);
+	region.setImageSubresource(imgSubResLayers);
+
+	vk::CommandBuffer cmdBuffer = beginSingleTimeCommand();
+
+	cmdBuffer.copyImageToBuffer(
+			image,
+			layout,
+			buffer,
+			1,
+			&region);
+
+	endSingleTimeCommand(cmdBuffer);
 }
 
-void Commander::createSemaphores()
+void Commander::createSyncObjects()
 {
 	vk::SemaphoreCreateInfo semaphoreInfo;
 	vk::FenceCreateInfo fenceCreateInfo;
@@ -402,16 +413,17 @@ void Commander::renderFrame(Swapchain& swapchain)
 			&renderFinishedSemaphores[currentFrame]);
 	context.queue.submit(submitInfo, inFlightFences[currentFrame]);
       
-	swapchain.presentInfo.setWaitSemaphoreCount(1);
-	swapchain.presentInfo.setPWaitSemaphores(
-      		&imageAvailableSemaphores[currentFrame]);
-	swapchain.presentInfo.setPWaitSemaphores(
-			&renderFinishedSemaphores[currentFrame]);
-	swapchain.presentInfo.setSwapchainCount(1);
-	swapchain.presentInfo.setPImageIndices(&currentIndex);
-	swapchain.presentInfo.setPSwapchains(&swapchain.swapchain);
+	vk::PresentInfoKHR presentInfo;
+	presentInfo.setWaitSemaphoreCount(1);
+	presentInfo.setPWaitSemaphores(
+     		&imageAvailableSemaphores[currentFrame]);
+	presentInfo.setPWaitSemaphores(
+	 	&renderFinishedSemaphores[currentFrame]);
+	presentInfo.setSwapchainCount(1);
+	presentInfo.setPImageIndices(&currentIndex);
+	presentInfo.setPSwapchains(&swapchain.swapchain);
 
-	context.queue.presentKHR(swapchain.presentInfo);
+	context.queue.presentKHR(presentInfo);
 
 //	std::cout << "Current index: " << currentIndex << std::endl;
 //	std::cout << "Current frame: " << currentFrame << std::endl;

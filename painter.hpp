@@ -2,14 +2,18 @@
 #define PAINTER_H
 
 #include <vulkan/vulkan.hpp>
-#include "swapchain.hpp"
-#include "commander.hpp"
 #include <bitset>
+
+class Swapchain;
+class Commander;
+class Context;
+class Window;
+class MemoryManager;
 
 class Painter
 {
 public:
-	Painter(const Swapchain& swapchain, Commander& commander);
+	Painter(const Swapchain&, Commander&, MemoryManager&);
 	virtual ~Painter();
 
 	void prepareForImagePaint();
@@ -43,6 +47,7 @@ private:
 	const Context& context;
 	const Window& window;
 	Commander& commander;
+	MemoryManager& mm;
 	const int imageWidth, imageHeight;
 	std::vector<uint32_t> canvas;
 	vk::Image image;

@@ -1,6 +1,8 @@
 #include "swapchain.hpp"
 #include "commander.hpp"
 #include "painter.hpp"
+#include "window.hpp"
+#include "mem.hpp"
 #include <thread>
 #include <chrono>
 #include <ctime>
@@ -31,6 +33,7 @@ void paintLoop(
 int main(int argc, char *argv[])
 {
 	Context context;
+	MemoryManager mm(context);
 
 	context.printDeviceMemoryTypeInfo();
 	context.printDeviceMemoryHeapInfo();
@@ -41,9 +44,8 @@ int main(int argc, char *argv[])
 	Swapchain swapchain(context, window);
 	Commander commander(context);
 
-	Painter painter(swapchain, commander);
+	Painter painter(swapchain, commander, mm);
 
-	swapchain.prepareForRender();
 	commander.allocateCommandBuffersForSwapchain(swapchain);
 	painter.prepareForBufferPaint();
 	commander.setSwapchainImagesToPresent(swapchain);

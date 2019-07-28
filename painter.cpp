@@ -1,10 +1,16 @@
 #include "painter.hpp"
+#include "window.hpp"
+#include "swapchain.hpp"
+#include "commander.hpp"
+#include "mem.hpp"
 
 Painter::Painter (
 		const Swapchain& swapchain, 
-		Commander& commander) :
+		Commander& commander,
+		MemoryManager& mm) :
 	swapchain(swapchain),
 	commander(commander),
+	mm(mm),
 	context(swapchain.context),
 	window(swapchain.window),
 	imageWidth(window.size[0]),
@@ -34,7 +40,12 @@ void Painter::prepareForBufferPaint()
 {
 	createBuffer();
 	mapBufferMemory();
-	commander.recordCopyBufferToSwapImages(swapchain, imageBuffer);
+	commander.recordCopyBufferToImages(
+			imageBuffer, 
+			swapchain.images,
+			swapchain.swapchainExtent.width,
+			swapchain.swapchainExtent.height,
+			1);
 	std::cout << "Painter prepared!" << std::endl;
 }
 

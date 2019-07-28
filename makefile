@@ -1,10 +1,13 @@
 CFLAGS = -O3
 
-app : main.o commander.o swapchain.o painter.o context.o window.o 
-	g++ $(CFLAGS) -o app main.o context.o commander.o swapchain.o painter.o window.o -lxcb -lvulkan
+app : main.o commander.o swapchain.o painter.o context.o window.o mem.o
+	g++ $(CFLAGS) -o app main.o context.o commander.o swapchain.o painter.o window.o mem.o -lxcb -lvulkan
 
 window.o : window.cpp window.hpp
 	g++ -c $(CFLAGS) window.cpp
+
+mem.o : mem.cpp mem.hpp context.hpp
+	g++ -c $(CFLAGS) mem.cpp
 
 context.o : context.cpp context.hpp
 	g++ -c $(CFLAGS) context.cpp
