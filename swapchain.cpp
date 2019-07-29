@@ -1,7 +1,7 @@
 #include "swapchain.hpp"
 #include "window.hpp"
 
-Swapchain::Swapchain(const Context& context, const Window& window) :
+Swapchain::Swapchain(const Context& context, const XWindow& window) :
 	context(context),
 	window(window)
 {
@@ -58,16 +58,16 @@ void Swapchain::setSwapExtent(int width, int height)
 {
 	if (surfCaps.currentExtent == -1) //forget what this means
 	{
-		swapchainExtent.width = window.size[0];
-		swapchainExtent.height = window.size[1];
+		extent.width = window.size[0];
+		extent.height = window.size[1];
 	}
 	if (width!=0 && height!=0)
 	{
 	}
 	else
 	{
-		swapchainExtent.width = surfCaps.currentExtent.width;
-		swapchainExtent.height = surfCaps.currentExtent.height;
+		extent.width = surfCaps.currentExtent.width;
+		extent.height = surfCaps.currentExtent.height;
 	}
 }
 
@@ -88,7 +88,7 @@ void Swapchain::createSwapchain()
 	vk::SwapchainCreateInfoKHR createInfo;
 
 	createInfo.setSurface(surface);
-	createInfo.setImageExtent(swapchainExtent);
+	createInfo.setImageExtent(extent);
 	createInfo.setImageFormat(colorFormat);
 	createInfo.setImageColorSpace(colorSpace);
 	createInfo.setPresentMode(presentMode);
@@ -98,7 +98,8 @@ void Swapchain::createSwapchain()
 	//as opposed to transfering data to it
 	createInfo.setImageUsage(
 			vk::ImageUsageFlagBits::eColorAttachment |
-			vk::ImageUsageFlagBits::eTransferDst);
+			vk::ImageUsageFlagBits::eTransferDst |
+			vk::ImageUsageFlagBits::eTransferSrc);
 	//this is so that each queue has exclusive 
 	//ownership of an image at a time
 	createInfo.setImageSharingMode(vk::SharingMode::eExclusive);

@@ -3,12 +3,12 @@
 
 #include "context.hpp"
 
-class Window; //forward declaration
+class XWindow; //forward declaration
 
 class Swapchain
 {
 public:
-	Swapchain (const Context& context, const Window& window);
+	Swapchain (const Context& context, const XWindow& window);
 
 	virtual ~Swapchain();
 
@@ -22,7 +22,7 @@ public:
 
 	uint32_t acquireNextImage(const vk::Semaphore&);
 
-	const Window& window;
+	const XWindow& window;
 	const Context& context;
 	std::vector<vk::Image> images;
 	std::vector<vk::ImageView> imageViews;
@@ -30,7 +30,7 @@ public:
 	vk::SurfaceCapabilitiesKHR surfCaps;
 	vk::SurfaceKHR surface;
 	std::vector<vk::Framebuffer> framebuffers;
-	vk::Extent2D swapchainExtent;
+	vk::Extent2D extent;
 	uint32_t currentIndex{0};
 	int imageCount;
 

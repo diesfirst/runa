@@ -3,7 +3,6 @@
 
 #include <unistd.h>
 #include <xcb/xcb.h>
-#include <xcb/xcb_icccm.h>
 #include <vector>
 #include <iostream>
 #include <string.h>
@@ -11,16 +10,16 @@
 constexpr int WIDTH = 500;
 constexpr int HEIGHT = 500;
 
-class Window
+class XWindow
 {
 public:
-	Window ();
+	XWindow ();
 
 	void open();
 
 	std::vector<int> size;
 	
-	void waitForEvent();
+	xcb_generic_event_t* waitForEvent();
 
 	xcb_connection_t* connection;
 
@@ -39,8 +38,7 @@ private:
 	xcb_generic_event_t* event;
 	xcb_atom_t wmProtocols;
 	xcb_atom_t wmDeleteWin;
-	xcb_icccm_wm_hints_t hints;
-	std::string appName = "runa";
+	std::string appName = "aurora";
 	std::string appClass = "floating";
 
 	void createWindow(const int width, const int height);

@@ -6,8 +6,6 @@
 
 class Swapchain;
 class Commander;
-class Context;
-class Window;
 class MemoryManager;
 
 class Painter
@@ -24,17 +22,13 @@ public:
 	
 	void paintBuffer(int16_t x, int16_t y);
 
-	const size_t imageSize;
-	
-	void writeCanvasToBuffer();
+	void fillBuffer(
+			uint8_t r,
+			uint8_t g,
+			uint8_t b,
+			uint8_t a);
 
-	void mapBufferMemory();
-
-	void mapImageMemory();
-
-	void unmapBufferMemory();
-
-	void unmapImageMemory();
+	size_t imageSize;
 
 	void writeToHostImageMemory(int16_t x,int16_t y);
 	
@@ -44,31 +38,19 @@ public:
 
 private:
 	const Swapchain& swapchain;
-	const Context& context;
-	const Window& window;
 	Commander& commander;
 	MemoryManager& mm;
-	const int imageWidth, imageHeight;
-	std::vector<uint32_t> canvas;
-	vk::Image image;
-	vk::Buffer imageBuffer;
-	vk::DeviceMemory imageMemory;
-	vk::DeviceMemory bufferMemory;
-	void* pHostBufferMemory;
-	void* pHostImageMemory;
-	uint32_t memReqsSize;
-	bool imageBufferCreated = false;
-	bool imageCreated = false;
-	
-	void getImageSubresourceLayout();
+	int imageWidth, imageHeight;
+	void* pBufferMemory;
+	void* pImageMemory;
 
-	void createImage();
+	int aquireBufferBlock(uint32_t size);
 
-	void writeCheckersToBuffer();
+	int aquireImageBlock(
+		uint32_t width,
+		uint32_t height,
+		uint32_t depth);
 
-	void createBuffer();
-
-	void checkBufferMemReqs(vk::Buffer buffer);
 };
 
 #endif

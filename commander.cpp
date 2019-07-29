@@ -114,7 +114,7 @@ void Commander::recordCopyImageToSwapImages(
 		vk::Image image)
 {
 	vk::Rect2D area;
-	area.setExtent(swapchain.swapchainExtent);
+	area.setExtent(swapchain.extent);
 
 	vk::CommandBufferBeginInfo commandBufferBeginInfo;
 	commandBufferBeginInfo.setFlags(
@@ -130,8 +130,8 @@ void Commander::recordCopyImageToSwapImages(
 
 	vk::ImageCopy region;
 	region.setExtent({
-			swapchain.swapchainExtent.width,
-			swapchain.swapchainExtent.height,
+			swapchain.extent.width,
+			swapchain.extent.height,
 			1});
 	region.setSrcOffset(offset);
 	region.setDstOffset(offset);
@@ -245,11 +245,9 @@ void Commander::recordCopyBufferToImages(
 	imgSubResrc.setLayerCount(1);
 	imgSubResrc.setMipLevel(0);
 	imgSubResrc.setBaseArrayLayer(0);
+
 	vk::BufferImageCopy region;
-	region.setImageExtent({
-			width,
-			height,
-			1});
+	region.setImageExtent({width, height,1});
 	region.setImageOffset({0,0,0});
 	region.setImageSubresource(imgSubResrc);
 	region.setBufferRowLength(0);
@@ -321,10 +319,14 @@ void Commander::recordCopyBufferToImages(
 
 void Commander::copyImageToBuffer(
 		vk::Image image,
-		vk::ImageLayout layout,
 		vk::Buffer buffer,
 		uint32_t width, uint32_t height, uint32_t depth)
 {
+	transitionImageLayout(
+			image,
+			vk::ImageLayout::eUndefined,
+			vk::ImageLayout::eTransferSrcOptimal);
+
 	vk::ImageSubresourceLayers imgSubResLayers;
 	imgSubResLayers.setAspectMask(vk::ImageAspectFlagBits::eColor);
 	imgSubResLayers.setMipLevel(0);
@@ -346,7 +348,7 @@ void Commander::copyImageToBuffer(
 
 	cmdBuffer.copyImageToBuffer(
 			image,
-			layout,
+			vk::ImageLayout::eTransferSrcOptimal,
 			buffer,
 			1,
 			&region);

@@ -1,5 +1,4 @@
 #include "painter.hpp"
-#include "window.hpp"
 #include "swapchain.hpp"
 #include "commander.hpp"
 #include "mem.hpp"
@@ -11,60 +10,60 @@ Painter::Painter (
 	swapchain(swapchain),
 	commander(commander),
 	mm(mm),
-	context(swapchain.context),
-	window(swapchain.window),
-	imageWidth(window.size[0]),
-	imageHeight(window.size[1]),
-	imageSize(swapchain.window.size[0] * swapchain.window.size[1])
+	imageWidth(swapchain.extent.width),
+	imageHeight(swapchain.extent.height)
 {
+	imageSize = imageWidth * imageHeight;
 	std::cout << "Painter created!" << std::endl;
 }
 
 Painter::~Painter ()
 {
-	if (imageBufferCreated)
-	{
-		unmapBufferMemory();
-		context.device.destroyBuffer(imageBuffer);
-		context.device.freeMemory(bufferMemory);
-	}
-	if (imageCreated)
-	{
-		unmapImageMemory();
-		context.device.destroyImage(image);
-		context.device.freeMemory(imageMemory);
-	}
 }
 
 void Painter::prepareForBufferPaint()
 {
-	createBuffer();
-	mapBufferMemory();
+	int index = aquireBufferBlock(
+			swapchain.extent.width *
+			swapchain.extent.height * 4);
 	commander.recordCopyBufferToImages(
-			imageBuffer, 
+			mm.bufferBlocks[index].buffer, 
 			swapchain.images,
-			swapchain.swapchainExtent.width,
-			swapchain.swapchainExtent.height,
+			swapchain.extent.width,
+			swapchain.extent.height,
 			1);
 	std::cout << "Painter prepared!" << std::endl;
 }
 
-void Painter::paintBuffer(int16_t x, int16_t y)
-{
-	writeToHostBufferMemory(x, y);
-}
-
 void Painter::prepareForImagePaint()
 {
-	createImage();
+	int index = aquireImageBlock(
+			imageWidth,
+			imageHeight,
+			1);
 	commander.transitionImageLayout(
-			image,
+			mm.imageBlocks[index].image,
 			vk::ImageLayout::eUndefined,
 			vk::ImageLayout::eGeneral);
-	mapImageMemory();
-	commander.recordCopyImageToSwapImages(swapchain, image);
+	commander.recordCopyImageToSwapImages(swapchain, mm.imageBlocks[index].image);
 	std::cout << "Painter prepared!" << std::endl;
-	getImageSubresourceLayout();
+}
+
+int Painter::aquireBufferBlock(uint32_t size)
+{
+	int index = mm.createBuffer(size, vk::BufferUsageFlagBits::eTransferSrc);
+	pBufferMemory = mm.bufferBlocks[index].pHostMemory;
+	return index;
+}
+
+int Painter::aquireImageBlock(
+		uint32_t width,
+		uint32_t height,
+		uint32_t depth)
+{
+	int index = mm.createImage(width, height, depth, vk::ImageUsageFlagBits::eTransferSrc);
+	pImageMemory = mm.bufferBlocks[index].pHostMemory;
+	return index;
 }
 
 void Painter::paintImage(int16_t x, int16_t y)
@@ -72,111 +71,43 @@ void Painter::paintImage(int16_t x, int16_t y)
 	writeToHostImageMemory(x, y);
 }
 
-void Painter::createImage()
+void Painter::paintBuffer(int16_t x, int16_t y)
 {
-	vk::ImageCreateInfo createInfo;
-	vk::Extent3D extent;
-	extent.setWidth(imageWidth);
-	extent.setHeight(imageHeight);
-	extent.setDepth(1);
-	createInfo.setImageType(vk::ImageType::e2D);
-	createInfo.setExtent(extent);
-	createInfo.setMipLevels(1);
-	createInfo.setArrayLayers(1);
-	createInfo.setFormat(vk::Format::eR8G8B8A8Unorm);
-	createInfo.setTiling(vk::ImageTiling::eLinear);
-	createInfo.setInitialLayout(vk::ImageLayout::eUndefined);
-	createInfo.setUsage(vk::ImageUsageFlagBits::eTransferSrc);
-	createInfo.setSharingMode(vk::SharingMode::eExclusive);
-
-	image = context.device.createImage(createInfo);
-
-	auto imgMemReq = context.device.getImageMemoryRequirements(image); 
-	auto typeBits = imgMemReq.memoryTypeBits;
-	std::cout << "Image memory type bits:" << 
-	       std::bitset<32>(typeBits) << std::endl; 
-	//not going to check what bits are required
-
-	vk::MemoryAllocateInfo memAllocInfo;
-	memAllocInfo.setAllocationSize(imgMemReq.size);
-	memAllocInfo.setMemoryTypeIndex(9); //because it worked for the buffer
-
-	imageMemory = context.device.allocateMemory(memAllocInfo);
-
-	context.device.bindImageMemory(image, imageMemory, 0);
-
-	imageCreated = true;
+	writeToHostBufferMemory(x, y);
 }
 
-void Painter::createBuffer()
+void Painter::fillBuffer(
+		uint8_t r,
+		uint8_t g,
+		uint8_t b,
+		uint8_t a)
 {
-	vk::BufferCreateInfo bufferInfo;
-
-	bufferInfo.setSize(
-			swapchain.swapchainExtent.width * 
-			swapchain.swapchainExtent.height *
-			4); //4 channels
-	bufferInfo.setUsage(vk::BufferUsageFlagBits::eTransferSrc);
-	bufferInfo.setSharingMode(vk::SharingMode::eExclusive);
-
-	imageBuffer = context.device.createBuffer(bufferInfo);
-
-	auto memReqs = context.device.getBufferMemoryRequirements(imageBuffer);
-
-	vk::MemoryAllocateInfo allocInfo;
-	allocInfo.setMemoryTypeIndex(9); //discovered by inspection
-	allocInfo.setAllocationSize(memReqs.size);
-	std::cout << "Mem reqs size:" << memReqs.size << std::endl;
-	memReqsSize = memReqs.size;
-
-	bufferMemory = context.device.allocateMemory(allocInfo);
-
-	context.device.bindBufferMemory(imageBuffer, bufferMemory, 0);
-
-	imageBufferCreated = true;
-}
-
-void Painter::mapImageMemory()
-{
-	pHostImageMemory = context.device.mapMemory(
-			imageMemory,
-			0,
-			imageSize);
-	std::cout << "image memory mapped" << std::endl;
-}
-
-void Painter::mapBufferMemory()
-{
-	pHostBufferMemory = context.device.mapMemory(
-			bufferMemory,
-			0,
-			imageSize);
-	std::cout << "memory mapped" << std::endl;
-}
-
-void Painter::unmapBufferMemory()
-{
-	context.device.unmapMemory(bufferMemory);
-}
-
-void Painter::unmapImageMemory()
-{
-	context.device.unmapMemory(imageMemory);
+	uint32_t iter = 0;
+	uint8_t* pointer = static_cast<uint8_t*>(pBufferMemory);
+	while (iter < imageSize)
+	{
+		pointer[0] = r;
+		pointer[1] = g;
+		pointer[2] = b;
+		pointer[3] = a;
+		pointer += 4;
+		iter++;
+	}
 }
 
 void Painter::writeToHostBufferMemory(int16_t x, int16_t y)
 {
-	static_cast<uint32_t*>(pHostBufferMemory)[y * imageWidth + x] = UINT32_MAX; //should set to white
+	static_cast<uint32_t*>(pBufferMemory)[y * imageWidth + x] = UINT32_MAX; //should set to white
 }
 
 void Painter::writeToHostImageMemory(int16_t x, int16_t y)
 {
-	static_cast<uint32_t*>(pHostImageMemory)[y * 504 + x] = UINT32_MAX; //should set to white
+	static_cast<uint32_t*>(pImageMemory)[y * 504 + x] = UINT32_MAX; //should set to white
 }
 
 void Painter::writeCheckersToHostMemory(float x, float y)
 {
-	unsigned char* pImgMem = static_cast<unsigned char*>(pHostBufferMemory);
+	unsigned char* pImgMem = static_cast<unsigned char*>(pBufferMemory);
 	float r = x / imageWidth;
 	float g = y / imageHeight;
 	for (int row = 0; row < imageHeight; row++)
@@ -191,22 +122,4 @@ void Painter::writeCheckersToHostMemory(float x, float y)
 			pImgMem += 4;
 		}
 	}
-}
-
-void Painter::checkBufferMemReqs(vk::Buffer buffer)
-{
-	auto memReqs = context.device.getBufferMemoryRequirements(buffer);
-	std::cout << "Required memory type bits" << std::endl;
-	std::cout << std::bitset<32>(memReqs.memoryTypeBits) << std::endl;
-}
-
-void Painter::getImageSubresourceLayout()
-{
-	vk::ImageSubresource subresource;
-	subresource.setMipLevel(0);
-	subresource.setArrayLayer(0);
-	subresource.setAspectMask(vk::ImageAspectFlagBits::eColor);
-	vk::SubresourceLayout subresLayout = 
-		context.device.getImageSubresourceLayout(image, subresource);
-	std::cout << "Row pitch: " << subresLayout.rowPitch << std::endl;
 }

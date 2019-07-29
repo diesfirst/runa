@@ -1,12 +1,13 @@
-#include "lib/stb_image.h"
-#include "commander.hpp"
-#include <vulkan.hpp>
 #include <string>
 
-void saveImage(
-		vk::Image image,
-		std::string path)
-{
-	vk::Buffer buffer;
-}
-		
+class MemoryManager;
+class Commander;
+class Swapchain;
+
+void saveSwapImage(
+		MemoryManager& mm,
+		Commander& commander,
+		Swapchain& swapchain);
+
+std::string requestUserInput();
+

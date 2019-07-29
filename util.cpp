@@ -10,8 +10,8 @@ void printImageCounts(const Swapchain& swapchain)
 
 void printCurrentExtent(const Swapchain& swapchain)
 {
-	int width = swapchain.swapchainExtent.width;
-	int height = swapchain.swapchainExtent.height;
+	int width = swapchain.extent.width;
+	int height = swapchain.extent.height;
 	std::cout << "Surf width: " << 
 		width << " height: " << 
 		height << std::endl;
@@ -66,4 +66,11 @@ void performChecks(const Swapchain& swapchain)
 {
 	printFormatsAvailable(swapchain);
 	printPresentModes(swapchain);
+}
+
+void checkBufferMemReqs(const Context& context, const vk::Buffer& buffer)
+{
+	auto memReqs = context.device.getBufferMemoryRequirements(buffer);
+	std::cout << "Required memory type bits" << std::endl;
+	std::cout << std::bitset<32>(memReqs.memoryTypeBits) << std::endl;
 }

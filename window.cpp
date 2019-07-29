@@ -1,6 +1,6 @@
 #include "window.hpp"
 
-Window::Window()
+XWindow::XWindow()
 {
 	connection = xcb_connect(NULL,NULL);
 	screen = xcb_setup_roots_iterator(
@@ -12,7 +12,7 @@ Window::Window()
 	setClass();
 }
 
-void Window::createWindow(const int width, const int height)
+void XWindow::createWindow(const int width, const int height)
 {
 	//create window
 	size.push_back(width);
@@ -31,7 +31,7 @@ void Window::createWindow(const int width, const int height)
 			mask, values);
 }
 
-void Window::setEvents()
+void XWindow::setEvents()
 {
 	mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
 	values[0] = screen->black_pixel;
@@ -44,7 +44,7 @@ void Window::setEvents()
 		XCB_EVENT_MASK_BUTTON_RELEASE;
 }
 
-void Window::setName()
+void XWindow::setName()
 {	
 	xcb_change_property(
 		connection,
@@ -57,7 +57,7 @@ void Window::setName()
 		appName.c_str());
 }
 
-void Window::setClass()
+void XWindow::setClass()
 {
 	xcb_change_property(
 		connection,
@@ -70,7 +70,7 @@ void Window::setClass()
 		appClass.c_str());
 }
 
-void Window::pollEvents()
+void XWindow::pollEvents()
 {
 	xcb_generic_event_t* event;
 	while ((event = xcb_poll_for_event(connection)))
@@ -79,53 +79,26 @@ void Window::pollEvents()
 	}
 }
 
-void Window::waitForEvent()
+xcb_generic_event_t* XWindow::waitForEvent()
 {
 	event = xcb_wait_for_event(connection);
-	switch (event->response_type & ~0x80)
-	{
-		case XCB_MOTION_NOTIFY: 
-		{
-			xcb_motion_notify_event_t* motion =
-				(xcb_motion_notify_event_t*)event;
-			mouseX = motion->event_x;
-			mouseY = motion->event_y;
-			break;
-		}
-		case XCB_BUTTON_PRESS:
-		{
-			mButtonDown = true;
-			std::cout << "Button down" << std::endl;
-			break;
-		}
-		case XCB_BUTTON_RELEASE:
-		{
-			mButtonDown = false;
-			std::cout << "Button up" << std::endl;
-			break;
-		}
-		case XCB_KEY_PRESS:
-		{
-			std::cout << "Key pressed" << std::endl;
-		}
-	}
-	free(event);
+	return event;
 }
 
-void Window::printMousePosition()
+void XWindow::printMousePosition()
 {
 	std::cout << "Mouse X: " << mouseX << std::endl;
 	std::cout << "Mouse Y: " << mouseY << std::endl;
 }
 
-void Window::open()
+void XWindow::open()
 {
 	sendNotifications();
 	xcb_map_window(connection, window);
 	xcb_flush(connection);
 }
 
-void Window::sendNotifications() 
+void XWindow::sendNotifications() 
 {
 	xcb_intern_atom_cookie_t wmDeleteCookie = xcb_intern_atom(
 			connection, 0, strlen("WM_DELETE_WINDOW"), "WM_DELETE_WINDOW");
