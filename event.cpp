@@ -41,6 +41,10 @@ void EventHandler::handleEvent(xcb_generic_event_t* event)
 		case XCB_BUTTON_PRESS:
 		{
 			mButtonDown = true;
+			xcb_motion_notify_event_t* motion =
+				(xcb_motion_notify_event_t*)event;
+			painter.paintBuffer(motion->event_x, motion->event_y);
+			commander.renderFrame(swapchain);
 			break;
 		}
 		case XCB_BUTTON_RELEASE:

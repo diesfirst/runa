@@ -3,7 +3,7 @@
 
 #include "context.hpp"
 
-constexpr int MAX_FRAMES_IN_FLIGHT = 8;
+constexpr int MAX_FRAMES_IN_FLIGHT = 3;
 
 class Swapchain; //forward declaration
 
