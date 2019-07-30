@@ -17,6 +17,13 @@ float calcAlpha(float val, float radius)
 	return alpha;
 }
 
+void add(Pixel& a, Pixel& b, Pixel& o)
+{
+	o.r = std::min(a.r * a.a + b.r * b.a, 1.0f);
+	o.g = std::min(a.g * a.a + b.g * b.a, 1.0f);
+	o.b = std::min(a.b * a.a + b.b * b.a, 1.0f);
+	o.a = std::min(a.a + b.a, 1.0f);;
+}
 void over(Pixel& a, Pixel& b, Pixel& o)
 {
 	float complement = 1.0 - a.a;
@@ -56,7 +63,7 @@ void Painter::prepareForBufferPaint()
 			swapchain.extent.width,
 			swapchain.extent.height,
 			1);
-	circleBrush(9.0);
+	circleBrush(7.0);
 	background.resize(imageSize);
 	foreground.resize(imageSize);
 	target.resize(imageSize);
@@ -102,8 +109,8 @@ void Painter::paintForeground(int16_t x, int16_t y)
 	{
 		writeToLayer(foreground, bristle.offsetX + x, bristle.offsetY + y, bristle.alpha);
 	}
-	overLayers(foreground, background, background);
-	writeLayerToBuffer(background);
+//	overLayers(foreground, background, background);
+	writeLayerToBuffer(foreground);
 }
 
 void Painter::paintLayer(Layer& layer, int16_t x, int16_t y)
@@ -241,7 +248,9 @@ void Painter::writeToLayer(Layer& layer, int16_t x, int16_t y, float a)
 {
 	int index = y * imageWidth + x;
 	Pixel b{R, G, B, a};
-	over(layer[index], b, layer[index]);
+//	over(layer[index], b, layer[index]);
+//	over(b, layer[index], layer[index]);
+	add(b, layer[index], layer[index]);
 }
 
 void Painter::writeToHostBufferMemory(int16_t x, int16_t y, uint8_t a)

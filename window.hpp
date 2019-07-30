@@ -7,8 +7,8 @@
 #include <iostream>
 #include <string.h>
 
-constexpr int WIDTH = 500;
-constexpr int HEIGHT = 500;
+constexpr int WIDTH = 800;
+constexpr int HEIGHT = 800;
 
 class XWindow
 {
