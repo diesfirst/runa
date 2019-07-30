@@ -12,7 +12,7 @@ mem.o : mem.cpp mem.hpp context.hpp
 io.o : io.cpp io.hpp lib/lodepng.h mem.hpp commander.hpp swapchain.hpp
 	g++ -c $(CFLAGS) io.cpp 
 
-event.o : event.cpp event.hpp commander.hpp mem.hpp swapchain.hpp painter.hpp io.hpp
+event.o : event.cpp event.hpp commander.hpp mem.hpp swapchain.hpp painter.hpp io.hpp util.hpp
 	g++ -c $(CFLAGS) event.cpp
 
 context.o : context.cpp context.hpp

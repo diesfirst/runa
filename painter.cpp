@@ -2,6 +2,7 @@
 #include "swapchain.hpp"
 #include "commander.hpp"
 #include "mem.hpp"
+#include "util.hpp"
 #include <cmath>
 #include <algorithm>
 
@@ -18,7 +19,7 @@ float calcAlpha(float val, float radius)
 	return alpha;
 }
 
-void over(Pixel a, Pixel b, Pixel o)
+void over(Pixel& a, Pixel& b, Pixel& o)
 {
 	float complement = 1.0 - a.a;
 	o.r = a.r * a.a + b.r * b.a * complement;
@@ -103,8 +104,8 @@ void Painter::paintForeground(int16_t x, int16_t y)
 	{
 		writeToLayer(foreground, bristle.offsetX + x, bristle.offsetY + y, bristle.alpha);
 	}
-	overLayers(foreground, background, target);
-	writeTargetToBuffer();
+	overLayers(foreground, background, background);
+	writeLayerToBuffer(background);
 }
 
 void Painter::paintLayer(Layer& layer, int16_t x, int16_t y)
@@ -166,7 +167,7 @@ void Painter::overLayers(Layer& layerTop, Layer& layerBottom, Layer& target)
 //		std::cout << "Layer sizes don't match" << std::endl;
 //		return;
 //	}
-	size_t i = 0;
+	int i = 0;
 	while (i < imageSize)
 	{
 		over(layerTop[i], layerBottom[i], target[i]);
@@ -183,7 +184,7 @@ void Painter::circleBrush(float radius)
 	float dist = 0;
 	while (y <= iRadius)
 	{
-		float alpha = calcAlpha(y, radius);
+		float alpha = calcAlpha(abs(y), radius);
 		Bristle b{0, y, alpha};
 		currentBrush.push_back(b);
 		y++;
@@ -192,7 +193,7 @@ void Painter::circleBrush(float radius)
 	x = -1 * iRadius;
 	while (x <= iRadius)
 	{
-		float alpha = calcAlpha(x, radius);
+		float alpha = calcAlpha(abs(x), radius);
 		Bristle b{x, 0, alpha};
 		currentBrush.push_back(b);
 		x++;
@@ -225,16 +226,16 @@ void Painter::circleBrush(float radius)
 	//sort the currentBrush
 }
 
-void Painter::writeTargetToBuffer()
+void Painter::writeLayerToBuffer(Layer& layer)
 {
 	int i = 0;
 	uint8_t* ptr = static_cast<uint8_t*>(pBufferMemory);
 	while (i < imageSize)
 	{
-		ptr[0] = static_cast<uint8_t>(target[i].b * 255);
-		ptr[1] = static_cast<uint8_t>(target[i].g * 255);
-		ptr[2] = static_cast<uint8_t>(target[i].r * 255);
-		ptr[3] = static_cast<uint8_t>(target[i].a * 255);
+		ptr[0] = static_cast<uint8_t>(layer[i].b * 255);
+		ptr[1] = static_cast<uint8_t>(layer[i].g * 255);
+		ptr[2] = static_cast<uint8_t>(layer[i].r * 255);
+		ptr[3] = static_cast<uint8_t>(layer[i].a * 255);
 		ptr += 4;
 		i++;
 	}
@@ -242,11 +243,9 @@ void Painter::writeTargetToBuffer()
 
 void Painter::writeToLayer(Layer& layer, int16_t x, int16_t y, float a)
 {
-	int16_t index = y * imageWidth + x;
-	layer[index].r = R;
-	layer[index].g = G;
-	layer[index].b = B;
-	layer[index].a = a;
+	int index = y * imageWidth + x;
+	Pixel b{R, G, B, a};
+	over(layer[index], b, layer[index]);
 }
 
 void Painter::writeToHostBufferMemory(int16_t x, int16_t y, uint8_t a)

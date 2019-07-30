@@ -10,6 +10,8 @@
 #include <ctime>
 #include "util.hpp"
 
+Timer timer;
+
 void paintLoop(
 		EventHandler& eventHandler, 
 		XWindow& window, 
@@ -18,7 +20,9 @@ void paintLoop(
 {
 	while (true)
 	{
-	        eventHandler.handleEvent(window.waitForEvent());
+		timer.start();
+		eventHandler.handleEvent(window.waitForEvent());
+		timer.end();
 	}
 }
 

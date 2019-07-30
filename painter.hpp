@@ -2,7 +2,6 @@
 #define PAINTER_H
 
 #include <vulkan/vulkan.hpp>
-#include "util.hpp"
 #include <bitset>
 
 class Swapchain;
@@ -58,7 +57,7 @@ public:
 
 	size_t imageSize;
 
-	void writeTargetToBuffer();
+	void writeLayerToBuffer(Layer& layer);
 
 	void writeToLayer(Layer& layer, int16_t x, int16_t y, float a);
 
