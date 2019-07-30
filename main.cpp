@@ -8,6 +8,7 @@
 #include <thread>
 #include <chrono>
 #include <ctime>
+#include "util.hpp"
 
 void paintLoop(
 		EventHandler& eventHandler, 
@@ -47,7 +48,11 @@ int main(int argc, char *argv[])
 			painter,
 			swapchain);
 
-	painter.fillBuffer(2, 2, 2, 255);
+	printFormatsAvailable(swapchain);
+	printAlphaComposite(swapchain.surfCaps);
+
+	painter.fillBuffer(255, 100, 100, 255);
+
 	paintLoop(
 			eventHandler,
 			window,

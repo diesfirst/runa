@@ -1,4 +1,6 @@
 #include "util.hpp"
+#include "swapchain.hpp"
+#include "context.hpp"
 
 void printImageCounts(const Swapchain& swapchain)
 {
@@ -22,8 +24,8 @@ void printFormatsAvailable(const Swapchain& swapchain)
 	std::vector<vk::SurfaceFormatKHR> surfaceFormats =
 		swapchain.context.physicalDevice.getSurfaceFormatsKHR(swapchain.surface);
 	for (const auto format : surfaceFormats) {
-		std::cout << "Format: " << (uint32_t)format.format 
-			<< " Colorspace: " << (uint32_t)format.colorSpace 
+		std::cout << "Format: " << vk::to_string(format.format)
+			<< " Colorspace: " << vk::to_string(format.colorSpace)
 			<< std::endl;
 	}
 }
@@ -60,6 +62,11 @@ void printPresentModes(const Swapchain& swapchain)
 			std::cout << "Immediate mode at index " << i << std::endl;
 		}
 	}
+}
+
+void printAlphaComposite(const vk::SurfaceCapabilitiesKHR surfCaps)
+{
+	std::cout << "Supported Alpha Comp: " << vk::to_string(surfCaps.supportedCompositeAlpha) << std::endl;
 }
 
 void performChecks(const Swapchain& swapchain)

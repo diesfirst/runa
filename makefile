@@ -1,7 +1,7 @@
-CFLAGS = -O3
+CFLAGS = -O3 -std=c++17
 
-app : main.o commander.o swapchain.o painter.o context.o window.o mem.o io.o event.o lodepng.o
-	g++ $(CFLAGS) -o app main.o context.o commander.o swapchain.o painter.o window.o mem.o io.o event.o lodepng.o -lxcb -lvulkan -lX11
+app : main.o commander.o swapchain.o painter.o context.o window.o mem.o io.o event.o lodepng.o util.o
+	g++ $(CFLAGS) -o app main.o context.o commander.o swapchain.o painter.o window.o mem.o io.o event.o lodepng.o util.o -lxcb -lvulkan -lX11
 
 window.o : window.cpp window.hpp
 	g++ -c $(CFLAGS) window.cpp
@@ -21,11 +21,14 @@ context.o : context.cpp context.hpp
 swapchain.o : swapchain.cpp swapchain.hpp context.hpp window.hpp
 	g++ -c $(CFLAGS) swapchain.cpp 
 
-painter.o : painter.cpp painter.hpp swapchain.hpp
+painter.o : painter.cpp painter.hpp swapchain.hpp util.hpp
 	g++ -c $(CFLAGS) painter.cpp
 
 commander.o : commander.cpp commander.hpp context.hpp swapchain.hpp painter.hpp
 	g++ -c $(CFLAGS) commander.cpp
+
+util.o : util.cpp util.hpp swapchain.hpp context.hpp
+	g++ -c $(CFLAGS) util.cpp
 
 lodepng.o : lib/lodepng.cpp lib/lodepng.h
 	g++ -c $(CFLAGS) lib/lodepng.cpp
