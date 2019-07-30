@@ -25,18 +25,13 @@ void checkBufferMemReqs(const Context& context, const vk::Buffer& buffer);
 
 void printAlphaComposite(const vk::SurfaceCapabilitiesKHR surfCaps);
 
-struct Timer
+class Timer
 {
+public:
+	void start();
+	void end();
+private:
 	std::clock_t startTime, endTime;
-	void start()
-	{
-		startTime = std::clock();
-	}
-	void end()
-	{
-		endTime = std::clock();
-		std::cout << (endTime - startTime) / (double) CLOCKS_PER_SEC << std::endl;
-	}
 };
 
 #endif

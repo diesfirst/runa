@@ -6,8 +6,6 @@
 #include <cmath>
 #include <algorithm>
 
-Timer timer;
-
 float length(int x, int y)
 {
 	return std::sqrt(x*x + y*y);
@@ -123,11 +121,9 @@ void Painter::paintImage(int16_t x, int16_t y)
 
 void Painter::paintBuffer(int16_t x, int16_t y)
 {
-	timer.start();
 	for (Bristle bristle : currentBrush) {
 		writeToHostBufferMemory(bristle.offsetX + x, bristle.offsetY + y, 25);
 	}
-	timer.end();
 }
 
 void Painter::fillLayer(Layer& layer, float r, float g, float b, float a)

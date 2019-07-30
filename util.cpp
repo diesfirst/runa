@@ -81,3 +81,14 @@ void checkBufferMemReqs(const Context& context, const vk::Buffer& buffer)
 	std::cout << "Required memory type bits" << std::endl;
 	std::cout << std::bitset<32>(memReqs.memoryTypeBits) << std::endl;
 }
+
+void Timer::start()
+{
+	startTime = std::clock();
+}
+
+void Timer::end()
+{
+	endTime = std::clock();
+	std::cout << (endTime - startTime) / (double) CLOCKS_PER_SEC << std::endl;
+}

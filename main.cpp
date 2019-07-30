@@ -10,7 +10,6 @@
 #include <ctime>
 #include "util.hpp"
 
-Timer timer;
 
 void paintLoop(
 		EventHandler& eventHandler, 
@@ -18,6 +17,7 @@ void paintLoop(
 		Commander& commander,
 		Swapchain& swapchain)
 {
+	Timer timer;
 	while (true)
 	{
 		timer.start();

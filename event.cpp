@@ -9,8 +9,6 @@
 #include "io.hpp"
 #include "util.hpp"
 
-Timer timer;
-
 EventHandler::EventHandler(
 		Commander& commander,
 		MemoryManager& mm,
