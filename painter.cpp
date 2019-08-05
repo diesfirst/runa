@@ -14,6 +14,7 @@ float length(int x, int y)
 float calcAlpha(float val, float radius)
 {
 	float alpha = std::clamp(1.0 - val / radius, 0.0, 1.0);
+	alpha *= .2;
 	return alpha;
 }
 
@@ -24,6 +25,7 @@ void add(Pixel& a, Pixel& b, Pixel& o)
 	o.b = std::min(a.b * a.a + b.b * b.a, 1.0f);
 	o.a = std::min(a.a + b.a, 1.0f);;
 }
+
 void over(Pixel& a, Pixel& b, Pixel& o)
 {
 	float complement = 1.0 - a.a;
@@ -63,7 +65,7 @@ void Painter::prepareForBufferPaint()
 			swapchain.extent.width,
 			swapchain.extent.height,
 			1);
-	circleBrush(7.0);
+	circleBrush(15.0);
 	background.resize(imageSize);
 	foreground.resize(imageSize);
 	target.resize(imageSize);
