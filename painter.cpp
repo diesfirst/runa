@@ -6,6 +6,8 @@
 #include <cmath>
 #include <algorithm>
 
+Timer paintTimer;
+
 float length(int x, int y)
 {
 	return std::sqrt(x*x + y*y);
@@ -35,6 +37,18 @@ void over(Pixel& a, Pixel& b, Pixel& o)
 	a.a = a.a + b.a * complement;
 }
 
+bool bristleCompare(const Bristle& a, const Bristle& b)
+{
+	if (a.offsetY < b.offsetY)
+		return true;
+	if (a.offsetY == b.offsetY)
+	{
+		if (a.offsetX < b.offsetX)
+			return true;
+	}
+	return false;
+}
+
 Painter::Painter (
 		const Swapchain& swapchain, 
 		Commander& commander,
@@ -47,6 +61,7 @@ Painter::Painter (
 {
 	imageSize = imageWidth * imageHeight;
 	R = G = B = 1.0;
+	R = 0.0;
 	std::cout << "Painter created!" << std::endl;
 }
 
@@ -70,7 +85,10 @@ void Painter::prepareForBufferPaint()
 	foreground.resize(imageSize);
 	target.resize(imageSize);
 	std::cout << "foreground size = " << foreground.size() << std::endl;
-	fillLayer(background, 0.3, 0.3, 0.3, 1.0);
+	paintTimer.start();
+	fillLayer(foreground, 0.5, 0.3, 0.3, 1.0);
+	writeLayerToBuffer(foreground);
+	paintTimer.end("Fill layer");
 	std::cout << "Painter prepared!" << std::endl;
 }
 
@@ -107,17 +125,21 @@ int Painter::aquireImageBlock(
 
 void Painter::paintForeground(int16_t x, int16_t y)
 {
+	paintTimer.start();
 	for (Bristle bristle : currentBrush)
 	{
 		writeToLayer(foreground, bristle.offsetX + x, bristle.offsetY + y, bristle.alpha);
 	}
+	paintTimer.end("Write to layer");
 //	overLayers(foreground, background, background);
-	writeLayerToBuffer(foreground);
+//	paintTimer.start();
+//	writeLayerToBuffer(foreground);
+//	paintTimer.end("Write layer to buffer");
 }
 
 void Painter::paintLayer(Layer& layer, int16_t x, int16_t y)
 {
-	for (Bristle bristle : currentBrush)
+	for (Bristle& bristle : currentBrush)
 	{
 		writeToLayer(layer, bristle.offsetX + x, bristle.offsetY + y, bristle.alpha);
 	}
@@ -130,18 +152,16 @@ void Painter::paintImage(int16_t x, int16_t y)
 
 void Painter::paintBuffer(int16_t x, int16_t y)
 {
-	for (Bristle bristle : currentBrush) {
+	for (Bristle& bristle : currentBrush) {
 		writeToHostBufferMemory(bristle.offsetX + x, bristle.offsetY + y, 25);
 	}
 }
 
 void Painter::fillLayer(Layer& layer, float r, float g, float b, float a)
 {
-	for (Pixel pixel : layer) {
-		pixel.r = r;
-		pixel.g = g;
-		pixel.b = b;
-		pixel.a = a;
+	for (int i = 0; i < imageSize; ++i) {
+		Pixel p{r, g, b, a};
+		layer[i] = p;
 	}
 }
 
@@ -213,7 +233,6 @@ void Painter::circleBrush(float radius)
 		{
 			dist = length(x, y);
 			float alpha = calcAlpha(dist, radius);
-			std::cout << "alpha: " << alpha << std::endl;
 			negX = -1 * x;
 			negY = -1 * y;
 			Bristle tr{x, y, alpha};
@@ -228,7 +247,22 @@ void Painter::circleBrush(float radius)
 		}
 		y++;
 	}
-	//sort the currentBrush
+	std::sort(
+			currentBrush.begin(), 
+			currentBrush.end(), 
+			bristleCompare);
+}
+
+void Painter::setBrushSize(float r)
+{
+	circleBrush(r);
+}
+
+void Painter::setCurrentColor(float r, float g, float b)
+{
+	R = r;
+	G = g;
+	B = b;
 }
 
 void Painter::writeLayerToBuffer(Layer& layer)
@@ -246,13 +280,24 @@ void Painter::writeLayerToBuffer(Layer& layer)
 	}
 }
 
+void Painter::writePixelToBuffer(const Pixel& pixel, const size_t index)
+{
+	uint8_t* ptr = static_cast<uint8_t*>(pBufferMemory);
+	ptr += 4*index;
+	ptr[0] = static_cast<uint8_t>(pixel.b * 255);
+	ptr[1] = static_cast<uint8_t>(pixel.g * 255);
+	ptr[2] = static_cast<uint8_t>(pixel.r * 255);
+	ptr[3] = static_cast<uint8_t>(pixel.a * 255);
+}
+
 void Painter::writeToLayer(Layer& layer, int16_t x, int16_t y, float a)
 {
 	int index = y * imageWidth + x;
 	Pixel b{R, G, B, a};
 //	over(layer[index], b, layer[index]);
 //	over(b, layer[index], layer[index]);
-	add(b, layer[index], layer[index]);
+	over(b, layer[index], layer[index]);
+	writePixelToBuffer(layer[index], index);
 }
 
 void Painter::writeToHostBufferMemory(int16_t x, int16_t y, uint8_t a)

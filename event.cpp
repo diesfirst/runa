@@ -69,6 +69,41 @@ void EventHandler::handleEvent(xcb_generic_event_t* event)
 			{
 				std::cout << "Save key pressed" << std::endl;
 				saveSwapImage(mm, commander, swapchain);
+				break;
+			}
+			if (strcmp(key, "b") == 0) 
+			{
+				float radius;
+				std::cout << "Enter a new size for brush." << std::endl;
+				std::cin >> radius;
+				painter.setBrushSize(radius);
+			}
+			if (strcmp(key, "c") == 0)
+			{
+				float r,g,b;
+				std::string erMsg = "Input not between 0 and 1.";
+				std::cout << "Enter a Red value between 0 and 1."	<< std::endl;
+				std::cin >> r;
+				if (r > 1 || r < 0)
+				{
+					std::cout << erMsg << std::endl;
+					return;
+				}
+				std::cout << "Enter a Green value between 0 and 1."	<< std::endl;
+				std::cin >> g;
+				if (g > 1 || g < 0)
+				{
+					std::cout << erMsg << std::endl;
+					return;
+				}
+				std::cout << "Enter a Blue value between 0 and 1."	<< std::endl;
+				std::cin >> b;
+				if (b > 1 || b < 0)
+				{
+					std::cout << erMsg << std::endl;
+					return;
+				}
+				painter.setCurrentColor(r,g,b);
 			}
 			break;
 		}

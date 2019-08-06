@@ -29,7 +29,7 @@ class Timer
 {
 public:
 	void start();
-	void end();
+	void end(const std::string& funcName = "Non-specified");
 private:
 	std::clock_t startTime, endTime;
 };

@@ -55,9 +55,15 @@ public:
 
 	void circleBrush(float radius);
 
+	void setBrushSize(float r);
+
+	void setCurrentColor(float r, float g, float b);
+
 	size_t imageSize;
 
 	void writeLayerToBuffer(Layer& layer);
+	
+	void writePixelToBuffer(const Pixel& pixel, const size_t index);
 
 	void writeToLayer(Layer& layer, int16_t x, int16_t y, float a);
 
@@ -66,6 +72,7 @@ public:
 	void writeToHostBufferMemory(int16_t x,int16_t y, uint8_t a);
 
 	void writeCheckersToHostMemory(float x, float y);
+
 
 private:
 	const Swapchain& swapchain;
