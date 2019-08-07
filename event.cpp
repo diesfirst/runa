@@ -35,7 +35,7 @@ void EventHandler::handleEvent(xcb_generic_event_t* event)
 				break;
 			xcb_motion_notify_event_t* motion =
 				(xcb_motion_notify_event_t*)event;
-			painter.paintForeground(motion->event_x, motion->event_y);
+			painter.paint(motion->event_x, motion->event_y);
 			commander.renderFrame(swapchain);
 			break;
 		}
@@ -44,7 +44,7 @@ void EventHandler::handleEvent(xcb_generic_event_t* event)
 			mButtonDown = true;
 			xcb_motion_notify_event_t* motion =
 				(xcb_motion_notify_event_t*)event;
-			painter.paintForeground(motion->event_x, motion->event_y);
+			painter.paint(motion->event_x, motion->event_y);
 			commander.renderFrame(swapchain);
 			break;
 		}

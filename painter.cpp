@@ -16,11 +16,11 @@ float length(int x, int y)
 float calcAlpha(float val, float radius)
 {
 	float alpha = std::clamp(1.0 - val / radius, 0.0, 1.0);
-	alpha *= .2;
+	alpha *= 0.5;
 	return alpha;
 }
 
-void add(Pixel& a, Pixel& b, Pixel& o)
+void add(const Pixel& a, const Pixel& b, Pixel& o)
 {
 	o.r = std::min(a.r * a.a + b.r * b.a, 1.0f);
 	o.g = std::min(a.g * a.a + b.g * b.a, 1.0f);
@@ -28,13 +28,22 @@ void add(Pixel& a, Pixel& b, Pixel& o)
 	o.a = std::min(a.a + b.a, 1.0f);;
 }
 
-void over(Pixel& a, Pixel& b, Pixel& o)
+void over(const Pixel& a, const Pixel& b, Pixel& o)
 {
 	float complement = 1.0 - a.a;
 	o.r = a.r * a.a + b.r * b.a * complement;
 	o.g = a.g * a.a + b.g * b.a * complement;
 	o.b = a.b * a.a + b.b * b.a * complement;
-	a.a = a.a + b.a * complement;
+	o.a = a.a + b.a * complement;
+}
+
+void overPreMul(const Pixel& a, const Pixel& b, Pixel& o)
+{
+	float complement = 1.0 - a.a;
+	o.r = a.r + b.r * complement;
+	o.g = a.g + b.g * complement;
+	o.b = a.b + b.b * complement;
+	o.a = a.a + b.a * complement;
 }
 
 bool bristleCompare(const Bristle& a, const Bristle& b)
@@ -60,7 +69,7 @@ Painter::Painter (
 	imageHeight(swapchain.extent.height)
 {
 	imageSize = imageWidth * imageHeight;
-	R = G = B = 1.0;
+	B = G = 1.0;
 	R = 0.0;
 	std::cout << "Painter created!" << std::endl;
 }
@@ -81,14 +90,14 @@ void Painter::prepareForBufferPaint()
 			swapchain.extent.height,
 			1);
 	circleBrush(15.0);
-	background.resize(imageSize);
-	foreground.resize(imageSize);
-	target.resize(imageSize);
-	std::cout << "foreground size = " << foreground.size() << std::endl;
-	paintTimer.start();
-	fillLayer(foreground, 0.5, 0.3, 0.3, 1.0);
-	writeLayerToBuffer(foreground);
-	paintTimer.end("Fill layer");
+	overLayer.resize(imageSize);
+	underLayer.resize(imageSize);
+	addNewLayer();
+	addNewLayer();
+	fillLayer(stack[0], 0.5, 0.3, 0.3, 1.0);
+	fillLayer(stack[curIndex], 0.0, 0.0, 0.0, 0.0);
+	underLayer = stack[0];
+	writeLayerToBuffer(underLayer);
 	std::cout << "Painter prepared!" << std::endl;
 }
 
@@ -123,38 +132,20 @@ int Painter::aquireImageBlock(
 	return index;
 }
 
-void Painter::paintForeground(int16_t x, int16_t y)
+void Painter::paint(int16_t x, int16_t y)
 {
+	if (x < 0 || x > imageWidth) return;
+	if (y < 0 || y > imageHeight) return;
 	paintTimer.start();
-	for (Bristle bristle : currentBrush)
-	{
-		writeToLayer(foreground, bristle.offsetX + x, bristle.offsetY + y, bristle.alpha);
-	}
-	paintTimer.end("Write to layer");
-//	overLayers(foreground, background, background);
-//	paintTimer.start();
-//	writeLayerToBuffer(foreground);
-//	paintTimer.end("Write layer to buffer");
-}
-
-void Painter::paintLayer(Layer& layer, int16_t x, int16_t y)
-{
 	for (Bristle& bristle : currentBrush)
 	{
-		writeToLayer(layer, bristle.offsetX + x, bristle.offsetY + y, bristle.alpha);
+		writeToLayer(
+				stack[curIndex], 
+				bristle.offsetX + x, 
+				bristle.offsetY + y, 
+				bristle.alpha);
 	}
-}
-
-void Painter::paintImage(int16_t x, int16_t y)
-{
-	writeToHostImageMemory(x, y);
-}
-
-void Painter::paintBuffer(int16_t x, int16_t y)
-{
-	for (Bristle& bristle : currentBrush) {
-		writeToHostBufferMemory(bristle.offsetX + x, bristle.offsetY + y, 25);
-	}
+	paintTimer.end("writeToLayer");
 }
 
 void Painter::fillLayer(Layer& layer, float r, float g, float b, float a)
@@ -182,6 +173,14 @@ void Painter::fillBuffer(
 		pointer += 4;
 		iter++;
 	}
+}
+
+//this also will set the current index to the 
+//new layer
+void Painter::addNewLayer()
+{
+	stack.push_back(Layer(imageSize));
+	curIndex = stack.size() - 1;
 }
 
 void Painter::overLayers(Layer& layerTop, Layer& layerBottom, Layer& target)
@@ -293,11 +292,10 @@ void Painter::writePixelToBuffer(const Pixel& pixel, const size_t index)
 void Painter::writeToLayer(Layer& layer, int16_t x, int16_t y, float a)
 {
 	int index = y * imageWidth + x;
-	Pixel b{R, G, B, a};
-//	over(layer[index], b, layer[index]);
-//	over(b, layer[index], layer[index]);
-	over(b, layer[index], layer[index]);
-	writePixelToBuffer(layer[index], index);
+	Pixel b{R * a, G * a, B * a, a};
+	overPreMul(b, layer[index], layer[index]);
+	over(layer[index], underLayer[index], b);
+	writePixelToBuffer(b, index);
 }
 
 void Painter::writeToHostBufferMemory(int16_t x, int16_t y, uint8_t a)
@@ -316,21 +314,27 @@ void Painter::writeToHostImageMemory(int16_t x, int16_t y)
 	static_cast<uint32_t*>(pImageMemory)[y * 504 + x] = UINT32_MAX; //should set to white
 }
 
-void Painter::writeCheckersToHostMemory(float x, float y)
+void Painter::switchToLayer(int index)
 {
-	unsigned char* pImgMem = static_cast<unsigned char*>(pBufferMemory);
-	float r = x / imageWidth;
-	float g = y / imageHeight;
-	for (int row = 0; row < imageHeight; row++)
+	size_t size = getStackSize();
+	if (index > size || index < size)
 	{
-		for (int col = 0; col < imageWidth; col++)
+		std::cout << "Index out of layer stack range." << std::endl;
+		return;
+	}
+	curIndex = index;
+	if (index > 0)
+	{
+		int i = index - 1;
+		underLayer = stack[i];
+		while (index > 0)
 		{
-			unsigned char rgb = (((row & 0x8) == 0) ^ ((col & 0x8) == 0)) * 255;
-			pImgMem[0] = rgb * r;
-			pImgMem[1] = rgb * g;
-			pImgMem[2] = rgb;
-			pImgMem[3] = 255;
-			pImgMem += 4;
+			overLayers(stack[i], stack[i-1], 
 		}
 	}
+}
+
+size_t Painter::getStackSize()
+{
+	return stack.size();
 }

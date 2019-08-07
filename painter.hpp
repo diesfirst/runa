@@ -3,6 +3,7 @@
 
 #include <vulkan/vulkan.hpp>
 #include <bitset>
+#include <memory>
 
 class Swapchain;
 class Commander;
@@ -25,6 +26,10 @@ struct Pixel
 
 typedef std::vector<Pixel> Layer;
 
+typedef std::unique_ptr<Layer> LayerPointer;
+
+typedef std::vector<Layer> Stack;
+
 class Painter
 {
 public:
@@ -35,14 +40,8 @@ public:
 
 	void prepareForBufferPaint();
 
-	void paintLayer(Layer& layer, int16_t x, int16_t y);
+	void paint(int16_t x, int16_t y);
 
-	void paintForeground(int16_t x, int16_t y);
-
-	void paintImage(int16_t x, int16_t y);
-	
-	void paintBuffer(int16_t x, int16_t y);
-	
 	void fillLayer(Layer& layer, float r, float g, float b, float a);
 
 	void fillBuffer(
@@ -50,6 +49,8 @@ public:
 			uint8_t g,
 			uint8_t b,
 			uint8_t a);
+
+	void addNewLayer();
 
 	void overLayers(Layer& layerTop, Layer& layerBottom, Layer& target);
 
@@ -73,6 +74,9 @@ public:
 
 	void writeCheckersToHostMemory(float x, float y);
 
+	size_t getStackSize();
+
+	void switchToLayer(int index);
 
 private:
 	const Swapchain& swapchain;
@@ -83,9 +87,9 @@ private:
 	void* pImageMemory;
 	std::vector<Bristle> currentBrush;
 	float R, G, B;
-	Layer background;
-	Layer foreground;
-	Layer target;
+	Layer overLayer, underLayer;
+	int curIndex;
+	Stack stack;
 
 	int aquireBufferBlock(uint32_t size);
 

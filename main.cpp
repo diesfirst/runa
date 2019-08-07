@@ -20,7 +20,9 @@ void paintLoop(
 	Timer timer;
 	while (true)
 	{
+//		timer.start();
 		eventHandler.handleEvent(window.waitForEvent());
+//		timer.end();
 	}
 }
 
@@ -52,6 +54,8 @@ int main(int argc, char *argv[])
 
 	printFormatsAvailable(swapchain);
 	printAlphaComposite(swapchain.surfCaps);
+
+//	painter.addNewLayer();
 
 	paintLoop(
 			eventHandler,
