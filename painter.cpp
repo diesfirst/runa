@@ -298,7 +298,7 @@ void Painter::writeToLayer(Layer& layer, int16_t x, int16_t y, float a)
 	Pixel pixel{R * a, G * a, B * a, a};
 	overPreMul(pixel, layer[index], layer[index]);
 	overPreMul(foreground[index], layer[index], pixel);
-	overPreMul(layer[index], background[index], pixel);
+	overPreMul(pixel, background[index], pixel);
 	writePixelToBuffer(pixel, index);
 }
 
@@ -356,7 +356,8 @@ void Painter::setForeground()
 	{
 		int i = stacksize - 1;
 		foreground = stack[i];
-		while (i > curIndex)
+		std::cout << "setting foreground to layer " << i << std::endl;
+		while (i - 1  > curIndex)
 		{
 			overLayers(foreground, stack[i-1], foreground);
 			i--;
