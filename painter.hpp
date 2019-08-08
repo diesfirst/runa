@@ -78,6 +78,14 @@ public:
 
 	void switchToLayer(int index);
 
+	void wipeLayer(Layer& layer);
+
+	void writeCurrentLayerToBuffer();
+
+	void writeForegroundToBuffer();
+
+	void writeBackgroundToBuffer();
+
 private:
 	const Swapchain& swapchain;
 	Commander& commander;
@@ -87,7 +95,7 @@ private:
 	void* pImageMemory;
 	std::vector<Bristle> currentBrush;
 	float R, G, B;
-	Layer overLayer, underLayer;
+	Layer foreground, background;
 	int curIndex;
 	Stack stack;
 
@@ -98,6 +106,9 @@ private:
 		uint32_t height,
 		uint32_t depth);
 
+	void setBackground();
+
+	void setForeground();
 
 };
 

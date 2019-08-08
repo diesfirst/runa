@@ -90,15 +90,16 @@ void Painter::prepareForBufferPaint()
 			swapchain.extent.height,
 			1);
 	circleBrush(15.0);
-	overLayer.resize(imageSize);
-	underLayer.resize(imageSize);
+	foreground.resize(imageSize);
+	background.resize(imageSize);
 	addNewLayer();
-	addNewLayer();
-	fillLayer(stack[0], 0.5, 0.3, 0.3, 1.0);
-	fillLayer(stack[curIndex], 0.0, 0.0, 0.0, 0.0);
-	underLayer = stack[0];
-	writeLayerToBuffer(underLayer);
+	fillLayer(stack[curIndex], 0.5, 0.3, 0.2, 1.0);
+	writeLayerToBuffer(stack[curIndex]);
+	setBackground();
+	setForeground();
 	std::cout << "Painter prepared!" << std::endl;
+	std::cout << "Current layer index: " 
+		<< curIndex << std::endl;
 }
 
 void Painter::prepareForImagePaint()
@@ -181,6 +182,8 @@ void Painter::addNewLayer()
 {
 	stack.push_back(Layer(imageSize));
 	curIndex = stack.size() - 1;
+	setBackground();
+	setForeground();
 }
 
 void Painter::overLayers(Layer& layerTop, Layer& layerBottom, Layer& target)
@@ -194,7 +197,7 @@ void Painter::overLayers(Layer& layerTop, Layer& layerBottom, Layer& target)
 	int i = 0;
 	while (i < imageSize)
 	{
-		over(layerTop[i], layerBottom[i], target[i]);
+		overPreMul(layerTop[i], layerBottom[i], target[i]);
 		i++;
 	}
 }
@@ -292,10 +295,11 @@ void Painter::writePixelToBuffer(const Pixel& pixel, const size_t index)
 void Painter::writeToLayer(Layer& layer, int16_t x, int16_t y, float a)
 {
 	int index = y * imageWidth + x;
-	Pixel b{R * a, G * a, B * a, a};
-	overPreMul(b, layer[index], layer[index]);
-	over(layer[index], underLayer[index], b);
-	writePixelToBuffer(b, index);
+	Pixel pixel{R * a, G * a, B * a, a};
+	overPreMul(pixel, layer[index], layer[index]);
+	overPreMul(foreground[index], layer[index], pixel);
+	overPreMul(layer[index], background[index], pixel);
+	writePixelToBuffer(pixel, index);
 }
 
 void Painter::writeToHostBufferMemory(int16_t x, int16_t y, uint8_t a)
@@ -316,25 +320,76 @@ void Painter::writeToHostImageMemory(int16_t x, int16_t y)
 
 void Painter::switchToLayer(int index)
 {
-	size_t size = getStackSize();
-	if (index > size || index < size)
-	{
-		std::cout << "Index out of layer stack range." << std::endl;
-		return;
-	}
 	curIndex = index;
-	if (index > 0)
+	setBackground();
+	setForeground();
+}
+
+void Painter::setBackground()
+{
+	if (curIndex > 0)
 	{
-		int i = index - 1;
-		underLayer = stack[i];
-		while (index > 0)
+		int i = curIndex - 1;
+		background = stack[i];
+		std::cout << "setting background to layer " << i << std::endl;
+		assert(background[0].a == stack[i][0].a);
+		assert(background[0].r == stack[i][0].r);
+		while (i > 0)
 		{
-			overLayers(stack[i], stack[i-1], 
+			std::cout << "set bg while loop entered" << std::endl;
+			overLayers(background, stack[i-1], background);
+			i--;
 		}
 	}
+	else 
+	{
+		std::cout << "bg wiped" << std::endl;
+		wipeLayer(background);
+	}
+}
+
+void Painter::setForeground()
+{
+	size_t stacksize = getStackSize();
+	std::cout << "from set fg: stacksize - 1: " << stacksize - 1	<< std::endl;
+	if (curIndex < (stacksize - 1)) //there are layers above it
+	{
+		int i = stacksize - 1;
+		foreground = stack[i];
+		while (i > curIndex)
+		{
+			overLayers(foreground, stack[i-1], foreground);
+			i--;
+		}
+	}
+	else
+	{
+		wipeLayer(foreground);
+		std::cout << "fg wiped" << std::endl;
+	}
+}
+
+void Painter::wipeLayer(Layer& layer)
+{
+	fillLayer(layer, 0.0, 0.0, 0.0, 0.0);
 }
 
 size_t Painter::getStackSize()
 {
 	return stack.size();
+}
+
+void Painter::writeCurrentLayerToBuffer()
+{
+	writeLayerToBuffer(stack[curIndex]);
+}
+
+void Painter::writeForegroundToBuffer()
+{
+	writeLayerToBuffer(foreground);
+}
+
+void Painter::writeBackgroundToBuffer()
+{
+	writeLayerToBuffer(background);
 }

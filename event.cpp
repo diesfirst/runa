@@ -77,6 +77,7 @@ void EventHandler::handleEvent(xcb_generic_event_t* event)
 				std::cout << "Enter a new size for brush." << std::endl;
 				std::cin >> radius;
 				painter.setBrushSize(radius);
+				break;
 			}
 			if (strcmp(key, "c") == 0)
 			{
@@ -104,6 +105,48 @@ void EventHandler::handleEvent(xcb_generic_event_t* event)
 					return;
 				}
 				painter.setCurrentColor(r,g,b);
+				break;
+			}
+			if (strcmp(key, "a") == 0)
+			{
+				painter.addNewLayer();
+				std::cout << "New layer added" << std::endl;
+				std::cout << "Current layer index: " 
+					<< painter.getStackSize() - 1 << std::endl;
+				break;
+			}
+			if (strcmp(key, "l") == 0)
+			{
+				int index;
+				std::cout << "Enter a layer index (max is " 
+					<< painter.getStackSize() - 1 << ")." << std::endl;
+				std::cin >> index;
+				if (index > (painter.getStackSize() - 1) || index < 0)
+				{
+					std::cout << "Index is out of range." << std::endl;
+					return;
+				}
+				painter.switchToLayer(index);
+				break;
+			}
+			if (strcmp(key, "w") == 0)
+			{
+				painter.writeCurrentLayerToBuffer();
+				std::cout << "wrote current layer to buffer" << std::endl;
+				commander.renderFrame(swapchain);
+				break;
+			}
+			if (strcmp(key, "f") == 0)
+			{
+				painter.writeForegroundToBuffer();
+				std::cout << "wrote fg to buffer " << std::endl;
+				commander.renderFrame(swapchain);
+			}
+			if (strcmp(key, "g") == 0)
+			{
+				painter.writeBackgroundToBuffer();
+				std::cout << "wrote bg to buffer " << std::endl;
+				commander.renderFrame(swapchain);
 			}
 			break;
 		}
