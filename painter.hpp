@@ -30,6 +30,13 @@ typedef std::unique_ptr<Layer> LayerPointer;
 
 typedef std::vector<Layer> Stack;
 
+typedef void (*pBlendFunc)(const Pixel&, const Pixel&, Pixel&);
+
+enum class Blend : size_t 
+{
+	add, sub, min, over, overPreMul, numModes
+};
+
 class Painter
 {
 public:
@@ -102,6 +109,7 @@ private:
 	Layer foreground, background;
 	int curIndex;
 	bool eraseMode = false;
+	Blend blendMode = Blend::overPreMul;
 	float curBrushSize;
 	Stack stack;
 

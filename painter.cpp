@@ -28,6 +28,22 @@ void add(const Pixel& a, const Pixel& b, Pixel& o)
 	o.a = std::min(a.a + b.a, 1.0f);;
 }
 
+void sub(const Pixel& a, const Pixel& b, Pixel& o)
+{
+	o.r = std::max(b.r - a.r, 0.0f);
+	o.g = std::max(b.g - a.g, 0.0f);
+	o.b = std::max(b.b - a.b, 0.0f);
+	o.a = std::max(b.a - a.a, 0.0f);;
+}
+
+void min(const Pixel& a, const Pixel& b, Pixel& o)
+{
+	o.r = std::min(a.r, b.r);
+	o.g = std::min(a.g, b.g);
+	o.b = std::min(a.b, b.b);
+	o.a = std::min(a.a, b.a);
+}
+
 void over(const Pixel& a, const Pixel& b, Pixel& o)
 {
 	float complement = 1.0 - a.a;
@@ -45,6 +61,15 @@ void overPreMul(const Pixel& a, const Pixel& b, Pixel& o)
 	o.b = a.b + b.b * complement;
 	o.a = a.a + b.a * complement;
 }
+
+std::array<pBlendFunc, static_cast<size_t>(Blend::numModes)> blendFunctions =
+{
+	&add,
+	&sub,
+	&min,
+	&over,
+	&overPreMul
+};
 
 bool bristleCompare(const Bristle& a, const Bristle& b)
 {
@@ -72,6 +97,10 @@ Painter::Painter (
 	B = G = 1.0;
 	A = 1.0;
 	R = 0.0;
+	curBrushSize = 15.0;
+	circleBrush(curBrushSize);
+	foreground.resize(imageSize);
+	background.resize(imageSize);
 	std::cout << "Painter created!" << std::endl;
 }
 
@@ -90,9 +119,6 @@ void Painter::prepareForBufferPaint()
 			swapchain.extent.width,
 			swapchain.extent.height,
 			1);
-	circleBrush(15.0);
-	foreground.resize(imageSize);
-	background.resize(imageSize);
 	addNewLayer();
 	fillLayer(stack[curIndex], 0.5, 0.3, 0.2, 1.0);
 	writeLayerToBuffer(stack[curIndex]);
@@ -298,7 +324,11 @@ void Painter::writeToLayer(Layer& layer, int16_t x, int16_t y, float a)
 {
 	int index = y * imageWidth + x;
 	Pixel pixel{R * a, G * a, B * a, a};
-	overPreMul(pixel, layer[index], layer[index]);
+//	overPreMul(pixel, layer[index], layer[index]);
+	blendFunctions[static_cast<size_t>(blendMode)](
+			pixel, 
+			layer[index], 
+			layer[index]);
 	overPreMul(foreground[index], layer[index], pixel);
 	overPreMul(pixel, background[index], pixel);
 	writePixelToBuffer(pixel, index);
@@ -408,16 +438,16 @@ void Painter::toggleErase()
 {
 	if (eraseMode)
 	{
-		A = 1.0;
 		std::cout << "Eraser off" << std::endl;
 		eraseMode = false;
+		blendMode = Blend::over;
 		return;
 	}
 	else
 	{
-		A = 0.0;
 		std::cout << "Erase on" << std::endl;
 		eraseMode = true;
+		blendMode = Blend::sub;
 	}
-	circleBrush(curBrushSize);
+//	circleBrush(curBrushSize);
 }
