@@ -13,10 +13,10 @@ float length(int x, int y)
 	return std::sqrt(x*x + y*y);
 }
 
-float calcAlpha(float val, float radius)
+float Painter::calcAlpha(float val, float radius)
 {
 	float alpha = std::clamp(1.0 - val / radius, 0.0, 1.0);
-	alpha *= 0.5;
+	alpha *= 0.5 * A;
 	return alpha;
 }
 
@@ -70,6 +70,7 @@ Painter::Painter (
 {
 	imageSize = imageWidth * imageHeight;
 	B = G = 1.0;
+	A = 1.0;
 	R = 0.0;
 	std::cout << "Painter created!" << std::endl;
 }
@@ -257,6 +258,7 @@ void Painter::circleBrush(float radius)
 
 void Painter::setBrushSize(float r)
 {
+	curBrushSize = r;
 	circleBrush(r);
 }
 
@@ -393,4 +395,29 @@ void Painter::writeForegroundToBuffer()
 void Painter::writeBackgroundToBuffer()
 {
 	writeLayerToBuffer(background);
+}
+
+void Painter::setAlpha(float a)
+{
+	A = a;
+	circleBrush(curBrushSize);
+	eraseMode = false;
+}
+
+void Painter::toggleErase()
+{
+	if (eraseMode)
+	{
+		A = 1.0;
+		std::cout << "Eraser off" << std::endl;
+		eraseMode = false;
+		return;
+	}
+	else
+	{
+		A = 0.0;
+		std::cout << "Erase on" << std::endl;
+		eraseMode = true;
+	}
+	circleBrush(curBrushSize);
 }

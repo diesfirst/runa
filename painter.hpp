@@ -86,6 +86,10 @@ public:
 
 	void writeBackgroundToBuffer();
 
+	void setAlpha(float a);
+
+	void toggleErase();
+
 private:
 	const Swapchain& swapchain;
 	Commander& commander;
@@ -94,9 +98,11 @@ private:
 	void* pBufferMemory;
 	void* pImageMemory;
 	std::vector<Bristle> currentBrush;
-	float R, G, B;
+	float R, G, B, A;
 	Layer foreground, background;
 	int curIndex;
+	bool eraseMode = false;
+	float curBrushSize;
 	Stack stack;
 
 	int aquireBufferBlock(uint32_t size);
@@ -109,6 +115,8 @@ private:
 	void setBackground();
 
 	void setForeground();
+
+	float calcAlpha(float val, float radius);
 
 };
 

@@ -3,6 +3,7 @@
 #include "commander.hpp"
 #include "swapchain.hpp"
 #include "mem.hpp"
+#include <algorithm>
 
 void saveSwapImage(
 		MemoryManager& mm,
@@ -13,12 +14,25 @@ void saveSwapImage(
 			swapchain.extent.width *
 			swapchain.extent.height * 4,
 			vk::BufferUsageFlagBits::eTransferDst);
+
 	commander.copyImageToBuffer(
 			swapchain.images[0],
 			mm.bufferBlocks[index].buffer,
 			swapchain.extent.width,
 			swapchain.extent.height,
 			1);
+
+	//need to swap the red and blue channels 
+	int i = 0;
+	uint8_t* ptr = static_cast<uint8_t*>(mm.bufferBlocks[index].pHostMemory);
+	while (i < swapchain.extent.width * swapchain.extent.height)
+	{
+		std::swap(ptr[0], ptr[2]);
+		ptr += 4;
+		i++;
+	}
+
+	
 	std::cout << "Copied swap image to buffer" << std::endl;
 	std::vector<u_int8_t> pngBuffer;
 	lodepng::encode(

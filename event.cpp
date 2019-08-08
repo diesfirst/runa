@@ -107,7 +107,7 @@ void EventHandler::handleEvent(xcb_generic_event_t* event)
 				painter.setCurrentColor(r,g,b);
 				break;
 			}
-			if (strcmp(key, "a") == 0)
+			if (strcmp(key, "n") == 0)
 			{
 				painter.addNewLayer();
 				std::cout << "New layer added" << std::endl;
@@ -147,6 +147,24 @@ void EventHandler::handleEvent(xcb_generic_event_t* event)
 				painter.writeBackgroundToBuffer();
 				std::cout << "wrote bg to buffer " << std::endl;
 				commander.renderFrame(swapchain);
+			}
+			if (strcmp(key, "a") == 0)
+			{
+				float alpha;
+				std::cout << "Choose an alpha value between 0 and 1." << std::endl;
+				std::cin >> alpha;
+				if (alpha < 0 || alpha > 1)
+				{
+					std::cout << "Input not in between 0 and 1." << std::endl;
+					return;
+				}
+				painter.setAlpha(alpha);
+				break;
+			}
+			if (strcmp(key, "e") == 0)
+			{
+				painter.toggleErase();
+				break;
 			}
 			break;
 		}
