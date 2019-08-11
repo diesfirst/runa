@@ -5,7 +5,7 @@
 #include "mem.hpp"
 #include <algorithm>
 
-void saveSwapImage(
+void io::saveSwapImage(
 		MemoryManager& mm,
 		Commander& commander,
 		Swapchain& swapchain)
@@ -41,15 +41,34 @@ void saveSwapImage(
 			swapchain.extent.width, 
 			swapchain.extent.height);
 	std::cout << "Please give the image a name." << std::endl;
-	std::string name = requestUserInput();
+	std::string name = io::requestUserInput();
 	std::string path = "out/" + name + ".png";
 	lodepng::save_file(pngBuffer, path);
 	std::cout << "Image saved to " << path << std::endl;
 }
 
-std::string requestUserInput()
+std::string io::requestUserInput()
 {
 	std::string word;
 	std::cin >> word;
 	return word;
+}
+
+std::vector<char> io::readFile(const std::string& filename)
+{
+	std::ifstream file(filename, std::ios::ate | std::ios::binary);
+
+	if (!file.is_open())
+	{
+		throw std::runtime_error("failed to open file");
+	}
+		
+	size_t fileSize = (size_t) file.tellg();
+	std::vector<char> buffer(fileSize);
+
+	file.seekg(0);
+	file.read(buffer.data(), fileSize);
+	file.close();
+
+	return buffer;
 }

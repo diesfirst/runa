@@ -68,7 +68,7 @@ void EventHandler::handleEvent(xcb_generic_event_t* event)
 			if (strcmp(key, "s") == 0)
 			{
 				std::cout << "Save key pressed" << std::endl;
-				saveSwapImage(mm, commander, swapchain);
+				io::saveSwapImage(mm, commander, swapchain);
 				break;
 			}
 			if (strcmp(key, "b") == 0) 

@@ -9,6 +9,11 @@ class Swapchain;
 class Commander;
 class MemoryManager;
 
+enum class Blend : size_t 
+{
+	add, sub, min, over, overPreMul, numModes
+};
+
 struct Bristle
 {
 	int16_t offsetX;
@@ -24,18 +29,21 @@ struct Pixel
 	float a = 0.0;
 };
 
-typedef std::vector<Pixel> Layer;
+typedef std::vector<Pixel> Pixels;
+
+struct Layer
+{
+	Pixels pixels;
+	Blend blendMode = Blend::over;
+	float r,g,b,a;
+	float brushSize;
+};
 
 typedef std::unique_ptr<Layer> LayerPointer;
 
 typedef std::vector<Layer> Stack;
 
 typedef void (*pBlendFunc)(const Pixel&, const Pixel&, Pixel&);
-
-enum class Blend : size_t 
-{
-	add, sub, min, over, overPreMul, numModes
-};
 
 class Painter
 {
@@ -49,7 +57,7 @@ public:
 
 	void paint(int16_t x, int16_t y);
 
-	void fillLayer(Layer& layer, float r, float g, float b, float a);
+	void fillPixels(Pixels&, float r, float g, float b, float a);
 
 	void fillBuffer(
 			uint8_t r,
@@ -59,9 +67,9 @@ public:
 
 	void addNewLayer();
 
-	void overLayers(Layer& layerTop, Layer& layerBottom, Layer& target);
+	void overPixels(Pixels& layerTop, Pixels& layerBottom, Pixels& target);
 
-	void circleBrush(float radius);
+	void circleBrush();
 
 	void setBrushSize(float r);
 
@@ -69,23 +77,21 @@ public:
 
 	size_t imageSize;
 
-	void writeLayerToBuffer(Layer& layer);
+	void writePixelsToBuffer(Pixels&);
 	
-	void writePixelToBuffer(const Pixel& pixel, const size_t index);
+	void writePixelToBuffer(const Pixel&, const size_t index);
 
 	void writeToLayer(Layer& layer, int16_t x, int16_t y, float a);
 
 	void writeToHostImageMemory(int16_t x,int16_t y);
 	
-	void writeToHostBufferMemory(int16_t x,int16_t y, uint8_t a);
-
 	void writeCheckersToHostMemory(float x, float y);
 
 	size_t getStackSize();
 
 	void switchToLayer(int index);
 
-	void wipeLayer(Layer& layer);
+	void wipePixels(Pixels& layer);
 
 	void writeCurrentLayerToBuffer();
 
@@ -105,12 +111,12 @@ private:
 	void* pBufferMemory;
 	void* pImageMemory;
 	std::vector<Bristle> currentBrush;
-	float R, G, B, A;
-	Layer foreground, background;
+	float R, G, B, A; //default values
+	Pixels foreground, background;
 	int curIndex;
 	bool eraseMode = false;
 	Blend blendMode = Blend::overPreMul;
-	float curBrushSize;
+	float defaultBrushSize;
 	Stack stack;
 
 	int aquireBufferBlock(uint32_t size);

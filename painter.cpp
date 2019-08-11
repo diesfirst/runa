@@ -16,7 +16,7 @@ float length(int x, int y)
 float Painter::calcAlpha(float val, float radius)
 {
 	float alpha = std::clamp(1.0 - val / radius, 0.0, 1.0);
-	alpha *= 0.5 * A;
+	alpha *= 0.5;
 	return alpha;
 }
 
@@ -94,11 +94,9 @@ Painter::Painter (
 	imageHeight(swapchain.extent.height)
 {
 	imageSize = imageWidth * imageHeight;
-	B = G = 1.0;
-	A = 1.0;
-	R = 0.0;
-	curBrushSize = 15.0;
-	circleBrush(curBrushSize);
+	defaultBrushSize = 15.0;
+	R = G = B = .9; //default color
+	A = 1.0; //default alpha
 	foreground.resize(imageSize);
 	background.resize(imageSize);
 	std::cout << "Painter created!" << std::endl;
@@ -120,8 +118,8 @@ void Painter::prepareForBufferPaint()
 			swapchain.extent.height,
 			1);
 	addNewLayer();
-	fillLayer(stack[curIndex], 0.5, 0.3, 0.2, 1.0);
-	writeLayerToBuffer(stack[curIndex]);
+	fillPixels(stack[curIndex].pixels, 0.5, 0.3, 0.2, 1.0);
+	writePixelsToBuffer(stack[curIndex].pixels);
 	setBackground();
 	setForeground();
 	std::cout << "Painter prepared!" << std::endl;
@@ -162,8 +160,6 @@ int Painter::aquireImageBlock(
 
 void Painter::paint(int16_t x, int16_t y)
 {
-	if (x < 0 || x > imageWidth) return;
-	if (y < 0 || y > imageHeight) return;
 	paintTimer.start();
 	for (Bristle& bristle : currentBrush)
 	{
@@ -176,11 +172,11 @@ void Painter::paint(int16_t x, int16_t y)
 	paintTimer.end("writeToLayer");
 }
 
-void Painter::fillLayer(Layer& layer, float r, float g, float b, float a)
+void Painter::fillPixels(Pixels& pixels, float r, float g, float b, float a)
 {
 	for (int i = 0; i < imageSize; ++i) {
 		Pixel p{r, g, b, a};
-		layer[i] = p;
+		pixels[i] = p;
 	}
 }
 
@@ -207,13 +203,21 @@ void Painter::fillBuffer(
 //new layer
 void Painter::addNewLayer()
 {
-	stack.push_back(Layer(imageSize));
+	stack.push_back(Layer{
+			Pixels(imageSize),
+			Blend::over,
+			R,
+			G,
+			B,
+			A,
+			defaultBrushSize});
 	curIndex = stack.size() - 1;
+	circleBrush();
 	setBackground();
 	setForeground();
 }
 
-void Painter::overLayers(Layer& layerTop, Layer& layerBottom, Layer& target)
+void Painter::overPixels(Pixels& pixelsTop, Pixels& pixelsBottom, Pixels& target)
 {
 //	//should check that sizes match
 //	if (layerTop.size() != layerBottom.size())
@@ -224,14 +228,15 @@ void Painter::overLayers(Layer& layerTop, Layer& layerBottom, Layer& target)
 	int i = 0;
 	while (i < imageSize)
 	{
-		overPreMul(layerTop[i], layerBottom[i], target[i]);
+		overPreMul(pixelsTop[i], pixelsBottom[i], target[i]);
 		i++;
 	}
 }
 
-void Painter::circleBrush(float radius)
+void Painter::circleBrush()
 {
 	currentBrush.clear();
+	float radius = stack[curIndex].brushSize;
 	int iRadius = std::floor(radius);
 	int16_t x = 0;
 	int16_t y = -1 * iRadius;
@@ -284,27 +289,27 @@ void Painter::circleBrush(float radius)
 
 void Painter::setBrushSize(float r)
 {
-	curBrushSize = r;
-	circleBrush(r);
+	stack[curIndex].brushSize = r;
+	circleBrush();
 }
 
 void Painter::setCurrentColor(float r, float g, float b)
 {
-	R = r;
-	G = g;
-	B = b;
+	stack[curIndex].r = r;
+	stack[curIndex].g = g;
+	stack[curIndex].b = b;
 }
 
-void Painter::writeLayerToBuffer(Layer& layer)
+void Painter::writePixelsToBuffer(Pixels& pixels)
 {
 	int i = 0;
 	uint8_t* ptr = static_cast<uint8_t*>(pBufferMemory);
 	while (i < imageSize)
 	{
-		ptr[0] = static_cast<uint8_t>(layer[i].b * 255);
-		ptr[1] = static_cast<uint8_t>(layer[i].g * 255);
-		ptr[2] = static_cast<uint8_t>(layer[i].r * 255);
-		ptr[3] = static_cast<uint8_t>(layer[i].a * 255);
+		ptr[0] = static_cast<uint8_t>(pixels[i].b * 255);
+		ptr[1] = static_cast<uint8_t>(pixels[i].g * 255);
+		ptr[2] = static_cast<uint8_t>(pixels[i].r * 255);
+		ptr[3] = static_cast<uint8_t>(pixels[i].a * 255);
 		ptr += 4;
 		i++;
 	}
@@ -322,27 +327,24 @@ void Painter::writePixelToBuffer(const Pixel& pixel, const size_t index)
 
 void Painter::writeToLayer(Layer& layer, int16_t x, int16_t y, float a)
 {
+	if (x > imageWidth || x < 0)
+		return;
+	if (y > imageHeight || y < 0)
+		return;
 	int index = y * imageWidth + x;
-	Pixel pixel{R * a, G * a, B * a, a};
-//	overPreMul(pixel, layer[index], layer[index]);
+//dont know why this extra check is necessary
+//but it crashes without it
+	if (index > imageSize) 
+		return;
+	a *= layer.a;
+	Pixel pixel{layer.r * a, layer.g * a, layer.b * a, a};
 	blendFunctions[static_cast<size_t>(blendMode)](
 			pixel, 
-			layer[index], 
-			layer[index]);
-	overPreMul(foreground[index], layer[index], pixel);
+			layer.pixels[index], 
+			layer.pixels[index]);
+	overPreMul(foreground[index], layer.pixels[index], pixel);
 	overPreMul(pixel, background[index], pixel);
 	writePixelToBuffer(pixel, index);
-}
-
-void Painter::writeToHostBufferMemory(int16_t x, int16_t y, uint8_t a)
-{
-//	static_cast<uint32_t*>(pBufferMemory)[y * imageWidth + x] = UINT32_MAX; //should set to white
-	uint8_t* ptr = static_cast<uint8_t*>(pBufferMemory);
-	ptr += 4 * (y * imageWidth + x);
-	ptr[0] = R;
-	ptr[1] = G;
-	ptr[2] = B;
-	ptr[3] = a;
 }
 
 void Painter::writeToHostImageMemory(int16_t x, int16_t y)
@@ -353,6 +355,7 @@ void Painter::writeToHostImageMemory(int16_t x, int16_t y)
 void Painter::switchToLayer(int index)
 {
 	curIndex = index;
+	circleBrush();
 	setBackground();
 	setForeground();
 }
@@ -362,21 +365,21 @@ void Painter::setBackground()
 	if (curIndex > 0)
 	{
 		int i = curIndex - 1;
-		background = stack[i];
+		background = stack[i].pixels;
 		std::cout << "setting background to layer " << i << std::endl;
-		assert(background[0].a == stack[i][0].a);
-		assert(background[0].r == stack[i][0].r);
+		assert(background[0].a == stack[i].pixels[0].a);
+		assert(background[0].r == stack[i].pixels[0].r);
 		while (i > 0)
 		{
 			std::cout << "set bg while loop entered" << std::endl;
-			overLayers(background, stack[i-1], background);
+			overPixels(background, stack[i-1].pixels, background);
 			i--;
 		}
 	}
 	else 
 	{
 		std::cout << "bg wiped" << std::endl;
-		wipeLayer(background);
+		wipePixels(background);
 	}
 }
 
@@ -387,24 +390,24 @@ void Painter::setForeground()
 	if (curIndex < (stacksize - 1)) //there are layers above it
 	{
 		int i = stacksize - 1;
-		foreground = stack[i];
+		foreground = stack[i].pixels;
 		std::cout << "setting foreground to layer " << i << std::endl;
 		while (i - 1  > curIndex)
 		{
-			overLayers(foreground, stack[i-1], foreground);
+			overPixels(foreground, stack[i-1].pixels, foreground);
 			i--;
 		}
 	}
 	else
 	{
-		wipeLayer(foreground);
+		wipePixels(foreground);
 		std::cout << "fg wiped" << std::endl;
 	}
 }
 
-void Painter::wipeLayer(Layer& layer)
+void Painter::wipePixels(Pixels& pixels)
 {
-	fillLayer(layer, 0.0, 0.0, 0.0, 0.0);
+	fillPixels(pixels, 0.0, 0.0, 0.0, 0.0);
 }
 
 size_t Painter::getStackSize()
@@ -414,24 +417,22 @@ size_t Painter::getStackSize()
 
 void Painter::writeCurrentLayerToBuffer()
 {
-	writeLayerToBuffer(stack[curIndex]);
+	writePixelsToBuffer(stack[curIndex].pixels);
 }
 
 void Painter::writeForegroundToBuffer()
 {
-	writeLayerToBuffer(foreground);
+	writePixelsToBuffer(foreground);
 }
 
 void Painter::writeBackgroundToBuffer()
 {
-	writeLayerToBuffer(background);
+	writePixelsToBuffer(background);
 }
 
 void Painter::setAlpha(float a)
 {
-	A = a;
-	circleBrush(curBrushSize);
-	eraseMode = false;
+	stack[curIndex].a = a;
 }
 
 void Painter::toggleErase()
@@ -440,8 +441,7 @@ void Painter::toggleErase()
 	{
 		std::cout << "Eraser off" << std::endl;
 		eraseMode = false;
-		blendMode = Blend::over;
-		return;
+		blendMode = Blend::overPreMul;
 	}
 	else
 	{
@@ -449,5 +449,4 @@ void Painter::toggleErase()
 		eraseMode = true;
 		blendMode = Blend::sub;
 	}
-//	circleBrush(curBrushSize);
 }

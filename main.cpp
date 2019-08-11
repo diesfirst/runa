@@ -9,6 +9,7 @@
 #include <chrono>
 #include <ctime>
 #include "util.hpp"
+#include "pipe.hpp"
 
 
 void paintLoop(
@@ -26,6 +27,23 @@ void paintLoop(
 	}
 }
 
+void runPaintProgram(
+		Painter& painter,
+		Commander& commander,
+		Swapchain& swapchain,
+		EventHandler& eventHandler,
+		XWindow& window)
+{
+	painter.prepareForBufferPaint();
+	commander.setSwapchainImagesToPresent(swapchain);
+
+	paintLoop(
+			eventHandler,
+			window,
+			commander,
+			swapchain);
+}
+
 int main(int argc, char *argv[])
 {
 	Context context;
@@ -39,29 +57,21 @@ int main(int argc, char *argv[])
 
 	Swapchain swapchain(context, window);
 	Commander commander(context);
-
 	Painter painter(swapchain, commander, mm);
-
-	commander.allocateCommandBuffersForSwapchain(swapchain);
-	painter.prepareForBufferPaint();
-	commander.setSwapchainImagesToPresent(swapchain);
-
 	EventHandler eventHandler(
 			commander,
 			mm,
 			painter,
 			swapchain);
 
-	printFormatsAvailable(swapchain);
-	printAlphaComposite(swapchain.surfCaps);
+	commander.allocateCommandBuffersForSwapchain(swapchain);
+	//
+	//run program
+//	runPaintProgram(painter, commander, swapchain, eventHandler, window);
 
-//	painter.addNewLayer();
+	Pipe pipe(context);
 
-	paintLoop(
-			eventHandler,
-			window,
-			commander,
-			swapchain);
+	pipe.createGraphicsPipeline();
 
 	commander.cleanUp();
 	
