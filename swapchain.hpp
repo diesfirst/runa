@@ -33,9 +33,9 @@ public:
 	vk::Extent2D extent;
 	uint32_t currentIndex{0};
 	int imageCount;
+	vk::Format colorFormat;
 
 private:
-	vk::Format colorFormat;
 	vk::ColorSpaceKHR colorSpace;
 	vk::PresentModeKHR presentMode;
 	bool swapchainCreated = false;

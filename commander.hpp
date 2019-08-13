@@ -32,6 +32,12 @@ public:
 
 	void recordCopyImageToSwapImages(const Swapchain&, vk::Image);
 
+	void recordRenderpass(
+			vk::RenderPass, 
+			vk::Pipeline,
+			std::vector<vk::Framebuffer>, 
+			uint32_t width, uint32_t height);
+
 	void copyImageToBuffer(
 			vk::Image,
 			vk::Buffer,

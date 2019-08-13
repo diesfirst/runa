@@ -356,6 +356,41 @@ void Commander::copyImageToBuffer(
 	endSingleTimeCommand(cmdBuffer);
 }
 
+void Commander::recordRenderpass(
+		vk::RenderPass renderpass,
+		vk::Pipeline pipeline,
+	 	std::vector<vk::Framebuffer> framebuffers,
+		uint32_t width, uint32_t height)
+{
+	vk::CommandBufferBeginInfo beginInfo;
+	beginInfo.setFlags(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
+
+	vk::ClearColorValue clearColorValue;
+	clearColorValue.setFloat32({0.0, 0.0, 0.0, 1.0});
+	vk::ClearValue clearValue(clearColorValue);
+
+	vk::RenderPassBeginInfo renderPassInfo;
+	renderPassInfo.setRenderPass(renderpass);
+	renderPassInfo.setRenderArea({{0, 0}, {width, height}});
+	renderPassInfo.setClearValueCount(1);
+	renderPassInfo.setPClearValues(&clearValue);
+
+	for (int i = 0; i < framebuffers.size(); ++i) 
+	{
+		renderPassInfo.setFramebuffer(framebuffers[i]);
+		commandBuffers[i].begin(beginInfo);
+		commandBuffers[i].beginRenderPass(
+				renderPassInfo, vk::SubpassContents::eInline);
+		commandBuffers[i].bindPipeline(
+				vk::PipelineBindPoint::eGraphics, //ray tracing pipe is also an option
+				pipeline);
+		//vert count. instance count, vert offset, instance offset
+		commandBuffers[i].draw(3, 1, 0, 0); 
+		commandBuffers[i].endRenderPass();
+		commandBuffers[i].end();
+	}
+}
+
 void Commander::createSyncObjects()
 {
 	vk::SemaphoreCreateInfo semaphoreInfo;

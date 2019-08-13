@@ -1,9 +1,24 @@
 //storage space for now, but may be a class for 3D to 2D conversions
-#include <vulkan.hpp>
 #include <vector>
-#include "context.hpp"
+#include "renderer.hpp"
+#include "swapchain.hpp"
 
-vk::RenderPass createRenderPass(const Context& context, vk::Format colorFormat)
+Renderer::Renderer(const Context& context) :
+	context(context)
+{
+	createRenderPass(vk::Format::eB8G8R8A8Unorm); //by inspection
+}
+
+Renderer::~Renderer()
+{
+	context.device.destroyRenderPass(renderPass);
+	for (auto framebuffer : framebuffers) 
+	{
+		context.device.destroyFramebuffer(framebuffer);
+	}
+}
+
+void Renderer::createRenderPass(vk::Format colorFormat)
 {
 	std::vector<vk::AttachmentDescription> attachments;
 	std::vector<vk::AttachmentReference> references;
@@ -57,27 +72,28 @@ vk::RenderPass createRenderPass(const Context& context, vk::Format colorFormat)
 	createInfo.setPSubpasses(subpasses.data());
 	createInfo.setDependencyCount(subpassDependencies.size());
 	createInfo.setPDependencies(subpassDependencies.data());
-  return context.device.createRenderPass(createInfo);
+  renderPass = context.device.createRenderPass(createInfo);
 }
 
-void createFramebuffers()
+
+void Renderer::createFramebuffers(const Swapchain& swapchain)
 {
 	vk::FramebufferCreateInfo createInfo;
-	createInfo.setWidth(swapchainExtent.width);
-	createInfo.setHeight(swapchainExtent.height);
-	createInfo.setRenderPass(vk::RenderPass()); //blank renderpass
+	createInfo.setWidth(swapchain.extent.width);
+	createInfo.setHeight(swapchain.extent.height);
+	createInfo.setRenderPass(renderPass); 
 	createInfo.setAttachmentCount(1);
 	createInfo.setLayers(1);
 	std::array<vk::ImageView, 1> imageViewsTemp;
 	createInfo.setPAttachments(imageViewsTemp.data());
-	for (const auto image : imageViews) {
+	for (const auto image : swapchain.imageViews) {
 		imageViewsTemp[0] = image;
 		framebuffers.push_back(
 				context.device.createFramebuffer(createInfo));
 	}
 }
 
-void Swapchain::destroyFramebuffers()
+void Renderer::destroyFramebuffers()
 {
 	for (auto framebuffer : framebuffers) {
 		context.device.destroyFramebuffer(framebuffer);

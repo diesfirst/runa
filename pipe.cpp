@@ -20,37 +20,60 @@ std::vector<vk::PipelineShaderStageCreateInfo> createShaderStageInfos(
 Pipe::Pipe(const Context& context) :
 	context(context)
 {
+	width = height = 500;
+	viewport = vk::Viewport(0, 0, width, height, 0, 1);
+	scissor.setExtent({width, height});
+	scissor.setOffset({0, 0});
+
+	initVertexInputState();
+	initInputAssemblyState();
+	initViewportState();
+	initRasterizer();
+	initMultisampling();
+	initColorAttachment();
+	initColorBlending();
+	initPipelineLayout();
 }
 
 Pipe::~Pipe()
 {
+	context.device.destroyPipelineLayout(pipelineLayout);
+	context.device.destroyPipeline(graphicsPipeline);
 }
 
-void Pipe::createGraphicsPipeline()
+void Pipe::createGraphicsPipeline(const Renderer& renderer)
 {
 	auto vertShaderCode = io::readFile("shaders/vert.spv");
 	auto fragShaderCode = io::readFile("shaders/frag.spv");
 	vk::ShaderModule vertShaderModule = createShaderModule(vertShaderCode);
 	vk::ShaderModule fragShaderModule = createShaderModule(fragShaderCode);
 
-	auto shaderStageInfos = createShaderStageInfos(
+	auto shaderStages = createShaderStageInfos(
 			vertShaderModule, fragShaderModule);
 
-	vk::PipelineVertexInputStateCreateInfo vertInputStageInfo;
-	vertInputStageInfo.setVertexBindingDescriptionCount(0);
-	vertInputStageInfo.setVertexAttributeDescriptionCount(0);
-
-	vk::PipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
-	inputAssemblyInfo.setTopology(vk::PrimitiveTopology::eTriangleList);
-	inputAssemblyInfo.setPrimitiveRestartEnable(false);
-
-	vk::Viewport viewport(0, 0, width, height, 0.0, 1.0);
-	vk::Rect2D scissor;
-	scissor.setOffset({0,0});
-	scissor.setExtent({width, height});
+	vk::GraphicsPipelineCreateInfo info;
+	info.setStageCount(2);
+	info.setPStages(shaderStages.data());
+	info.setPVertexInputState(&vertexInputState);
+	info.setPInputAssemblyState(&inputAssemblyState);
+	info.setPViewportState(&viewportState);
+	info.setPRasterizationState(&rasterizer);
+	info.setPMultisampleState(&multisampling);
+	info.setPColorBlendState(&colorBlending);
+	info.setLayout(pipelineLayout);
+	info.setRenderPass(renderer.renderPass);
+	info.setSubpass(0);
+	//not used
+	info.setPDepthStencilState(nullptr);
+	info.setPDynamicState(nullptr);
+	info.setBasePipelineIndex(-1);
+	
+	graphicsPipeline = context.device.createGraphicsPipeline({}, info);
 
 	context.device.destroyShaderModule(vertShaderModule);
 	context.device.destroyShaderModule(fragShaderModule);
+
+
 }
 
 vk::ShaderModule Pipe::createShaderModule(const std::vector<char>& code)
@@ -59,4 +82,69 @@ vk::ShaderModule Pipe::createShaderModule(const std::vector<char>& code)
 	info.setCodeSize(code.size());
 	info.setPCode(reinterpret_cast<const uint32_t*>(code.data()));
 	return context.device.createShaderModule(info);
+}
+
+void Pipe::initVertexInputState()
+{
+	vertexInputState.setVertexBindingDescriptionCount(0);
+	vertexInputState.setVertexAttributeDescriptionCount(0);
+}
+
+void Pipe::initInputAssemblyState()
+{
+	inputAssemblyState.setTopology(vk::PrimitiveTopology::eTriangleList);
+	inputAssemblyState.setPrimitiveRestartEnable(false);
+
+}
+
+void Pipe::initViewportState()
+{
+	viewportState.setPScissors(&scissor);
+	viewportState.setPViewports(&viewport);
+	viewportState.setScissorCount(1); //scissor might not be necessary
+	viewportState.setViewportCount(1);
+}
+
+void Pipe::initRasterizer()
+{
+	//changing any of these may require enabling certain GPU features
+	//rasterizer has more possible settings but i left them at default
+	rasterizer.setDepthClampEnable(false);
+	rasterizer.setRasterizerDiscardEnable(false);
+	rasterizer.setPolygonMode(vk::PolygonMode::eFill);
+	rasterizer.setLineWidth(1.0); //in units of fragments
+	rasterizer.setCullMode(vk::CullModeFlagBits::eBack);
+	rasterizer.setFrontFace(vk::FrontFace::eClockwise);
+	rasterizer.setDepthBiasEnable(false);
+}
+
+void Pipe::initMultisampling()
+{
+	//this will be useful, but disabled for now
+	//many settings left at default
+	multisampling.setSampleShadingEnable(false);
+	multisampling.setRasterizationSamples(vk::SampleCountFlagBits::e1);
+}
+
+void Pipe::initColorAttachment()
+{
+	colorAttachmentState.setBlendEnable(false);
+	colorAttachmentState.setColorWriteMask(
+			vk::ColorComponentFlagBits::eA |
+			vk::ColorComponentFlagBits::eR |
+			vk::ColorComponentFlagBits::eG |
+			vk::ColorComponentFlagBits::eB);
+}
+
+void Pipe::initColorBlending()
+{
+	colorBlending.setLogicOpEnable(false);
+	colorBlending.setAttachmentCount(1);
+	colorBlending.setPAttachments(&colorAttachmentState);
+}
+
+void Pipe::initPipelineLayout()
+{
+	vk::PipelineLayoutCreateInfo info;
+	pipelineLayout = context.device.createPipelineLayout(info);
 }

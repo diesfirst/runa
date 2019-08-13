@@ -10,6 +10,7 @@
 #include <ctime>
 #include "util.hpp"
 #include "pipe.hpp"
+#include "renderer.hpp"
 
 
 void paintLoop(
@@ -71,7 +72,13 @@ int main(int argc, char *argv[])
 
 	Pipe pipe(context);
 
-	pipe.createGraphicsPipeline();
+	Renderer renderer(context);
+	pipe.createGraphicsPipeline(renderer);
+	renderer.createFramebuffers(swapchain);
+	commander.recordRenderpass(renderer.renderPass, pipe.graphicsPipeline, renderer.framebuffers, swapchain.extent.width, swapchain.extent.height);
+
+	while (true)
+		commander.renderFrame(swapchain);
 
 	commander.cleanUp();
 	
