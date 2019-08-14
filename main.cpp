@@ -12,6 +12,8 @@
 #include "pipe.hpp"
 #include "renderer.hpp"
 
+constexpr int WIDTH = 800;
+constexpr int HEIGHT = 800;
 
 void paintLoop(
 		EventHandler& eventHandler, 
@@ -53,7 +55,7 @@ int main(int argc, char *argv[])
 	context.printDeviceMemoryTypeInfo();
 	context.printDeviceMemoryHeapInfo();
 
-	XWindow window;
+	XWindow window(WIDTH, HEIGHT);
 	window.open();
 
 	Swapchain swapchain(context, window);
@@ -68,17 +70,17 @@ int main(int argc, char *argv[])
 	commander.allocateCommandBuffersForSwapchain(swapchain);
 	//
 	//run program
-//	runPaintProgram(painter, commander, swapchain, eventHandler, window);
+	runPaintProgram(painter, commander, swapchain, eventHandler, window);
 
-	Pipe pipe(context);
+//	Pipe pipe(context);
+//
+//	Renderer renderer(context);
+//	pipe.createGraphicsPipeline(renderer, WIDTH, HEIGHT);
+//	renderer.createFramebuffers(swapchain);
+//	commander.recordRenderpass(renderer.renderPass, pipe.graphicsPipeline, renderer.framebuffers, swapchain.extent.width, swapchain.extent.height);
 
-	Renderer renderer(context);
-	pipe.createGraphicsPipeline(renderer);
-	renderer.createFramebuffers(swapchain);
-	commander.recordRenderpass(renderer.renderPass, pipe.graphicsPipeline, renderer.framebuffers, swapchain.extent.width, swapchain.extent.height);
-
-	while (true)
-		commander.renderFrame(swapchain);
+//	while (true)
+//		commander.renderFrame(swapchain);
 
 	commander.cleanUp();
 	

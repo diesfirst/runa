@@ -20,10 +20,6 @@ std::vector<vk::PipelineShaderStageCreateInfo> createShaderStageInfos(
 Pipe::Pipe(const Context& context) :
 	context(context)
 {
-	width = height = 500;
-	viewport = vk::Viewport(0, 0, width, height, 0, 1);
-	scissor.setExtent({width, height});
-	scissor.setOffset({0, 0});
 
 	initVertexInputState();
 	initInputAssemblyState();
@@ -41,7 +37,7 @@ Pipe::~Pipe()
 	context.device.destroyPipeline(graphicsPipeline);
 }
 
-void Pipe::createGraphicsPipeline(const Renderer& renderer)
+void Pipe::createGraphicsPipeline(const Renderer& renderer, uint32_t width, uint32_t height)
 {
 	auto vertShaderCode = io::readFile("shaders/vert.spv");
 	auto fragShaderCode = io::readFile("shaders/frag.spv");
@@ -50,6 +46,10 @@ void Pipe::createGraphicsPipeline(const Renderer& renderer)
 
 	auto shaderStages = createShaderStageInfos(
 			vertShaderModule, fragShaderModule);
+
+	viewport = vk::Viewport(0, 0, width, height, 0, 1);
+	scissor.setExtent({width, height});
+	scissor.setOffset({0, 0});
 
 	vk::GraphicsPipelineCreateInfo info;
 	info.setStageCount(2);

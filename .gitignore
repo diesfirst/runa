@@ -2,3 +2,5 @@
 *.o
 *.swo
 out/*
+shaders/*.spv
+app

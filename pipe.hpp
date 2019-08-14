@@ -9,13 +9,12 @@ class Pipe
 public:
 	Pipe(const Context&);
 	virtual ~Pipe();
-	void createGraphicsPipeline(const Renderer&);
+	void createGraphicsPipeline(const Renderer&, uint32_t width, uint32_t height);
 
 	vk::Pipeline graphicsPipeline;
 
 private:
 	const Context& context;
-	uint32_t width, height;
 	vk::Viewport viewport;
 	vk::Rect2D scissor;
 	vk::PipelineLayout pipelineLayout;

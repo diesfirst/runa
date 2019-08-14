@@ -7,13 +7,10 @@
 #include <iostream>
 #include <string.h>
 
-constexpr int WIDTH = 800;
-constexpr int HEIGHT = 800;
-
 class XWindow
 {
 public:
-	XWindow ();
+	XWindow (int width, int height);
 
 	void open();
 

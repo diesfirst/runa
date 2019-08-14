@@ -1,13 +1,13 @@
 #include "window.hpp"
 
-XWindow::XWindow()
+XWindow::XWindow(int width, int height)
 {
 	connection = xcb_connect(NULL,NULL);
 	screen = xcb_setup_roots_iterator(
 			xcb_get_setup(connection)).data;
 	window = xcb_generate_id(connection);
 	setEvents();
-	createWindow(WIDTH, HEIGHT);
+	createWindow(width, height);
 	setName();
 	setClass();
 }

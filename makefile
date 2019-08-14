@@ -43,7 +43,10 @@ renderer.o : renderer.cpp renderer.hpp context.hpp
 main.o : main.cpp swapchain.hpp commander.hpp painter.hpp
 	g++ -c $(CFLAGS) main.cpp 
 
-.PHONY: clean
+.PHONY: clean shaders
 
 clean:
 	rm -f *.o app
+
+shaders: 
+	cd shaders && glslangValidator -V *.glsl
