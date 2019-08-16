@@ -9,7 +9,7 @@
 struct Point
 {
 	glm::vec2 pos;
-	glm::vec3 color = {1.0, 1.0, 1.0};
+	glm::vec3 color = {0.5, 1.0, 0.6};
 };
 
 class Geo
@@ -25,6 +25,7 @@ public:
 		getAttributeDescriptions();
 
 	std::vector<Point> points;
+	void printPoints();
 
 private:
 

@@ -7,7 +7,7 @@ app : main.o commander.o swapchain.o painter.o context.o window.o mem.o io.o eve
 window.o : window.cpp window.hpp
 	g++ -c $(CFLAGS) window.cpp
 
-mem.o : mem.cpp mem.hpp context.hpp
+mem.o : mem.cpp mem.hpp context.hpp geo.hpp
 	g++ -c $(CFLAGS) mem.cpp
 
 io.o : io.cpp io.hpp lib/lodepng.h mem.hpp commander.hpp swapchain.hpp

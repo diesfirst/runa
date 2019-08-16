@@ -129,7 +129,7 @@ bufferBlock* MemoryManager::vertexBlock(Geo& geo)
 			geo.points.size() * sizeof(Point), 
 			vk::BufferUsageFlagBits::eVertexBuffer);
 	bufferBlock* block = &bufferBlocks[index];
-	std::memcpy(block->pHostMemory, geo.points.data(), sizeof(geo.points));
+	std::memcpy(block->pHostMemory, geo.points.data(), (size_t) (sizeof(Point) * geo.points.size()));
 	return block;
 }
 

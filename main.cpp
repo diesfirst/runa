@@ -82,6 +82,7 @@ int main(int argc, char *argv[])
 
 	Triangle triangle;
 	bufferBlock* block = mm.vertexBlock(triangle);
+	triangle.printPoints();
 
 	Pipe pipe(context);
 	Renderer renderer(context);

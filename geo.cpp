@@ -1,4 +1,5 @@
 #include "geo.hpp"
+#include <iostream>
 
 Geo::Geo()
 {
@@ -41,4 +42,11 @@ Triangle::Triangle(
 	points[0].pos = pos1;
 	points[1].pos = pos2;
 	points[2].pos = pos3;
+}
+
+void Geo::printPoints()
+{
+	for (auto point : points) {
+		std::cout << "Point pos: " << point.pos.x << " " << point.pos.y << std::endl;
+	}
 }
