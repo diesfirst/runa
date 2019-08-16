@@ -3,6 +3,7 @@
 
 #include "context.hpp"
 #include "renderer.hpp"
+#include "geo.hpp"
 
 class Pipe
 {

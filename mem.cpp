@@ -1,4 +1,5 @@
 #include "mem.hpp"
+#include <cstring>
 
 MemoryManager::MemoryManager(const Context& context) :
 	context(context)
@@ -107,8 +108,7 @@ void MemoryManager::unmapBuffers()
 void MemoryManager::destroyBuffers()
 {
 	for (bufferBlock block : bufferBlocks) {
-		context.device.destroyBuffer(block.buffer);
-		context.device.freeMemory(block.memory);
+		context.device.destroyBuffer(block.buffer); context.device.freeMemory(block.memory);
 	}
 }
 
@@ -122,3 +122,14 @@ void MemoryManager::getImageSubresourceLayout(vk::Image image)
 		context.device.getImageSubresourceLayout(image, subresource);
 	std::cout << "Row pitch: " << subresLayout.rowPitch << std::endl;
 }
+
+bufferBlock* MemoryManager::vertexBlock(Geo& geo)
+{
+	int index = createBuffer(
+			geo.points.size() * sizeof(Point), 
+			vk::BufferUsageFlagBits::eVertexBuffer);
+	bufferBlock* block = &bufferBlocks[index];
+	std::memcpy(block->pHostMemory, geo.points.data(), sizeof(geo.points));
+	return block;
+}
+

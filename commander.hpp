@@ -36,6 +36,7 @@ public:
 			vk::RenderPass, 
 			vk::Pipeline,
 			std::vector<vk::Framebuffer>, 
+			vk::Buffer&,
 			uint32_t width, uint32_t height);
 
 	void copyImageToBuffer(

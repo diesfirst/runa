@@ -11,6 +11,7 @@
 #include "util.hpp"
 #include "pipe.hpp"
 #include "renderer.hpp"
+#include "geo.hpp"
 
 constexpr int WIDTH = 800;
 constexpr int HEIGHT = 800;
@@ -50,6 +51,13 @@ void runPaintProgram(
 int main(int argc, char *argv[])
 {
 	Context context;
+
+
+	vk::VertexInputBindingDescription desc = Geo::getBindingDescription();
+	std::cout << "Stride: " << desc.stride << std::endl;
+
+
+
 	MemoryManager mm(context);
 
 	context.printDeviceMemoryTypeInfo();
@@ -70,17 +78,20 @@ int main(int argc, char *argv[])
 	commander.allocateCommandBuffersForSwapchain(swapchain);
 	//
 	//run program
-	runPaintProgram(painter, commander, swapchain, eventHandler, window);
+//	runPaintProgram(painter, commander, swapchain, eventHandler, window);
 
-//	Pipe pipe(context);
-//
-//	Renderer renderer(context);
-//	pipe.createGraphicsPipeline(renderer, WIDTH, HEIGHT);
-//	renderer.createFramebuffers(swapchain);
-//	commander.recordRenderpass(renderer.renderPass, pipe.graphicsPipeline, renderer.framebuffers, swapchain.extent.width, swapchain.extent.height);
+	Triangle triangle;
+	bufferBlock* block = mm.vertexBlock(triangle);
 
-//	while (true)
-//		commander.renderFrame(swapchain);
+	Pipe pipe(context);
+	Renderer renderer(context);
+	pipe.createGraphicsPipeline(renderer, WIDTH, HEIGHT);
+	renderer.createFramebuffers(swapchain);
+
+	commander.recordRenderpass(renderer.renderPass, pipe.graphicsPipeline, renderer.framebuffers, block->buffer, WIDTH, HEIGHT);
+
+	commander.renderFrame(swapchain);
+	std::this_thread::sleep_for(std::chrono::minutes(1));
 
 	commander.cleanUp();
 	

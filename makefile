@@ -1,8 +1,8 @@
 CFLAGS = -O3 -std=c++17
 LDFLAGS = -lxcb -lvulkan -lX11
 
-app : main.o commander.o swapchain.o painter.o context.o window.o mem.o io.o event.o lodepng.o util.o pipe.o renderer.o
-	g++ $(CFLAGS) -o app main.o context.o commander.o swapchain.o painter.o window.o mem.o io.o event.o lodepng.o util.o pipe.o renderer.o $(LDFLAGS)
+app : main.o commander.o swapchain.o painter.o context.o window.o mem.o io.o event.o lodepng.o util.o pipe.o renderer.o geo.o
+	g++ $(CFLAGS) -o app main.o context.o commander.o swapchain.o painter.o window.o mem.o io.o event.o lodepng.o util.o pipe.o renderer.o geo.o $(LDFLAGS)
 
 window.o : window.cpp window.hpp
 	g++ -c $(CFLAGS) window.cpp
@@ -34,11 +34,14 @@ util.o : util.cpp util.hpp swapchain.hpp context.hpp
 lodepng.o : lib/lodepng.cpp lib/lodepng.h
 	g++ -c $(CFLAGS) lib/lodepng.cpp
 
-pipe.o : pipe.cpp pipe.hpp context.hpp io.hpp renderer.hpp
+pipe.o : pipe.cpp pipe.hpp context.hpp io.hpp renderer.hpp geo.hpp
 	g++ -c $(CFLAGS) pipe.cpp
 
 renderer.o : renderer.cpp renderer.hpp context.hpp
 	g++ -c $(CFLAGS) renderer.cpp
+
+geo.o : geo.cpp geo.hpp context.hpp
+	g++ -c $(CFLAGS) geo.cpp
 
 main.o : main.cpp swapchain.hpp commander.hpp painter.hpp
 	g++ -c $(CFLAGS) main.cpp 

@@ -21,7 +21,7 @@ Pipe::Pipe(const Context& context) :
 	context(context)
 {
 
-	initVertexInputState();
+//	initVertexInputState();
 	initInputAssemblyState();
 	initViewportState();
 	initRasterizer();
@@ -46,6 +46,15 @@ void Pipe::createGraphicsPipeline(const Renderer& renderer, uint32_t width, uint
 
 	auto shaderStages = createShaderStageInfos(
 			vertShaderModule, fragShaderModule);
+	
+	auto bindingDescription = Geo::getBindingDescription();
+	auto attributeDescriptions  = Geo::getAttributeDescriptions();
+
+	vertexInputState.setVertexBindingDescriptionCount(1);
+	vertexInputState.setVertexAttributeDescriptionCount(
+			attributeDescriptions.size());
+	vertexInputState.setPVertexBindingDescriptions(&bindingDescription);
+	vertexInputState.setPVertexAttributeDescriptions(attributeDescriptions.data());
 
 	viewport = vk::Viewport(0, 0, width, height, 0, 1);
 	scissor.setExtent({width, height});
@@ -86,8 +95,6 @@ vk::ShaderModule Pipe::createShaderModule(const std::vector<char>& code)
 
 void Pipe::initVertexInputState()
 {
-	vertexInputState.setVertexBindingDescriptionCount(0);
-	vertexInputState.setVertexAttributeDescriptionCount(0);
 }
 
 void Pipe::initInputAssemblyState()

@@ -360,6 +360,7 @@ void Commander::recordRenderpass(
 		vk::RenderPass renderpass,
 		vk::Pipeline pipeline,
 	 	std::vector<vk::Framebuffer> framebuffers,
+		vk::Buffer& vertexBuffer,
 		uint32_t width, uint32_t height)
 {
 	vk::CommandBufferBeginInfo beginInfo;
@@ -384,6 +385,7 @@ void Commander::recordRenderpass(
 		commandBuffers[i].bindPipeline(
 				vk::PipelineBindPoint::eGraphics, //ray tracing pipe is also an option
 				pipeline);
+		commandBuffers[i].bindVertexBuffers(0, vertexBuffer, {0});
 		//vert count. instance count, vert offset, instance offset
 		commandBuffers[i].draw(3, 1, 0, 0); 
 		commandBuffers[i].endRenderPass();

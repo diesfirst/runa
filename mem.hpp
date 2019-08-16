@@ -1,6 +1,7 @@
 #ifndef MEM
 #define MEM
 #include "context.hpp"
+#include "geo.hpp"
 
 struct bufferBlock
 {
@@ -30,6 +31,8 @@ public:
 			uint32_t height,
 			uint32_t depth,
 			vk::ImageUsageFlagBits);
+
+	bufferBlock* vertexBlock(Geo& geo);
 
 	std::vector<bufferBlock> bufferBlocks;
 	std::vector<imageBlock> imageBlocks;
