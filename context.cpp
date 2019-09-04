@@ -75,6 +75,7 @@ void Context::createPhysicalDevice()
 	physicalDeviceProperties = physicalDevice.getProperties();
 	physicalDeviceMemoryProperties = physicalDevice.getMemoryProperties();
 	physicalDeviceFeatures = physicalDevice.getFeatures();
+	physicalDeviceFeatures.setFillModeNonSolid(true);
 	queueFamilies = physicalDevice.getQueueFamilyProperties();
 	deviceExtensionProperties = physicalDevice.enumerateDeviceExtensionProperties();
 }
@@ -96,6 +97,7 @@ void Context::createDevice()
 	extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 	deviceInfo.enabledExtensionCount = extensions.size();
 	deviceInfo.ppEnabledExtensionNames = extensions.data();
+	deviceInfo.setPEnabledFeatures(&physicalDeviceFeatures);
 
 	device = physicalDevice.createDevice(deviceInfo);
 }

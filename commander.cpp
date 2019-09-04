@@ -1,5 +1,6 @@
 #include "commander.hpp"
 #include "swapchain.hpp"
+#include "pipe.hpp"
 
 Commander::Commander(const Context& context) :
 	context(context)
@@ -25,6 +26,7 @@ void Commander::createCommandPool()
 {
 	vk::CommandPoolCreateInfo createInfo;
 	createInfo.setQueueFamilyIndex(context.getGraphicsQueueFamilyIndex());
+	createInfo.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
 	commandPool = context.device.createCommandPool(createInfo);
 	commandPoolCreated = true;
 }
@@ -356,12 +358,13 @@ void Commander::copyImageToBuffer(
 	endSingleTimeCommand(cmdBuffer);
 }
 
-void Commander::recordRenderpass(
+void Commander::recordDrawVert(
 		vk::RenderPass renderpass,
-		vk::Pipeline pipeline,
+		Pipe& pipe,
 	 	std::vector<vk::Framebuffer> framebuffers,
 		vk::Buffer& vertexBuffer,
-		uint32_t width, uint32_t height)
+		uint32_t width, uint32_t height,
+		uint32_t vertexCount)
 {
 	vk::CommandBufferBeginInfo beginInfo;
 	beginInfo.setFlags(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
@@ -384,10 +387,16 @@ void Commander::recordRenderpass(
 				renderPassInfo, vk::SubpassContents::eInline);
 		commandBuffers[i].bindPipeline(
 				vk::PipelineBindPoint::eGraphics, //ray tracing pipe is also an option
-				pipeline);
+				pipe.graphicsPipeline);
 		commandBuffers[i].bindVertexBuffers(0, vertexBuffer, {0});
+		commandBuffers[i].bindDescriptorSets(
+				vk::PipelineBindPoint::eGraphics,
+				pipe.pipelineLayout,
+				0,
+				pipe.descriptorSets[i],
+				{});
 		//vert count. instance count, vert offset, instance offset
-		commandBuffers[i].draw(3, 1, 0, 0); 
+		commandBuffers[i].draw(vertexCount, 1, 0, 0); 
 		commandBuffers[i].endRenderPass();
 		commandBuffers[i].end();
 	}
@@ -464,12 +473,30 @@ void Commander::renderFrame(Swapchain& swapchain)
 
 	context.queue.presentKHR(presentInfo);
 
-//	std::cout << "Current index: " << currentIndex << std::endl;
-//	std::cout << "Current frame: " << currentFrame << std::endl;
-//	std::cout << "True frame: " << trueFrame << std::endl;
-
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 	trueFrame++;
+}
+
+void Commander::resetCommandBuffers()
+{
+	for (auto commandBuffer : commandBuffers) {
+		commandBuffer.reset({}); //not releasing all resources
+	}
+}
+
+void Commander::resetCommandBuffer(uint32_t index)
+{
+	commandBuffers[index].reset({});
+}
+
+void Commander::resetCurrentBuffer()
+{
+	context.device.waitForFences(
+			1, 
+			&inFlightFences[currentFrame], 
+			true, 
+			UINT64_MAX);
+	commandBuffers[currentIndex].reset({});
 }
  
 void Commander::cleanUp()

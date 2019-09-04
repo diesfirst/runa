@@ -1,8 +1,8 @@
 CFLAGS = -O3 -std=c++17
 LDFLAGS = -lxcb -lvulkan -lX11
 
-app : main.o commander.o swapchain.o painter.o context.o window.o mem.o io.o event.o lodepng.o util.o pipe.o renderer.o geo.o
-	g++ $(CFLAGS) -o app main.o context.o commander.o swapchain.o painter.o window.o mem.o io.o event.o lodepng.o util.o pipe.o renderer.o geo.o $(LDFLAGS)
+app : main.o commander.o swapchain.o painter.o context.o window.o mem.o io.o event.o lodepng.o util.o pipe.o renderer.o geo.o sculpter.o camera.o
+	g++ $(CFLAGS) -o app main.o context.o commander.o swapchain.o painter.o window.o mem.o io.o event.o lodepng.o util.o pipe.o renderer.o geo.o sculpter.o camera.o $(LDFLAGS)
 
 window.o : window.cpp window.hpp
 	g++ -c $(CFLAGS) window.cpp
@@ -13,7 +13,7 @@ mem.o : mem.cpp mem.hpp context.hpp geo.hpp
 io.o : io.cpp io.hpp lib/lodepng.h mem.hpp commander.hpp swapchain.hpp
 	g++ -c $(CFLAGS) io.cpp 
 
-event.o : event.cpp event.hpp commander.hpp mem.hpp swapchain.hpp painter.hpp io.hpp util.hpp
+event.o : event.cpp event.hpp commander.hpp mem.hpp swapchain.hpp painter.hpp io.hpp util.hpp sculpter.hpp pipe.hpp renderer.hpp camera.hpp 
 	g++ -c $(CFLAGS) event.cpp
 
 context.o : context.cpp context.hpp
@@ -34,7 +34,7 @@ util.o : util.cpp util.hpp swapchain.hpp context.hpp
 lodepng.o : lib/lodepng.cpp lib/lodepng.h
 	g++ -c $(CFLAGS) lib/lodepng.cpp
 
-pipe.o : pipe.cpp pipe.hpp context.hpp io.hpp renderer.hpp geo.hpp
+pipe.o : pipe.cpp pipe.hpp context.hpp io.hpp renderer.hpp geo.hpp mem.hpp
 	g++ -c $(CFLAGS) pipe.cpp
 
 renderer.o : renderer.cpp renderer.hpp context.hpp
@@ -42,6 +42,12 @@ renderer.o : renderer.cpp renderer.hpp context.hpp
 
 geo.o : geo.cpp geo.hpp context.hpp
 	g++ -c $(CFLAGS) geo.cpp
+
+sculpter.o : sculpter.cpp sculpter.hpp geo.hpp
+	g++ -c  $(CFLAGS) sculpter.cpp
+
+camera.o : camera.cpp camera.hpp mem.hpp
+	g++ -c $(CFLAGS) camera.cpp
 
 main.o : main.cpp swapchain.hpp commander.hpp painter.hpp
 	g++ -c $(CFLAGS) main.cpp 

@@ -26,6 +26,33 @@ uint32_t MemoryManager::addImageBlock()
 	return imageBlocks.size() - 1;
 }
 
+void MemoryManager::createBuffer(bufferBlock& block, uint32_t size, vk::BufferUsageFlagBits usage)
+{
+	std::cout << "MM Size: " << size << std::endl;
+
+	vk::BufferCreateInfo bufferInfo;
+
+	bufferInfo.setSize(size);
+	bufferInfo.setUsage(usage);
+	bufferInfo.setSharingMode(vk::SharingMode::eExclusive);
+
+	block.buffer = context.device.createBuffer(bufferInfo);
+
+	auto memReqs = context.device.getBufferMemoryRequirements(block.buffer);
+
+	vk::MemoryAllocateInfo allocInfo;
+	allocInfo.setMemoryTypeIndex(9); //always host visible for now
+	allocInfo.setAllocationSize(memReqs.size);
+	std::cout << "Mem reqs size:" << memReqs.size << std::endl;
+
+	block.memory = context.device.allocateMemory(allocInfo);
+
+	context.device.bindBufferMemory(block.buffer, block.memory, 0);
+
+	block.pHostMemory = context.device.mapMemory(block.memory, 0, size);
+	block.size = size;
+}
+
 uint32_t MemoryManager::createBuffer(uint32_t size, vk::BufferUsageFlagBits usage)
 {
 	uint32_t index = addBufferBlock();
@@ -98,9 +125,24 @@ uint32_t MemoryManager::createImage(
 	return index;
 }
 
+void MemoryManager::createUniformBuffers(size_t count, vk::DeviceSize bufferSize)
+{
+	uniformBufferBlocks.resize(count);
+	for (int i = 0; i < count; ++i) 
+	{
+		createBuffer(
+			uniformBufferBlocks[i],
+			bufferSize,
+			vk::BufferUsageFlagBits::eUniformBuffer);
+	}
+}
+
 void MemoryManager::unmapBuffers()
 {
 	for (bufferBlock block : bufferBlocks) {
+		context.device.unmapMemory(block.memory);
+	}
+	for (bufferBlock block : uniformBufferBlocks) {
 		context.device.unmapMemory(block.memory);
 	}
 }
@@ -108,6 +150,9 @@ void MemoryManager::unmapBuffers()
 void MemoryManager::destroyBuffers()
 {
 	for (bufferBlock block : bufferBlocks) {
+		context.device.destroyBuffer(block.buffer); context.device.freeMemory(block.memory);
+	}
+	for (bufferBlock block : uniformBufferBlocks) {
 		context.device.destroyBuffer(block.buffer); context.device.freeMemory(block.memory);
 	}
 }
@@ -123,13 +168,12 @@ void MemoryManager::getImageSubresourceLayout(vk::Image image)
 	std::cout << "Row pitch: " << subresLayout.rowPitch << std::endl;
 }
 
-bufferBlock* MemoryManager::vertexBlock(Geo& geo)
+bufferBlock* MemoryManager::vertexBlock(size_t size)
 {
 	int index = createBuffer(
-			geo.points.size() * sizeof(Point), 
+			size, 
 			vk::BufferUsageFlagBits::eVertexBuffer);
 	bufferBlock* block = &bufferBlocks[index];
-	std::memcpy(block->pHostMemory, geo.points.data(), (size_t) (sizeof(Point) * geo.points.size()));
 	return block;
 }
 

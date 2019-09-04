@@ -24,7 +24,7 @@ std::array<vk::VertexInputAttributeDescription, 2>
 	std::array<vk::VertexInputAttributeDescription, 2> descriptions;
 	descriptions[0].binding = 0;
 	descriptions[0].location = 0;
-	descriptions[0].format = vk::Format::eR32G32Sfloat;
+	descriptions[0].format = vk::Format::eR32G32B32Sfloat;
 	descriptions[0].offset = offsetof(Point, pos); //where is this macro from?
 	descriptions[1].binding = 0;
 	descriptions[1].location = 1;
@@ -33,10 +33,17 @@ std::array<vk::VertexInputAttributeDescription, 2>
 	return descriptions;
 }
 
+void Geo::createPoint(float x, float y)
+{
+	points.push_back({
+			glm::vec3(x, y, 0.0), 
+			glm::vec3(1.0, 1.0, 1.0)});
+}
+
 Triangle::Triangle(
-		glm::vec2 pos1,
-		glm::vec2 pos2,
-		glm::vec2 pos3)
+		glm::vec3 pos1,
+		glm::vec3 pos2,
+		glm::vec3 pos3)
 {
 	points.resize(3);
 	points[0].pos = pos1;

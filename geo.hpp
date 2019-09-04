@@ -8,8 +8,8 @@
 
 struct Point
 {
-	glm::vec2 pos;
-	glm::vec3 color = {0.5, 1.0, 0.6};
+	glm::vec3 pos;
+	glm::vec3 color = {0.3, 0.7, 0.8};
 };
 
 class Geo
@@ -24,6 +24,9 @@ public:
 	static std::array<vk::VertexInputAttributeDescription, 2> 
 		getAttributeDescriptions();
 
+	void createPoint(float x, float y);
+	void createPoint(float x, float y, float z);
+
 	std::vector<Point> points;
 	void printPoints();
 
@@ -35,9 +38,9 @@ class Triangle : public Geo
 {
 public:
 	Triangle(
-			glm::vec2 = {-0.5, 0.5},
-			glm::vec2 = {0.0, -0.5},
-			glm::vec2 = {0.5, 0.5});
+			glm::vec3 = {-0.1, 0.5, 0.0},
+			glm::vec3 = {0.0, -0.5, 0.0},
+			glm::vec3 = {0.5, 0.5, 0.0});
 
 private:
 

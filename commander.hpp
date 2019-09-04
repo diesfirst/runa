@@ -6,6 +6,7 @@
 constexpr int MAX_FRAMES_IN_FLIGHT = 3;
 
 class Swapchain; //forward declaration
+class Pipe;
 
 class Commander
 {
@@ -32,12 +33,13 @@ public:
 
 	void recordCopyImageToSwapImages(const Swapchain&, vk::Image);
 
-	void recordRenderpass(
+	void recordDrawVert(
 			vk::RenderPass, 
-			vk::Pipeline,
+			Pipe& pipe,
 			std::vector<vk::Framebuffer>, 
 			vk::Buffer&,
-			uint32_t width, uint32_t height);
+			uint32_t width, uint32_t height,
+			uint32_t vertexCount);
 
 	void copyImageToBuffer(
 			vk::Image,
@@ -52,6 +54,10 @@ public:
 			vk::Image,
 			vk::ImageLayout oldLayout,
 			vk::ImageLayout newLayout);
+
+	void resetCommandBuffers();
+	void resetCommandBuffer(uint32_t index);
+	void resetCurrentBuffer();
 
 	std::vector<vk::Semaphore> imageAvailableSemaphores;
 	std::vector<vk::Semaphore> renderFinishedSemaphores;

@@ -12,22 +12,39 @@
 #include "pipe.hpp"
 #include "renderer.hpp"
 #include "geo.hpp"
+#include "sculpter.hpp"
+#include "camera.hpp"
 
 constexpr int WIDTH = 800;
 constexpr int HEIGHT = 800;
 
+Context context;
+MemoryManager mm(context);
+XWindow window(WIDTH, HEIGHT);
+Swapchain swapchain(context, window);
+Commander commander(context);
+Painter painter(swapchain, commander, mm);
+Sculpter sculpter;
+Pipe pipeliner(context);
+Renderer renderer(context);
+Camera camera(WIDTH, HEIGHT);
+EventHandler eventHandler(
+		commander,
+		mm,
+		painter,
+		swapchain,
+		sculpter,
+		renderer,
+		pipeliner,
+		camera);
+
 void paintLoop(
 		EventHandler& eventHandler, 
-		XWindow& window, 
-		Commander& commander,
-		Swapchain& swapchain)
+		XWindow& window)
 {
-	Timer timer;
 	while (true)
 	{
-//		timer.start();
 		eventHandler.handleEvent(window.waitForEvent());
-//		timer.end();
 	}
 }
 
@@ -41,58 +58,33 @@ void runPaintProgram(
 	painter.prepareForBufferPaint();
 	commander.setSwapchainImagesToPresent(swapchain);
 
-	paintLoop(
-			eventHandler,
-			window,
-			commander,
-			swapchain);
+	paintLoop(eventHandler, window);
 }
 
 int main(int argc, char *argv[])
 {
-	Context context;
-
-
-	vk::VertexInputBindingDescription desc = Geo::getBindingDescription();
-	std::cout << "Stride: " << desc.stride << std::endl;
-
-
-
-	MemoryManager mm(context);
-
-	context.printDeviceMemoryTypeInfo();
-	context.printDeviceMemoryHeapInfo();
-
-	XWindow window(WIDTH, HEIGHT);
 	window.open();
 
-	Swapchain swapchain(context, window);
-	Commander commander(context);
-	Painter painter(swapchain, commander, mm);
-	EventHandler eventHandler(
-			commander,
-			mm,
-			painter,
-			swapchain);
-
 	commander.allocateCommandBuffersForSwapchain(swapchain);
-	//
-	//run program
-//	runPaintProgram(painter, commander, swapchain, eventHandler, window);
 
-	Triangle triangle;
-	bufferBlock* block = mm.vertexBlock(triangle);
-	triangle.printPoints();
+	sculpter.aquireBlock(mm);
+	sculpter.createGeo();
 
-	Pipe pipe(context);
-	Renderer renderer(context);
-	pipe.createGraphicsPipeline(renderer, WIDTH, HEIGHT);
+	pipeliner.createGraphicsPipeline(renderer, WIDTH, HEIGHT);
 	renderer.createFramebuffers(swapchain);
 
-	commander.recordRenderpass(renderer.renderPass, pipe.graphicsPipeline, renderer.framebuffers, block->buffer, WIDTH, HEIGHT);
+	camera.acquireUniformBufferBlocks(mm, 3);
+	camera.copyXFormsToBuffers();
 
-	commander.renderFrame(swapchain);
-	std::this_thread::sleep_for(std::chrono::minutes(1));
+	pipeliner.prepareDescriptors(3);
+	pipeliner.updateDescriptorSets(3, camera.uboBlocks, sizeof(ViewTransforms));
+
+	eventHandler.setState(EventState::sculpt);
+	
+	std::cout << "Event state " << static_cast<int>(eventHandler.state) << std::endl;
+
+	while (true)
+		eventHandler.handleEvent(window.waitForEvent());
 
 	commander.cleanUp();
 	

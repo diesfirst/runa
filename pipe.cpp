@@ -28,16 +28,19 @@ Pipe::Pipe(const Context& context) :
 	initMultisampling();
 	initColorAttachment();
 	initColorBlending();
+	initDescriptorSetLayout();
 	initPipelineLayout();
 }
 
 Pipe::~Pipe()
 {
 	context.device.destroyPipelineLayout(pipelineLayout);
+	context.device.destroyDescriptorSetLayout(descriptorSetLayout);
+	context.device.destroyDescriptorPool(descriptorPool);
 	context.device.destroyPipeline(graphicsPipeline);
 }
 
-void Pipe::createGraphicsPipeline(const Renderer& renderer, uint32_t width, uint32_t height)
+void Pipe::createGraphicsPipeline(const Renderer& renderer, const uint32_t width, const uint32_t height)
 {
 	auto vertShaderCode = io::readFile("shaders/vert.spv");
 	auto fragShaderCode = io::readFile("shaders/frag.spv");
@@ -99,7 +102,7 @@ void Pipe::initVertexInputState()
 
 void Pipe::initInputAssemblyState()
 {
-	inputAssemblyState.setTopology(vk::PrimitiveTopology::eTriangleList);
+	inputAssemblyState.setTopology(vk::PrimitiveTopology::eTriangleStrip);
 	inputAssemblyState.setPrimitiveRestartEnable(false);
 
 }
@@ -118,9 +121,9 @@ void Pipe::initRasterizer()
 	//rasterizer has more possible settings but i left them at default
 	rasterizer.setDepthClampEnable(false);
 	rasterizer.setRasterizerDiscardEnable(false);
-	rasterizer.setPolygonMode(vk::PolygonMode::eFill);
+	rasterizer.setPolygonMode(vk::PolygonMode::eLine);
 	rasterizer.setLineWidth(1.0); //in units of fragments
-	rasterizer.setCullMode(vk::CullModeFlagBits::eBack);
+	rasterizer.setCullMode(vk::CullModeFlagBits::eNone);
 	rasterizer.setFrontFace(vk::FrontFace::eClockwise);
 	rasterizer.setDepthBiasEnable(false);
 }
@@ -153,5 +156,89 @@ void Pipe::initColorBlending()
 void Pipe::initPipelineLayout()
 {
 	vk::PipelineLayoutCreateInfo info;
+	info.setSetLayoutCount(1);
+	info.setPSetLayouts(&descriptorSetLayout);
 	pipelineLayout = context.device.createPipelineLayout(info);
 }
+
+void Pipe::initDescriptorSetLayout()
+{
+	vk::DescriptorSetLayoutBinding binding;
+	binding.setDescriptorType(vk::DescriptorType::eUniformBuffer);
+	binding.setBinding(0);
+	//possible to use an array of uniform buffer objects
+	//could be used for skeletal animation
+	binding.setDescriptorCount(1);
+	binding.setStageFlags(vk::ShaderStageFlagBits::eVertex);
+	binding.setPImmutableSamplers(nullptr);
+
+	vk::DescriptorSetLayoutCreateInfo info;
+	info.setPBindings(&binding);
+	info.setBindingCount(1);
+	descriptorSetLayout = context.device.createDescriptorSetLayout(info);
+}
+
+void Pipe::createDescriptorPool(uint32_t descriptorCount)
+{
+	vk::DescriptorPoolSize poolSize;
+	poolSize.setType(vk::DescriptorType::eUniformBuffer);
+	poolSize.setDescriptorCount(descriptorCount);
+
+	vk::DescriptorPoolCreateInfo poolInfo;
+	poolInfo.setPoolSizeCount(1);
+	poolInfo.setPPoolSizes(&poolSize);
+	poolInfo.setMaxSets(descriptorCount);
+
+	descriptorCount = descriptorCount;
+	descriptorPool = context.device.createDescriptorPool(poolInfo);
+}
+
+void Pipe::createDescriptorSets(uint32_t count)
+{
+	std::vector<vk::DescriptorSetLayout> layouts(count, descriptorSetLayout);
+
+	vk::DescriptorSetAllocateInfo allocInfo;
+	allocInfo.setDescriptorPool(descriptorPool);
+	allocInfo.setDescriptorSetCount(count);
+	allocInfo.setPSetLayouts(layouts.data());
+
+	descriptorSets.resize(count);
+	descriptorSets = context.device.allocateDescriptorSets(allocInfo);
+}
+
+void Pipe::updateDescriptorSets(
+			uint32_t count, 
+			std::vector<bufferBlock>* uboBlocks,
+			size_t uboSize)
+{
+	assert(descriptorsPrepared);
+
+	vk::DescriptorBufferInfo bufferInfo;
+	bufferInfo.setOffset(0);
+	bufferInfo.setRange(uboSize);
+
+	vk::WriteDescriptorSet descriptorWrite;
+	descriptorWrite.setDescriptorType(vk::DescriptorType::eUniformBuffer);
+	descriptorWrite.setDescriptorCount(1);
+	descriptorWrite.setDstBinding(0);
+	descriptorWrite.setDstArrayElement(0);
+	descriptorWrite.setPBufferInfo(&bufferInfo);
+	descriptorWrite.setPImageInfo(nullptr);
+	descriptorWrite.setPTexelBufferView(nullptr);
+
+	for (int i = 0; i < count; ++i) 
+	{
+		bufferInfo.setBuffer((*uboBlocks)[i].buffer);
+		descriptorWrite.setDstSet(descriptorSets[i]);
+		context.device.updateDescriptorSets(1, &descriptorWrite, 0, nullptr);
+	}
+}
+
+void Pipe::prepareDescriptors(uint32_t count)
+{
+	initDescriptorSetLayout();
+	createDescriptorPool(count);
+	createDescriptorSets(count);
+	descriptorsPrepared = true;
+}
+
