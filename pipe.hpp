@@ -2,7 +2,6 @@
 #define PIPE_H
 
 #include "context.hpp"
-#include "renderer.hpp"
 #include "geo.hpp"
 #include "mem.hpp"
 
@@ -11,7 +10,7 @@ class Pipe
 public:
 	Pipe(const Context&);
 	virtual ~Pipe();
-	void createGraphicsPipeline(const Renderer&, const uint32_t width, const uint32_t height);
+	void createGraphicsPipeline(const vk::RenderPass&, const uint32_t width, const uint32_t height);
 
 	void updateDescriptorSets(
 			uint32_t descriptorCount, 

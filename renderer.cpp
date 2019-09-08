@@ -3,10 +3,18 @@
 #include "renderer.hpp"
 #include "swapchain.hpp"
 
-Renderer::Renderer(const Context& context) :
-	context(context)
+Renderer::Renderer(
+		const Context& context, 
+		Pipe& pipe, 
+		const uint32_t width,
+		const uint32_t height) :
+	context(context),
+	pipe(pipe),
+	width(width),
+	height(height)
 {
 	createRenderPass(vk::Format::eB8G8R8A8Unorm); //by inspection
+	pipe.createGraphicsPipeline(renderPass, width, height);
 }
 
 Renderer::~Renderer()

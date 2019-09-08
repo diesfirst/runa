@@ -6,6 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 #include "mem.hpp"
+#include "pipe.hpp"
 
 struct ViewTransforms
 {

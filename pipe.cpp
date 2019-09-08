@@ -40,7 +40,7 @@ Pipe::~Pipe()
 	context.device.destroyPipeline(graphicsPipeline);
 }
 
-void Pipe::createGraphicsPipeline(const Renderer& renderer, const uint32_t width, const uint32_t height)
+void Pipe::createGraphicsPipeline(const vk::RenderPass& renderpass, const uint32_t width, const uint32_t height)
 {
 	auto vertShaderCode = io::readFile("shaders/vert.spv");
 	auto fragShaderCode = io::readFile("shaders/frag.spv");
@@ -57,7 +57,8 @@ void Pipe::createGraphicsPipeline(const Renderer& renderer, const uint32_t width
 	vertexInputState.setVertexAttributeDescriptionCount(
 			attributeDescriptions.size());
 	vertexInputState.setPVertexBindingDescriptions(&bindingDescription);
-	vertexInputState.setPVertexAttributeDescriptions(attributeDescriptions.data());
+	vertexInputState.setPVertexAttributeDescriptions(
+			attributeDescriptions.data());
 
 	viewport = vk::Viewport(0, 0, width, height, 0, 1);
 	scissor.setExtent({width, height});
@@ -73,7 +74,7 @@ void Pipe::createGraphicsPipeline(const Renderer& renderer, const uint32_t width
 	info.setPMultisampleState(&multisampling);
 	info.setPColorBlendState(&colorBlending);
 	info.setLayout(pipelineLayout);
-	info.setRenderPass(renderer.renderPass);
+	info.setRenderPass(renderpass);
 	info.setSubpass(0);
 	//not used
 	info.setPDepthStencilState(nullptr);
