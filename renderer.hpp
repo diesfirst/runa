@@ -9,8 +9,8 @@ class Swapchain;
 class Renderer
 {
 public:
-	Renderer(const Context&, Pipe&, const uint32_t width, const uint32_t height);
-	virtual ~Renderer();
+	Renderer(const Context&, const uint32_t width, const uint32_t height);
+	~Renderer();
 	void createRenderPass(vk::Format);
   void createFramebuffers(const Swapchain&);
 
@@ -19,7 +19,7 @@ public:
 
 private:
 	const Context& context;
-	Pipe& pipe;
+	Pipe pipe;
 	uint32_t width;
 	uint32_t height;
 

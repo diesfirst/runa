@@ -5,7 +5,7 @@
 #include <bitset>
 #include <memory>
 
-class Swapchain;
+class Viewport;
 class Commander;
 class MemoryManager;
 
@@ -48,12 +48,12 @@ typedef void (*pBlendFunc)(const Pixel&, const Pixel&, Pixel&);
 class Painter
 {
 public:
-	Painter(const Swapchain&, Commander&, MemoryManager&);
-	virtual ~Painter();
+	Painter(Commander&, MemoryManager&);
+	~Painter();
 
 	void prepareForImagePaint();
 
-	void prepareForBufferPaint();
+	void prepareForBufferPaint(const Viewport&);
 
 	void paint(int16_t x, int16_t y);
 
@@ -103,8 +103,9 @@ public:
 
 	void toggleErase();
 
+	void resizeCanvas(uint32_t width, uint32_t height);
+
 private:
-	const Swapchain& swapchain;
 	Commander& commander;
 	MemoryManager& mm;
 	int imageWidth, imageHeight;

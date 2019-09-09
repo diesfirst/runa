@@ -5,11 +5,10 @@
 
 Renderer::Renderer(
 		const Context& context, 
-		Pipe& pipe, 
 		const uint32_t width,
 		const uint32_t height) :
 	context(context),
-	pipe(pipe),
+	pipe(context),
 	width(width),
 	height(height)
 {

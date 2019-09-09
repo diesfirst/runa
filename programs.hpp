@@ -14,16 +14,16 @@
 #include "geo.hpp"
 #include "sculpter.hpp"
 #include "camera.hpp"
+#include "viewport.hpp"
 
 constexpr int WIDTH = 800;
 constexpr int HEIGHT = 800;
 
 Context context;
 MemoryManager mm(context);
-XWindow window(WIDTH, HEIGHT);
-Swapchain swapchain(context, window);
 Commander commander(context);
-Painter painter(swapchain, commander, mm);
+Viewport viewport(WIDTH, HEIGHT, context);
+Painter painter(commander, mm);
 Sculpter sculpter;
 Pipe pipeliner(context);
 Renderer renderer(context, pipeliner);
@@ -45,7 +45,7 @@ void paintLoop(
 	while (true)
 	{
 		eventHandler.handleEvent(window.waitForEvent());
-	}
+}
 }
 
 void runPaintProgram(

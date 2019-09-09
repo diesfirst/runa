@@ -1,6 +1,6 @@
 #include "painter.hpp"
-#include "swapchain.hpp"
 #include "commander.hpp"
+#include "viewport.hpp"
 #include "mem.hpp"
 #include "util.hpp"
 #include <cmath>
@@ -84,14 +84,12 @@ bool bristleCompare(const Bristle& a, const Bristle& b)
 }
 
 Painter::Painter (
-		const Swapchain& swapchain, 
 		Commander& commander,
 		MemoryManager& mm) :
-	swapchain(swapchain),
 	commander(commander),
 	mm(mm),
-	imageWidth(swapchain.extent.width),
-	imageHeight(swapchain.extent.height)
+	imageWidth(500), //default
+	imageHeight(500) //default
 {
 	imageSize = imageWidth * imageHeight;
 	defaultBrushSize = 15.0;
@@ -106,16 +104,26 @@ Painter::~Painter ()
 {
 }
 
-void Painter::prepareForBufferPaint()
+void Painter::resizeCanvas(const uint32_t width, const uint32_t height)
 {
+	imageWidth = width;
+	imageHeight = height;
+	imageSize = width * height;
+	foreground.resize(imageSize);
+	background.resize(imageSize);
+}
+
+void Painter::prepareForBufferPaint(const Viewport& viewport)
+{
+	resizeCanvas(viewport.getWidth(), viewport.getHeight());
 	int index = aquireBufferBlock(
-			swapchain.extent.width *
-			swapchain.extent.height * 4);
+			imageWidth *
+			imageHeight * 4);
 	commander.recordCopyBufferToImages(
 			mm.bufferBlocks[index].buffer, 
-			swapchain.images,
-			swapchain.extent.width,
-			swapchain.extent.height,
+			viewport.getSwapImages(),
+			imageWidth,
+			imageHeight,
 			1);
 	addNewLayer();
 	fillPixels(stack[curIndex].pixels, 0.5, 0.3, 0.2, 1.0);
@@ -127,34 +135,10 @@ void Painter::prepareForBufferPaint()
 		<< curIndex << std::endl;
 }
 
-void Painter::prepareForImagePaint()
-{
-	int index = aquireImageBlock(
-			imageWidth,
-			imageHeight,
-			1);
-	commander.transitionImageLayout(
-			mm.imageBlocks[index].image,
-			vk::ImageLayout::eUndefined,
-			vk::ImageLayout::eGeneral);
-	commander.recordCopyImageToSwapImages(swapchain, mm.imageBlocks[index].image);
-	std::cout << "Painter prepared!" << std::endl;
-}
-
 int Painter::aquireBufferBlock(uint32_t size)
 {
 	int index = mm.createBuffer(size, vk::BufferUsageFlagBits::eTransferSrc);
 	pBufferMemory = mm.bufferBlocks[index].pHostMemory;
-	return index;
-}
-
-int Painter::aquireImageBlock(
-		uint32_t width,
-		uint32_t height,
-		uint32_t depth)
-{
-	int index = mm.createImage(width, height, depth, vk::ImageUsageFlagBits::eTransferSrc);
-	pImageMemory = mm.bufferBlocks[index].pHostMemory;
 	return index;
 }
 
