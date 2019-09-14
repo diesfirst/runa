@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 #include <array>
+#include "occupant.hpp"
 
 struct Point
 {
@@ -12,7 +13,7 @@ struct Point
 	glm::vec3 color = {0.3, 0.7, 0.8};
 };
 
-class Geo
+class Geo : public Occupant
 {
 public:
 	Geo();

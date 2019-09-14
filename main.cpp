@@ -2,6 +2,6 @@
 
 int main(int argc, char *argv[])
 {
-	runSculpt();
+	program1();
 	return 0;
 }

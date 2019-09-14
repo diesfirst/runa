@@ -3,7 +3,7 @@
 
 Camera::Camera(int windowWidth, int windowHeight)
 {
-	xforms.model = glm::mat4(1.0f);
+	xforms.world = glm::mat4(1.0f);
 	xforms.view = glm::lookAt(
 			glm::vec3(2.0f, 2.0f, 2.0f),
 			glm::vec3(0.0f, 0.0f, 0.0f),
@@ -21,7 +21,7 @@ Camera::~Camera()
 
 void Camera::updateModelXForm(float theta)
 {
-	xforms.model = glm::rotate(
+	xforms.world = glm::rotate(
 			glm::mat4(1.0f), 
 			theta * glm::radians(90.0f),
 			glm::vec3(0, 0, 1));

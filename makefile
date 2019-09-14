@@ -1,8 +1,9 @@
 CFLAGS = -O3 -std=c++17
 LDFLAGS = -lxcb -lvulkan -lX11
+DEPS = main.o context.o swapchain.o window.o viewport.o renderer.o
 
-app : main.o commander.o swapchain.o painter.o context.o window.o mem.o io.o event.o lodepng.o util.o pipe.o renderer.o geo.o sculpter.o camera.o
-	g++ $(CFLAGS) -o app main.o context.o commander.o swapchain.o painter.o window.o mem.o io.o event.o lodepng.o util.o pipe.o renderer.o geo.o sculpter.o camera.o $(LDFLAGS)
+app : $(DEPS)
+	g++ $(CFLAGS) -o app $(DEPS) $(LDFLAGS)
 
 window.o : window.cpp window.hpp
 	g++ -c $(CFLAGS) window.cpp
@@ -37,9 +38,6 @@ lodepng.o : lib/lodepng.cpp lib/lodepng.h
 pipe.o : pipe.cpp pipe.hpp context.hpp io.hpp renderer.hpp geo.hpp mem.hpp
 	g++ -c $(CFLAGS) pipe.cpp
 
-renderer.o : renderer.cpp renderer.hpp context.hpp
-	g++ -c $(CFLAGS) renderer.cpp
-
 geo.o : geo.cpp geo.hpp context.hpp
 	g++ -c $(CFLAGS) geo.cpp
 
@@ -49,7 +47,16 @@ sculpter.o : sculpter.cpp sculpter.hpp geo.hpp
 camera.o : camera.cpp camera.hpp mem.hpp
 	g++ -c $(CFLAGS) camera.cpp
 
-main.o : main.cpp swapchain.hpp commander.hpp painter.hpp
+viewport.o : viewport.cpp viewport.hpp swapchain.hpp window.hpp
+	g++ -c $(CFLAGS) viewport.cpp
+
+description.o : description.cpp description.hpp context.hpp mem.hpp
+	g++ -c $(CFLAGS) description.cpp
+
+renderer.o : renderer.cpp renderer.hpp context.hpp 
+	g++ -c $(CFLAGS) renderer.cpp
+
+main.o : main.cpp programs.hpp
 	g++ -c $(CFLAGS) main.cpp 
 
 .PHONY: clean shaders

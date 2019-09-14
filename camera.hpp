@@ -7,15 +7,16 @@
 #include <vector>
 #include "mem.hpp"
 #include "pipe.hpp"
+#include "occupant.hpp"
 
 struct ViewTransforms
 {
-	glm::mat4 model;
+	glm::mat4 world;
 	glm::mat4 view;
 	glm::mat4 proj;
 };
 
-class Camera
+class Camera : public Occupant
 {
 public:
 	Camera (int w, int h);
