@@ -209,7 +209,7 @@ void Pipe::createDescriptorSets(uint32_t count)
 
 void Pipe::updateDescriptorSets(
 			uint32_t count, 
-			std::vector<bufferBlock>* uboBlocks,
+			std::vector<BufferBlock>* uboBlocks,
 			size_t uboSize)
 {
 	assert(descriptorsPrepared);

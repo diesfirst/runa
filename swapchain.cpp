@@ -1,7 +1,7 @@
 #include "swapchain.hpp"
 #include "window.hpp"
 
-Swapchain::Swapchain(const Context& context, const XWindow& window) :
+Swapchain::Swapchain(const Context& context, const XWindow& window, const uint32_t count) :
 	context(context),
 	window(window)
 {
@@ -15,7 +15,7 @@ Swapchain::Swapchain(const Context& context, const XWindow& window) :
 	setSwapExtent();
 	setFormat();
 	setPresentMode();
-	setImageCount();
+	setImageCount(count);
 	createSwapchain();
 	setImages();
 	createImageViews();
@@ -78,7 +78,7 @@ void Swapchain::setPresentMode()
 	presentMode = vk::PresentModeKHR::eImmediate;
 }
 
-void Swapchain::setImageCount(int count)
+void Swapchain::setImageCount(const uint32_t count)
 {
 	imageCount = count;
 }

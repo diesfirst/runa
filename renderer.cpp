@@ -1,10 +1,25 @@
 //storage space for now, but may be a class for 3D to 2D conversions
 #include <vector>
 #include "renderer.hpp"
-#include "swapchain.hpp"
 #include "viewport.hpp"
 #include "io.hpp"
 #include <iostream>
+#include "description.hpp"
+
+std::vector<vk::PipelineShaderStageCreateInfo> createShaderStageInfos(
+		vk::ShaderModule& vertModule,
+		vk::ShaderModule& fragModule)
+{
+	vk::PipelineShaderStageCreateInfo vertInfo;
+	vk::PipelineShaderStageCreateInfo fragInfo;
+	vertInfo.setStage(vk::ShaderStageFlagBits::eVertex);
+	vertInfo.setModule(vertModule);
+	vertInfo.setPName("main");
+	fragInfo.setStage(vk::ShaderStageFlagBits::eFragment);
+	fragInfo.setModule(fragModule);
+	fragInfo.setPName("main");
+	return std::vector<vk::PipelineShaderStageCreateInfo>({vertInfo, fragInfo});
+}
 
 
 Renderer::Renderer(
@@ -12,11 +27,15 @@ Renderer::Renderer(
 	context(context)
 {
 	viewportIsBound = false;
+	descriptionIsBound = false;
 	createRenderPass(vk::Format::eB8G8R8A8Unorm); //by inspection
+	initAll();
 }
 
 Renderer::~Renderer()
 {
+	context.device.destroyPipelineLayout(pipelineLayout);
+	context.device.destroyPipeline(graphicsPipeline);
 	context.device.destroyRenderPass(renderPass);
 	for (auto framebuffer : framebuffers) 
 	{
@@ -31,6 +50,19 @@ void Renderer::bindToViewport(Viewport& viewport)
 	height = viewport.getHeight();
 	viewportIsBound = true;
 	createFramebuffers();
+}
+
+void Renderer::bindToDescription(Description& description)
+{
+	pDescription = &description;
+	descriptionIsBound = true;
+}
+
+void Renderer::setup(Viewport& viewport, Description& description)
+{
+	bindToViewport(viewport);
+	bindToDescription(description);
+	createGraphicsPipeline();
 }
 
 void Renderer::createRenderPass(vk::Format colorFormat)
@@ -121,6 +153,25 @@ void Renderer::createFramebuffers()
 	}
 }
 
+void Renderer::update()
+{
+	vk::Buffer& vertBuffer = pDescription->getVkVertexBuffer();
+	context.pCommander->recordDrawVert(
+			renderPass,
+			framebuffers,
+			vertBuffer,
+			graphicsPipeline,
+			pipelineLayout,
+//			pDescription->descriptorSets,
+			width, height,
+			pDescription->getVertexCount());
+}
+
+void Renderer::render()
+{
+	context.pCommander->renderFrame(pViewport->getSwapchain());
+}
+
 vk::ShaderModule Renderer::createShaderModule(const std::vector<char>& code)
 {
 	vk::ShaderModuleCreateInfo info;
@@ -135,17 +186,8 @@ void Renderer::initVertexInputState()
 
 void Renderer::initInputAssemblyState()
 {
-	inputAssemblyState.setTopology(vk::PrimitiveTopology::eTriangleStrip);
+	inputAssemblyState.setTopology(vk::PrimitiveTopology::eTriangleList);
 	inputAssemblyState.setPrimitiveRestartEnable(false);
-
-}
-
-void Renderer::initViewportState()
-{
-	viewportState.setPScissors(&scissor);
-	viewportState.setPViewports(pViewport);
-	viewportState.setScissorCount(1); //scissor might not be necessary
-	viewportState.setViewportCount(1);
 }
 
 void Renderer::initRasterizer()
@@ -154,7 +196,7 @@ void Renderer::initRasterizer()
 	//rasterizer has more possible settings but i left them at default
 	rasterizer.setDepthClampEnable(false);
 	rasterizer.setRasterizerDiscardEnable(false);
-	rasterizer.setPolygonMode(vk::PolygonMode::eLine);
+	rasterizer.setPolygonMode(vk::PolygonMode::eFill);
 	rasterizer.setLineWidth(1.0); //in units of fragments
 	rasterizer.setCullMode(vk::CullModeFlagBits::eNone);
 	rasterizer.setFrontFace(vk::FrontFace::eClockwise);
@@ -188,13 +230,32 @@ void Renderer::initColorBlending()
 
 void Renderer::initPipelineLayout()
 {
-	vk::RendererlineLayoutCreateInfo info;
-	info.setSetLayoutCount(1);
-	info.setPSetLayouts(&descriptorSetLayout);
-	pipelineLayout = context.device.createRendererlineLayout(info);
+	vk::PipelineLayoutCreateInfo info;
+	if (descriptionIsBound)
+	{
+		std::cout << "Setting layout according to description at "
+			<< pDescription
+		 	<< std::endl;
+		info.setSetLayoutCount(1);
+		info.setPSetLayouts(pDescription->getPDescriptorSetLayout());
+		pipelineLayout = context.device.createPipelineLayout(info);
+	}
+	else
+	{
+		std::cout << "Setting empty layout" << std::endl;
+		pipelineLayout = context.device.createPipelineLayout(info);
+	}
 }
 
-
+void Renderer::initAll()
+{
+	initInputAssemblyState();
+	initRasterizer();
+	initMultisampling();
+	initColorAttachment();
+	initColorBlending();
+	initPipelineLayout();
+}
 
 void Renderer::createGraphicsPipeline()
 {
@@ -206,8 +267,8 @@ void Renderer::createGraphicsPipeline()
 	auto shaderStages = createShaderStageInfos(
 			vertShaderModule, fragShaderModule);
 	
-	auto bindingDescription = Geo::getBindingDescription();
-	auto attributeDescriptions  = Geo::getAttributeDescriptions();
+	auto bindingDescription = Description::getBindingDescription();
+	auto attributeDescriptions  = Description::getAttributeDescriptions();
 
 	vertexInputState.setVertexBindingDescriptionCount(1);
 	vertexInputState.setVertexAttributeDescriptionCount(
@@ -216,21 +277,17 @@ void Renderer::createGraphicsPipeline()
 	vertexInputState.setPVertexAttributeDescriptions(
 			attributeDescriptions.data());
 
-	viewport = vk::Viewport(0, 0, width, height, 0, 1);
-	scissor.setExtent({width, height});
-	scissor.setOffset({0, 0});
-
 	vk::GraphicsPipelineCreateInfo info;
 	info.setStageCount(2);
 	info.setPStages(shaderStages.data());
 	info.setPVertexInputState(&vertexInputState);
 	info.setPInputAssemblyState(&inputAssemblyState);
-	info.setPViewportState(&viewportState);
+	info.setPViewportState(pViewport->getPViewportState());
 	info.setPRasterizationState(&rasterizer);
 	info.setPMultisampleState(&multisampling);
 	info.setPColorBlendState(&colorBlending);
 	info.setLayout(pipelineLayout);
-	info.setRenderPass(renderpass);
+	info.setRenderPass(renderPass);
 	info.setSubpass(0);
 	//not used
 	info.setPDepthStencilState(nullptr);
@@ -241,8 +298,6 @@ void Renderer::createGraphicsPipeline()
 
 	context.device.destroyShaderModule(vertShaderModule);
 	context.device.destroyShaderModule(fragShaderModule);
-
-
 }
 
 void Renderer::destroyFramebuffers()

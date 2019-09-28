@@ -14,7 +14,7 @@ public:
 
 	void updateDescriptorSets(
 			uint32_t descriptorCount, 
-			std::vector<bufferBlock>* uboBlocks,
+			std::vector<BufferBlock>* uboBlocks,
 			size_t uboSize);
 
 	vk::Pipeline graphicsPipeline;

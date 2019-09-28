@@ -7,6 +7,9 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <memory>
+#include "commander.hpp"
+#include "mem.hpp"
 
 class Context
 {
@@ -33,6 +36,8 @@ public:
 	
 	void setQueue();
 
+	BufferBlock* getVertexBlock(uint32_t size);
+
 	void printInstanceExtensionProperties();
 
 	void printDeviceMemoryHeapInfo();
@@ -50,8 +55,10 @@ public:
 	void printAvailableDevices();
 
 	vk::Queue queue;
+	std::unique_ptr<Commander> pCommander;
 
 private:
+	std::unique_ptr<MemoryManager> pMemory;
 	//physical device properties
 	vk::PhysicalDeviceProperties physicalDeviceProperties;
 	vk::PhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
@@ -64,6 +71,8 @@ private:
 	void createContext();
 
 	void destroyContext();
+
+	void createCommander();
 
 	void checkInstanceExtensionProperties();
 

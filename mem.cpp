@@ -1,8 +1,9 @@
 #include "mem.hpp"
 #include <cstring>
+#include <iostream>
 
-MemoryManager::MemoryManager(const Context& context) :
-	context(context)
+MemoryManager::MemoryManager(const vk::Device& device) :
+	device(device)
 {
 }
 
@@ -14,19 +15,19 @@ MemoryManager::~MemoryManager()
 
 uint32_t MemoryManager::addBufferBlock()
 {
-	bufferBlock block;
-	bufferBlocks.push_back(block);
-	return bufferBlocks.size() - 1;
+	BufferBlock block;
+	BufferBlocks.push_back(block);
+	return BufferBlocks.size() - 1;
 }
 
 uint32_t MemoryManager::addImageBlock()
 {
-	imageBlock block;
-	imageBlocks.push_back(block);
-	return imageBlocks.size() - 1;
+	ImageBlock block;
+	ImageBlocks.push_back(block);
+	return ImageBlocks.size() - 1;
 }
 
-void MemoryManager::createBuffer(bufferBlock& block, uint32_t size, vk::BufferUsageFlagBits usage)
+void MemoryManager::createBuffer(BufferBlock& block, uint32_t size, vk::BufferUsageFlagBits usage)
 {
 	std::cout << "MM Size: " << size << std::endl;
 
@@ -36,27 +37,27 @@ void MemoryManager::createBuffer(bufferBlock& block, uint32_t size, vk::BufferUs
 	bufferInfo.setUsage(usage);
 	bufferInfo.setSharingMode(vk::SharingMode::eExclusive);
 
-	block.buffer = context.device.createBuffer(bufferInfo);
+	block.buffer = device.createBuffer(bufferInfo);
 
-	auto memReqs = context.device.getBufferMemoryRequirements(block.buffer);
+	auto memReqs = device.getBufferMemoryRequirements(block.buffer);
 
 	vk::MemoryAllocateInfo allocInfo;
 	allocInfo.setMemoryTypeIndex(9); //always host visible for now
 	allocInfo.setAllocationSize(memReqs.size);
 	std::cout << "Mem reqs size:" << memReqs.size << std::endl;
 
-	block.memory = context.device.allocateMemory(allocInfo);
+	block.memory = device.allocateMemory(allocInfo);
 
-	context.device.bindBufferMemory(block.buffer, block.memory, 0);
+	device.bindBufferMemory(block.buffer, block.memory, 0);
 
-	block.pHostMemory = context.device.mapMemory(block.memory, 0, size);
+	block.pHostMemory = device.mapMemory(block.memory, 0, size);
 	block.size = size;
 }
 
 uint32_t MemoryManager::createBuffer(uint32_t size, vk::BufferUsageFlagBits usage)
 {
 	uint32_t index = addBufferBlock();
-	bufferBlock& block = bufferBlocks[index];
+	BufferBlock& block = BufferBlocks[index];
 	std::cout << "MM Size: " << size << std::endl;
 
 	vk::BufferCreateInfo bufferInfo;
@@ -65,20 +66,20 @@ uint32_t MemoryManager::createBuffer(uint32_t size, vk::BufferUsageFlagBits usag
 	bufferInfo.setUsage(usage);
 	bufferInfo.setSharingMode(vk::SharingMode::eExclusive);
 
-	block.buffer = context.device.createBuffer(bufferInfo);
+	block.buffer = device.createBuffer(bufferInfo);
 
-	auto memReqs = context.device.getBufferMemoryRequirements(block.buffer);
+	auto memReqs = device.getBufferMemoryRequirements(block.buffer);
 
 	vk::MemoryAllocateInfo allocInfo;
 	allocInfo.setMemoryTypeIndex(9); //always host visible for now
 	allocInfo.setAllocationSize(memReqs.size);
 	std::cout << "Mem reqs size:" << memReqs.size << std::endl;
 
-	block.memory = context.device.allocateMemory(allocInfo);
+	block.memory = device.allocateMemory(allocInfo);
 
-	context.device.bindBufferMemory(block.buffer, block.memory, 0);
+	device.bindBufferMemory(block.buffer, block.memory, 0);
 
-	block.pHostMemory = context.device.mapMemory(block.memory, 0, size);
+	block.pHostMemory = device.mapMemory(block.memory, 0, size);
 	block.size = size;
 
 	return index;
@@ -91,7 +92,7 @@ uint32_t MemoryManager::createImage(
 		vk::ImageUsageFlagBits usage)
 {
 	int index = addImageBlock();
-	imageBlock& block = imageBlocks[index];
+	ImageBlock& block = ImageBlocks[index];
 
 	vk::ImageCreateInfo createInfo;
 	vk::Extent3D extent;
@@ -108,19 +109,19 @@ uint32_t MemoryManager::createImage(
 	createInfo.setUsage(usage);
 	createInfo.setSharingMode(vk::SharingMode::eExclusive);
 
-	block.image = context.device.createImage(createInfo);
+	block.image = device.createImage(createInfo);
 
-	auto imgMemReq = context.device.getImageMemoryRequirements(block.image); 
+	auto imgMemReq = device.getImageMemoryRequirements(block.image); 
 
 	vk::MemoryAllocateInfo memAllocInfo;
 	memAllocInfo.setAllocationSize(imgMemReq.size);
 	memAllocInfo.setMemoryTypeIndex(9); //because it worked for the buffer
 
-	block.memory = context.device.allocateMemory(memAllocInfo);
+	block.memory = device.allocateMemory(memAllocInfo);
 
-	context.device.bindImageMemory(block.image, block.memory, 0);
+	device.bindImageMemory(block.image, block.memory, 0);
 
-	block.pHostMemory = context.device.mapMemory(block.memory, 0, imgMemReq.size);
+	block.pHostMemory = device.mapMemory(block.memory, 0, imgMemReq.size);
 
 	return index;
 }
@@ -139,21 +140,21 @@ void MemoryManager::createUniformBuffers(size_t count, vk::DeviceSize bufferSize
 
 void MemoryManager::unmapBuffers()
 {
-	for (bufferBlock block : bufferBlocks) {
-		context.device.unmapMemory(block.memory);
+	for (BufferBlock block : BufferBlocks) {
+		device.unmapMemory(block.memory);
 	}
-	for (bufferBlock block : uniformBufferBlocks) {
-		context.device.unmapMemory(block.memory);
+	for (BufferBlock block : uniformBufferBlocks) {
+		device.unmapMemory(block.memory);
 	}
 }
 
 void MemoryManager::destroyBuffers()
 {
-	for (bufferBlock block : bufferBlocks) {
-		context.device.destroyBuffer(block.buffer); context.device.freeMemory(block.memory);
+	for (BufferBlock block : BufferBlocks) {
+		device.destroyBuffer(block.buffer); device.freeMemory(block.memory);
 	}
-	for (bufferBlock block : uniformBufferBlocks) {
-		context.device.destroyBuffer(block.buffer); context.device.freeMemory(block.memory);
+	for (BufferBlock block : uniformBufferBlocks) {
+		device.destroyBuffer(block.buffer); device.freeMemory(block.memory);
 	}
 }
 
@@ -164,16 +165,16 @@ void MemoryManager::getImageSubresourceLayout(vk::Image image)
 	subresource.setArrayLayer(0);
 	subresource.setAspectMask(vk::ImageAspectFlagBits::eColor);
 	vk::SubresourceLayout subresLayout = 
-		context.device.getImageSubresourceLayout(image, subresource);
+		device.getImageSubresourceLayout(image, subresource);
 	std::cout << "Row pitch: " << subresLayout.rowPitch << std::endl;
 }
 
-bufferBlock* MemoryManager::vertexBlock(size_t size)
+BufferBlock* MemoryManager::createVertexBlock(size_t size)
 {
 	int index = createBuffer(
 			size, 
 			vk::BufferUsageFlagBits::eVertexBuffer);
-	bufferBlock* block = &bufferBlocks[index];
+	BufferBlock* block = &BufferBlocks[index];
 	return block;
 }
 

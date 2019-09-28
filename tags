@@ -1,0 +1,483 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+A	painter.hpp	/^	float R, G, B, A; \/\/default values$/;"	m	class:Painter
+B	painter.hpp	/^	float R, G, B, A; \/\/default values$/;"	m	class:Painter
+Blend	painter.hpp	/^enum class Blend : size_t $/;"	c
+Bristle	painter.hpp	/^struct Bristle$/;"	s
+BufferBlock	mem.hpp	/^struct BufferBlock$/;"	s
+BufferBlocks	mem.hpp	/^	std::vector<BufferBlock> BufferBlocks;$/;"	m	class:MemoryManager
+CAMERA_H	camera.hpp	2;"	d
+CFLAGS	makefile	/^CFLAGS = -g -std=c++17 -Wall -Wextra -Wpedantic$/;"	m
+COMMANDER_H	commander.hpp	2;"	d
+CONTEXT_H	context.hpp	2;"	d
+Camera	camera.cpp	/^Camera::Camera(int windowWidth, int windowHeight)$/;"	f	class:Camera
+Camera	camera.hpp	/^class Camera : public Occupant$/;"	c
+Commander	commander.cpp	/^Commander::Commander(vk::Device& device, vk::Queue& queue, uint32_t queueFamily) :$/;"	f	class:Commander
+Commander	commander.hpp	/^class Commander$/;"	c
+Context	context.cpp	/^Context::Context()$/;"	f	class:Context
+Context	context.hpp	/^class Context$/;"	c
+DEPS	makefile	/^DEPS = main.o context.o swapchain.o window.o viewport.o renderer.o description.o io.o mem.o commander.o geo.o occupant.o lodepng.o$/;"	m
+DESCRIPTION_H	description.hpp	2;"	d
+Description	description.cpp	/^Description::Description(Context& context) :$/;"	f	class:Description
+Description	description.hpp	/^class Description$/;"	c
+EventHandler	event.cpp	/^EventHandler::EventHandler($/;"	f	class:EventHandler
+EventHandler	event.hpp	/^class EventHandler$/;"	c
+EventState	event.hpp	/^enum class EventState : size_t$/;"	c
+G	painter.hpp	/^	float R, G, B, A; \/\/default values$/;"	m	class:Painter
+GEO_H	geo.hpp	2;"	d
+GLM_FORCE_RADIANS	camera.hpp	3;"	d
+Geo	geo.cpp	/^Geo::Geo()$/;"	f	class:Geo
+Geo	geo.hpp	/^class Geo : public PointBased$/;"	c
+HEIGHT	oldPrograms.hpp	/^constexpr int HEIGHT = 800;$/;"	v
+HEIGHT	viewport.hpp	/^constexpr int HEIGHT = 800;$/;"	v
+ImageBlock	mem.hpp	/^struct ImageBlock$/;"	s
+ImageBlocks	mem.hpp	/^	std::vector<ImageBlock> ImageBlocks;$/;"	m	class:MemoryManager
+LDFLAGS	makefile	/^LDFLAGS = -lxcb -lvulkan -lX11$/;"	m
+Layer	painter.hpp	/^struct Layer$/;"	s
+LayerPointer	painter.hpp	/^typedef std::unique_ptr<Layer> LayerPointer;$/;"	t
+MAX_FRAMES_IN_FLIGHT	commander.hpp	/^constexpr int MAX_FRAMES_IN_FLIGHT = 3;$/;"	v
+MEM	mem.hpp	2;"	d
+MemoryManager	mem.cpp	/^MemoryManager::MemoryManager(const vk::Device& device) :$/;"	f	class:MemoryManager
+MemoryManager	mem.hpp	/^class MemoryManager$/;"	c
+OCCUPANT_H	occupant.hpp	2;"	d
+Occupant	occupant.cpp	/^Occupant::Occupant()$/;"	f	class:Occupant
+Occupant	occupant.hpp	/^class Occupant$/;"	c
+PAINTER_H	painter.hpp	2;"	d
+PIPE_H	pipe.hpp	2;"	d
+Painter	painter.cpp	/^Painter::Painter ($/;"	f	class:Painter
+Painter	painter.hpp	/^class Painter$/;"	c
+Pipe	pipe.cpp	/^Pipe::Pipe(const Context& context) :$/;"	f	class:Pipe
+Pipe	pipe.hpp	/^class Pipe$/;"	c
+Pixel	painter.hpp	/^struct Pixel$/;"	s
+Pixels	painter.hpp	/^typedef std::vector<Pixel> Pixels;$/;"	t
+Point	occupant.hpp	/^struct Point$/;"	s
+PointBased	occupant.cpp	/^PointBased::PointBased()$/;"	f	class:PointBased
+PointBased	occupant.hpp	/^class PointBased : public Occupant$/;"	c
+R	painter.hpp	/^	float R, G, B, A; \/\/default values$/;"	m	class:Painter
+RENDERER_H	renderer.hpp	2;"	d
+Renderer	renderer.cpp	/^Renderer::Renderer($/;"	f	class:Renderer
+Renderer	renderer.hpp	/^class Renderer$/;"	c
+SCULPTER_H	sculpter.hpp	2;"	d
+SWAPCHAIN_H	swapchain.hpp	2;"	d
+Sculpter	sculpter.cpp	/^Sculpter::Sculpter()$/;"	f	class:Sculpter
+Sculpter	sculpter.hpp	/^class Sculpter$/;"	c
+Stack	painter.hpp	/^typedef std::vector<Layer> Stack;$/;"	t
+Swapchain	swapchain.cpp	/^Swapchain::Swapchain(const Context& context, const XWindow& window) :$/;"	f	class:Swapchain
+Swapchain	swapchain.hpp	/^class Swapchain$/;"	c
+Timer	util.hpp	/^class Timer$/;"	c
+Triangle	geo.cpp	/^Triangle::Triangle($/;"	f	class:Triangle
+Triangle	geo.hpp	/^class Triangle : public Geo$/;"	c
+UTIL_H	util.hpp	2;"	d
+VIEWPORT_H	viewport.hpp	3;"	d
+VK_USE_PLATFORM_XCB_KHR	context.hpp	4;"	d
+ViewTransforms	camera.hpp	/^struct ViewTransforms$/;"	s
+Viewport	viewport.cpp	/^Viewport::Viewport(Context& context ,const int width, const int height) :$/;"	f	class:Viewport
+Viewport	viewport.hpp	/^class Viewport$/;"	c
+WIDTH	oldPrograms.hpp	/^constexpr int WIDTH = 800;$/;"	v
+WIDTH	viewport.hpp	/^constexpr int WIDTH = 800;$/;"	v
+WINDOW_H	window.hpp	2;"	d
+XWindow	window.cpp	/^XWindow::XWindow(int width, int height)$/;"	f	class:XWindow
+XWindow	window.hpp	/^class XWindow$/;"	c
+a	painter.hpp	/^	float a = 0.0;$/;"	m	struct:Pixel
+a	painter.hpp	/^	float r,g,b,a;$/;"	m	struct:Layer
+acquireNextImage	swapchain.cpp	/^uint32_t Swapchain::acquireNextImage(const vk::Semaphore& semaphore)$/;"	f	class:Swapchain
+acquireUniformBufferBlocks	camera.cpp	/^void Camera::acquireUniformBufferBlocks(MemoryManager& mm, int count)$/;"	f	class:Camera
+add	painter.cpp	/^void add(const Pixel& a, const Pixel& b, Pixel& o)$/;"	f
+add	painter.hpp	/^	add, sub, min, over, overPreMul, numModes$/;"	m	class:Blend
+addBufferBlock	mem.cpp	/^uint32_t MemoryManager::addBufferBlock()$/;"	f	class:MemoryManager
+addImageBlock	mem.cpp	/^uint32_t MemoryManager::addImageBlock()$/;"	f	class:MemoryManager
+addNewLayer	painter.cpp	/^void Painter::addNewLayer()$/;"	f	class:Painter
+addPointToGeo	sculpter.cpp	/^void Sculpter::addPointToGeo(float x, float y)$/;"	f	class:Sculpter
+allocateCommandBuffersForSwapchain	commander.cpp	/^void Commander::allocateCommandBuffersForSwapchain(const Swapchain& swapchain)$/;"	f	class:Commander
+alpha	painter.hpp	/^	float alpha;$/;"	m	struct:Bristle
+appClass	window.hpp	/^	std::string appClass = "floating";$/;"	m	class:XWindow
+appName	window.hpp	/^	std::string appName = "aurora";$/;"	m	class:XWindow
+aquireBlock	sculpter.cpp	/^void Sculpter::aquireBlock(MemoryManager& mm)$/;"	f	class:Sculpter
+aquireBufferBlock	painter.cpp	/^int Painter::aquireBufferBlock(uint32_t size)$/;"	f	class:Painter
+b	painter.hpp	/^	float b = 0.0;$/;"	m	struct:Pixel
+b	painter.hpp	/^	float r,g,b,a;$/;"	m	struct:Layer
+background	painter.hpp	/^	Pixels foreground, background;$/;"	m	class:Painter
+beginSingleTimeCommand	commander.cpp	/^vk::CommandBuffer Commander::beginSingleTimeCommand()$/;"	f	class:Commander
+bindToDescription	renderer.cpp	/^void Renderer::bindToDescription(Description& description)$/;"	f	class:Renderer
+bindToViewport	renderer.cpp	/^void Renderer::bindToViewport(Viewport& viewport)$/;"	f	class:Renderer
+blendFunctions	painter.cpp	/^std::array<pBlendFunc, static_cast<size_t>(Blend::numModes)> blendFunctions =$/;"	v
+blendMode	painter.hpp	/^	Blend blendMode = Blend::over;$/;"	m	struct:Layer
+blendMode	painter.hpp	/^	Blend blendMode = Blend::overPreMul;$/;"	m	class:Painter
+block	sculpter.hpp	/^	BufferBlock* block;$/;"	m	class:Sculpter
+blockCount	camera.hpp	/^	uint32_t blockCount;$/;"	m	class:Camera
+bristleCompare	painter.cpp	/^bool bristleCompare(const Bristle& a, const Bristle& b)$/;"	f
+brushSize	painter.hpp	/^	float brushSize;$/;"	m	struct:Layer
+buffer	mem.hpp	/^	vk::Buffer buffer;$/;"	m	struct:BufferBlock
+calcAlpha	painter.cpp	/^float Painter::calcAlpha(float val, float radius)$/;"	f	class:Painter
+camera	event.hpp	/^	Camera& camera;$/;"	m	class:EventHandler
+cameras	description.hpp	/^	std::vector<std::shared_ptr<Camera>> cameras;$/;"	m	class:Description
+checkBufferMemReqs	util.cpp	/^void checkBufferMemReqs(const Context& context, const vk::Buffer& buffer)$/;"	f
+checkInstanceExtensionProperties	context.cpp	/^void Context::checkInstanceExtensionProperties()$/;"	f	class:Context
+circleBrush	painter.cpp	/^void Painter::circleBrush()$/;"	f	class:Painter
+cleanUp	commander.cpp	/^void Commander::cleanUp()$/;"	f	class:Commander
+clearColors	commander.hpp	/^	std::vector<vk::ClearColorValue> clearColors;$/;"	m	class:Commander
+color	occupant.hpp	/^	glm::vec3 color = {0.3, 0.7, 0.8};$/;"	m	struct:Point
+colorAttachmentState	pipe.hpp	/^	vk::PipelineColorBlendAttachmentState colorAttachmentState; \/\/could be many$/;"	m	class:Pipe
+colorAttachmentState	renderer.hpp	/^	vk::PipelineColorBlendAttachmentState colorAttachmentState; \/\/could be many$/;"	m	class:Renderer
+colorBlending	pipe.hpp	/^	vk::PipelineColorBlendStateCreateInfo colorBlending;$/;"	m	class:Pipe
+colorBlending	renderer.hpp	/^	vk::PipelineColorBlendStateCreateInfo colorBlending;$/;"	m	class:Renderer
+colorFormat	swapchain.hpp	/^	vk::Format colorFormat;$/;"	m	class:Swapchain
+colorSpace	swapchain.hpp	/^	vk::ColorSpaceKHR colorSpace;$/;"	m	class:Swapchain
+commandBuffers	commander.hpp	/^	std::vector<vk::CommandBuffer> commandBuffers;$/;"	m	class:Commander
+commandPool	commander.hpp	/^	vk::CommandPool commandPool;$/;"	m	class:Commander
+commandPoolCreated	commander.hpp	/^	bool commandPoolCreated = false;$/;"	m	class:Commander
+commander	event.hpp	/^	Commander& commander;$/;"	m	class:EventHandler
+commander	painter.hpp	/^	Commander& commander;$/;"	m	class:Painter
+connection	window.hpp	/^	xcb_connection_t* connection;$/;"	m	class:XWindow
+context	description.hpp	/^	Context& context;$/;"	m	class:Description
+context	oldPrograms.hpp	/^Context context;$/;"	v
+context	pipe.hpp	/^	const Context& context;$/;"	m	class:Pipe
+context	renderer.hpp	/^	const Context& context;$/;"	m	class:Renderer
+context	swapchain.hpp	/^	const Context& context;$/;"	m	class:Swapchain
+copyImageToBuffer	commander.cpp	/^void Commander::copyImageToBuffer($/;"	f	class:Commander
+copyXFormsToBuffer	camera.cpp	/^void Camera::copyXFormsToBuffer(int index)$/;"	f	class:Camera
+copyXFormsToBuffers	camera.cpp	/^void Camera::copyXFormsToBuffers()$/;"	f	class:Camera
+createBuffer	mem.cpp	/^uint32_t MemoryManager::createBuffer(uint32_t size, vk::BufferUsageFlagBits usage)$/;"	f	class:MemoryManager
+createBuffer	mem.cpp	/^void MemoryManager::createBuffer(BufferBlock& block, uint32_t size, vk::BufferUsageFlagBits usage)$/;"	f	class:MemoryManager
+createCommandPool	commander.cpp	/^void Commander::createCommandPool(uint32_t queueFamily)$/;"	f	class:Commander
+createContext	context.cpp	/^void Context::createContext()$/;"	f	class:Context
+createDescriptorPool	description.cpp	/^void Description::createDescriptorPool(uint32_t descriptorCount)$/;"	f	class:Description
+createDescriptorPool	pipe.cpp	/^void Pipe::createDescriptorPool(uint32_t descriptorCount)$/;"	f	class:Pipe
+createDescriptorSets	description.cpp	/^void Description::createDescriptorSets(uint32_t count)$/;"	f	class:Description
+createDescriptorSets	pipe.cpp	/^void Pipe::createDescriptorSets(uint32_t count)$/;"	f	class:Pipe
+createDevice	context.cpp	/^void Context::createDevice()$/;"	f	class:Context
+createFramebuffers	renderer.cpp	/^void Renderer::createFramebuffers()$/;"	f	class:Renderer
+createGeo	sculpter.cpp	/^void Sculpter::createGeo()$/;"	f	class:Sculpter
+createGraphicsPipeline	pipe.cpp	/^void Pipe::createGraphicsPipeline(const vk::RenderPass& renderpass, const uint32_t width, const uint32_t height)$/;"	f	class:Pipe
+createGraphicsPipeline	renderer.cpp	/^void Renderer::createGraphicsPipeline()$/;"	f	class:Renderer
+createImage	mem.cpp	/^uint32_t MemoryManager::createImage($/;"	f	class:MemoryManager
+createImageViews	swapchain.cpp	/^void Swapchain::createImageViews()$/;"	f	class:Swapchain
+createInstance	context.cpp	/^void Context::createInstance()$/;"	f	class:Context
+createPhysicalDevice	context.cpp	/^void Context::createPhysicalDevice()$/;"	f	class:Context
+createPoint	occupant.cpp	/^void PointBased::createPoint(float x, float y)$/;"	f	class:PointBased
+createPoint	occupant.cpp	/^void PointBased::createPoint(float x, float y, float z)$/;"	f	class:PointBased
+createRenderPass	renderer.cpp	/^void Renderer::createRenderPass(vk::Format colorFormat)$/;"	f	class:Renderer
+createShaderModule	pipe.cpp	/^vk::ShaderModule Pipe::createShaderModule(const std::vector<char>& code)$/;"	f	class:Pipe
+createShaderModule	renderer.cpp	/^vk::ShaderModule Renderer::createShaderModule(const std::vector<char>& code)$/;"	f	class:Renderer
+createShaderStageInfos	pipe.cpp	/^std::vector<vk::PipelineShaderStageCreateInfo> createShaderStageInfos($/;"	f
+createShaderStageInfos	renderer.cpp	/^std::vector<vk::PipelineShaderStageCreateInfo> createShaderStageInfos($/;"	f
+createSurface	swapchain.cpp	/^void Swapchain::createSurface()$/;"	f	class:Swapchain
+createSwapchain	swapchain.cpp	/^void Swapchain::createSwapchain()$/;"	f	class:Swapchain
+createSyncObjects	commander.cpp	/^void Commander::createSyncObjects()$/;"	f	class:Commander
+createTriangle	description.cpp	/^void Description::createTriangle()$/;"	f	class:Description
+createTriangle	sculpter.cpp	/^void Sculpter::createTriangle()$/;"	f	class:Sculpter
+createUniformBuffers	mem.cpp	/^void MemoryManager::createUniformBuffers(size_t count, vk::DeviceSize bufferSize)$/;"	f	class:MemoryManager
+createWindow	window.cpp	/^void XWindow::createWindow(const int width, const int height)$/;"	f	class:XWindow
+curGeo	sculpter.hpp	/^	uint32_t curGeo = 0;$/;"	m	class:Sculpter
+curIndex	painter.hpp	/^	int curIndex;$/;"	m	class:Painter
+currentBrush	painter.hpp	/^	std::vector<Bristle> currentBrush;$/;"	m	class:Painter
+currentFrame	commander.hpp	/^	size_t currentFrame = 0;$/;"	m	class:Commander
+currentIndex	commander.hpp	/^	uint32_t currentIndex = 0;$/;"	m	class:Commander
+debugCallback	context.hpp	/^	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback($/;"	f	class:Context
+defaultBrushSize	painter.hpp	/^	float defaultBrushSize;$/;"	m	class:Painter
+depth	mem.hpp	/^	uint32_t width, height, depth;$/;"	m	struct:ImageBlock
+descriptionIsBound	renderer.hpp	/^	bool descriptionIsBound;$/;"	m	class:Renderer
+descriptorCount	description.hpp	/^	uint32_t descriptorCount;$/;"	m	class:Description
+descriptorCount	pipe.hpp	/^	uint32_t descriptorCount;$/;"	m	class:Pipe
+descriptorPool	description.hpp	/^	vk::DescriptorPool descriptorPool;$/;"	m	class:Description
+descriptorPool	pipe.hpp	/^	vk::DescriptorPool descriptorPool;$/;"	m	class:Pipe
+descriptorSetLayout	description.hpp	/^	vk::DescriptorSetLayout descriptorSetLayout;$/;"	m	class:Description
+descriptorSetLayout	pipe.hpp	/^	vk::DescriptorSetLayout descriptorSetLayout;$/;"	m	class:Pipe
+descriptorSets	description.hpp	/^	std::vector<vk::DescriptorSet> descriptorSets;$/;"	m	class:Description
+descriptorSets	pipe.hpp	/^	std::vector<vk::DescriptorSet> descriptorSets;$/;"	m	class:Pipe
+descriptorsPrepared	description.hpp	/^	bool descriptorsPrepared = false;$/;"	m	class:Description
+descriptorsPrepared	pipe.hpp	/^	bool descriptorsPrepared = false;$/;"	m	class:Pipe
+destroyBuffers	mem.cpp	/^void MemoryManager::destroyBuffers()$/;"	f	class:MemoryManager
+destroyContext	context.cpp	/^void Context::destroyContext()$/;"	f	class:Context
+destroyFramebuffers	renderer.cpp	/^void Renderer::destroyFramebuffers()$/;"	f	class:Renderer
+destroyImageViews	swapchain.cpp	/^void Swapchain::destroyImageViews()$/;"	f	class:Swapchain
+device	commander.hpp	/^	const vk::Device& device;$/;"	m	class:Commander
+device	context.hpp	/^	vk::Device device;$/;"	m	class:Context
+device	mem.hpp	/^	const vk::Device& device;$/;"	m	class:MemoryManager
+deviceExtensionProperties	context.hpp	/^	std::vector<vk::ExtensionProperties> deviceExtensionProperties;$/;"	m	class:Context
+deviceReport	context.cpp	/^void Context::deviceReport()$/;"	f	class:Context
+dispatcher	context.hpp	/^	vk::DispatchLoaderDynamic dispatcher;$/;"	m	class:Context
+display	event.hpp	/^	Display* display = XOpenDisplay(NULL);$/;"	m	class:EventHandler
+dynamicStates	pipe.hpp	/^	vk::DynamicState dynamicStates; \/\/not used right now$/;"	m	class:Pipe
+dynamicStates	renderer.hpp	/^	vk::DynamicState dynamicStates; \/\/not used right now$/;"	m	class:Renderer
+enableValidation	context.hpp	/^	bool enableValidation = true;$/;"	m	class:Context
+end	util.cpp	/^void Timer::end(const std::string& funcName)$/;"	f	class:Timer
+endSingleTimeCommand	commander.cpp	/^void Commander::endSingleTimeCommand(vk::CommandBuffer commandBuffer)$/;"	f	class:Commander
+endTime	util.hpp	/^	std::clock_t startTime, endTime;$/;"	m	class:Timer
+eraseMode	painter.hpp	/^	bool eraseMode = false;$/;"	m	class:Painter
+event	window.hpp	/^	xcb_generic_event_t* event;$/;"	m	class:XWindow
+eventFunctions	event.cpp	/^std::array<pEventFunc, static_cast<size_t>(EventState::numStates)> eventFunctions = $/;"	v
+extent	swapchain.hpp	/^	vk::Extent2D extent;$/;"	m	class:Swapchain
+extent	viewport.hpp	/^	vk::Extent2D extent;$/;"	m	class:Viewport
+fillBuffer	painter.cpp	/^void Painter::fillBuffer($/;"	f	class:Painter
+fillPixels	painter.cpp	/^void Painter::fillPixels(Pixels& pixels, float r, float g, float b, float a)$/;"	f	class:Painter
+foreground	painter.hpp	/^	Pixels foreground, background;$/;"	m	class:Painter
+framebuffers	renderer.hpp	/^	std::vector<vk::Framebuffer> framebuffers;$/;"	m	class:Renderer
+framebuffers	swapchain.hpp	/^	std::vector<vk::Framebuffer> framebuffers;$/;"	m	class:Swapchain
+g	painter.hpp	/^	float g = 0.0;$/;"	m	struct:Pixel
+g	painter.hpp	/^	float r,g,b,a;$/;"	m	struct:Layer
+geometry	description.hpp	/^	std::vector<std::shared_ptr<Geo>> geometry;$/;"	m	class:Description
+geos	sculpter.hpp	/^	std::vector<Geo> geos;$/;"	m	class:Sculpter
+getAttributeDescriptions	description.cpp	/^	Description::getAttributeDescriptions()$/;"	f	class:Description
+getBindingDescription	description.cpp	/^vk::VertexInputBindingDescription Description::getBindingDescription()$/;"	f	class:Description
+getCurGeo	sculpter.cpp	/^Geo& Sculpter::getCurGeo()$/;"	f	class:Sculpter
+getDevice	context.cpp	/^vk::Device Context::getDevice()$/;"	f	class:Context
+getExtent	viewport.cpp	/^vk::Extent2D Viewport::getExtent() const$/;"	f	class:Viewport
+getGraphicsQueueFamilyIndex	context.cpp	/^uint32_t Context::getGraphicsQueueFamilyIndex() const$/;"	f	class:Context
+getHeight	viewport.cpp	/^uint32_t Viewport::getHeight() const$/;"	f	class:Viewport
+getImageSubresourceLayout	mem.cpp	/^void MemoryManager::getImageSubresourceLayout(vk::Image image)$/;"	f	class:MemoryManager
+getPDescriptorSetLayout	description.cpp	/^vk::DescriptorSetLayout* Description::getPDescriptorSetLayout()$/;"	f	class:Description
+getPViewportState	viewport.cpp	/^vk::PipelineViewportStateCreateInfo* Viewport::getPViewportState()$/;"	f	class:Viewport
+getStackSize	painter.cpp	/^size_t Painter::getStackSize()$/;"	f	class:Painter
+getSwapImageCount	viewport.cpp	/^uint8_t Viewport::getSwapImageCount() const$/;"	f	class:Viewport
+getSwapImageView	viewport.cpp	/^vk::ImageView Viewport::getSwapImageView(uint32_t i) const$/;"	f	class:Viewport
+getSwapImageViews	viewport.cpp	/^const std::vector<vk::ImageView>& Viewport::getSwapImageViews() const$/;"	f	class:Viewport
+getTransform	occupant.cpp	/^glm::mat4& Occupant::getTransform()$/;"	f	class:Occupant
+getVertexBlock	context.cpp	/^BufferBlock* Context::getVertexBlock(uint32_t size)$/;"	f	class:Context
+getWidth	viewport.cpp	/^uint32_t Viewport::getWidth() const$/;"	f	class:Viewport
+graphicsPipeline	pipe.hpp	/^	vk::Pipeline graphicsPipeline;$/;"	m	class:Pipe
+graphicsPipeline	renderer.hpp	/^	vk::Pipeline graphicsPipeline;$/;"	m	class:Renderer
+handleEvent	event.cpp	/^void EventHandler::handleEvent(xcb_generic_event_t* event)$/;"	f	class:EventHandler
+handlePainterEvent	event.cpp	/^void EventHandler::handlePainterEvent(xcb_generic_event_t* event)$/;"	f	class:EventHandler
+handleSculptEvent	event.cpp	/^void EventHandler::handleSculptEvent(xcb_generic_event_t* event)$/;"	f	class:EventHandler
+handleViewerEvent	event.cpp	/^void EventHandler::handleViewerEvent(xcb_generic_event_t* event)$/;"	f	class:EventHandler
+height	mem.hpp	/^	uint32_t width, height, depth;$/;"	m	struct:ImageBlock
+height	renderer.hpp	/^	uint32_t height;$/;"	m	class:Renderer
+height	viewport.hpp	/^	uint32_t width, height;$/;"	m	class:Viewport
+image	mem.hpp	/^	vk::Image image;$/;"	m	struct:ImageBlock
+imageAvailableSemaphores	commander.hpp	/^	std::vector<vk::Semaphore> imageAvailableSemaphores;$/;"	m	class:Commander
+imageCount	swapchain.hpp	/^	int imageCount;$/;"	m	class:Swapchain
+imageHeight	painter.hpp	/^	int imageWidth, imageHeight;$/;"	m	class:Painter
+imageSize	painter.hpp	/^	size_t imageSize;$/;"	m	class:Painter
+imageViews	swapchain.hpp	/^	std::vector<vk::ImageView> imageViews;$/;"	m	class:Swapchain
+imageWidth	painter.hpp	/^	int imageWidth, imageHeight;$/;"	m	class:Painter
+images	swapchain.hpp	/^	std::vector<vk::Image> images;$/;"	m	class:Swapchain
+inFlightFences	commander.hpp	/^	std::vector<vk::Fence> inFlightFences;$/;"	m	class:Commander
+initColorAttachment	pipe.cpp	/^void Pipe::initColorAttachment()$/;"	f	class:Pipe
+initColorAttachment	renderer.cpp	/^void Renderer::initColorAttachment()$/;"	f	class:Renderer
+initColorBlending	pipe.cpp	/^void Pipe::initColorBlending()$/;"	f	class:Pipe
+initColorBlending	renderer.cpp	/^void Renderer::initColorBlending()$/;"	f	class:Renderer
+initDescriptorSetLayout	description.cpp	/^void Description::initDescriptorSetLayout()$/;"	f	class:Description
+initDescriptorSetLayout	pipe.cpp	/^void Pipe::initDescriptorSetLayout()$/;"	f	class:Pipe
+initInputAssemblyState	pipe.cpp	/^void Pipe::initInputAssemblyState()$/;"	f	class:Pipe
+initInputAssemblyState	renderer.cpp	/^void Renderer::initInputAssemblyState()$/;"	f	class:Renderer
+initMultisampling	pipe.cpp	/^void Pipe::initMultisampling()$/;"	f	class:Pipe
+initMultisampling	renderer.cpp	/^void Renderer::initMultisampling()$/;"	f	class:Renderer
+initPipelineLayout	pipe.cpp	/^void Pipe::initPipelineLayout()$/;"	f	class:Pipe
+initPipelineLayout	renderer.cpp	/^void Renderer::initPipelineLayout()$/;"	f	class:Renderer
+initRasterizer	pipe.cpp	/^void Pipe::initRasterizer()$/;"	f	class:Pipe
+initRasterizer	renderer.cpp	/^void Renderer::initRasterizer()$/;"	f	class:Renderer
+initVertexInputState	pipe.cpp	/^void Pipe::initVertexInputState()$/;"	f	class:Pipe
+initVertexInputState	renderer.cpp	/^void Renderer::initVertexInputState()$/;"	f	class:Renderer
+initViewportState	pipe.cpp	/^void Pipe::initViewportState()$/;"	f	class:Pipe
+inputAssemblyState	pipe.hpp	/^	vk::PipelineInputAssemblyStateCreateInfo inputAssemblyState;$/;"	m	class:Pipe
+inputAssemblyState	renderer.hpp	/^	vk::PipelineInputAssemblyStateCreateInfo inputAssemblyState;$/;"	m	class:Renderer
+instance	context.hpp	/^	vk::Instance instance;$/;"	m	class:Context
+instanceExtensionProperties	context.hpp	/^	std::vector<vk::ExtensionProperties> instanceExtensionProperties;$/;"	m	class:Context
+io	io.hpp	/^namespace io $/;"	n
+length	painter.cpp	/^float length(int x, int y)$/;"	f
+mButtonDown	event.hpp	/^	bool mButtonDown = false;$/;"	m	class:EventHandler
+mButtonDown	window.hpp	/^	bool mButtonDown = false;$/;"	m	class:XWindow
+main	main.cpp	/^int main()$/;"	f
+mask	window.hpp	/^	uint32_t mask = 0;$/;"	m	class:XWindow
+memory	mem.hpp	/^	vk::DeviceMemory memory;$/;"	m	struct:BufferBlock
+memory	mem.hpp	/^	vk::DeviceMemory memory;$/;"	m	struct:ImageBlock
+min	painter.cpp	/^void min(const Pixel& a, const Pixel& b, Pixel& o)$/;"	f
+min	painter.hpp	/^	add, sub, min, over, overPreMul, numModes$/;"	m	class:Blend
+mm	event.hpp	/^	MemoryManager& mm;$/;"	m	class:EventHandler
+mm	painter.hpp	/^	MemoryManager& mm;$/;"	m	class:Painter
+mouseX	window.hpp	/^	int16_t mouseX = 0;$/;"	m	class:XWindow
+mouseY	window.hpp	/^	int16_t mouseY = 0;$/;"	m	class:XWindow
+multisampling	pipe.hpp	/^	vk::PipelineMultisampleStateCreateInfo multisampling;$/;"	m	class:Pipe
+multisampling	renderer.hpp	/^	vk::PipelineMultisampleStateCreateInfo multisampling;$/;"	m	class:Renderer
+normCoords	event.cpp	/^float normCoords(int16_t windowCoord, int16_t extent)$/;"	f
+occupantCount	description.hpp	/^	size_t occupantCount;$/;"	m	class:Description
+occupants	description.hpp	/^	std::vector<std::shared_ptr<Occupant>> occupants;$/;"	m	class:Description
+offsetX	painter.hpp	/^	int16_t offsetX;$/;"	m	struct:Bristle
+offsetY	painter.hpp	/^	int16_t offsetY;$/;"	m	struct:Bristle
+open	window.cpp	/^void XWindow::open()$/;"	f	class:XWindow
+over	painter.cpp	/^void over(const Pixel& a, const Pixel& b, Pixel& o)$/;"	f
+over	painter.hpp	/^	add, sub, min, over, overPreMul, numModes$/;"	m	class:Blend
+overPixels	painter.cpp	/^void Painter::overPixels(Pixels& pixelsTop, Pixels& pixelsBottom, Pixels& target)$/;"	f	class:Painter
+overPreMul	painter.cpp	/^void overPreMul(const Pixel& a, const Pixel& b, Pixel& o)$/;"	f
+overPreMul	painter.hpp	/^	add, sub, min, over, overPreMul, numModes$/;"	m	class:Blend
+pBlendFunc	painter.hpp	/^typedef void (*pBlendFunc)(const Pixel&, const Pixel&, Pixel&);$/;"	t
+pBufferMemory	painter.hpp	/^	void* pBufferMemory;$/;"	m	class:Painter
+pCommander	context.hpp	/^	std::unique_ptr<Commander> pCommander;$/;"	m	class:Context
+pDescription	renderer.hpp	/^	Description* pDescription; \/\/non-owning pointer$/;"	m	class:Renderer
+pEventFunc	event.cpp	/^typedef void (EventHandler::*pEventFunc)(xcb_generic_event_t* event);$/;"	t	file:
+pHostMemory	mem.hpp	/^	void* pHostMemory;$/;"	m	struct:BufferBlock
+pHostMemory	mem.hpp	/^	void* pHostMemory;$/;"	m	struct:ImageBlock
+pImageMemory	painter.hpp	/^	void* pImageMemory;$/;"	m	class:Painter
+pMemory	context.hpp	/^	std::unique_ptr<MemoryManager> pMemory;$/;"	m	class:Context
+pViewport	renderer.hpp	/^	Viewport* pViewport; \/\/non-owning pointer$/;"	m	class:Renderer
+paint	event.hpp	/^	paint, sculpt, viewer, numStates$/;"	m	class:EventState
+paint	painter.cpp	/^void Painter::paint(int16_t x, int16_t y)$/;"	f	class:Painter
+paintLoop	oldPrograms.hpp	/^void paintLoop($/;"	f
+paintTimer	painter.cpp	/^Timer paintTimer;$/;"	v
+painter	event.hpp	/^	Painter& painter;$/;"	m	class:EventHandler
+performChecks	util.cpp	/^void performChecks(const Swapchain& swapchain)$/;"	f
+physicalDevice	context.hpp	/^	vk::PhysicalDevice physicalDevice;$/;"	m	class:Context
+physicalDeviceFeatures	context.hpp	/^	vk::PhysicalDeviceFeatures physicalDeviceFeatures;$/;"	m	class:Context
+physicalDeviceMemoryProperties	context.hpp	/^	vk::PhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;$/;"	m	class:Context
+physicalDeviceProperties	context.hpp	/^	vk::PhysicalDeviceProperties physicalDeviceProperties;$/;"	m	class:Context
+pickQueueFamilyIndex	context.cpp	/^uint32_t Context::pickQueueFamilyIndex(vk::SurfaceKHR surface) const$/;"	f	class:Context
+pipe	event.hpp	/^	Pipe& pipe;$/;"	m	class:EventHandler
+pipelineLayout	pipe.hpp	/^	vk::PipelineLayout pipelineLayout;$/;"	m	class:Pipe
+pipelineLayout	renderer.hpp	/^	vk::PipelineLayout pipelineLayout;$/;"	m	class:Renderer
+pixels	painter.hpp	/^	Pixels pixels;$/;"	m	struct:Layer
+pointBasedOccupants	description.hpp	/^	std::vector<std::shared_ptr<PointBased>> pointBasedOccupants;$/;"	m	class:Description
+points	occupant.hpp	/^	std::vector<Point> points;$/;"	m	class:PointBased
+pollEvents	window.cpp	/^void XWindow::pollEvents()$/;"	f	class:XWindow
+pos	occupant.hpp	/^	glm::vec3 pos;$/;"	m	struct:Point
+prepareDescriptorSets	description.cpp	/^void Description::prepareDescriptorSets(uint32_t count)$/;"	f	class:Description
+prepareDescriptors	pipe.cpp	/^void Pipe::prepareDescriptors(uint32_t count)$/;"	f	class:Pipe
+prepareForBufferPaint	painter.cpp	/^void Painter::prepareForBufferPaint(const Viewport& viewport)$/;"	f	class:Painter
+presentMode	swapchain.hpp	/^	vk::PresentModeKHR presentMode;$/;"	m	class:Swapchain
+printAlphaComposite	util.cpp	/^void printAlphaComposite(const vk::SurfaceCapabilitiesKHR surfCaps)$/;"	f
+printAvailableDevices	context.cpp	/^void Context::printAvailableDevices()$/;"	f	class:Context
+printCurrentExtent	util.cpp	/^void printCurrentExtent(const Swapchain& swapchain)$/;"	f
+printDeviceExtensionProperties	context.cpp	/^void Context::printDeviceExtensionProperties()$/;"	f	class:Context
+printDeviceFeatures	context.cpp	/^void Context::printDeviceFeatures()$/;"	f	class:Context
+printDeviceInfo	context.cpp	/^void Context::printDeviceInfo()$/;"	f	class:Context
+printDeviceMemoryHeapInfo	context.cpp	/^void Context::printDeviceMemoryHeapInfo()$/;"	f	class:Context
+printDeviceMemoryTypeInfo	context.cpp	/^void Context::printDeviceMemoryTypeInfo()$/;"	f	class:Context
+printDeviceQueueFamilyInfo	context.cpp	/^void Context::printDeviceQueueFamilyInfo()$/;"	f	class:Context
+printFormatsAvailable	util.cpp	/^void printFormatsAvailable(const Swapchain& swapchain)$/;"	f
+printImageCounts	util.cpp	/^void printImageCounts(const Swapchain& swapchain)$/;"	f
+printInstanceExtensionProperties	context.cpp	/^void Context::printInstanceExtensionProperties()$/;"	f	class:Context
+printMousePosition	window.cpp	/^void XWindow::printMousePosition()$/;"	f	class:XWindow
+printPoints	occupant.cpp	/^void PointBased::printPoints()$/;"	f	class:PointBased
+printPresentModes	util.cpp	/^void printPresentModes(const Swapchain& swapchain)$/;"	f
+printSurfaceCapabilities	util.cpp	/^void printSurfaceCapabilities(const Swapchain& swapchain)$/;"	f
+program1	programs.hpp	/^void program1()$/;"	f
+program2	programs.hpp	/^void program2()$/;"	f
+proj	camera.hpp	/^	glm::mat4 proj;$/;"	m	struct:ViewTransforms
+queue	commander.hpp	/^	vk::Queue& queue;$/;"	m	class:Commander
+queue	context.hpp	/^	vk::Queue queue;$/;"	m	class:Context
+queueFamilies	context.hpp	/^	std::vector<vk::QueueFamilyProperties> queueFamilies;$/;"	m	class:Context
+r	painter.hpp	/^	float r = 0.0;$/;"	m	struct:Pixel
+r	painter.hpp	/^	float r,g,b,a;$/;"	m	struct:Layer
+rasterizer	pipe.hpp	/^	vk::PipelineRasterizationStateCreateInfo rasterizer;$/;"	m	class:Pipe
+rasterizer	renderer.hpp	/^	vk::PipelineRasterizationStateCreateInfo rasterizer;$/;"	m	class:Renderer
+readFile	io.cpp	/^std::vector<char> io::readFile(const std::string& filename)$/;"	f	class:io
+recordCopyBufferToImages	commander.cpp	/^void Commander::recordCopyBufferToImages($/;"	f	class:Commander
+recordCopyImageToSwapImages	commander.cpp	/^void Commander::recordCopyImageToSwapImages($/;"	f	class:Commander
+recordDrawVert	commander.cpp	/^void Commander::recordDrawVert($/;"	f	class:Commander
+renderFinishedSemaphores	commander.hpp	/^	std::vector<vk::Semaphore> renderFinishedSemaphores;$/;"	m	class:Commander
+renderFrame	commander.cpp	/^void Commander::renderFrame(Swapchain& swapchain)$/;"	f	class:Commander
+renderPass	renderer.hpp	/^	vk::RenderPass renderPass;$/;"	m	class:Renderer
+renderer	event.hpp	/^	Renderer& renderer;$/;"	m	class:EventHandler
+requestUserInput	io.cpp	/^std::string io::requestUserInput()$/;"	f	class:io
+resetCommandBuffer	commander.cpp	/^void Commander::resetCommandBuffer(uint32_t index)$/;"	f	class:Commander
+resetCommandBuffers	commander.cpp	/^void Commander::resetCommandBuffers()$/;"	f	class:Commander
+resetCurrentBuffer	commander.cpp	/^void Commander::resetCurrentBuffer()$/;"	f	class:Commander
+resizeCanvas	painter.cpp	/^void Painter::resizeCanvas(const uint32_t width, const uint32_t height)$/;"	f	class:Painter
+runPaintProgram	oldPrograms.hpp	/^void runPaintProgram($/;"	f
+runSculpt	oldPrograms.hpp	/^int runSculpt()$/;"	f
+saveSwapImage	io.cpp	/^void io::saveSwapImage($/;"	f	class:io
+scissor	pipe.hpp	/^	vk::Rect2D scissor;$/;"	m	class:Pipe
+scissor	viewport.hpp	/^	vk::Rect2D scissor;$/;"	m	class:Viewport
+screen	window.hpp	/^	xcb_screen_t* screen;$/;"	m	class:XWindow
+sculpt	event.hpp	/^	paint, sculpt, viewer, numStates$/;"	m	class:EventState
+sculpter	event.hpp	/^	Sculpter& sculpter;$/;"	m	class:EventHandler
+sculpter	oldPrograms.hpp	/^Sculpter sculpter;$/;"	v
+semaphoresCreated	commander.hpp	/^	bool semaphoresCreated = false;$/;"	m	class:Commander
+sendNotifications	window.cpp	/^void XWindow::sendNotifications() $/;"	f	class:XWindow
+setAlpha	painter.cpp	/^void Painter::setAlpha(float a)$/;"	f	class:Painter
+setBackground	painter.cpp	/^void Painter::setBackground()$/;"	f	class:Painter
+setBrushSize	painter.cpp	/^void Painter::setBrushSize(float r)$/;"	f	class:Painter
+setClass	window.cpp	/^void XWindow::setClass()$/;"	f	class:XWindow
+setCurrentColor	painter.cpp	/^void Painter::setCurrentColor(float r, float g, float b)$/;"	f	class:Painter
+setDeviceExtensions	context.cpp	/^void Context::setDeviceExtensions(vk::DeviceCreateInfo& createInfo)$/;"	f	class:Context
+setEvents	window.cpp	/^void XWindow::setEvents()$/;"	f	class:XWindow
+setForeground	painter.cpp	/^void Painter::setForeground()$/;"	f	class:Painter
+setFormat	swapchain.cpp	/^void Swapchain::setFormat()$/;"	f	class:Swapchain
+setImageCount	swapchain.cpp	/^void Swapchain::setImageCount(int count)$/;"	f	class:Swapchain
+setImages	swapchain.cpp	/^void Swapchain::setImages()$/;"	f	class:Swapchain
+setName	window.cpp	/^void XWindow::setName()$/;"	f	class:XWindow
+setPresentMode	swapchain.cpp	/^void Swapchain::setPresentMode()$/;"	f	class:Swapchain
+setQueue	commander.cpp	/^void Commander::setQueue(vk::Queue& newQueue)$/;"	f	class:Commander
+setQueue	context.cpp	/^void Context::setQueue()$/;"	f	class:Context
+setQueueFamilyIndex	swapchain.cpp	/^void Swapchain::setQueueFamilyIndex()$/;"	f	class:Swapchain
+setState	event.cpp	/^void EventHandler::setState(EventState eventState)$/;"	f	class:EventHandler
+setSurfaceCapabilities	swapchain.cpp	/^void Swapchain::setSurfaceCapabilities()$/;"	f	class:Swapchain
+setSwapExtent	swapchain.cpp	/^void Swapchain::setSwapExtent(int width, int height)$/;"	f	class:Swapchain
+setSwapchainImagesToPresent	commander.cpp	/^void Commander::setSwapchainImagesToPresent(Swapchain& swapchain)$/;"	f	class:Commander
+setupDebugMessenger	context.cpp	/^void Context::setupDebugMessenger()$/;"	f	class:Context
+size	mem.hpp	/^	unsigned long size;$/;"	m	struct:BufferBlock
+size	window.hpp	/^	std::vector<int> size;$/;"	m	class:XWindow
+stack	painter.hpp	/^	Stack stack;$/;"	m	class:Painter
+start	util.cpp	/^void Timer::start()$/;"	f	class:Timer
+startTime	util.hpp	/^	std::clock_t startTime, endTime;$/;"	m	class:Timer
+state	event.hpp	/^	EventState state = EventState::paint;$/;"	m	class:EventHandler
+state	viewport.hpp	/^	vk::PipelineViewportStateCreateInfo state;$/;"	m	class:Viewport
+sub	painter.cpp	/^void sub(const Pixel& a, const Pixel& b, Pixel& o)$/;"	f
+sub	painter.hpp	/^	add, sub, min, over, overPreMul, numModes$/;"	m	class:Blend
+surfCaps	swapchain.hpp	/^	vk::SurfaceCapabilitiesKHR surfCaps;$/;"	m	class:Swapchain
+surface	swapchain.hpp	/^	vk::SurfaceKHR surface;$/;"	m	class:Swapchain
+swapchain	event.hpp	/^	Swapchain& swapchain;$/;"	m	class:EventHandler
+swapchain	swapchain.hpp	/^	vk::SwapchainKHR swapchain;$/;"	m	class:Swapchain
+swapchain	viewport.hpp	/^	Swapchain swapchain;$/;"	m	class:Viewport
+swapchainCreated	swapchain.hpp	/^	bool swapchainCreated = false;$/;"	m	class:Swapchain
+switchToLayer	painter.cpp	/^void Painter::switchToLayer(int index)$/;"	f	class:Painter
+toggleErase	painter.cpp	/^void Painter::toggleErase()$/;"	f	class:Painter
+transform	occupant.hpp	/^	glm::mat4 transform;$/;"	m	class:Occupant
+transitionImageLayout	commander.cpp	/^void Commander::transitionImageLayout($/;"	f	class:Commander
+trueFrame	commander.hpp	/^	size_t trueFrame = 0;$/;"	m	class:Commander
+uboBlocks	camera.hpp	/^	std::vector<BufferBlock>* uboBlocks;$/;"	m	class:Camera
+uniformBufferBlocks	mem.hpp	/^	std::vector<BufferBlock> uniformBufferBlocks;$/;"	m	class:MemoryManager
+unmapBuffers	mem.cpp	/^void MemoryManager::unmapBuffers()$/;"	f	class:MemoryManager
+updateDescriptorSets	description.cpp	/^void Description::updateDescriptorSets($/;"	f	class:Description
+updateDescriptorSets	pipe.cpp	/^void Pipe::updateDescriptorSets($/;"	f	class:Pipe
+updateModelXForm	camera.cpp	/^void Camera::updateModelXForm(float theta)$/;"	f	class:Camera
+values	window.hpp	/^	uint32_t values[2];$/;"	m	class:XWindow
+vertexBlock	description.hpp	/^	std::shared_ptr<BufferBlock> vertexBlock;$/;"	m	class:Description
+vertexBlock	mem.cpp	/^BufferBlock* MemoryManager::vertexBlock(size_t size)$/;"	f	class:MemoryManager
+vertexInputState	pipe.hpp	/^	vk::PipelineVertexInputStateCreateInfo vertexInputState;$/;"	m	class:Pipe
+vertexInputState	renderer.hpp	/^	vk::PipelineVertexInputStateCreateInfo vertexInputState;$/;"	m	class:Renderer
+view	camera.hpp	/^	glm::mat4 view;$/;"	m	struct:ViewTransforms
+viewer	event.hpp	/^	paint, sculpt, viewer, numStates$/;"	m	class:EventState
+viewport	pipe.hpp	/^	vk::Viewport viewport;$/;"	m	class:Pipe
+viewport	viewport.hpp	/^	vk::Viewport viewport;$/;"	m	class:Viewport
+viewportIsBound	renderer.hpp	/^	bool viewportIsBound;$/;"	m	class:Renderer
+viewportState	pipe.hpp	/^	vk::PipelineViewportStateCreateInfo viewportState;$/;"	m	class:Pipe
+viewportState	renderer.hpp	/^	vk::PipelineViewportStateCreateInfo viewportState;$/;"	m	class:Renderer
+waitForEvent	window.cpp	/^xcb_generic_event_t* XWindow::waitForEvent()$/;"	f	class:XWindow
+width	mem.hpp	/^	uint32_t width, height, depth;$/;"	m	struct:ImageBlock
+width	renderer.hpp	/^	uint32_t width;$/;"	m	class:Renderer
+width	viewport.hpp	/^	uint32_t width, height;$/;"	m	class:Viewport
+window	swapchain.hpp	/^	const XWindow& window;$/;"	m	class:Swapchain
+window	viewport.hpp	/^	XWindow window;$/;"	m	class:Viewport
+window	window.hpp	/^	xcb_window_t window;$/;"	m	class:XWindow
+wipePixels	painter.cpp	/^void Painter::wipePixels(Pixels& pixels)$/;"	f	class:Painter
+wmDeleteWin	window.hpp	/^	xcb_atom_t wmDeleteWin;$/;"	m	class:XWindow
+wmProtocols	window.hpp	/^	xcb_atom_t wmProtocols;$/;"	m	class:XWindow
+world	camera.hpp	/^	glm::mat4 world;$/;"	m	struct:ViewTransforms
+writeBackgroundToBuffer	painter.cpp	/^void Painter::writeBackgroundToBuffer()$/;"	f	class:Painter
+writeCurrentLayerToBuffer	painter.cpp	/^void Painter::writeCurrentLayerToBuffer()$/;"	f	class:Painter
+writeForegroundToBuffer	painter.cpp	/^void Painter::writeForegroundToBuffer()$/;"	f	class:Painter
+writePixelToBuffer	painter.cpp	/^void Painter::writePixelToBuffer(const Pixel& pixel, const size_t index)$/;"	f	class:Painter
+writePixelsToBuffer	painter.cpp	/^void Painter::writePixelsToBuffer(Pixels& pixels)$/;"	f	class:Painter
+writeToHostImageMemory	painter.cpp	/^void Painter::writeToHostImageMemory(int16_t x, int16_t y)$/;"	f	class:Painter
+writeToLayer	painter.cpp	/^void Painter::writeToLayer(Layer& layer, int16_t x, int16_t y, float a)$/;"	f	class:Painter
+xforms	camera.hpp	/^	ViewTransforms xforms;$/;"	m	class:Camera
+~Camera	camera.cpp	/^Camera::~Camera()$/;"	f	class:Camera
+~Commander	commander.cpp	/^Commander::~Commander()$/;"	f	class:Commander
+~Context	context.cpp	/^Context::~Context()$/;"	f	class:Context
+~Description	description.cpp	/^Description::~Description()$/;"	f	class:Description
+~EventHandler	event.cpp	/^EventHandler::~EventHandler()$/;"	f	class:EventHandler
+~Geo	geo.cpp	/^Geo::~Geo()$/;"	f	class:Geo
+~MemoryManager	mem.cpp	/^MemoryManager::~MemoryManager()$/;"	f	class:MemoryManager
+~Occupant	occupant.cpp	/^Occupant::~Occupant()$/;"	f	class:Occupant
+~Painter	painter.cpp	/^Painter::~Painter ()$/;"	f	class:Painter
+~Pipe	pipe.cpp	/^Pipe::~Pipe()$/;"	f	class:Pipe
+~PointBased	occupant.cpp	/^PointBased::~PointBased()$/;"	f	class:PointBased
+~Renderer	renderer.cpp	/^Renderer::~Renderer()$/;"	f	class:Renderer
+~Sculpter	sculpter.cpp	/^Sculpter::~Sculpter()$/;"	f	class:Sculpter
+~Swapchain	swapchain.cpp	/^Swapchain::~Swapchain()$/;"	f	class:Swapchain
+~Viewport	viewport.cpp	/^Viewport::~Viewport()$/;"	f	class:Viewport

@@ -17,14 +17,14 @@ void io::saveSwapImage(
 
 	commander.copyImageToBuffer(
 			swapchain.images[0],
-			mm.bufferBlocks[index].buffer,
+			mm.BufferBlocks[index].buffer,
 			swapchain.extent.width,
 			swapchain.extent.height,
 			1);
 
 	//need to swap the red and blue channels 
 	int i = 0;
-	uint8_t* ptr = static_cast<uint8_t*>(mm.bufferBlocks[index].pHostMemory);
+	uint8_t* ptr = static_cast<uint8_t*>(mm.BufferBlocks[index].pHostMemory);
 	while (i < swapchain.extent.width * swapchain.extent.height)
 	{
 		std::swap(ptr[0], ptr[2]);
@@ -37,7 +37,7 @@ void io::saveSwapImage(
 	std::vector<u_int8_t> pngBuffer;
 	lodepng::encode(
 			pngBuffer, 
-			static_cast<const unsigned char*>(mm.bufferBlocks[index].pHostMemory), 
+			static_cast<const unsigned char*>(mm.BufferBlocks[index].pHostMemory), 
 			swapchain.extent.width, 
 			swapchain.extent.height);
 	std::cout << "Please give the image a name." << std::endl;

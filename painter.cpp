@@ -120,7 +120,7 @@ void Painter::prepareForBufferPaint(const Viewport& viewport)
 			imageWidth *
 			imageHeight * 4);
 	commander.recordCopyBufferToImages(
-			mm.bufferBlocks[index].buffer, 
+			mm.BufferBlocks[index].buffer, 
 			viewport.getSwapImages(),
 			imageWidth,
 			imageHeight,
@@ -138,7 +138,7 @@ void Painter::prepareForBufferPaint(const Viewport& viewport)
 int Painter::aquireBufferBlock(uint32_t size)
 {
 	int index = mm.createBuffer(size, vk::BufferUsageFlagBits::eTransferSrc);
-	pBufferMemory = mm.bufferBlocks[index].pHostMemory;
+	pBufferMemory = mm.BufferBlocks[index].pHostMemory;
 	return index;
 }
 

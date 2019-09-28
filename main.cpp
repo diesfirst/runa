@@ -2,6 +2,9 @@
 
 int main(int argc, char *argv[])
 {
-	program1();
+	if (argc == 2) {
+		std::cout << "Running " << argv[0] << std::endl;
+		program2(std::atoi(argv[1]));
+	}
 	return 0;
 }

@@ -1,13 +1,97 @@
 #include "description.hpp"
+#include <cstring>
 
 Description::Description(Context& context) :
 	context(context)
 {
-	prepareDescriptorSets(1); //one descriptor set for world transform
+	vertexBlock = context.getVertexBlock(6000);
+	vertices = static_cast<Point*>(vertexBlock->pHostMemory);
+	//arbitrary size for now...
+	prepareDescriptorSets(3); 
+	//one descriptor set for world transform
 }
 
 Description::~Description()
 {
+	context.device.destroyDescriptorPool(descriptorPool);
+	context.device.destroyDescriptorSetLayout(descriptorSetLayout);
+}
+
+void Description::createTriangle()
+{
+	geometry.push_back(std::make_shared<Triangle>());
+	pointBasedOccupants.push_back(geometry.back());
+	occupants.push_back(geometry.back());
+	updateVertexBuffer();
+}
+
+void Description::createTriangle(Point p0, Point p1, Point p2)
+{
+	geometry.push_back(std::make_shared<Triangle>(p0, p1, p2));
+	pointBasedOccupants.push_back(geometry.back());
+	occupants.push_back(geometry.back());
+	updateVertexBuffer();
+}
+
+vk::Buffer& Description::getVkVertexBuffer()
+{
+	return vertexBlock->buffer;
+}
+
+uint32_t Description::getVertexCount()
+{
+	uint32_t nPoints = 0;
+	for (auto pointGeo : pointBasedOccupants) 
+	{
+		nPoints += pointGeo->points.size();
+	}
+	return nPoints;
+}
+
+vk::DescriptorSetLayout* Description::getPDescriptorSetLayout()
+{
+	return &descriptorSetLayout;
+}
+
+vk::VertexInputBindingDescription Description::getBindingDescription()
+{
+	vk::VertexInputBindingDescription description;
+	description.setBinding(0);
+	description.setStride(sizeof(Point));
+	description.setInputRate(vk::VertexInputRate::eVertex);
+	return description;
+}
+	
+std::array<vk::VertexInputAttributeDescription, 2> 
+	Description::getAttributeDescriptions()
+{
+	std::array<vk::VertexInputAttributeDescription, 2> descriptions;
+	descriptions[0].binding = 0;
+	descriptions[0].location = 0;
+	descriptions[0].format = vk::Format::eR32G32B32Sfloat;
+	descriptions[0].offset = offsetof(Point, pos); //where is this macro from?
+	descriptions[1].binding = 0;
+	descriptions[1].location = 1;
+	descriptions[1].format = vk::Format::eR32G32B32Sfloat;
+	descriptions[1].offset = offsetof(Point, color); //where is this macro from?
+	return descriptions;
+}
+
+void Description::updateCommandBuffer()
+{
+}
+
+void Description::updateVertexBuffer()
+{
+	uint32_t offset = 0;
+	for (auto pItem : pointBasedOccupants) 
+	{
+		std::memcpy(
+				vertices + offset, 
+				pItem->points.data(), 
+				sizeof(Point) * pItem->points.size());
+		offset += pItem->points.size();
+	}
 }
 
 void Description::initDescriptorSetLayout()
@@ -57,7 +141,7 @@ void Description::createDescriptorSets(uint32_t count)
 
 void Description::updateDescriptorSets(
 			uint32_t count, 
-			std::vector<bufferBlock>* uboBlocks,
+			std::vector<BufferBlock>* uboBlocks,
 			size_t uboSize)
 {
 	assert(descriptorsPrepared);
@@ -75,7 +159,7 @@ void Description::updateDescriptorSets(
 	descriptorWrite.setPImageInfo(nullptr);
 	descriptorWrite.setPTexelBufferView(nullptr);
 
-	for (int i = 0; i < count; ++i) 
+	for (size_t i = 0; i < count; ++i) 
 	{
 		bufferInfo.setBuffer((*uboBlocks)[i].buffer);
 		descriptorWrite.setDstSet(descriptorSets[i]);

@@ -9,35 +9,11 @@ Geo::~Geo()
 {
 }
 
-vk::VertexInputBindingDescription Geo::getBindingDescription()
+Triangle::Triangle(Point p0, Point p1, Point p2)
 {
-	vk::VertexInputBindingDescription description;
-	description.setBinding(0);
-	description.setStride(sizeof(Point));
-	description.setInputRate(vk::VertexInputRate::eVertex);
-	return description;
-}
-	
-std::array<vk::VertexInputAttributeDescription, 2> 
-	Geo::getAttributeDescriptions()
-{
-	std::array<vk::VertexInputAttributeDescription, 2> descriptions;
-	descriptions[0].binding = 0;
-	descriptions[0].location = 0;
-	descriptions[0].format = vk::Format::eR32G32B32Sfloat;
-	descriptions[0].offset = offsetof(Point, pos); //where is this macro from?
-	descriptions[1].binding = 0;
-	descriptions[1].location = 1;
-	descriptions[1].format = vk::Format::eR32G32B32Sfloat;
-	descriptions[1].offset = offsetof(Point, color); //where is this macro from?
-	return descriptions;
-}
-
-void Geo::createPoint(float x, float y)
-{
-	points.push_back({
-			glm::vec3(x, y, 0.0), 
-			glm::vec3(1.0, 1.0, 1.0)});
+	points.push_back(p0);
+	points.push_back(p1);
+	points.push_back(p2);
 }
 
 Triangle::Triangle(
@@ -51,9 +27,12 @@ Triangle::Triangle(
 	points[2].pos = pos3;
 }
 
-void Geo::printPoints()
+Triangle::Triangle(
+		glm::vec2 pos1,
+		glm::vec2 pos2,
+		glm::vec2 pos3)
 {
-	for (auto point : points) {
-		std::cout << "Point pos: " << point.pos.x << " " << point.pos.y << std::endl;
-	}
+	points[0].pos = glm::vec3(pos1, 0.0);
+	points[1].pos = glm::vec3(pos2, 0.0);
+	points[2].pos = glm::vec3(pos3, 0.0);
 }

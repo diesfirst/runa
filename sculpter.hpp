@@ -16,7 +16,7 @@ public:
 	void addPointToGeo(float x, float y);
 
 	Geo& getCurGeo();
-	bufferBlock* block;
+	BufferBlock* block;
 
 private:
 	uint32_t curGeo = 0;

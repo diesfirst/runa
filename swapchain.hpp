@@ -8,7 +8,7 @@ class XWindow; //forward declaration
 class Swapchain
 {
 public:
-	Swapchain (const Context& context, const XWindow& window);
+	Swapchain (const Context& context, const XWindow& window, const uint32_t swapImageCount);
 
 	virtual ~Swapchain();
 
@@ -40,7 +40,7 @@ private:
 	vk::PresentModeKHR presentMode;
 	bool swapchainCreated = false;
 
-	void setImageCount(int count = 3);
+	void setImageCount(const uint32_t count = 3);
 
 	void setQueueFamilyIndex();
 	

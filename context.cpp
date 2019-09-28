@@ -5,10 +5,15 @@
 Context::Context()
 {
 	createContext();
+	pCommander = std::make_unique<Commander>(
+			device, queue, getGraphicsQueueFamilyIndex());
+	pMemory = std::make_unique<MemoryManager>(device);
 }
 
 Context::~Context()
 {
+	pCommander.reset();
+	pMemory.reset();
 	destroyContext();
 }
 
@@ -199,6 +204,11 @@ uint32_t Context::pickQueueFamilyIndex(vk::SurfaceKHR surface) const
 uint32_t Context::getGraphicsQueueFamilyIndex() const
 {
 	return 0;
+}
+
+BufferBlock* Context::getVertexBlock(uint32_t size)
+{
+	return pMemory->createVertexBlock(size);
 }
 
 void Context::setDeviceExtensions(vk::DeviceCreateInfo& createInfo)

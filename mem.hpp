@@ -1,9 +1,9 @@
 #ifndef MEM
 #define MEM
-#include "context.hpp"
+#include <vulkan/vulkan.hpp>
 #include <vector>
 
-struct bufferBlock
+struct BufferBlock
 {
 	vk::Buffer buffer;
 	vk::DeviceMemory memory;
@@ -11,7 +11,7 @@ struct bufferBlock
 	unsigned long size;
 };
 
-struct imageBlock
+struct ImageBlock
 {
 	vk::Image image;
 	vk::DeviceMemory memory;
@@ -22,10 +22,10 @@ struct imageBlock
 class MemoryManager
 {
 public:
-	MemoryManager(const Context& context);
+	MemoryManager(const vk::Device& device);
 	virtual ~MemoryManager ();
 
-	void createBuffer(bufferBlock&, uint32_t size, vk::BufferUsageFlagBits);
+	void createBuffer(BufferBlock&, uint32_t size, vk::BufferUsageFlagBits);
 	uint32_t createBuffer(uint32_t size, vk::BufferUsageFlagBits);
 	uint32_t createImage(
 			uint32_t width,
@@ -34,14 +34,14 @@ public:
 			vk::ImageUsageFlagBits);
 	void createUniformBuffers(size_t count, vk::DeviceSize bufferSize);
 
-	bufferBlock* vertexBlock(size_t size);
+	BufferBlock* createVertexBlock(size_t size);
 
-	std::vector<bufferBlock> bufferBlocks;
-	std::vector<imageBlock> imageBlocks;
-	std::vector<bufferBlock> uniformBufferBlocks;
+	std::vector<BufferBlock> BufferBlocks;
+	std::vector<ImageBlock> ImageBlocks;
+	std::vector<BufferBlock> uniformBufferBlocks;
 
 private:
-	const Context& context;
+	const vk::Device& device;
 	uint32_t addBufferBlock();
 	uint32_t addImageBlock();
 	void unmapBuffers();

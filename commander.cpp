@@ -1,11 +1,11 @@
 #include "commander.hpp"
 #include "swapchain.hpp"
-#include "pipe.hpp"
 
-Commander::Commander(const Context& context) :
-	context(context)
+Commander::Commander(vk::Device& device, vk::Queue& queue, uint32_t queueFamily) :
+	device(device),
+	queue(queue)
 {
-	createCommandPool();
+	createCommandPool(queueFamily);
 	createSyncObjects();
 }
 
@@ -13,32 +13,37 @@ Commander::~Commander()
 {
 	if (semaphoresCreated) {
 			for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
-					context.device.destroySemaphore(imageAvailableSemaphores[i]);
-					context.device.destroySemaphore(renderFinishedSemaphores[i]);
-					context.device.destroyFence(inFlightFences[i]);
+					device.destroySemaphore(imageAvailableSemaphores[i]);
+					device.destroySemaphore(renderFinishedSemaphores[i]);
+					device.destroyFence(inFlightFences[i]);
 			}
 	}
 	if (commandPoolCreated)
-		context.device.destroyCommandPool(commandPool);
+		device.destroyCommandPool(commandPool);
 }
 
-void Commander::createCommandPool()
+void Commander::createCommandPool(uint32_t queueFamily)
 {
 	vk::CommandPoolCreateInfo createInfo;
-	createInfo.setQueueFamilyIndex(context.getGraphicsQueueFamilyIndex());
+	createInfo.setQueueFamilyIndex(queueFamily);
 	createInfo.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
-	commandPool = context.device.createCommandPool(createInfo);
+	commandPool = device.createCommandPool(createInfo);
 	commandPoolCreated = true;
 }
 
-void Commander::allocateCommandBuffersForSwapchain(const Swapchain& swapchain)
+void Commander::setQueue(vk::Queue& newQueue)
 {
-	commandBuffers.resize(swapchain.imageCount);
+	queue = newQueue;
+}
+
+void Commander::allocateCommandBuffers(const uint32_t count)
+{
+	commandBuffers.resize(count);
 	vk::CommandBufferAllocateInfo allocInfo;
 	allocInfo.setCommandPool(commandPool);
 	allocInfo.setCommandBufferCount(commandBuffers.size());
 	allocInfo.setLevel(vk::CommandBufferLevel::ePrimary);
-	commandBuffers = context.device.allocateCommandBuffers(allocInfo);
+	commandBuffers = device.allocateCommandBuffers(allocInfo);
 }
 
 vk::CommandBuffer Commander::beginSingleTimeCommand()
@@ -49,7 +54,7 @@ vk::CommandBuffer Commander::beginSingleTimeCommand()
 	allocInfo.setLevel(vk::CommandBufferLevel::ePrimary);
 
 	auto commandBuffers = 
-		context.device.allocateCommandBuffers(allocInfo);
+		device.allocateCommandBuffers(allocInfo);
 
 	vk::CommandBuffer commandBuffer = commandBuffers[0];
 
@@ -69,11 +74,11 @@ void Commander::endSingleTimeCommand(vk::CommandBuffer commandBuffer)
 	submitInfo.setCommandBufferCount(1);
 	submitInfo.setPCommandBuffers(&commandBuffer);
 
-	context.queue.submit(submitInfo, {}); //null for a fence
+	queue.submit(submitInfo, {}); //null for a fence
 
-	context.queue.waitIdle();
+	queue.waitIdle();
 
-	context.device.freeCommandBuffers(commandPool, commandBuffer);
+	device.freeCommandBuffers(commandPool, commandBuffer);
 }
 
 void Commander::transitionImageLayout(
@@ -359,10 +364,12 @@ void Commander::copyImageToBuffer(
 }
 
 void Commander::recordDrawVert(
-		vk::RenderPass renderpass,
-		Pipe& pipe,
-	 	std::vector<vk::Framebuffer> framebuffers,
+		vk::RenderPass& renderpass,
+	 	std::vector<vk::Framebuffer>& framebuffers,
 		vk::Buffer& vertexBuffer,
+		vk::Pipeline& graphicsPipeline,
+		vk::PipelineLayout& pipelineLayout,
+//		std::vector<vk::DescriptorSet> descriptorSets,
 		uint32_t width, uint32_t height,
 		uint32_t vertexCount)
 {
@@ -387,14 +394,14 @@ void Commander::recordDrawVert(
 				renderPassInfo, vk::SubpassContents::eInline);
 		commandBuffers[i].bindPipeline(
 				vk::PipelineBindPoint::eGraphics, //ray tracing pipe is also an option
-				pipe.graphicsPipeline);
+				graphicsPipeline);
 		commandBuffers[i].bindVertexBuffers(0, vertexBuffer, {0});
-		commandBuffers[i].bindDescriptorSets(
-				vk::PipelineBindPoint::eGraphics,
-				pipe.pipelineLayout,
-				0,
-				pipe.descriptorSets[i],
-				{});
+//		commandBuffers[i].bindDescriptorSets(
+//				vk::PipelineBindPoint::eGraphics,
+//				pipelineLayout,
+//				0,
+//				descriptorSets[i],
+//				{});
 		//vert count. instance count, vert offset, instance offset
 		commandBuffers[i].draw(vertexCount, 1, 0, 0); 
 		commandBuffers[i].endRenderPass();
@@ -414,11 +421,11 @@ void Commander::createSyncObjects()
 	inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
 	for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
 		imageAvailableSemaphores[i] = 
-			context.device.createSemaphore(semaphoreInfo);
+			device.createSemaphore(semaphoreInfo);
 		renderFinishedSemaphores[i] = 
-			context.device.createSemaphore(semaphoreInfo);
+			device.createSemaphore(semaphoreInfo);
 		inFlightFences[i] = 
-			context.device.createFence(fenceCreateInfo);
+			device.createFence(fenceCreateInfo);
 	}
 	semaphoresCreated = true;
 }
@@ -435,12 +442,12 @@ void Commander::setSwapchainImagesToPresent(Swapchain& swapchain)
 
 void Commander::renderFrame(Swapchain& swapchain)
 {
-	context.device.waitForFences(
+	device.waitForFences(
 			1, 
 			&inFlightFences[currentFrame], 
 			true, 
 			UINT64_MAX);
-	context.device.resetFences(
+	device.resetFences(
 			1, 
 			&inFlightFences[currentFrame]);
 
@@ -459,7 +466,7 @@ void Commander::renderFrame(Swapchain& swapchain)
 			&imageAvailableSemaphores[currentFrame]);
 	submitInfo.setPSignalSemaphores(
 			&renderFinishedSemaphores[currentFrame]);
-	context.queue.submit(submitInfo, inFlightFences[currentFrame]);
+	queue.submit(submitInfo, inFlightFences[currentFrame]);
       
 	vk::PresentInfoKHR presentInfo;
 	presentInfo.setWaitSemaphoreCount(1);
@@ -471,7 +478,7 @@ void Commander::renderFrame(Swapchain& swapchain)
 	presentInfo.setPImageIndices(&currentIndex);
 	presentInfo.setPSwapchains(&swapchain.swapchain);
 
-	context.queue.presentKHR(presentInfo);
+	queue.presentKHR(presentInfo);
 
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 	trueFrame++;
@@ -491,7 +498,7 @@ void Commander::resetCommandBuffer(uint32_t index)
 
 void Commander::resetCurrentBuffer()
 {
-	context.device.waitForFences(
+	device.waitForFences(
 			1, 
 			&inFlightFences[currentFrame], 
 			true, 
@@ -501,6 +508,6 @@ void Commander::resetCurrentBuffer()
  
 void Commander::cleanUp()
 {
-	context.queue.waitIdle();
-	context.device.waitIdle();
+	queue.waitIdle();
+	device.waitIdle();
 }

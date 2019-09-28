@@ -1,18 +1,23 @@
 #ifndef COMMANDER_H
 #define COMMANDER_H
 
-#include "context.hpp"
+#include <vulkan/vulkan.hpp>
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 3;
 
 class Swapchain; //forward declaration
-class Pipe;
 
 class Commander
 {
 public:
-	Commander(const Context&);
+	Commander(vk::Device& device, vk::Queue& queue, uint32_t queueFamily);
 	virtual ~Commander();
+
+	void createCommandPool(uint32_t queueFamily); // must be called
+
+	void createSyncObjects();
+
+	void setQueue(vk::Queue& queue); 
 
 	void setSwapchain(const Swapchain&);
 
@@ -31,22 +36,24 @@ public:
 			const std::vector<vk::Image>,
 			uint32_t width, uint32_t height, uint32_t depth);
 
-	void recordCopyImageToSwapImages(const Swapchain&, vk::Image);
-
+	
 	void recordDrawVert(
-			vk::RenderPass, 
-			Pipe& pipe,
-			std::vector<vk::Framebuffer>, 
-			vk::Buffer&,
-			uint32_t width, uint32_t height,
-			uint32_t vertexCount);
+		vk::RenderPass& renderpass,
+	 	std::vector<vk::Framebuffer>& framebuffers,
+		vk::Buffer& vertexBuffer,
+		vk::Pipeline& graphicsPipeline,
+		vk::PipelineLayout& pipelineLayout,
+		uint32_t width, uint32_t height,
+		uint32_t vertexCount);
+		
+	void recordCopyImageToSwapImages(const Swapchain&, vk::Image);
 
 	void copyImageToBuffer(
 			vk::Image,
 			vk::Buffer,
 			uint32_t width, uint32_t height, uint32_t depth);
 
-	void allocateCommandBuffersForSwapchain(const Swapchain&);
+	void allocateCommandBuffers(const uint32_t count);
 
 	void setSwapchainImagesToPresent(Swapchain&);
 
@@ -66,7 +73,8 @@ public:
 private:
 	vk::CommandPool commandPool;
 	std::vector<vk::CommandBuffer> commandBuffers;
-	const Context& context;
+	const vk::Device& device;
+	vk::Queue& queue;
 	bool commandPoolCreated = false;
 	bool semaphoresCreated = false;
 	std::vector<vk::ClearColorValue> clearColors;
@@ -74,9 +82,6 @@ private:
 	size_t trueFrame = 0;
 	uint32_t currentIndex = 0;
 
-	void createCommandPool();
-
-	void createSyncObjects();
 	 
 };
 

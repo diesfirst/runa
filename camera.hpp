@@ -25,7 +25,7 @@ public:
 	void updateModelXForm(float radians);
 	void copyXFormsToBuffer(int index);
 	void copyXFormsToBuffers();
-	std::vector<bufferBlock>* uboBlocks;
+	std::vector<BufferBlock>* uboBlocks;
 
 private:
 	ViewTransforms xforms;

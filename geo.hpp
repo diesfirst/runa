@@ -7,29 +7,11 @@
 #include <array>
 #include "occupant.hpp"
 
-struct Point
-{
-	glm::vec3 pos;
-	glm::vec3 color = {0.3, 0.7, 0.8};
-};
-
-class Geo : public Occupant
+class Geo : public PointBased
 {
 public:
 	Geo();
 	virtual ~Geo();
-
-	int aqcuireBufferBlock(size_t size);
-
-	static vk::VertexInputBindingDescription getBindingDescription();
-	static std::array<vk::VertexInputAttributeDescription, 2> 
-		getAttributeDescriptions();
-
-	void createPoint(float x, float y);
-	void createPoint(float x, float y, float z);
-
-	std::vector<Point> points;
-	void printPoints();
 
 private:
 
@@ -39,9 +21,17 @@ class Triangle : public Geo
 {
 public:
 	Triangle(
-			glm::vec3 = {-0.1, 0.5, 0.0},
+			Point p0,
+			Point p1,
+			Point p2);
+	Triangle(
+			glm::vec3 = {-0.5, 0.5, 0.0},
 			glm::vec3 = {0.0, -0.5, 0.0},
 			glm::vec3 = {0.5, 0.5, 0.0});
+	Triangle(
+			glm::vec2,
+			glm::vec2,
+			glm::vec2);
 
 private:
 
