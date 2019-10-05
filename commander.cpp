@@ -369,15 +369,15 @@ void Commander::recordDrawVert(
 		vk::Buffer& vertexBuffer,
 		vk::Pipeline& graphicsPipeline,
 		vk::PipelineLayout& pipelineLayout,
-//		std::vector<vk::DescriptorSet> descriptorSets,
+		std::vector<vk::DescriptorSet>& descriptorSets,
 		uint32_t width, uint32_t height,
-		uint32_t vertexCount)
+		uint32_t vertexCount, uint32_t geoCount, uint32_t dynamicAlignment)
 {
 	vk::CommandBufferBeginInfo beginInfo;
 	beginInfo.setFlags(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
 
 	vk::ClearColorValue clearColorValue;
-	clearColorValue.setFloat32({0.0, 0.0, 0.0, 1.0});
+	clearColorValue.setFloat32({0.1, 0.1, 0.1, 1.0});
 	vk::ClearValue clearValue(clearColorValue);
 
 	vk::RenderPassBeginInfo renderPassInfo;
@@ -393,17 +393,22 @@ void Commander::recordDrawVert(
 		commandBuffers[i].beginRenderPass(
 				renderPassInfo, vk::SubpassContents::eInline);
 		commandBuffers[i].bindPipeline(
-				vk::PipelineBindPoint::eGraphics, //ray tracing pipe is also an option
+				vk::PipelineBindPoint::eGraphics, 
 				graphicsPipeline);
 		commandBuffers[i].bindVertexBuffers(0, vertexBuffer, {0});
-//		commandBuffers[i].bindDescriptorSets(
-//				vk::PipelineBindPoint::eGraphics,
-//				pipelineLayout,
-//				0,
-//				descriptorSets[i],
-//				{});
-		//vert count. instance count, vert offset, instance offset
-		commandBuffers[i].draw(vertexCount, 1, 0, 0); 
+
+		for (int j = 0; j < geoCount; ++j) 
+		{
+			uint32_t dynamicOffset = j * dynamicAlignment;
+			commandBuffers[i].bindDescriptorSets(
+					vk::PipelineBindPoint::eGraphics,
+					pipelineLayout,
+					0,
+					descriptorSets[i],
+					dynamicOffset);
+			//vert count. instance count, vert offset, instance offset
+			commandBuffers[i].draw(3, 1, j * 3, 0); 
+		}
 		commandBuffers[i].endRenderPass();
 		commandBuffers[i].end();
 	}
@@ -440,7 +445,7 @@ void Commander::setSwapchainImagesToPresent(Swapchain& swapchain)
 	}
 }
 
-void Commander::renderFrame(Swapchain& swapchain)
+uint8_t Commander::renderFrame(Swapchain& swapchain)
 {
 	device.waitForFences(
 			1, 
@@ -481,7 +486,8 @@ void Commander::renderFrame(Swapchain& swapchain)
 	queue.presentKHR(presentInfo);
 
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-	trueFrame++;
+
+	return currentFrame;
 }
 
 void Commander::resetCommandBuffers()

@@ -33,12 +33,15 @@ public:
 			uint32_t depth,
 			vk::ImageUsageFlagBits);
 	void createUniformBuffers(size_t count, vk::DeviceSize bufferSize);
-
 	BufferBlock* createVertexBlock(size_t size);
+	std::vector<BufferBlock>* createUBOBlocks(size_t count, size_t size);
+	std::vector<BufferBlock>* createDynamicUBOBlocks(size_t count, size_t size);
+
 
 	std::vector<BufferBlock> BufferBlocks;
 	std::vector<ImageBlock> ImageBlocks;
 	std::vector<BufferBlock> uniformBufferBlocks;
+	std::vector<BufferBlock> dynamicUBOBlocks;
 
 private:
 	const vk::Device& device;

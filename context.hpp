@@ -56,11 +56,11 @@ public:
 
 	vk::Queue queue;
 	std::unique_ptr<Commander> pCommander;
-
-private:
 	std::unique_ptr<MemoryManager> pMemory;
 	//physical device properties
 	vk::PhysicalDeviceProperties physicalDeviceProperties;
+
+private:
 	vk::PhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
 	vk::PhysicalDeviceFeatures physicalDeviceFeatures;
 	std::vector<vk::ExtensionProperties> instanceExtensionProperties;

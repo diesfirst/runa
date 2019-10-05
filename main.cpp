@@ -6,5 +6,8 @@ int main(int argc, char *argv[])
 		std::cout << "Running " << argv[0] << std::endl;
 		program2(std::atoi(argv[1]));
 	}
+	else {
+		program1();
+	}
 	return 0;
 }

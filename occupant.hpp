@@ -11,6 +11,10 @@ public:
 	Occupant();
 	virtual ~Occupant();
 	glm::mat4& getTransform();
+	void setTransform(glm::mat4 transform);
+	void scale(float scale);
+	void translate(float x, float y, float z);
+	void rotate(float angle, glm::vec3 axis);
 
 	glm::mat4 transform;
 

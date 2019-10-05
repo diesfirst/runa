@@ -62,6 +62,10 @@ void Renderer::setup(Viewport& viewport, Description& description)
 {
 	bindToViewport(viewport);
 	bindToDescription(description);
+	description.createCamera(viewport.getWidth(), viewport.getHeight());
+	description.prepareUniformBuffers(viewport.getSwapImageCount());
+	description.prepareDescriptorSets(viewport.getSwapImageCount());
+	initPipelineLayout();
 	createGraphicsPipeline();
 }
 
@@ -136,14 +140,6 @@ void Renderer::createFramebuffers()
 	createInfo.setAttachmentCount(1);
 	createInfo.setLayers(1);
 	std::array<vk::ImageView, 1> imageViewsTemp;
-//	auto imageViews = pViewport->getSwapImageViews();
-//	for (auto imageView : imageViews) 
-//	{
-//		imageViewsTemp[0] = imageView;
-//		createInfo.setPAttachments(imageViewsTemp.data());
-//		framebuffers.push_back(
-//				context.device.createFramebuffer(createInfo));
-//	}
 	for (int i = 0; i < pViewport->getSwapImageCount(); ++i)
 	{
 		imageViewsTemp[0] = pViewport->getSwapImageView(i);
@@ -162,14 +158,17 @@ void Renderer::update()
 			vertBuffer,
 			graphicsPipeline,
 			pipelineLayout,
-//			pDescription->descriptorSets,
+			pDescription->descriptorSets,
 			width, height,
-			pDescription->getVertexCount());
+			pDescription->getVertexCount(), pDescription->getGeoCount(), 
+			pDescription->getDynamicAlignment());
 }
 
 void Renderer::render()
 {
-	context.pCommander->renderFrame(pViewport->getSwapchain());
+	pDescription->updateAllCurrentUbos();
+	uint8_t curIndex = context.pCommander->renderFrame(pViewport->getSwapchain());
+	pDescription->setCurrentSwapIndex(curIndex);
 }
 
 vk::ShaderModule Renderer::createShaderModule(const std::vector<char>& code)
@@ -254,7 +253,6 @@ void Renderer::initAll()
 	initMultisampling();
 	initColorAttachment();
 	initColorBlending();
-	initPipelineLayout();
 }
 
 void Renderer::createGraphicsPipeline()

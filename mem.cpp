@@ -138,6 +138,34 @@ void MemoryManager::createUniformBuffers(size_t count, vk::DeviceSize bufferSize
 	}
 }
 
+std::vector<BufferBlock>* MemoryManager::createUBOBlocks(
+		size_t count, size_t size)
+{
+	uniformBufferBlocks.resize(count);
+	for (int i = 0; i < count; ++i) 
+	{
+		createBuffer(
+				uniformBufferBlocks[i],
+				size,
+				vk::BufferUsageFlagBits::eUniformBuffer);
+	}
+	return &uniformBufferBlocks;
+}
+
+std::vector<BufferBlock>* MemoryManager::createDynamicUBOBlocks(
+		size_t count, size_t size)
+{
+	dynamicUBOBlocks.resize(count);
+	for (int i = 0; i < count; ++i) 
+	{
+		createBuffer(
+				dynamicUBOBlocks[i],
+				size,
+				vk::BufferUsageFlagBits::eUniformBuffer);
+	}
+	return &dynamicUBOBlocks;
+}
+
 void MemoryManager::unmapBuffers()
 {
 	for (BufferBlock block : BufferBlocks) {
@@ -154,6 +182,9 @@ void MemoryManager::destroyBuffers()
 		device.destroyBuffer(block.buffer); device.freeMemory(block.memory);
 	}
 	for (BufferBlock block : uniformBufferBlocks) {
+		device.destroyBuffer(block.buffer); device.freeMemory(block.memory);
+	}
+	for (BufferBlock block : dynamicUBOBlocks) {
 		device.destroyBuffer(block.buffer); device.freeMemory(block.memory);
 	}
 }

@@ -23,7 +23,7 @@ public:
 
 	void initializeCommandBuffers(const Swapchain&);
 
-	void renderFrame(Swapchain&);
+	uint8_t renderFrame(Swapchain&);
 
 	void cleanUp();
 
@@ -45,6 +45,16 @@ public:
 		vk::PipelineLayout& pipelineLayout,
 		uint32_t width, uint32_t height,
 		uint32_t vertexCount);
+
+	void recordDrawVert(
+		vk::RenderPass& renderpass,
+	 	std::vector<vk::Framebuffer>& framebuffers,
+		vk::Buffer& vertexBuffer,
+		vk::Pipeline& graphicsPipeline,
+		vk::PipelineLayout& pipelineLayout,
+		std::vector<vk::DescriptorSet>& descriptorSets,
+		uint32_t width, uint32_t height,
+		uint32_t vertexCount, uint32_t geoCount, uint32_t dynamicAlignment);
 		
 	void recordCopyImageToSwapImages(const Swapchain&, vk::Image);
 
@@ -78,7 +88,7 @@ private:
 	bool commandPoolCreated = false;
 	bool semaphoresCreated = false;
 	std::vector<vk::ClearColorValue> clearColors;
-	size_t currentFrame = 0;
+	uint8_t currentFrame = 0;
 	size_t trueFrame = 0;
 	uint32_t currentIndex = 0;
 

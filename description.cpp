@@ -1,13 +1,13 @@
 #include "description.hpp"
 #include <cstring>
+#include <bitset>
 
 Description::Description(Context& context) :
 	context(context)
 {
-	vertexBlock = context.getVertexBlock(6000);
-	vertices = static_cast<Point*>(vertexBlock->pHostMemory);
 	//arbitrary size for now...
-	prepareDescriptorSets(3); 
+	vertexBlock = context.getVertexBlock(10000);
+	vertices = static_cast<Point*>(vertexBlock->pHostMemory);
 	//one descriptor set for world transform
 }
 
@@ -17,12 +17,23 @@ Description::~Description()
 	context.device.destroyDescriptorSetLayout(descriptorSetLayout);
 }
 
-void Description::createTriangle()
+void Description::createCamera(const uint16_t width, const uint16_t height)
+{
+	cameras.push_back(std::make_shared<Camera>(width, height));
+	occupants.push_back(cameras.back());
+	if (cameras.size() == 1) //no previous cameras existed
+	{
+		curCamera = cameras[0];
+	}
+}
+
+Triangle* Description::createTriangle()
 {
 	geometry.push_back(std::make_shared<Triangle>());
 	pointBasedOccupants.push_back(geometry.back());
 	occupants.push_back(geometry.back());
 	updateVertexBuffer();
+	return (Triangle*)geometry.back().get();
 }
 
 void Description::createTriangle(Point p0, Point p1, Point p2)
@@ -46,6 +57,22 @@ uint32_t Description::getVertexCount()
 		nPoints += pointGeo->points.size();
 	}
 	return nPoints;
+}
+
+uint32_t Description::getGeoCount()
+{
+	return geometry.size();
+}
+
+uint32_t Description::getOccupantCount()
+{
+	return occupants.size();
+}
+
+uint32_t Description::getDynamicAlignment()
+{
+	assert (dynamicAlignment != 0);
+	return dynamicAlignment;
 }
 
 vk::DescriptorSetLayout* Description::getPDescriptorSetLayout()
@@ -96,33 +123,46 @@ void Description::updateVertexBuffer()
 
 void Description::initDescriptorSetLayout()
 {
-	vk::DescriptorSetLayoutBinding binding;
-	binding.setDescriptorType(vk::DescriptorType::eUniformBuffer);
-	binding.setBinding(0);
-	//possible to use an array of uniform buffer objects
-	//could be used for skeletal animation
-	binding.setDescriptorCount(1);
-	binding.setStageFlags(vk::ShaderStageFlagBits::eVertex);
-	binding.setPImmutableSamplers(nullptr);
+	std::array<vk::DescriptorSetLayoutBinding, 2> layoutBindings;
+
+	layoutBindings[0].setDescriptorType(vk::DescriptorType::eUniformBuffer);
+	layoutBindings[0].setBinding(0);
+	layoutBindings[0].setDescriptorCount(1);
+	layoutBindings[0].setStageFlags(vk::ShaderStageFlagBits::eVertex);
+	layoutBindings[0].setPImmutableSamplers(nullptr);
+
+	layoutBindings[1].setDescriptorType(
+			vk::DescriptorType::eUniformBufferDynamic);
+	layoutBindings[1].setBinding(1);
+	layoutBindings[1].setDescriptorCount(1);
+	layoutBindings[1].setStageFlags(vk::ShaderStageFlagBits::eVertex);
+	layoutBindings[1].setPImmutableSamplers(nullptr);
 
 	vk::DescriptorSetLayoutCreateInfo info;
-	info.setPBindings(&binding);
-	info.setBindingCount(1);
+	info.setPBindings(layoutBindings.data());
+	info.setBindingCount(layoutBindings.size());
 	descriptorSetLayout = context.device.createDescriptorSetLayout(info);
 }
 
-void Description::createDescriptorPool(uint32_t descriptorCount)
+void Description::createDescriptorPool(uint32_t swapImageCount)
 {
-	vk::DescriptorPoolSize poolSize;
-	poolSize.setType(vk::DescriptorType::eUniformBuffer);
-	poolSize.setDescriptorCount(descriptorCount);
+	std::array<vk::DescriptorPoolSize, 2> poolSizes;
+
+	poolSizes[0].setType(vk::DescriptorType::eUniformBuffer);
+	poolSizes[0].setDescriptorCount(swapImageCount); 
+	//specifies total descriptors allocated across all sets
+	//we have 1 descriptor for each set, but swapImageCount sets
+	//so we set this to swapImageCount
+
+	poolSizes[1].setType(vk::DescriptorType::eUniformBufferDynamic);
+	poolSizes[1].setDescriptorCount(swapImageCount);
 
 	vk::DescriptorPoolCreateInfo poolInfo;
-	poolInfo.setPoolSizeCount(1);
-	poolInfo.setPPoolSizes(&poolSize);
-	poolInfo.setMaxSets(descriptorCount);
+	poolInfo.setPoolSizeCount(poolSizes.size());
+	poolInfo.setPPoolSizes(poolSizes.data());
+	poolInfo.setMaxSets(swapImageCount);
 
-	descriptorCount = descriptorCount;
+	descriptorSetCount = swapImageCount;
 	descriptorPool = context.device.createDescriptorPool(poolInfo);
 }
 
@@ -137,6 +177,37 @@ void Description::createDescriptorSets(uint32_t count)
 
 	descriptorSets.resize(count);
 	descriptorSets = context.device.allocateDescriptorSets(allocInfo);
+
+	for (int i = 0; i < count; ++i) 
+	{
+		std::array<vk::WriteDescriptorSet, 2> writes;
+
+		vk::DescriptorBufferInfo uboBufferInfo;
+		uboBufferInfo.setBuffer((*uboBlocks)[i].buffer);
+		uboBufferInfo.setOffset(0);
+		uboBufferInfo.setRange(VK_WHOLE_SIZE);
+		
+		writes[0].setDstSet(descriptorSets[i]);
+		writes[0].setDescriptorType(vk::DescriptorType::eUniformBuffer);
+		writes[0].setDstBinding(0);
+		writes[0].setDstArrayElement(0);
+		writes[0].setDescriptorCount(1);
+		writes[0].setPBufferInfo(&uboBufferInfo);
+
+		vk::DescriptorBufferInfo uboDynBufferInfo;
+		uboDynBufferInfo.setBuffer((*uboDynamicBlocks)[i].buffer);
+		uboDynBufferInfo.setOffset(0);
+		uboDynBufferInfo.setRange(VK_WHOLE_SIZE);
+
+		writes[1].setDstSet(descriptorSets[i]);
+		writes[1].setDescriptorType(vk::DescriptorType::eUniformBufferDynamic);
+		writes[1].setDstBinding(1);
+		writes[1].setDstArrayElement(0);
+		writes[1].setDescriptorCount(1);
+		writes[1].setPBufferInfo(&uboDynBufferInfo);
+
+		context.device.updateDescriptorSets(writes, nullptr);
+	}
 }
 
 void Description::updateDescriptorSets(
@@ -175,3 +246,55 @@ void Description::prepareDescriptorSets(uint32_t count)
 	descriptorsPrepared = true;
 }
 
+void Description::prepareUniformBuffers(const uint32_t count)
+{
+	size_t minUboAlignment = 
+		context.physicalDeviceProperties.limits.minUniformBufferOffsetAlignment;
+	assert (minUboAlignment > 0);
+	size_t dA = sizeof(glm::mat4);
+	dA = (dA + minUboAlignment - 1) & ~(minUboAlignment - 1);
+	size_t bufferSize = MAX_OCCUPANTS * dA;
+	dynamicAlignment = dA;
+	uboDynamicData.model = (glm::mat4*) 
+		aligned_alloc(minUboAlignment, bufferSize);
+
+	uboBlocks = 
+		context.pMemory->createUBOBlocks(count, sizeof(UboVS));
+	uboDynamicBlocks = 
+		context.pMemory->createDynamicUBOBlocks(count, bufferSize);
+
+	updateUniformBuffers(); //initial swapIndex assumed 0
+	updateDynamicUniformBuffers();//initial swapIndex assumed 0
+}
+
+void Description::updateAllCurrentUbos()
+{
+	updateUniformBuffers();
+	updateDynamicUniformBuffers();
+}
+
+void Description::updateUniformBuffers()
+{
+	assert (curCamera.get() != nullptr);
+	uboView.projection = curCamera->projection;
+	uboView.view = curCamera->view;
+	memcpy((*uboBlocks)[curSwapIndex].pHostMemory, &uboView, sizeof(UboVS));
+}
+
+void Description::updateDynamicUniformBuffers()
+{
+	uint32_t nGeos = getGeoCount();
+	char* pModelMemory = (char*)uboDynamicData.model;
+	for (size_t i = 0; i < nGeos; ++i) 
+	{
+		glm::mat4* mat = (glm::mat4*)(pModelMemory + i * dynamicAlignment);
+		*mat = geometry[i]->getTransform();
+	}
+	memcpy((*uboDynamicBlocks)[curSwapIndex].pHostMemory, uboDynamicData.model,
+		nGeos * dynamicAlignment);	
+}
+
+void Description::setCurrentSwapIndex(uint8_t curIndex)
+{
+	curSwapIndex = curIndex;
+}

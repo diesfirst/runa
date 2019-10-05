@@ -5,53 +5,159 @@
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
 A	painter.hpp	/^	float R, G, B, A; \/\/default values$/;"	m	class:Painter
+ADAM7_DX	lib/lodepng.cpp	/^static const unsigned ADAM7_DX[7] = { 8, 8, 4, 4, 2, 2, 1 }; \/*x delta values*\/$/;"	v	file:
+ADAM7_DY	lib/lodepng.cpp	/^static const unsigned ADAM7_DY[7] = { 8, 8, 8, 4, 4, 2, 2 }; \/*y delta values*\/$/;"	v	file:
+ADAM7_IX	lib/lodepng.cpp	/^static const unsigned ADAM7_IX[7] = { 0, 4, 0, 2, 0, 1, 0 }; \/*x start values*\/$/;"	v	file:
+ADAM7_IY	lib/lodepng.cpp	/^static const unsigned ADAM7_IY[7] = { 0, 0, 4, 0, 2, 0, 1 }; \/*y start values*\/$/;"	v	file:
+Adam7_deinterlace	lib/lodepng.cpp	/^static void Adam7_deinterlace(unsigned char* out, const unsigned char* in, unsigned w, unsigned h, unsigned bpp) {$/;"	f	file:
+Adam7_getpassvalues	lib/lodepng.cpp	/^static void Adam7_getpassvalues(unsigned passw[7], unsigned passh[7], size_t filter_passstart[8],$/;"	f	file:
+Adam7_interlace	lib/lodepng.cpp	/^static void Adam7_interlace(unsigned char* out, const unsigned char* in, unsigned w, unsigned h, unsigned bpp) {$/;"	f	file:
 B	painter.hpp	/^	float R, G, B, A; \/\/default values$/;"	m	class:Painter
+BPMLists	lib/lodepng.cpp	/^typedef struct BPMLists {$/;"	s	file:
+BPMLists	lib/lodepng.cpp	/^} BPMLists;$/;"	t	typeref:struct:BPMLists	file:
+BPMNode	lib/lodepng.cpp	/^typedef struct BPMNode {$/;"	s	file:
+BPMNode	lib/lodepng.cpp	/^} BPMNode;$/;"	t	typeref:struct:BPMNode	file:
 Blend	painter.hpp	/^enum class Blend : size_t $/;"	c
 Bristle	painter.hpp	/^struct Bristle$/;"	s
 BufferBlock	mem.hpp	/^struct BufferBlock$/;"	s
 BufferBlocks	mem.hpp	/^	std::vector<BufferBlock> BufferBlocks;$/;"	m	class:MemoryManager
 CAMERA_H	camera.hpp	2;"	d
-CFLAGS	makefile	/^CFLAGS = -g -std=c++17 -Wall -Wextra -Wpedantic$/;"	m
+CERROR_BREAK	lib/lodepng.cpp	102;"	d	file:
+CERROR_RETURN	lib/lodepng.cpp	123;"	d	file:
+CERROR_RETURN_ERROR	lib/lodepng.cpp	111;"	d	file:
+CERROR_TRY_RETURN	lib/lodepng.cpp	117;"	d	file:
+CFLAGS	makefile	/^CFLAGS = -g -std=c++17 -Wall $/;"	m
+CLCL_ORDER	lib/lodepng.cpp	/^static const unsigned CLCL_ORDER[NUM_CODE_LENGTH_CODES]$/;"	v	file:
 COMMANDER_H	commander.hpp	2;"	d
 CONTEXT_H	context.hpp	2;"	d
 Camera	camera.cpp	/^Camera::Camera(int windowWidth, int windowHeight)$/;"	f	class:Camera
 Camera	camera.hpp	/^class Camera : public Occupant$/;"	c
+ColorTree	lib/lodepng.cpp	/^struct ColorTree {$/;"	s	file:
+ColorTree	lib/lodepng.cpp	/^typedef struct ColorTree ColorTree;$/;"	t	typeref:struct:ColorTree	file:
 Commander	commander.cpp	/^Commander::Commander(vk::Device& device, vk::Queue& queue, uint32_t queueFamily) :$/;"	f	class:Commander
 Commander	commander.hpp	/^class Commander$/;"	c
 Context	context.cpp	/^Context::Context()$/;"	f	class:Context
 Context	context.hpp	/^class Context$/;"	c
-DEPS	makefile	/^DEPS = main.o context.o swapchain.o window.o viewport.o renderer.o description.o io.o mem.o commander.o geo.o occupant.o lodepng.o$/;"	m
+DEFAULT_WINDOWSIZE	lib/lodepng.cpp	2056;"	d	file:
+DEPS	makefile	/^DEPS = main.o context.o swapchain.o window.o viewport.o renderer.o description.o io.o mem.o commander.o geo.o occupant.o lodepng.o camera.o $/;"	m
 DESCRIPTION_H	description.hpp	2;"	d
+DISTANCEBASE	lib/lodepng.cpp	/^static const unsigned DISTANCEBASE[30]$/;"	v	file:
+DISTANCEEXTRA	lib/lodepng.cpp	/^static const unsigned DISTANCEEXTRA[30]$/;"	v	file:
 Description	description.cpp	/^Description::Description(Context& context) :$/;"	f	class:Description
 Description	description.hpp	/^class Description$/;"	c
+DirectoryOfThisScript	.ycm_extra_conf.py	/^def DirectoryOfThisScript():$/;"	f
+ERROR_BREAK	lib/lodepng.cpp	108;"	d	file:
 EventHandler	event.cpp	/^EventHandler::EventHandler($/;"	f	class:EventHandler
 EventHandler	event.hpp	/^class EventHandler$/;"	c
 EventState	event.hpp	/^enum class EventState : size_t$/;"	c
+FAST_BITS	lib/stb_image.h	1753;"	d
+FIRST_LENGTH_CODE_INDEX	lib/lodepng.cpp	455;"	d	file:
+FlagsForFile	.ycm_extra_conf.py	/^def FlagsForFile( filename, **kwargs ):$/;"	f
 G	painter.hpp	/^	float R, G, B, A; \/\/default values$/;"	m	class:Painter
 GEO_H	geo.hpp	2;"	d
 GLM_FORCE_RADIANS	camera.hpp	3;"	d
 Geo	geo.cpp	/^Geo::Geo()$/;"	f	class:Geo
 Geo	geo.hpp	/^class Geo : public PointBased$/;"	c
+GetCompilationInfoForFile	.ycm_extra_conf.py	/^def GetCompilationInfoForFile( filename ):$/;"	f
+HASH_BIT_MASK	lib/lodepng.cpp	/^static const unsigned HASH_BIT_MASK = 65535; \/*HASH_NUM_VALUES - 1, but C90 does not like that as initializer*\/$/;"	v	file:
+HASH_NUM_VALUES	lib/lodepng.cpp	/^static const unsigned HASH_NUM_VALUES = 65536;$/;"	v	file:
 HEIGHT	oldPrograms.hpp	/^constexpr int HEIGHT = 800;$/;"	v
-HEIGHT	viewport.hpp	/^constexpr int HEIGHT = 800;$/;"	v
+HEIGHT	viewport.hpp	/^constexpr uint16_t HEIGHT = 1200;$/;"	v
+Hash	lib/lodepng.cpp	/^typedef struct Hash {$/;"	s	file:
+Hash	lib/lodepng.cpp	/^} Hash;$/;"	t	typeref:struct:Hash	file:
+HuffmanTree	lib/lodepng.cpp	/^typedef struct HuffmanTree {$/;"	s	file:
+HuffmanTree	lib/lodepng.cpp	/^} HuffmanTree;$/;"	t	typeref:struct:HuffmanTree	file:
+HuffmanTree_cleanup	lib/lodepng.cpp	/^static void HuffmanTree_cleanup(HuffmanTree* tree) {$/;"	f	file:
+HuffmanTree_getCode	lib/lodepng.cpp	/^static unsigned HuffmanTree_getCode(const HuffmanTree* tree, unsigned index) {$/;"	f	file:
+HuffmanTree_getLength	lib/lodepng.cpp	/^static unsigned HuffmanTree_getLength(const HuffmanTree* tree, unsigned index) {$/;"	f	file:
+HuffmanTree_init	lib/lodepng.cpp	/^static void HuffmanTree_init(HuffmanTree* tree) {$/;"	f	file:
+HuffmanTree_make2DTree	lib/lodepng.cpp	/^static unsigned HuffmanTree_make2DTree(HuffmanTree* tree) {$/;"	f	file:
+HuffmanTree_makeFromFrequencies	lib/lodepng.cpp	/^static unsigned HuffmanTree_makeFromFrequencies(HuffmanTree* tree, const unsigned* frequencies,$/;"	f	file:
+HuffmanTree_makeFromLengths	lib/lodepng.cpp	/^static unsigned HuffmanTree_makeFromLengths(HuffmanTree* tree, const unsigned* bitlen,$/;"	f	file:
+HuffmanTree_makeFromLengths2	lib/lodepng.cpp	/^static unsigned HuffmanTree_makeFromLengths2(HuffmanTree* tree) {$/;"	f	file:
 ImageBlock	mem.hpp	/^struct ImageBlock$/;"	s
 ImageBlocks	mem.hpp	/^	std::vector<ImageBlock> ImageBlocks;$/;"	m	class:MemoryManager
+IsHeaderFile	.ycm_extra_conf.py	/^def IsHeaderFile( filename ):$/;"	f
+LAST_LENGTH_CODE_INDEX	lib/lodepng.cpp	456;"	d	file:
+LCT_GREY	lib/lodepng.h	/^  LCT_GREY = 0, \/*grayscale: 1,2,4,8,16 bit*\/$/;"	e	enum:LodePNGColorType
+LCT_GREY_ALPHA	lib/lodepng.h	/^  LCT_GREY_ALPHA = 4, \/*grayscale with alpha: 8,16 bit*\/$/;"	e	enum:LodePNGColorType
+LCT_PALETTE	lib/lodepng.h	/^  LCT_PALETTE = 3, \/*palette: 1,2,4,8 bit*\/$/;"	e	enum:LodePNGColorType
+LCT_RGB	lib/lodepng.h	/^  LCT_RGB = 2, \/*RGB: 8,16 bit*\/$/;"	e	enum:LodePNGColorType
+LCT_RGBA	lib/lodepng.h	/^  LCT_RGBA = 6 \/*RGB with alpha: 8,16 bit*\/$/;"	e	enum:LodePNGColorType
 LDFLAGS	makefile	/^LDFLAGS = -lxcb -lvulkan -lX11$/;"	m
+LENGTHBASE	lib/lodepng.cpp	/^static const unsigned LENGTHBASE[29]$/;"	v	file:
+LENGTHEXTRA	lib/lodepng.cpp	/^static const unsigned LENGTHEXTRA[29]$/;"	v	file:
+LFS_BRUTE_FORCE	lib/lodepng.h	/^  LFS_BRUTE_FORCE,$/;"	e	enum:LodePNGFilterStrategy
+LFS_ENTROPY	lib/lodepng.h	/^  LFS_ENTROPY,$/;"	e	enum:LodePNGFilterStrategy
+LFS_MINSUM	lib/lodepng.h	/^  LFS_MINSUM,$/;"	e	enum:LodePNGFilterStrategy
+LFS_PREDEFINED	lib/lodepng.h	/^  LFS_PREDEFINED$/;"	e	enum:LodePNGFilterStrategy
+LFS_ZERO	lib/lodepng.h	/^  LFS_ZERO,$/;"	e	enum:LodePNGFilterStrategy
+LODEPNG_COMPILE_ALLOCATORS	lib/lodepng.h	82;"	d
+LODEPNG_COMPILE_ANCILLARY_CHUNKS	lib/lodepng.h	70;"	d
+LODEPNG_COMPILE_CPP	lib/lodepng.h	88;"	d
+LODEPNG_COMPILE_DECODER	lib/lodepng.h	55;"	d
+LODEPNG_COMPILE_DISK	lib/lodepng.h	65;"	d
+LODEPNG_COMPILE_ENCODER	lib/lodepng.h	60;"	d
+LODEPNG_COMPILE_ERROR_TEXT	lib/lodepng.h	75;"	d
+LODEPNG_COMPILE_PNG	lib/lodepng.h	50;"	d
+LODEPNG_COMPILE_ZLIB	lib/lodepng.h	45;"	d
+LODEPNG_H	lib/lodepng.h	27;"	d
+LODEPNG_MAX	lib/lodepng.cpp	92;"	d	file:
+LODEPNG_MIN	lib/lodepng.cpp	93;"	d	file:
+LODEPNG_VERSION_STRING	lib/lodepng.cpp	/^const char* LODEPNG_VERSION_STRING = "20190714";$/;"	v
 Layer	painter.hpp	/^struct Layer$/;"	s
 LayerPointer	painter.hpp	/^typedef std::unique_ptr<Layer> LayerPointer;$/;"	t
+LodePNGBitReader	lib/lodepng.cpp	/^} LodePNGBitReader;$/;"	t	typeref:struct:__anon21	file:
+LodePNGBitReader_init	lib/lodepng.cpp	/^void LodePNGBitReader_init(LodePNGBitReader* reader, const unsigned char* data, size_t size) {$/;"	f
+LodePNGBitWriter	lib/lodepng.cpp	/^} LodePNGBitWriter;$/;"	t	typeref:struct:__anon20	file:
+LodePNGBitWriter_init	lib/lodepng.cpp	/^void LodePNGBitWriter_init(LodePNGBitWriter* writer, ucvector* data) {$/;"	f
+LodePNGColorMode	lib/lodepng.h	/^typedef struct LodePNGColorMode {$/;"	s
+LodePNGColorMode	lib/lodepng.h	/^} LodePNGColorMode;$/;"	t	typeref:struct:LodePNGColorMode
+LodePNGColorStats	lib/lodepng.h	/^typedef struct LodePNGColorStats {$/;"	s
+LodePNGColorStats	lib/lodepng.h	/^} LodePNGColorStats;$/;"	t	typeref:struct:LodePNGColorStats
+LodePNGColorType	lib/lodepng.h	/^typedef enum LodePNGColorType {$/;"	g
+LodePNGColorType	lib/lodepng.h	/^} LodePNGColorType;$/;"	t	typeref:enum:LodePNGColorType
+LodePNGCompressSettings	lib/lodepng.h	/^struct LodePNGCompressSettings \/*deflate = compress*\/ {$/;"	s
+LodePNGCompressSettings	lib/lodepng.h	/^typedef struct LodePNGCompressSettings LodePNGCompressSettings;$/;"	t	typeref:struct:LodePNGCompressSettings
+LodePNGDecoderSettings	lib/lodepng.h	/^typedef struct LodePNGDecoderSettings {$/;"	s
+LodePNGDecoderSettings	lib/lodepng.h	/^} LodePNGDecoderSettings;$/;"	t	typeref:struct:LodePNGDecoderSettings
+LodePNGDecompressSettings	lib/lodepng.h	/^struct LodePNGDecompressSettings {$/;"	s
+LodePNGDecompressSettings	lib/lodepng.h	/^typedef struct LodePNGDecompressSettings LodePNGDecompressSettings;$/;"	t	typeref:struct:LodePNGDecompressSettings
+LodePNGEncoderSettings	lib/lodepng.h	/^typedef struct LodePNGEncoderSettings {$/;"	s
+LodePNGEncoderSettings	lib/lodepng.h	/^} LodePNGEncoderSettings;$/;"	t	typeref:struct:LodePNGEncoderSettings
+LodePNGFilterStrategy	lib/lodepng.h	/^typedef enum LodePNGFilterStrategy {$/;"	g
+LodePNGFilterStrategy	lib/lodepng.h	/^} LodePNGFilterStrategy;$/;"	t	typeref:enum:LodePNGFilterStrategy
+LodePNGIText_cleanup	lib/lodepng.cpp	/^static void LodePNGIText_cleanup(LodePNGInfo* info) {$/;"	f	file:
+LodePNGIText_copy	lib/lodepng.cpp	/^static unsigned LodePNGIText_copy(LodePNGInfo* dest, const LodePNGInfo* source) {$/;"	f	file:
+LodePNGIText_init	lib/lodepng.cpp	/^static void LodePNGIText_init(LodePNGInfo* info) {$/;"	f	file:
+LodePNGInfo	lib/lodepng.h	/^typedef struct LodePNGInfo {$/;"	s
+LodePNGInfo	lib/lodepng.h	/^} LodePNGInfo;$/;"	t	typeref:struct:LodePNGInfo
+LodePNGState	lib/lodepng.h	/^typedef struct LodePNGState {$/;"	s
+LodePNGState	lib/lodepng.h	/^} LodePNGState;$/;"	t	typeref:struct:LodePNGState
+LodePNGText_cleanup	lib/lodepng.cpp	/^static void LodePNGText_cleanup(LodePNGInfo* info) {$/;"	f	file:
+LodePNGText_copy	lib/lodepng.cpp	/^static unsigned LodePNGText_copy(LodePNGInfo* dest, const LodePNGInfo* source) {$/;"	f	file:
+LodePNGText_init	lib/lodepng.cpp	/^static void LodePNGText_init(LodePNGInfo* info) {$/;"	f	file:
+LodePNGTime	lib/lodepng.h	/^typedef struct LodePNGTime {$/;"	s
+LodePNGTime	lib/lodepng.h	/^} LodePNGTime;$/;"	t	typeref:struct:LodePNGTime
+LodePNGUnknownChunks_cleanup	lib/lodepng.cpp	/^static void LodePNGUnknownChunks_cleanup(LodePNGInfo* info) {$/;"	f	file:
+LodePNGUnknownChunks_copy	lib/lodepng.cpp	/^static unsigned LodePNGUnknownChunks_copy(LodePNGInfo* dest, const LodePNGInfo* src) {$/;"	f	file:
+LodePNGUnknownChunks_init	lib/lodepng.cpp	/^static void LodePNGUnknownChunks_init(LodePNGInfo* info) {$/;"	f	file:
 MAX_FRAMES_IN_FLIGHT	commander.hpp	/^constexpr int MAX_FRAMES_IN_FLIGHT = 3;$/;"	v
+MAX_OCCUPANTS	description.hpp	/^constexpr size_t MAX_OCCUPANTS = 100;$/;"	v
+MAX_SUPPORTED_DEFLATE_LENGTH	lib/lodepng.cpp	/^static const size_t MAX_SUPPORTED_DEFLATE_LENGTH = 258;$/;"	v	file:
 MEM	mem.hpp	2;"	d
+MakeRelativePathsInFlagsAbsolute	.ycm_extra_conf.py	/^def MakeRelativePathsInFlagsAbsolute( flags, working_directory ):$/;"	f
 MemoryManager	mem.cpp	/^MemoryManager::MemoryManager(const vk::Device& device) :$/;"	f	class:MemoryManager
 MemoryManager	mem.hpp	/^class MemoryManager$/;"	c
+NUM_CODE_LENGTH_CODES	lib/lodepng.cpp	462;"	d	file:
+NUM_DEFLATE_CODE_SYMBOLS	lib/lodepng.cpp	458;"	d	file:
+NUM_DISTANCE_SYMBOLS	lib/lodepng.cpp	460;"	d	file:
 OCCUPANT_H	occupant.hpp	2;"	d
 Occupant	occupant.cpp	/^Occupant::Occupant()$/;"	f	class:Occupant
 Occupant	occupant.hpp	/^class Occupant$/;"	c
 PAINTER_H	painter.hpp	2;"	d
-PIPE_H	pipe.hpp	2;"	d
 Painter	painter.cpp	/^Painter::Painter ($/;"	f	class:Painter
 Painter	painter.hpp	/^class Painter$/;"	c
-Pipe	pipe.cpp	/^Pipe::Pipe(const Context& context) :$/;"	f	class:Pipe
-Pipe	pipe.hpp	/^class Pipe$/;"	c
 Pixel	painter.hpp	/^struct Pixel$/;"	s
 Pixels	painter.hpp	/^typedef std::vector<Pixel> Pixels;$/;"	t
 Point	occupant.hpp	/^struct Point$/;"	s
@@ -62,97 +168,258 @@ RENDERER_H	renderer.hpp	2;"	d
 Renderer	renderer.cpp	/^Renderer::Renderer($/;"	f	class:Renderer
 Renderer	renderer.hpp	/^class Renderer$/;"	c
 SCULPTER_H	sculpter.hpp	2;"	d
+SOURCE_EXTENSIONS	.ycm_extra_conf.py	/^SOURCE_EXTENSIONS = [ '.C', '.cpp', '.cxx', '.cc', '.c', '.m', '.mm' ]$/;"	v
+STBIDEF	lib/stb_image.h	345;"	d
+STBIDEF	lib/stb_image.h	347;"	d
+STBI_ASSERT	lib/stb_image.h	545;"	d
+STBI_EXTERN	lib/stb_image.h	549;"	d
+STBI_EXTERN	lib/stb_image.h	551;"	d
+STBI_FREE	lib/stb_image.h	609;"	d
+STBI_HAS_LROTL	lib/stb_image.h	589;"	d
+STBI_INCLUDE_STB_IMAGE_H	lib/stb_image.h	111;"	d
+STBI_MALLOC	lib/stb_image.h	607;"	d
+STBI_NEON	lib/stb_image.h	704;"	d
+STBI_NOTUSED	lib/stb_image.h	583;"	d
+STBI_NOTUSED	lib/stb_image.h	585;"	d
+STBI_NO_BMP	lib/stb_image.h	502;"	d
+STBI_NO_GIF	lib/stb_image.h	511;"	d
+STBI_NO_HDR	lib/stb_image.h	514;"	d
+STBI_NO_JPEG	lib/stb_image.h	496;"	d
+STBI_NO_PIC	lib/stb_image.h	517;"	d
+STBI_NO_PNG	lib/stb_image.h	499;"	d
+STBI_NO_PNM	lib/stb_image.h	520;"	d
+STBI_NO_PSD	lib/stb_image.h	505;"	d
+STBI_NO_SIMD	lib/stb_image.h	631;"	d
+STBI_NO_SIMD	lib/stb_image.h	646;"	d
+STBI_NO_TGA	lib/stb_image.h	508;"	d
+STBI_NO_ZLIB	lib/stb_image.h	525;"	d
+STBI_ORDER_BGR	lib/stb_image.h	/^   STBI_ORDER_BGR$/;"	e	enum:__anon4
+STBI_ORDER_RGB	lib/stb_image.h	/^   STBI_ORDER_RGB,$/;"	e	enum:__anon4
+STBI_REALLOC	lib/stb_image.h	608;"	d
+STBI_REALLOC_SIZED	lib/stb_image.h	613;"	d
+STBI_SIMD_ALIGN	lib/stb_image.h	676;"	d
+STBI_SIMD_ALIGN	lib/stb_image.h	687;"	d
+STBI_SIMD_ALIGN	lib/stb_image.h	710;"	d
+STBI_SIMD_ALIGN	lib/stb_image.h	714;"	d
+STBI_SSE2	lib/stb_image.h	650;"	d
+STBI_VERSION	lib/stb_image.h	323;"	d
+STBI__BYTECAST	lib/stb_image.h	1562;"	d
+STBI__CASE	lib/stb_image.h	1600;"	d
+STBI__CASE	lib/stb_image.h	1618;"	d
+STBI__CASE	lib/stb_image.h	1649;"	d
+STBI__CASE	lib/stb_image.h	1667;"	d
+STBI__CASE	lib/stb_image.h	4477;"	d
+STBI__CASE	lib/stb_image.h	4490;"	d
+STBI__CASE	lib/stb_image.h	4494;"	d
+STBI__CASE	lib/stb_image.h	4507;"	d
+STBI__COMBO	lib/stb_image.h	1599;"	d
+STBI__COMBO	lib/stb_image.h	1648;"	d
+STBI__F_avg	lib/stb_image.h	/^   STBI__F_avg=3,$/;"	e	enum:__anon15
+STBI__F_avg_first	lib/stb_image.h	/^   STBI__F_avg_first,$/;"	e	enum:__anon15
+STBI__F_none	lib/stb_image.h	/^   STBI__F_none=0,$/;"	e	enum:__anon15
+STBI__F_paeth	lib/stb_image.h	/^   STBI__F_paeth=4,$/;"	e	enum:__anon15
+STBI__F_paeth_first	lib/stb_image.h	/^   STBI__F_paeth_first$/;"	e	enum:__anon15
+STBI__F_sub	lib/stb_image.h	/^   STBI__F_sub=1,$/;"	e	enum:__anon15
+STBI__F_up	lib/stb_image.h	/^   STBI__F_up=2,$/;"	e	enum:__anon15
+STBI__HDR_BUFLEN	lib/stb_image.h	6703;"	d
+STBI__IDCT_1D	lib/stb_image.h	2233;"	d
+STBI__MARKER_none	lib/stb_image.h	2718;"	d
+STBI__PNG_TYPE	lib/stb_image.h	4795;"	d
+STBI__RESTART	lib/stb_image.h	2735;"	d
+STBI__SCAN_header	lib/stb_image.h	/^   STBI__SCAN_header$/;"	e	enum:__anon6
+STBI__SCAN_load	lib/stb_image.h	/^   STBI__SCAN_load=0,$/;"	e	enum:__anon6
+STBI__SCAN_type	lib/stb_image.h	/^   STBI__SCAN_type,$/;"	e	enum:__anon6
+STBI__X64_TARGET	lib/stb_image.h	618;"	d
+STBI__X86_TARGET	lib/stb_image.h	620;"	d
+STBI__ZFAST_BITS	lib/stb_image.h	3855;"	d
+STBI__ZFAST_MASK	lib/stb_image.h	3856;"	d
+STBI_default	lib/stb_image.h	/^   STBI_default = 0, \/\/ only used for desired_channels$/;"	e	enum:__anon1
+STBI_grey	lib/stb_image.h	/^   STBI_grey       = 1,$/;"	e	enum:__anon1
+STBI_grey_alpha	lib/stb_image.h	/^   STBI_grey_alpha = 2,$/;"	e	enum:__anon1
+STBI_rgb	lib/stb_image.h	/^   STBI_rgb        = 3,$/;"	e	enum:__anon1
+STBI_rgb_alpha	lib/stb_image.h	/^   STBI_rgb_alpha  = 4$/;"	e	enum:__anon1
 SWAPCHAIN_H	swapchain.hpp	2;"	d
+SWAP_IMG_COUNT	viewport.hpp	/^constexpr uint8_t SWAP_IMG_COUNT = 3;$/;"	v
 Sculpter	sculpter.cpp	/^Sculpter::Sculpter()$/;"	f	class:Sculpter
 Sculpter	sculpter.hpp	/^class Sculpter$/;"	c
 Stack	painter.hpp	/^typedef std::vector<Layer> Stack;$/;"	t
-Swapchain	swapchain.cpp	/^Swapchain::Swapchain(const Context& context, const XWindow& window) :$/;"	f	class:Swapchain
+State	lib/lodepng.cpp	/^State::State() {$/;"	f	class:lodepng::State
+State	lib/lodepng.cpp	/^State::State(const State& other) {$/;"	f	class:lodepng::State
+State	lib/lodepng.h	/^class State : public LodePNGState {$/;"	c	namespace:lodepng
+Swapchain	swapchain.cpp	/^Swapchain::Swapchain(const Context& context, const XWindow& window, const uint32_t count) :$/;"	f	class:Swapchain
 Swapchain	swapchain.hpp	/^class Swapchain$/;"	c
 Timer	util.hpp	/^class Timer$/;"	c
 Triangle	geo.cpp	/^Triangle::Triangle($/;"	f	class:Triangle
+Triangle	geo.cpp	/^Triangle::Triangle(Point p0, Point p1, Point p2)$/;"	f	class:Triangle
 Triangle	geo.hpp	/^class Triangle : public Geo$/;"	c
 UTIL_H	util.hpp	2;"	d
+UboDynamic	description.hpp	/^struct UboDynamic$/;"	s
+UboVS	description.hpp	/^struct UboVS$/;"	s
 VIEWPORT_H	viewport.hpp	3;"	d
 VK_USE_PLATFORM_XCB_KHR	context.hpp	4;"	d
-ViewTransforms	camera.hpp	/^struct ViewTransforms$/;"	s
-Viewport	viewport.cpp	/^Viewport::Viewport(Context& context ,const int width, const int height) :$/;"	f	class:Viewport
+Viewport	viewport.cpp	/^Viewport::Viewport(Context& context, const uint16_t width, const uint16_t height) :$/;"	f	class:Viewport
 Viewport	viewport.hpp	/^class Viewport$/;"	c
 WIDTH	oldPrograms.hpp	/^constexpr int WIDTH = 800;$/;"	v
-WIDTH	viewport.hpp	/^constexpr int WIDTH = 800;$/;"	v
+WIDTH	viewport.hpp	/^constexpr uint16_t WIDTH = 1200;$/;"	v
 WINDOW_H	window.hpp	2;"	d
+WRITEBIT	lib/lodepng.cpp	391;"	d	file:
 XWindow	window.cpp	/^XWindow::XWindow(int width, int height)$/;"	f	class:XWindow
 XWindow	window.hpp	/^class XWindow$/;"	c
+YCbCr_to_RGB_kernel	lib/stb_image.h	/^   void (*YCbCr_to_RGB_kernel)(stbi_uc *out, const stbi_uc *y, const stbi_uc *pcb, const stbi_uc *pcr, int count, int step);$/;"	m	struct:__anon8
 a	painter.hpp	/^	float a = 0.0;$/;"	m	struct:Pixel
 a	painter.hpp	/^	float r,g,b,a;$/;"	m	struct:Layer
 acquireNextImage	swapchain.cpp	/^uint32_t Swapchain::acquireNextImage(const vk::Semaphore& semaphore)$/;"	f	class:Swapchain
-acquireUniformBufferBlocks	camera.cpp	/^void Camera::acquireUniformBufferBlocks(MemoryManager& mm, int count)$/;"	f	class:Camera
 add	painter.cpp	/^void add(const Pixel& a, const Pixel& b, Pixel& o)$/;"	f
 add	painter.hpp	/^	add, sub, min, over, overPreMul, numModes$/;"	m	class:Blend
 addBufferBlock	mem.cpp	/^uint32_t MemoryManager::addBufferBlock()$/;"	f	class:MemoryManager
+addChunk	lib/lodepng.cpp	/^static unsigned addChunk(ucvector* out, const char* chunkName, const unsigned char* data, size_t length) {$/;"	f	file:
+addChunk_IDAT	lib/lodepng.cpp	/^static unsigned addChunk_IDAT(ucvector* out, const unsigned char* data, size_t datasize,$/;"	f	file:
+addChunk_IEND	lib/lodepng.cpp	/^static unsigned addChunk_IEND(ucvector* out) {$/;"	f	file:
+addChunk_IHDR	lib/lodepng.cpp	/^static unsigned addChunk_IHDR(ucvector* out, unsigned w, unsigned h,$/;"	f	file:
+addChunk_PLTE	lib/lodepng.cpp	/^static unsigned addChunk_PLTE(ucvector* out, const LodePNGColorMode* info) {$/;"	f	file:
+addChunk_bKGD	lib/lodepng.cpp	/^static unsigned addChunk_bKGD(ucvector* out, const LodePNGInfo* info) {$/;"	f	file:
+addChunk_cHRM	lib/lodepng.cpp	/^static unsigned addChunk_cHRM(ucvector* out, const LodePNGInfo* info) {$/;"	f	file:
+addChunk_gAMA	lib/lodepng.cpp	/^static unsigned addChunk_gAMA(ucvector* out, const LodePNGInfo* info) {$/;"	f	file:
+addChunk_iCCP	lib/lodepng.cpp	/^static unsigned addChunk_iCCP(ucvector* out, const LodePNGInfo* info, LodePNGCompressSettings* zlibsettings) {$/;"	f	file:
+addChunk_iTXt	lib/lodepng.cpp	/^static unsigned addChunk_iTXt(ucvector* out, unsigned compressed, const char* keyword, const char* langtag,$/;"	f	file:
+addChunk_pHYs	lib/lodepng.cpp	/^static unsigned addChunk_pHYs(ucvector* out, const LodePNGInfo* info) {$/;"	f	file:
+addChunk_sRGB	lib/lodepng.cpp	/^static unsigned addChunk_sRGB(ucvector* out, const LodePNGInfo* info) {$/;"	f	file:
+addChunk_tEXt	lib/lodepng.cpp	/^static unsigned addChunk_tEXt(ucvector* out, const char* keyword, const char* textstring) {$/;"	f	file:
+addChunk_tIME	lib/lodepng.cpp	/^static unsigned addChunk_tIME(ucvector* out, const LodePNGTime* time) {$/;"	f	file:
+addChunk_tRNS	lib/lodepng.cpp	/^static unsigned addChunk_tRNS(ucvector* out, const LodePNGColorMode* info) {$/;"	f	file:
+addChunk_zTXt	lib/lodepng.cpp	/^static unsigned addChunk_zTXt(ucvector* out, const char* keyword, const char* textstring,$/;"	f	file:
+addColorBits	lib/lodepng.cpp	/^static void addColorBits(unsigned char* out, size_t index, unsigned bits, unsigned in) {$/;"	f	file:
 addImageBlock	mem.cpp	/^uint32_t MemoryManager::addImageBlock()$/;"	f	class:MemoryManager
+addLengthDistance	lib/lodepng.cpp	/^static void addLengthDistance(uivector* values, size_t length, size_t distance) {$/;"	f	file:
 addNewLayer	painter.cpp	/^void Painter::addNewLayer()$/;"	f	class:Painter
+addPaddingBits	lib/lodepng.cpp	/^static void addPaddingBits(unsigned char* out, const unsigned char* in,$/;"	f	file:
 addPointToGeo	sculpter.cpp	/^void Sculpter::addPointToGeo(float x, float y)$/;"	f	class:Sculpter
-allocateCommandBuffersForSwapchain	commander.cpp	/^void Commander::allocateCommandBuffersForSwapchain(const Swapchain& swapchain)$/;"	f	class:Commander
+addUnknownChunks	lib/lodepng.cpp	/^static unsigned addUnknownChunks(ucvector* out, unsigned char* data, size_t datasize) {$/;"	f	file:
+add_id	lib/lodepng.h	/^  unsigned add_id;$/;"	m	struct:LodePNGEncoderSettings
+adler32	lib/lodepng.cpp	/^static unsigned adler32(const unsigned char* data, unsigned len) {$/;"	f	file:
+all_a	lib/stb_image.h	/^   unsigned int mr,mg,mb,ma, all_a;$/;"	m	struct:__anon16
+alloc_string	lib/lodepng.cpp	/^static char* alloc_string(const char* in) {$/;"	f	file:
+allocateCommandBuffers	commander.cpp	/^void Commander::allocateCommandBuffers(const uint32_t count)$/;"	f	class:Commander
+allocsize	lib/lodepng.cpp	/^  size_t allocsize; \/*allocated size in bytes*\/$/;"	m	struct:uivector	file:
+allocsize	lib/lodepng.cpp	/^  size_t allocsize; \/*allocated size*\/$/;"	m	struct:ucvector	file:
+allow_greyscale	lib/lodepng.h	/^  unsigned allow_greyscale; \/*default 1. if 0, choose RGB or RGBA even if the image only has gray colors*\/$/;"	m	struct:LodePNGColorStats
+allow_palette	lib/lodepng.h	/^  unsigned allow_palette; \/*default 1. if 0, disallow choosing palette colortype in auto_choose_color, and don't count numcolors*\/$/;"	m	struct:LodePNGColorStats
+alpha	lib/lodepng.h	/^  unsigned alpha; \/*image is not opaque and alpha channel or alpha palette required*\/$/;"	m	struct:LodePNGColorStats
 alpha	painter.hpp	/^	float alpha;$/;"	m	struct:Bristle
+app14_color_transform	lib/stb_image.h	/^   int            app14_color_transform; \/\/ Adobe APP14 tag$/;"	m	struct:__anon8
 appClass	window.hpp	/^	std::string appClass = "floating";$/;"	m	class:XWindow
 appName	window.hpp	/^	std::string appName = "aurora";$/;"	m	class:XWindow
 aquireBlock	sculpter.cpp	/^void Sculpter::aquireBlock(MemoryManager& mm)$/;"	f	class:Sculpter
 aquireBufferBlock	painter.cpp	/^int Painter::aquireBufferBlock(uint32_t size)$/;"	f	class:Painter
+auto_choose_color	lib/lodepng.cpp	/^unsigned auto_choose_color(LodePNGColorMode* mode_out,$/;"	f
+auto_convert	lib/lodepng.h	/^  unsigned auto_convert; \/*automatically choose output PNG color type. Default: true*\/$/;"	m	struct:LodePNGEncoderSettings
 b	painter.hpp	/^	float b = 0.0;$/;"	m	struct:Pixel
 b	painter.hpp	/^	float r,g,b,a;$/;"	m	struct:Layer
+background	lib/stb_image.h	/^   stbi_uc *background;          \/\/ The current "background" as far as a gif is concerned$/;"	m	struct:__anon19
 background	painter.hpp	/^	Pixels foreground, background;$/;"	m	class:Painter
+background_b	lib/lodepng.h	/^  unsigned background_b;       \/*blue component of suggested background color*\/$/;"	m	struct:LodePNGInfo
+background_defined	lib/lodepng.h	/^  unsigned background_defined; \/*is a suggested background color given?*\/$/;"	m	struct:LodePNGInfo
+background_g	lib/lodepng.h	/^  unsigned background_g;       \/*green component of suggested background color*\/$/;"	m	struct:LodePNGInfo
+background_r	lib/lodepng.h	/^  unsigned background_r;       \/*red\/gray\/palette component of suggested background color*\/$/;"	m	struct:LodePNGInfo
 beginSingleTimeCommand	commander.cpp	/^vk::CommandBuffer Commander::beginSingleTimeCommand()$/;"	f	class:Commander
+bgindex	lib/stb_image.h	/^   int flags, bgindex, ratio, transparent, eflags;$/;"	m	struct:__anon19
 bindToDescription	renderer.cpp	/^void Renderer::bindToDescription(Description& description)$/;"	f	class:Renderer
 bindToViewport	renderer.cpp	/^void Renderer::bindToViewport(Viewport& viewport)$/;"	f	class:Renderer
+bitdepth	lib/lodepng.h	/^  unsigned bitdepth;  \/*bits per sample, see PNG standard or documentation further in this header file*\/$/;"	m	struct:LodePNGColorMode
+bits	lib/lodepng.h	/^  unsigned bits; \/*bits per channel (not for palette). 1,2 or 4 for grayscale only. 16 if 16-bit per channel required.*\/$/;"	m	struct:LodePNGColorStats
+bits_per_channel	lib/stb_image.h	/^   int bits_per_channel;$/;"	m	struct:__anon5
+bitsize	lib/lodepng.cpp	/^  size_t bitsize;$/;"	m	struct:__anon21	file:
 blendFunctions	painter.cpp	/^std::array<pBlendFunc, static_cast<size_t>(Blend::numModes)> blendFunctions =$/;"	v
 blendMode	painter.hpp	/^	Blend blendMode = Blend::over;$/;"	m	struct:Layer
 blendMode	painter.hpp	/^	Blend blendMode = Blend::overPreMul;$/;"	m	class:Painter
 block	sculpter.hpp	/^	BufferBlock* block;$/;"	m	class:Sculpter
-blockCount	camera.hpp	/^	uint32_t blockCount;$/;"	m	class:Camera
+boundaryPM	lib/lodepng.cpp	/^static void boundaryPM(BPMLists* lists, BPMNode* leaves, size_t numpresent, int c, int num) {$/;"	f	file:
+bp	lib/lodepng.cpp	/^  size_t bp;$/;"	m	struct:__anon20	file:
+bp	lib/lodepng.cpp	/^  size_t bp;$/;"	m	struct:__anon21	file:
+bpmnode_create	lib/lodepng.cpp	/^static BPMNode* bpmnode_create(BPMLists* lists, int weight, unsigned index, BPMNode* tail) {$/;"	f	file:
+bpmnode_sort	lib/lodepng.cpp	/^static void bpmnode_sort(BPMNode* leaves, size_t num) {$/;"	f	file:
+bpp	lib/stb_image.h	/^   int bpp, offset, hsz;$/;"	m	struct:__anon16
 bristleCompare	painter.cpp	/^bool bristleCompare(const Bristle& a, const Bristle& b)$/;"	f
 brushSize	painter.hpp	/^	float brushSize;$/;"	m	struct:Layer
+btype	lib/lodepng.h	/^  unsigned btype; \/*the block type for LZ (0, 1, 2 or 3, see zlib standard). Should be 2 for proper compression.*\/$/;"	m	struct:LodePNGCompressSettings
 buffer	mem.hpp	/^	vk::Buffer buffer;$/;"	m	struct:BufferBlock
+buffer_start	lib/stb_image.h	/^   stbi_uc buffer_start[128];$/;"	m	struct:__anon3
+buflen	lib/stb_image.h	/^   int buflen;$/;"	m	struct:__anon3
 calcAlpha	painter.cpp	/^float Painter::calcAlpha(float val, float radius)$/;"	f	class:Painter
 camera	event.hpp	/^	Camera& camera;$/;"	m	class:EventHandler
 cameras	description.hpp	/^	std::vector<std::shared_ptr<Camera>> cameras;$/;"	m	class:Description
+chain	lib/lodepng.cpp	/^  unsigned short* chain;$/;"	m	struct:Hash	file:
+chains0	lib/lodepng.cpp	/^  BPMNode** chains0;$/;"	m	struct:BPMLists	file:
+chains1	lib/lodepng.cpp	/^  BPMNode** chains1;$/;"	m	struct:BPMLists	file:
+chainz	lib/lodepng.cpp	/^  unsigned short* chainz; \/*those with same amount of zeros*\/$/;"	m	struct:Hash	file:
+channel	lib/stb_image.h	/^   stbi_uc size,type,channel;$/;"	m	struct:__anon17
+channel_order	lib/stb_image.h	/^   int channel_order;$/;"	m	struct:__anon5
 checkBufferMemReqs	util.cpp	/^void checkBufferMemReqs(const Context& context, const vk::Buffer& buffer)$/;"	f
+checkColorValidity	lib/lodepng.cpp	/^static unsigned checkColorValidity(LodePNGColorType colortype, unsigned bd) \/*bd = bitdepth*\/ {$/;"	f	file:
 checkInstanceExtensionProperties	context.cpp	/^void Context::checkInstanceExtensionProperties()$/;"	f	class:Context
+children	lib/lodepng.cpp	/^  ColorTree* children[16]; \/*up to 16 pointers to ColorTree of next level*\/$/;"	m	struct:ColorTree	file:
+chrm_blue_x	lib/lodepng.h	/^  unsigned chrm_blue_x;  \/* Blue x times 100000 *\/$/;"	m	struct:LodePNGInfo
+chrm_blue_y	lib/lodepng.h	/^  unsigned chrm_blue_y;  \/* Blue y times 100000 *\/$/;"	m	struct:LodePNGInfo
+chrm_defined	lib/lodepng.h	/^  unsigned chrm_defined; \/* Whether a cHRM chunk is present (0 = not present, 1 = present). *\/$/;"	m	struct:LodePNGInfo
+chrm_green_x	lib/lodepng.h	/^  unsigned chrm_green_x; \/* Green x times 100000 *\/$/;"	m	struct:LodePNGInfo
+chrm_green_y	lib/lodepng.h	/^  unsigned chrm_green_y; \/* Green y times 100000 *\/$/;"	m	struct:LodePNGInfo
+chrm_red_x	lib/lodepng.h	/^  unsigned chrm_red_x;   \/* Red x times 100000 *\/$/;"	m	struct:LodePNGInfo
+chrm_red_y	lib/lodepng.h	/^  unsigned chrm_red_y;   \/* Red y times 100000 *\/$/;"	m	struct:LodePNGInfo
+chrm_white_x	lib/lodepng.h	/^  unsigned chrm_white_x; \/* White Point x times 100000 *\/$/;"	m	struct:LodePNGInfo
+chrm_white_y	lib/lodepng.h	/^  unsigned chrm_white_y; \/* White Point y times 100000 *\/$/;"	m	struct:LodePNGInfo
 circleBrush	painter.cpp	/^void Painter::circleBrush()$/;"	f	class:Painter
 cleanUp	commander.cpp	/^void Commander::cleanUp()$/;"	f	class:Commander
 clearColors	commander.hpp	/^	std::vector<vk::ClearColorValue> clearColors;$/;"	m	class:Commander
+code	lib/stb_image.h	/^   stbi__uint16 code[256];$/;"	m	struct:__anon7
+code_bits	lib/stb_image.h	/^   int            code_bits;   \/\/ number of valid bits$/;"	m	struct:__anon8
+code_buffer	lib/stb_image.h	/^   stbi__uint32   code_buffer; \/\/ jpeg entropy-coded buffer$/;"	m	struct:__anon8
+code_buffer	lib/stb_image.h	/^   stbi__uint32 code_buffer;$/;"	m	struct:__anon12
+codes	lib/stb_image.h	/^   stbi__gif_lzw codes[8192];$/;"	m	struct:__anon19
+coeff	lib/stb_image.h	/^      short   *coeff;   \/\/ progressive only$/;"	m	struct:__anon8::__anon9
+coeff_h	lib/stb_image.h	/^      int      coeff_w, coeff_h; \/\/ number of 8x8 coefficient blocks$/;"	m	struct:__anon8::__anon9
+coeff_w	lib/stb_image.h	/^      int      coeff_w, coeff_h; \/\/ number of 8x8 coefficient blocks$/;"	m	struct:__anon8::__anon9
+color	lib/lodepng.h	/^  LodePNGColorMode color;     \/*color type and bits, palette and transparency of the PNG file*\/$/;"	m	struct:LodePNGInfo
 color	occupant.hpp	/^	glm::vec3 color = {0.3, 0.7, 0.8};$/;"	m	struct:Point
-colorAttachmentState	pipe.hpp	/^	vk::PipelineColorBlendAttachmentState colorAttachmentState; \/\/could be many$/;"	m	class:Pipe
 colorAttachmentState	renderer.hpp	/^	vk::PipelineColorBlendAttachmentState colorAttachmentState; \/\/could be many$/;"	m	class:Renderer
-colorBlending	pipe.hpp	/^	vk::PipelineColorBlendStateCreateInfo colorBlending;$/;"	m	class:Pipe
 colorBlending	renderer.hpp	/^	vk::PipelineColorBlendStateCreateInfo colorBlending;$/;"	m	class:Renderer
 colorFormat	swapchain.hpp	/^	vk::Format colorFormat;$/;"	m	class:Swapchain
 colorSpace	swapchain.hpp	/^	vk::ColorSpaceKHR colorSpace;$/;"	m	class:Swapchain
+color_convert	lib/lodepng.h	/^  unsigned color_convert; \/*whether to convert the PNG to the color type you want. Default: yes*\/$/;"	m	struct:LodePNGDecoderSettings
+color_table	lib/stb_image.h	/^   stbi_uc *color_table;$/;"	m	struct:__anon19
+color_tree_add	lib/lodepng.cpp	/^static void color_tree_add(ColorTree* tree,$/;"	f	file:
+color_tree_cleanup	lib/lodepng.cpp	/^static void color_tree_cleanup(ColorTree* tree) {$/;"	f	file:
+color_tree_get	lib/lodepng.cpp	/^static int color_tree_get(ColorTree* tree, unsigned char r, unsigned char g, unsigned char b, unsigned char a) {$/;"	f	file:
+color_tree_has	lib/lodepng.cpp	/^static int color_tree_has(ColorTree* tree, unsigned char r, unsigned char g, unsigned char b, unsigned char a) {$/;"	f	file:
+color_tree_init	lib/lodepng.cpp	/^static void color_tree_init(ColorTree* tree) {$/;"	f	file:
+colored	lib/lodepng.h	/^  unsigned colored; \/*not grayscale*\/$/;"	m	struct:LodePNGColorStats
+colortype	lib/lodepng.h	/^  LodePNGColorType colortype; \/*color type, see PNG standard or documentation further in this header file*\/$/;"	m	struct:LodePNGColorMode
 commandBuffers	commander.hpp	/^	std::vector<vk::CommandBuffer> commandBuffers;$/;"	m	class:Commander
 commandPool	commander.hpp	/^	vk::CommandPool commandPool;$/;"	m	class:Commander
 commandPoolCreated	commander.hpp	/^	bool commandPoolCreated = false;$/;"	m	class:Commander
 commander	event.hpp	/^	Commander& commander;$/;"	m	class:EventHandler
 commander	painter.hpp	/^	Commander& commander;$/;"	m	class:Painter
+compilation_database_folder	.ycm_extra_conf.py	/^compilation_database_folder = ''$/;"	v
+compress	lib/lodepng.cpp	/^unsigned compress(std::vector<unsigned char>& out, const std::vector<unsigned char>& in,$/;"	f	namespace:lodepng
+compress	lib/lodepng.cpp	/^unsigned compress(std::vector<unsigned char>& out, const unsigned char* in, size_t insize,$/;"	f	namespace:lodepng
+compression_method	lib/lodepng.h	/^  unsigned compression_method;\/*compression method of the original file. Always 0.*\/$/;"	m	struct:LodePNGInfo
 connection	window.hpp	/^	xcb_connection_t* connection;$/;"	m	class:XWindow
 context	description.hpp	/^	Context& context;$/;"	m	class:Description
 context	oldPrograms.hpp	/^Context context;$/;"	v
-context	pipe.hpp	/^	const Context& context;$/;"	m	class:Pipe
 context	renderer.hpp	/^	const Context& context;$/;"	m	class:Renderer
 context	swapchain.hpp	/^	const Context& context;$/;"	m	class:Swapchain
 copyImageToBuffer	commander.cpp	/^void Commander::copyImageToBuffer($/;"	f	class:Commander
-copyXFormsToBuffer	camera.cpp	/^void Camera::copyXFormsToBuffer(int index)$/;"	f	class:Camera
-copyXFormsToBuffers	camera.cpp	/^void Camera::copyXFormsToBuffers()$/;"	f	class:Camera
+countZeros	lib/lodepng.cpp	/^static unsigned countZeros(const unsigned char* data, size_t size, size_t pos) {$/;"	f	file:
 createBuffer	mem.cpp	/^uint32_t MemoryManager::createBuffer(uint32_t size, vk::BufferUsageFlagBits usage)$/;"	f	class:MemoryManager
 createBuffer	mem.cpp	/^void MemoryManager::createBuffer(BufferBlock& block, uint32_t size, vk::BufferUsageFlagBits usage)$/;"	f	class:MemoryManager
+createCamera	description.cpp	/^void Description::createCamera(const uint16_t width, const uint16_t height)$/;"	f	class:Description
 createCommandPool	commander.cpp	/^void Commander::createCommandPool(uint32_t queueFamily)$/;"	f	class:Commander
 createContext	context.cpp	/^void Context::createContext()$/;"	f	class:Context
-createDescriptorPool	description.cpp	/^void Description::createDescriptorPool(uint32_t descriptorCount)$/;"	f	class:Description
-createDescriptorPool	pipe.cpp	/^void Pipe::createDescriptorPool(uint32_t descriptorCount)$/;"	f	class:Pipe
+createDescriptorPool	description.cpp	/^void Description::createDescriptorPool(uint32_t swapImageCount)$/;"	f	class:Description
 createDescriptorSets	description.cpp	/^void Description::createDescriptorSets(uint32_t count)$/;"	f	class:Description
-createDescriptorSets	pipe.cpp	/^void Pipe::createDescriptorSets(uint32_t count)$/;"	f	class:Pipe
 createDevice	context.cpp	/^void Context::createDevice()$/;"	f	class:Context
+createDynamicUBOBlocks	mem.cpp	/^std::vector<BufferBlock>* MemoryManager::createDynamicUBOBlocks($/;"	f	class:MemoryManager
 createFramebuffers	renderer.cpp	/^void Renderer::createFramebuffers()$/;"	f	class:Renderer
 createGeo	sculpter.cpp	/^void Sculpter::createGeo()$/;"	f	class:Sculpter
-createGraphicsPipeline	pipe.cpp	/^void Pipe::createGraphicsPipeline(const vk::RenderPass& renderpass, const uint32_t width, const uint32_t height)$/;"	f	class:Pipe
 createGraphicsPipeline	renderer.cpp	/^void Renderer::createGraphicsPipeline()$/;"	f	class:Renderer
 createImage	mem.cpp	/^uint32_t MemoryManager::createImage($/;"	f	class:MemoryManager
 createImageViews	swapchain.cpp	/^void Swapchain::createImageViews()$/;"	f	class:Swapchain
@@ -161,36 +428,110 @@ createPhysicalDevice	context.cpp	/^void Context::createPhysicalDevice()$/;"	f	cl
 createPoint	occupant.cpp	/^void PointBased::createPoint(float x, float y)$/;"	f	class:PointBased
 createPoint	occupant.cpp	/^void PointBased::createPoint(float x, float y, float z)$/;"	f	class:PointBased
 createRenderPass	renderer.cpp	/^void Renderer::createRenderPass(vk::Format colorFormat)$/;"	f	class:Renderer
-createShaderModule	pipe.cpp	/^vk::ShaderModule Pipe::createShaderModule(const std::vector<char>& code)$/;"	f	class:Pipe
 createShaderModule	renderer.cpp	/^vk::ShaderModule Renderer::createShaderModule(const std::vector<char>& code)$/;"	f	class:Renderer
-createShaderStageInfos	pipe.cpp	/^std::vector<vk::PipelineShaderStageCreateInfo> createShaderStageInfos($/;"	f
 createShaderStageInfos	renderer.cpp	/^std::vector<vk::PipelineShaderStageCreateInfo> createShaderStageInfos($/;"	f
 createSurface	swapchain.cpp	/^void Swapchain::createSurface()$/;"	f	class:Swapchain
 createSwapchain	swapchain.cpp	/^void Swapchain::createSwapchain()$/;"	f	class:Swapchain
 createSyncObjects	commander.cpp	/^void Commander::createSyncObjects()$/;"	f	class:Commander
-createTriangle	description.cpp	/^void Description::createTriangle()$/;"	f	class:Description
+createTriangle	description.cpp	/^Triangle* Description::createTriangle()$/;"	f	class:Description
+createTriangle	description.cpp	/^void Description::createTriangle(Point p0, Point p1, Point p2)$/;"	f	class:Description
 createTriangle	sculpter.cpp	/^void Sculpter::createTriangle()$/;"	f	class:Sculpter
+createUBOBlocks	mem.cpp	/^std::vector<BufferBlock>* MemoryManager::createUBOBlocks($/;"	f	class:MemoryManager
 createUniformBuffers	mem.cpp	/^void MemoryManager::createUniformBuffers(size_t count, vk::DeviceSize bufferSize)$/;"	f	class:MemoryManager
+createVertexBlock	mem.cpp	/^BufferBlock* MemoryManager::createVertexBlock(size_t size)$/;"	f	class:MemoryManager
 createWindow	window.cpp	/^void XWindow::createWindow(const int width, const int height)$/;"	f	class:XWindow
+curCamera	description.hpp	/^	std::shared_ptr<Camera> curCamera;$/;"	m	class:Description
 curGeo	sculpter.hpp	/^	uint32_t curGeo = 0;$/;"	m	class:Sculpter
 curIndex	painter.hpp	/^	int curIndex;$/;"	m	class:Painter
+curSwapIndex	description.hpp	/^	uint8_t curSwapIndex = 0;$/;"	m	class:Description
+cur_x	lib/stb_image.h	/^   int cur_x, cur_y;$/;"	m	struct:__anon19
+cur_y	lib/stb_image.h	/^   int cur_x, cur_y;$/;"	m	struct:__anon19
 currentBrush	painter.hpp	/^	std::vector<Bristle> currentBrush;$/;"	m	class:Painter
-currentFrame	commander.hpp	/^	size_t currentFrame = 0;$/;"	m	class:Commander
+currentFrame	commander.hpp	/^	uint8_t currentFrame = 0;$/;"	m	class:Commander
 currentIndex	commander.hpp	/^	uint32_t currentIndex = 0;$/;"	m	class:Commander
+custom_context	lib/lodepng.h	/^  const void* custom_context; \/*optional custom settings for custom functions*\/$/;"	m	struct:LodePNGCompressSettings
+custom_context	lib/lodepng.h	/^  const void* custom_context; \/*optional custom settings for custom functions*\/$/;"	m	struct:LodePNGDecompressSettings
+custom_deflate	lib/lodepng.h	/^  unsigned (*custom_deflate)(unsigned char**, size_t*,$/;"	m	struct:LodePNGCompressSettings
+custom_inflate	lib/lodepng.h	/^  unsigned (*custom_inflate)(unsigned char**, size_t*,$/;"	m	struct:LodePNGDecompressSettings
+custom_zlib	lib/lodepng.h	/^  unsigned (*custom_zlib)(unsigned char**, size_t*,$/;"	m	struct:LodePNGCompressSettings
+custom_zlib	lib/lodepng.h	/^  unsigned (*custom_zlib)(unsigned char**, size_t*,$/;"	m	struct:LodePNGDecompressSettings
+data	lib/lodepng.cpp	/^  const unsigned char* data;$/;"	m	struct:__anon21	file:
+data	lib/lodepng.cpp	/^  ucvector* data;$/;"	m	struct:__anon20	file:
+data	lib/lodepng.cpp	/^  unsigned char* data;$/;"	m	struct:ucvector	file:
+data	lib/lodepng.cpp	/^  unsigned* data;$/;"	m	struct:uivector	file:
+data	lib/stb_image.h	/^      stbi_uc *data;$/;"	m	struct:__anon8::__anon9
+database	.ycm_extra_conf.py	/^  database = None$/;"	v
+database	.ycm_extra_conf.py	/^  database = ycm_core.CompilationDatabase( compilation_database_folder )$/;"	v
+day	lib/lodepng.h	/^  unsigned day;     \/*1-31*\/$/;"	m	struct:LodePNGTime
+dc_pred	lib/stb_image.h	/^      int dc_pred;$/;"	m	struct:__anon8::__anon9
+dct_bfly32o	lib/stb_image.h	2368;"	d
+dct_bfly32o	lib/stb_image.h	2502;"	d
+dct_bfly32o	lib/stb_image.h	2554;"	d
+dct_bfly32o	lib/stb_image.h	2712;"	d
+dct_const	lib/stb_image.h	2340;"	d
+dct_const	lib/stb_image.h	2497;"	d
+dct_interleave16	lib/stb_image.h	2385;"	d
+dct_interleave16	lib/stb_image.h	2504;"	d
+dct_interleave8	lib/stb_image.h	2379;"	d
+dct_interleave8	lib/stb_image.h	2503;"	d
+dct_long_mac	lib/stb_image.h	2535;"	d
+dct_long_mac	lib/stb_image.h	2708;"	d
+dct_long_mul	lib/stb_image.h	2531;"	d
+dct_long_mul	lib/stb_image.h	2707;"	d
+dct_pass	lib/stb_image.h	2390;"	d
+dct_pass	lib/stb_image.h	2505;"	d
+dct_pass	lib/stb_image.h	2562;"	d
+dct_pass	lib/stb_image.h	2713;"	d
+dct_rot	lib/stb_image.h	2344;"	d
+dct_rot	lib/stb_image.h	2498;"	d
+dct_trn16	lib/stb_image.h	2622;"	d
+dct_trn16	lib/stb_image.h	2644;"	d
+dct_trn32	lib/stb_image.h	2623;"	d
+dct_trn32	lib/stb_image.h	2645;"	d
+dct_trn64	lib/stb_image.h	2624;"	d
+dct_trn64	lib/stb_image.h	2646;"	d
+dct_trn8_16	lib/stb_image.h	2668;"	d
+dct_trn8_16	lib/stb_image.h	2703;"	d
+dct_trn8_32	lib/stb_image.h	2669;"	d
+dct_trn8_32	lib/stb_image.h	2704;"	d
+dct_trn8_8	lib/stb_image.h	2667;"	d
+dct_trn8_8	lib/stb_image.h	2702;"	d
+dct_wadd	lib/stb_image.h	2358;"	d
+dct_wadd	lib/stb_image.h	2500;"	d
+dct_wadd	lib/stb_image.h	2544;"	d
+dct_wadd	lib/stb_image.h	2710;"	d
+dct_widen	lib/stb_image.h	2353;"	d
+dct_widen	lib/stb_image.h	2499;"	d
+dct_widen	lib/stb_image.h	2539;"	d
+dct_widen	lib/stb_image.h	2709;"	d
+dct_wsub	lib/stb_image.h	2363;"	d
+dct_wsub	lib/stb_image.h	2501;"	d
+dct_wsub	lib/stb_image.h	2549;"	d
+dct_wsub	lib/stb_image.h	2711;"	d
 debugCallback	context.hpp	/^	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback($/;"	f	class:Context
+decode	lib/lodepng.cpp	/^unsigned decode(std::vector<unsigned char>& out, unsigned& w, unsigned& h, const std::string& filename,$/;"	f	namespace:lodepng
+decode	lib/lodepng.cpp	/^unsigned decode(std::vector<unsigned char>& out, unsigned& w, unsigned& h, const unsigned char* in,$/;"	f	namespace:lodepng
+decode	lib/lodepng.cpp	/^unsigned decode(std::vector<unsigned char>& out, unsigned& w, unsigned& h,$/;"	f	namespace:lodepng
+decodeGeneric	lib/lodepng.cpp	/^static void decodeGeneric(unsigned char** out, unsigned* w, unsigned* h,$/;"	f	file:
+decoder	lib/lodepng.h	/^  LodePNGDecoderSettings decoder; \/*the decoding settings*\/$/;"	m	struct:LodePNGState
+decompress	lib/lodepng.cpp	/^unsigned decompress(std::vector<unsigned char>& out, const std::vector<unsigned char>& in,$/;"	f	namespace:lodepng
+decompress	lib/lodepng.cpp	/^unsigned decompress(std::vector<unsigned char>& out, const unsigned char* in, size_t insize,$/;"	f	namespace:lodepng
 defaultBrushSize	painter.hpp	/^	float defaultBrushSize;$/;"	m	class:Painter
+deflate	lib/lodepng.cpp	/^static unsigned deflate(unsigned char** out, size_t* outsize,$/;"	f	file:
+deflateDynamic	lib/lodepng.cpp	/^static unsigned deflateDynamic(LodePNGBitWriter* writer, Hash* hash,$/;"	f	file:
+deflateFixed	lib/lodepng.cpp	/^static unsigned deflateFixed(LodePNGBitWriter* writer, Hash* hash,$/;"	f	file:
+deflateNoCompression	lib/lodepng.cpp	/^static unsigned deflateNoCompression(ucvector* out, const unsigned char* data, size_t datasize) {$/;"	f	file:
+delay	lib/stb_image.h	/^   int delay;$/;"	m	struct:__anon19
+delta	lib/stb_image.h	/^   int    delta[17];   \/\/ old 'firstsymbol' - old 'firstcode'$/;"	m	struct:__anon7
+depth	lib/stb_image.h	/^   int depth;$/;"	m	struct:__anon14
 depth	mem.hpp	/^	uint32_t width, height, depth;$/;"	m	struct:ImageBlock
+dequant	lib/stb_image.h	/^   stbi__uint16 dequant[4][64];$/;"	m	struct:__anon8
 descriptionIsBound	renderer.hpp	/^	bool descriptionIsBound;$/;"	m	class:Renderer
-descriptorCount	description.hpp	/^	uint32_t descriptorCount;$/;"	m	class:Description
-descriptorCount	pipe.hpp	/^	uint32_t descriptorCount;$/;"	m	class:Pipe
 descriptorPool	description.hpp	/^	vk::DescriptorPool descriptorPool;$/;"	m	class:Description
-descriptorPool	pipe.hpp	/^	vk::DescriptorPool descriptorPool;$/;"	m	class:Pipe
+descriptorSetCount	description.hpp	/^	uint32_t descriptorSetCount;$/;"	m	class:Description
 descriptorSetLayout	description.hpp	/^	vk::DescriptorSetLayout descriptorSetLayout;$/;"	m	class:Description
-descriptorSetLayout	pipe.hpp	/^	vk::DescriptorSetLayout descriptorSetLayout;$/;"	m	class:Pipe
 descriptorSets	description.hpp	/^	std::vector<vk::DescriptorSet> descriptorSets;$/;"	m	class:Description
-descriptorSets	pipe.hpp	/^	std::vector<vk::DescriptorSet> descriptorSets;$/;"	m	class:Pipe
 descriptorsPrepared	description.hpp	/^	bool descriptorsPrepared = false;$/;"	m	class:Description
-descriptorsPrepared	pipe.hpp	/^	bool descriptorsPrepared = false;$/;"	m	class:Pipe
 destroyBuffers	mem.cpp	/^void MemoryManager::destroyBuffers()$/;"	f	class:MemoryManager
 destroyContext	context.cpp	/^void Context::destroyContext()$/;"	f	class:Context
 destroyFramebuffers	renderer.cpp	/^void Renderer::destroyFramebuffers()$/;"	f	class:Renderer
@@ -202,52 +543,126 @@ deviceExtensionProperties	context.hpp	/^	std::vector<vk::ExtensionProperties> de
 deviceReport	context.cpp	/^void Context::deviceReport()$/;"	f	class:Context
 dispatcher	context.hpp	/^	vk::DispatchLoaderDynamic dispatcher;$/;"	m	class:Context
 display	event.hpp	/^	Display* display = XOpenDisplay(NULL);$/;"	m	class:EventHandler
-dynamicStates	pipe.hpp	/^	vk::DynamicState dynamicStates; \/\/not used right now$/;"	m	class:Pipe
+dynamicAlignment	description.hpp	/^	size_t dynamicAlignment;$/;"	m	class:Description
 dynamicStates	renderer.hpp	/^	vk::DynamicState dynamicStates; \/\/not used right now$/;"	m	class:Renderer
+dynamicUBOBlocks	mem.hpp	/^	std::vector<BufferBlock> dynamicUBOBlocks;$/;"	m	class:MemoryManager
+eflags	lib/stb_image.h	/^   int flags, bgindex, ratio, transparent, eflags;$/;"	m	struct:__anon19
 enableValidation	context.hpp	/^	bool enableValidation = true;$/;"	m	class:Context
+encode	lib/lodepng.cpp	/^unsigned encode(const std::string& filename,$/;"	f	namespace:lodepng
+encode	lib/lodepng.cpp	/^unsigned encode(std::vector<unsigned char>& out, const unsigned char* in, unsigned w, unsigned h,$/;"	f	namespace:lodepng
+encode	lib/lodepng.cpp	/^unsigned encode(std::vector<unsigned char>& out,$/;"	f	namespace:lodepng
+encodeLZ77	lib/lodepng.cpp	/^static unsigned encodeLZ77(uivector* out, Hash* hash,$/;"	f	file:
+encoder	lib/lodepng.h	/^  LodePNGEncoderSettings encoder; \/*the encoding settings*\/$/;"	m	struct:LodePNGState
 end	util.cpp	/^void Timer::end(const std::string& funcName)$/;"	f	class:Timer
 endSingleTimeCommand	commander.cpp	/^void Commander::endSingleTimeCommand(vk::CommandBuffer commandBuffer)$/;"	f	class:Commander
 endTime	util.hpp	/^	std::clock_t startTime, endTime;$/;"	m	class:Timer
+eob_run	lib/stb_image.h	/^   int            eob_run;$/;"	m	struct:__anon8
+eof	lib/stb_image.h	/^   int      (*eof)   (void *user);                       \/\/ returns nonzero if we are at end of file\/data$/;"	m	struct:__anon2
 eraseMode	painter.hpp	/^	bool eraseMode = false;$/;"	m	class:Painter
+error	lib/lodepng.h	/^  unsigned error;$/;"	m	struct:LodePNGState
 event	window.hpp	/^	xcb_generic_event_t* event;$/;"	m	class:XWindow
 eventFunctions	event.cpp	/^std::array<pEventFunc, static_cast<size_t>(EventState::numStates)> eventFunctions = $/;"	v
+expanded	lib/stb_image.h	/^   stbi_uc *idata, *expanded, *out;$/;"	m	struct:__anon14
 extent	swapchain.hpp	/^	vk::Extent2D extent;$/;"	m	class:Swapchain
 extent	viewport.hpp	/^	vk::Extent2D extent;$/;"	m	class:Viewport
+fast	lib/stb_image.h	/^   stbi__uint16 fast[1 << STBI__ZFAST_BITS];$/;"	m	struct:__anon11
+fast	lib/stb_image.h	/^   stbi_uc  fast[1 << FAST_BITS];$/;"	m	struct:__anon7
+fast_ac	lib/stb_image.h	/^   stbi__int16 fast_ac[4][1 << FAST_BITS];$/;"	m	struct:__anon8
 fillBuffer	painter.cpp	/^void Painter::fillBuffer($/;"	f	class:Painter
 fillPixels	painter.cpp	/^void Painter::fillPixels(Pixels& pixels, float r, float g, float b, float a)$/;"	f	class:Painter
+filter	lib/lodepng.cpp	/^static unsigned filter(unsigned char* out, const unsigned char* in, unsigned w, unsigned h,$/;"	f	file:
+filterScanline	lib/lodepng.cpp	/^static void filterScanline(unsigned char* out, const unsigned char* scanline, const unsigned char* prevline,$/;"	f	file:
+filter_method	lib/lodepng.h	/^  unsigned filter_method;     \/*filter method of the original file*\/$/;"	m	struct:LodePNGInfo
+filter_palette_zero	lib/lodepng.h	/^  unsigned filter_palette_zero;$/;"	m	struct:LodePNGEncoderSettings
+filter_strategy	lib/lodepng.h	/^  LodePNGFilterStrategy filter_strategy;$/;"	m	struct:LodePNGEncoderSettings
+first	lib/stb_image.h	/^   stbi_uc first;$/;"	m	struct:__anon18
+first_row_filter	lib/stb_image.h	/^static stbi_uc first_row_filter[5] =$/;"	v
+firstcode	lib/stb_image.h	/^   stbi__uint16 firstcode[16];$/;"	m	struct:__anon11
+firstsymbol	lib/stb_image.h	/^   stbi__uint16 firstsymbol[16];$/;"	m	struct:__anon11
+flags	.ycm_extra_conf.py	/^flags = [$/;"	v
+flags	lib/stb_image.h	/^   int flags, bgindex, ratio, transparent, eflags;$/;"	m	struct:__anon19
+flog2	lib/lodepng.cpp	/^static float flog2(float f) {$/;"	f	file:
+force_palette	lib/lodepng.h	/^  unsigned force_palette;$/;"	m	struct:LodePNGEncoderSettings
 foreground	painter.hpp	/^	Pixels foreground, background;$/;"	m	class:Painter
 framebuffers	renderer.hpp	/^	std::vector<vk::Framebuffer> framebuffers;$/;"	m	class:Renderer
 framebuffers	swapchain.hpp	/^	std::vector<vk::Framebuffer> framebuffers;$/;"	m	class:Swapchain
+freelist	lib/lodepng.cpp	/^  BPMNode** freelist;$/;"	m	struct:BPMLists	file:
 g	painter.hpp	/^	float g = 0.0;$/;"	m	struct:Pixel
 g	painter.hpp	/^	float r,g,b,a;$/;"	m	struct:Layer
+gama_defined	lib/lodepng.h	/^  unsigned gama_defined; \/* Whether a gAMA chunk is present (0 = not present, 1 = present). *\/$/;"	m	struct:LodePNGInfo
+gama_gamma	lib/lodepng.h	/^  unsigned gama_gamma;   \/* Gamma exponent times 100000 *\/$/;"	m	struct:LodePNGInfo
+generateFixedDistanceTree	lib/lodepng.cpp	/^static unsigned generateFixedDistanceTree(HuffmanTree* tree) {$/;"	f	file:
+generateFixedLitLenTree	lib/lodepng.cpp	/^static unsigned generateFixedLitLenTree(HuffmanTree* tree) {$/;"	f	file:
 geometry	description.hpp	/^	std::vector<std::shared_ptr<Geo>> geometry;$/;"	m	class:Description
 geos	sculpter.hpp	/^	std::vector<Geo> geos;$/;"	m	class:Sculpter
 getAttributeDescriptions	description.cpp	/^	Description::getAttributeDescriptions()$/;"	f	class:Description
 getBindingDescription	description.cpp	/^vk::VertexInputBindingDescription Description::getBindingDescription()$/;"	f	class:Description
 getCurGeo	sculpter.cpp	/^Geo& Sculpter::getCurGeo()$/;"	f	class:Sculpter
 getDevice	context.cpp	/^vk::Device Context::getDevice()$/;"	f	class:Context
+getDynamicAlignment	description.cpp	/^uint32_t Description::getDynamicAlignment()$/;"	f	class:Description
 getExtent	viewport.cpp	/^vk::Extent2D Viewport::getExtent() const$/;"	f	class:Viewport
+getGeoCount	description.cpp	/^uint32_t Description::getGeoCount()$/;"	f	class:Description
 getGraphicsQueueFamilyIndex	context.cpp	/^uint32_t Context::getGraphicsQueueFamilyIndex() const$/;"	f	class:Context
+getHash	lib/lodepng.cpp	/^static unsigned getHash(const unsigned char* data, size_t size, size_t pos) {$/;"	f	file:
 getHeight	viewport.cpp	/^uint32_t Viewport::getHeight() const$/;"	f	class:Viewport
 getImageSubresourceLayout	mem.cpp	/^void MemoryManager::getImageSubresourceLayout(vk::Image image)$/;"	f	class:MemoryManager
+getNumColorChannels	lib/lodepng.cpp	/^static unsigned getNumColorChannels(LodePNGColorType colortype) {$/;"	f	file:
+getOccupantCount	description.cpp	/^uint32_t Description::getOccupantCount()$/;"	f	class:Description
 getPDescriptorSetLayout	description.cpp	/^vk::DescriptorSetLayout* Description::getPDescriptorSetLayout()$/;"	f	class:Description
 getPViewportState	viewport.cpp	/^vk::PipelineViewportStateCreateInfo* Viewport::getPViewportState()$/;"	f	class:Viewport
+getPaletteTranslucency	lib/lodepng.cpp	/^static unsigned getPaletteTranslucency(const unsigned char* palette, size_t palettesize) {$/;"	f	file:
+getPixelColorRGBA16	lib/lodepng.cpp	/^static void getPixelColorRGBA16(unsigned short* r, unsigned short* g, unsigned short* b, unsigned short* a,$/;"	f	file:
+getPixelColorRGBA8	lib/lodepng.cpp	/^static void getPixelColorRGBA8(unsigned char* r, unsigned char* g,$/;"	f	file:
+getPixelColorsRGBA8	lib/lodepng.cpp	/^static void getPixelColorsRGBA8(unsigned char* buffer, size_t numpixels,$/;"	f	file:
 getStackSize	painter.cpp	/^size_t Painter::getStackSize()$/;"	f	class:Painter
 getSwapImageCount	viewport.cpp	/^uint8_t Viewport::getSwapImageCount() const$/;"	f	class:Viewport
 getSwapImageView	viewport.cpp	/^vk::ImageView Viewport::getSwapImageView(uint32_t i) const$/;"	f	class:Viewport
 getSwapImageViews	viewport.cpp	/^const std::vector<vk::ImageView>& Viewport::getSwapImageViews() const$/;"	f	class:Viewport
+getSwapchain	viewport.cpp	/^Swapchain& Viewport::getSwapchain()$/;"	f	class:Viewport
 getTransform	occupant.cpp	/^glm::mat4& Occupant::getTransform()$/;"	f	class:Occupant
+getTreeInflateDynamic	lib/lodepng.cpp	/^static unsigned getTreeInflateDynamic(HuffmanTree* tree_ll, HuffmanTree* tree_d,$/;"	f	file:
+getTreeInflateFixed	lib/lodepng.cpp	/^static void getTreeInflateFixed(HuffmanTree* tree_ll, HuffmanTree* tree_d) {$/;"	f	file:
+getValueRequiredBits	lib/lodepng.cpp	/^static unsigned getValueRequiredBits(unsigned char value) {$/;"	f	file:
 getVertexBlock	context.cpp	/^BufferBlock* Context::getVertexBlock(uint32_t size)$/;"	f	class:Context
+getVertexCount	description.cpp	/^uint32_t Description::getVertexCount()$/;"	f	class:Description
+getVkVertexBuffer	description.cpp	/^vk::Buffer& Description::getVkVertexBuffer()$/;"	f	class:Description
 getWidth	viewport.cpp	/^uint32_t Viewport::getWidth() const$/;"	f	class:Viewport
-graphicsPipeline	pipe.hpp	/^	vk::Pipeline graphicsPipeline;$/;"	m	class:Pipe
 graphicsPipeline	renderer.hpp	/^	vk::Pipeline graphicsPipeline;$/;"	m	class:Renderer
+h	lib/stb_image.h	/^      int h,v;$/;"	m	struct:__anon8::__anon9
+h	lib/stb_image.h	/^   int w,h;$/;"	m	struct:__anon19
+h2	lib/stb_image.h	/^      int x,y,w2,h2;$/;"	m	struct:__anon8::__anon9
+ha	lib/stb_image.h	/^      int hd,ha;$/;"	m	struct:__anon8::__anon9
 handleEvent	event.cpp	/^void EventHandler::handleEvent(xcb_generic_event_t* event)$/;"	f	class:EventHandler
 handlePainterEvent	event.cpp	/^void EventHandler::handlePainterEvent(xcb_generic_event_t* event)$/;"	f	class:EventHandler
 handleSculptEvent	event.cpp	/^void EventHandler::handleSculptEvent(xcb_generic_event_t* event)$/;"	f	class:EventHandler
 handleViewerEvent	event.cpp	/^void EventHandler::handleViewerEvent(xcb_generic_event_t* event)$/;"	f	class:EventHandler
+hash_cleanup	lib/lodepng.cpp	/^static void hash_cleanup(Hash* hash) {$/;"	f	file:
+hash_init	lib/lodepng.cpp	/^static unsigned hash_init(Hash* hash, unsigned windowsize) {$/;"	f	file:
+hd	lib/stb_image.h	/^      int hd,ha;$/;"	m	struct:__anon8::__anon9
+head	lib/lodepng.cpp	/^  int* head; \/*hash value to head circular pos - can be outdated if went around window*\/$/;"	m	struct:Hash	file:
+headz	lib/lodepng.cpp	/^  int* headz; \/*similar to head, but for chainz*\/$/;"	m	struct:Hash	file:
 height	mem.hpp	/^	uint32_t width, height, depth;$/;"	m	struct:ImageBlock
 height	renderer.hpp	/^	uint32_t height;$/;"	m	class:Renderer
 height	viewport.hpp	/^	uint32_t width, height;$/;"	m	class:Viewport
+history	lib/stb_image.h	/^   stbi_uc *history; $/;"	m	struct:__anon19
+hour	lib/lodepng.h	/^  unsigned hour;    \/*0-23*\/$/;"	m	struct:LodePNGTime
+hs	lib/stb_image.h	/^   int hs,vs;   \/\/ expansion factor in each axis$/;"	m	struct:__anon10
+hsz	lib/stb_image.h	/^   int bpp, offset, hsz;$/;"	m	struct:__anon16
+huff_ac	lib/stb_image.h	/^   stbi__huffman huff_ac[4];$/;"	m	struct:__anon8
+huff_dc	lib/stb_image.h	/^   stbi__huffman huff_dc[4];$/;"	m	struct:__anon8
+huffmanDecodeSymbol	lib/lodepng.cpp	/^static unsigned huffmanDecodeSymbol(LodePNGBitReader* reader, const HuffmanTree* codetree) {$/;"	f	file:
+iccp_defined	lib/lodepng.h	/^  unsigned iccp_defined;      \/* Whether an iCCP chunk is present (0 = not present, 1 = present). *\/$/;"	m	struct:LodePNGInfo
+iccp_name	lib/lodepng.h	/^  char* iccp_name;            \/* Null terminated string with profile name, 1-79 bytes *\/$/;"	m	struct:LodePNGInfo
+iccp_profile	lib/lodepng.h	/^  unsigned char* iccp_profile;$/;"	m	struct:LodePNGInfo
+iccp_profile_size	lib/lodepng.h	/^  unsigned iccp_profile_size; \/* The size of iccp_profile in bytes *\/$/;"	m	struct:LodePNGInfo
+id	lib/stb_image.h	/^      int id;$/;"	m	struct:__anon8::__anon9
+idata	lib/stb_image.h	/^   stbi_uc *idata, *expanded, *out;$/;"	m	struct:__anon14
+idct_block_kernel	lib/stb_image.h	/^   void (*idct_block_kernel)(stbi_uc *out, int out_stride, short data[64]);$/;"	m	struct:__anon8
+ignore_adler32	lib/lodepng.h	/^  unsigned ignore_adler32; \/*if 1, continue and don't give an error message if the Adler32 checksum is corrupted*\/$/;"	m	struct:LodePNGDecompressSettings
+ignore_crc	lib/lodepng.h	/^  unsigned ignore_crc; \/*ignore CRC checksums*\/$/;"	m	struct:LodePNGDecoderSettings
+ignore_critical	lib/lodepng.h	/^  unsigned ignore_critical; \/*ignore unknown critical chunks*\/$/;"	m	struct:LodePNGDecoderSettings
+ignore_end	lib/lodepng.h	/^  unsigned ignore_end; \/*ignore issues at end of file if possible (missing IEND chunk, too large chunk, ...)*\/$/;"	m	struct:LodePNGDecoderSettings
+ignore_nlen	lib/lodepng.h	/^  unsigned ignore_nlen; \/*ignore complement of len checksum in uncompressed blocks*\/$/;"	m	struct:LodePNGDecompressSettings
 image	mem.hpp	/^	vk::Image image;$/;"	m	struct:ImageBlock
 imageAvailableSemaphores	commander.hpp	/^	std::vector<vk::Semaphore> imageAvailableSemaphores;$/;"	m	class:Commander
 imageCount	swapchain.hpp	/^	int imageCount;$/;"	m	class:Swapchain
@@ -256,50 +671,222 @@ imageSize	painter.hpp	/^	size_t imageSize;$/;"	m	class:Painter
 imageViews	swapchain.hpp	/^	std::vector<vk::ImageView> imageViews;$/;"	m	class:Swapchain
 imageWidth	painter.hpp	/^	int imageWidth, imageHeight;$/;"	m	class:Painter
 images	swapchain.hpp	/^	std::vector<vk::Image> images;$/;"	m	class:Swapchain
+img_buffer	lib/stb_image.h	/^   stbi_uc *img_buffer, *img_buffer_end;$/;"	m	struct:__anon3
+img_buffer_end	lib/stb_image.h	/^   stbi_uc *img_buffer, *img_buffer_end;$/;"	m	struct:__anon3
+img_buffer_original	lib/stb_image.h	/^   stbi_uc *img_buffer_original, *img_buffer_original_end;$/;"	m	struct:__anon3
+img_buffer_original_end	lib/stb_image.h	/^   stbi_uc *img_buffer_original, *img_buffer_original_end;$/;"	m	struct:__anon3
+img_comp	lib/stb_image.h	/^   } img_comp[4];$/;"	m	struct:__anon8	typeref:struct:__anon8::__anon9
+img_h_max	lib/stb_image.h	/^   int img_h_max, img_v_max;$/;"	m	struct:__anon8
+img_mcu_h	lib/stb_image.h	/^   int img_mcu_w, img_mcu_h;$/;"	m	struct:__anon8
+img_mcu_w	lib/stb_image.h	/^   int img_mcu_w, img_mcu_h;$/;"	m	struct:__anon8
+img_mcu_x	lib/stb_image.h	/^   int img_mcu_x, img_mcu_y;$/;"	m	struct:__anon8
+img_mcu_y	lib/stb_image.h	/^   int img_mcu_x, img_mcu_y;$/;"	m	struct:__anon8
+img_n	lib/stb_image.h	/^   int img_n, img_out_n;$/;"	m	struct:__anon3
+img_out_n	lib/stb_image.h	/^   int img_n, img_out_n;$/;"	m	struct:__anon3
+img_v_max	lib/stb_image.h	/^   int img_h_max, img_v_max;$/;"	m	struct:__anon8
+img_x	lib/stb_image.h	/^   stbi__uint32 img_x, img_y;$/;"	m	struct:__anon3
+img_y	lib/stb_image.h	/^   stbi__uint32 img_x, img_y;$/;"	m	struct:__anon3
 inFlightFences	commander.hpp	/^	std::vector<vk::Fence> inFlightFences;$/;"	m	class:Commander
-initColorAttachment	pipe.cpp	/^void Pipe::initColorAttachment()$/;"	f	class:Pipe
+in_use	lib/lodepng.cpp	/^  int in_use;$/;"	m	struct:BPMNode	file:
+index	lib/lodepng.cpp	/^  int index; \/*the payload. Only has a meaningful value if this is in the last level*\/$/;"	m	struct:ColorTree	file:
+index	lib/lodepng.cpp	/^  unsigned index; \/*index of this leaf node (called "count" in the paper)*\/$/;"	m	struct:BPMNode	file:
+inflate	lib/lodepng.cpp	/^static unsigned inflate(unsigned char** out, size_t* outsize,$/;"	f	file:
+inflateHuffmanBlock	lib/lodepng.cpp	/^static unsigned inflateHuffmanBlock(ucvector* out, size_t* pos, LodePNGBitReader* reader,$/;"	f	file:
+inflateNoCompression	lib/lodepng.cpp	/^static unsigned inflateNoCompression(ucvector* out, size_t* pos,$/;"	f	file:
+info_png	lib/lodepng.h	/^  LodePNGInfo info_png; \/*info of the PNG image obtained after decoding*\/$/;"	m	struct:LodePNGState
+info_raw	lib/lodepng.h	/^  LodePNGColorMode info_raw; \/*specifies the format in which you would like to get the raw pixel buffer*\/$/;"	m	struct:LodePNGState
+initAll	renderer.cpp	/^void Renderer::initAll()$/;"	f	class:Renderer
 initColorAttachment	renderer.cpp	/^void Renderer::initColorAttachment()$/;"	f	class:Renderer
-initColorBlending	pipe.cpp	/^void Pipe::initColorBlending()$/;"	f	class:Pipe
 initColorBlending	renderer.cpp	/^void Renderer::initColorBlending()$/;"	f	class:Renderer
 initDescriptorSetLayout	description.cpp	/^void Description::initDescriptorSetLayout()$/;"	f	class:Description
-initDescriptorSetLayout	pipe.cpp	/^void Pipe::initDescriptorSetLayout()$/;"	f	class:Pipe
-initInputAssemblyState	pipe.cpp	/^void Pipe::initInputAssemblyState()$/;"	f	class:Pipe
 initInputAssemblyState	renderer.cpp	/^void Renderer::initInputAssemblyState()$/;"	f	class:Renderer
-initMultisampling	pipe.cpp	/^void Pipe::initMultisampling()$/;"	f	class:Pipe
 initMultisampling	renderer.cpp	/^void Renderer::initMultisampling()$/;"	f	class:Renderer
-initPipelineLayout	pipe.cpp	/^void Pipe::initPipelineLayout()$/;"	f	class:Pipe
 initPipelineLayout	renderer.cpp	/^void Renderer::initPipelineLayout()$/;"	f	class:Renderer
-initRasterizer	pipe.cpp	/^void Pipe::initRasterizer()$/;"	f	class:Pipe
 initRasterizer	renderer.cpp	/^void Renderer::initRasterizer()$/;"	f	class:Renderer
-initVertexInputState	pipe.cpp	/^void Pipe::initVertexInputState()$/;"	f	class:Pipe
 initVertexInputState	renderer.cpp	/^void Renderer::initVertexInputState()$/;"	f	class:Renderer
-initViewportState	pipe.cpp	/^void Pipe::initViewportState()$/;"	f	class:Pipe
-inputAssemblyState	pipe.hpp	/^	vk::PipelineInputAssemblyStateCreateInfo inputAssemblyState;$/;"	m	class:Pipe
 inputAssemblyState	renderer.hpp	/^	vk::PipelineInputAssemblyStateCreateInfo inputAssemblyState;$/;"	m	class:Renderer
 instance	context.hpp	/^	vk::Instance instance;$/;"	m	class:Context
 instanceExtensionProperties	context.hpp	/^	std::vector<vk::ExtensionProperties> instanceExtensionProperties;$/;"	m	class:Context
+interlace_method	lib/lodepng.h	/^  unsigned interlace_method;  \/*interlace method of the original file: 0=none, 1=Adam7*\/$/;"	m	struct:LodePNGInfo
 io	io.hpp	/^namespace io $/;"	n
+io	lib/stb_image.h	/^   stbi_io_callbacks io;$/;"	m	struct:__anon3
+io_user_data	lib/stb_image.h	/^   void *io_user_data;$/;"	m	struct:__anon3
+isGrayICCProfile	lib/lodepng.cpp	/^static unsigned isGrayICCProfile(const unsigned char* profile, unsigned size) {$/;"	f	file:
+isRGBICCProfile	lib/lodepng.cpp	/^static unsigned isRGBICCProfile(const unsigned char* profile, unsigned size) {$/;"	f	file:
+itext_keys	lib/lodepng.h	/^  char** itext_keys; \/*the English keyword of the text chunk (e.g. "Comment")*\/$/;"	m	struct:LodePNGInfo
+itext_langtags	lib/lodepng.h	/^  char** itext_langtags; \/*language tag for this text's language, ISO\/IEC 646 string, e.g. ISO 639 language tag*\/$/;"	m	struct:LodePNGInfo
+itext_num	lib/lodepng.h	/^  size_t itext_num; \/*the amount of international texts in this PNG*\/$/;"	m	struct:LodePNGInfo
+itext_strings	lib/lodepng.h	/^  char** itext_strings; \/*the actual international text - UTF-8 string*\/$/;"	m	struct:LodePNGInfo
+itext_transkeys	lib/lodepng.h	/^  char** itext_transkeys; \/*keyword translated to the international language - UTF-8 string*\/$/;"	m	struct:LodePNGInfo
+jfif	lib/stb_image.h	/^   int            jfif;$/;"	m	struct:__anon8
+key	lib/lodepng.h	/^  unsigned key; \/*image is not opaque and color key is possible instead of full alpha*\/$/;"	m	struct:LodePNGColorStats
+key_b	lib/lodepng.h	/^  unsigned key_b;       \/*blue component of color key*\/$/;"	m	struct:LodePNGColorMode
+key_b	lib/lodepng.h	/^  unsigned short key_b;$/;"	m	struct:LodePNGColorStats
+key_defined	lib/lodepng.h	/^  unsigned key_defined; \/*is a transparent color key given? 0 = false, 1 = true*\/$/;"	m	struct:LodePNGColorMode
+key_g	lib/lodepng.h	/^  unsigned key_g;       \/*green component of color key*\/$/;"	m	struct:LodePNGColorMode
+key_g	lib/lodepng.h	/^  unsigned short key_g;$/;"	m	struct:LodePNGColorStats
+key_r	lib/lodepng.h	/^  unsigned key_r;       \/*red\/grayscale component of color key*\/$/;"	m	struct:LodePNGColorMode
+key_r	lib/lodepng.h	/^  unsigned short key_r; \/*key values, always as 16-bit, in 8-bit case the byte is duplicated, e.g. 65535 means 255*\/$/;"	m	struct:LodePNGColorStats
+lazymatching	lib/lodepng.h	/^  unsigned lazymatching; \/*use lazy matching: better compression but a bit slower. Default: true*\/$/;"	m	struct:LodePNGCompressSettings
+length	lib/stb_image.h	/^   stbi__uint32 length;$/;"	m	struct:__anon13
 length	painter.cpp	/^float length(int x, int y)$/;"	f
+lengths	lib/lodepng.cpp	/^  unsigned* lengths; \/*the lengths of the codes of the 1d-tree*\/$/;"	m	struct:HuffmanTree	file:
+lflags	lib/stb_image.h	/^   int lflags;$/;"	m	struct:__anon19
+line0	lib/stb_image.h	/^   stbi_uc *line0,*line1;$/;"	m	struct:__anon10
+line1	lib/stb_image.h	/^   stbi_uc *line0,*line1;$/;"	m	struct:__anon10
+line_size	lib/stb_image.h	/^   int line_size;$/;"	m	struct:__anon19
+linebuf	lib/stb_image.h	/^      stbi_uc *linebuf;$/;"	m	struct:__anon8::__anon9
+listsize	lib/lodepng.cpp	/^  unsigned listsize;$/;"	m	struct:BPMLists	file:
+load_file	lib/lodepng.cpp	/^unsigned load_file(std::vector<unsigned char>& buffer, const std::string& filename) {$/;"	f	namespace:lodepng
+load_jpeg_image	lib/stb_image.h	/^static stbi_uc *load_jpeg_image(stbi__jpeg *z, int *out_x, int *out_y, int *comp, int req_comp)$/;"	f
+lodepng	lib/lodepng.cpp	/^namespace lodepng {$/;"	n	file:
+lodepng	lib/lodepng.h	/^namespace lodepng {$/;"	n
+lodepng_add32bitInt	lib/lodepng.cpp	/^static void lodepng_add32bitInt(ucvector* buffer, unsigned value) {$/;"	f	file:
+lodepng_add_itext	lib/lodepng.cpp	/^unsigned lodepng_add_itext(LodePNGInfo* info, const char* key, const char* langtag,$/;"	f
+lodepng_add_text	lib/lodepng.cpp	/^unsigned lodepng_add_text(LodePNGInfo* info, const char* key, const char* str) {$/;"	f
+lodepng_addofl	lib/lodepng.cpp	/^static int lodepng_addofl(size_t a, size_t b, size_t* result) {$/;"	f	file:
+lodepng_assign_icc	lib/lodepng.cpp	/^static unsigned lodepng_assign_icc(LodePNGInfo* info, const char* name, const unsigned char* profile, unsigned profile_size) {$/;"	f	file:
+lodepng_buffer_file	lib/lodepng.cpp	/^static unsigned lodepng_buffer_file(unsigned char* out, size_t size, const char* filename) {$/;"	f	file:
+lodepng_can_have_alpha	lib/lodepng.cpp	/^unsigned lodepng_can_have_alpha(const LodePNGColorMode* info) {$/;"	f
+lodepng_chunk_ancillary	lib/lodepng.cpp	/^unsigned char lodepng_chunk_ancillary(const unsigned char* chunk) {$/;"	f
+lodepng_chunk_append	lib/lodepng.cpp	/^unsigned lodepng_chunk_append(unsigned char** out, size_t* outlength, const unsigned char* chunk) {$/;"	f
+lodepng_chunk_check_crc	lib/lodepng.cpp	/^unsigned lodepng_chunk_check_crc(const unsigned char* chunk) {$/;"	f
+lodepng_chunk_create	lib/lodepng.cpp	/^unsigned lodepng_chunk_create(unsigned char** out, size_t* outlength, unsigned length,$/;"	f
+lodepng_chunk_data	lib/lodepng.cpp	/^unsigned char* lodepng_chunk_data(unsigned char* chunk) {$/;"	f
+lodepng_chunk_data_const	lib/lodepng.cpp	/^const unsigned char* lodepng_chunk_data_const(const unsigned char* chunk) {$/;"	f
+lodepng_chunk_find	lib/lodepng.cpp	/^unsigned char* lodepng_chunk_find(unsigned char* chunk, const unsigned char* end, const char type[5]) {$/;"	f
+lodepng_chunk_find_const	lib/lodepng.cpp	/^const unsigned char* lodepng_chunk_find_const(const unsigned char* chunk, const unsigned char* end, const char type[5]) {$/;"	f
+lodepng_chunk_generate_crc	lib/lodepng.cpp	/^void lodepng_chunk_generate_crc(unsigned char* chunk) {$/;"	f
+lodepng_chunk_length	lib/lodepng.cpp	/^unsigned lodepng_chunk_length(const unsigned char* chunk) {$/;"	f
+lodepng_chunk_next	lib/lodepng.cpp	/^unsigned char* lodepng_chunk_next(unsigned char* chunk) {$/;"	f
+lodepng_chunk_next_const	lib/lodepng.cpp	/^const unsigned char* lodepng_chunk_next_const(const unsigned char* chunk) {$/;"	f
+lodepng_chunk_private	lib/lodepng.cpp	/^unsigned char lodepng_chunk_private(const unsigned char* chunk) {$/;"	f
+lodepng_chunk_safetocopy	lib/lodepng.cpp	/^unsigned char lodepng_chunk_safetocopy(const unsigned char* chunk) {$/;"	f
+lodepng_chunk_type	lib/lodepng.cpp	/^void lodepng_chunk_type(char type[5], const unsigned char* chunk) {$/;"	f
+lodepng_chunk_type_equals	lib/lodepng.cpp	/^unsigned char lodepng_chunk_type_equals(const unsigned char* chunk, const char* type) {$/;"	f
+lodepng_clear_icc	lib/lodepng.cpp	/^void lodepng_clear_icc(LodePNGInfo* info) {$/;"	f
+lodepng_clear_itext	lib/lodepng.cpp	/^void lodepng_clear_itext(LodePNGInfo* info) {$/;"	f
+lodepng_clear_text	lib/lodepng.cpp	/^void lodepng_clear_text(LodePNGInfo* info) {$/;"	f
+lodepng_color_mode_cleanup	lib/lodepng.cpp	/^void lodepng_color_mode_cleanup(LodePNGColorMode* info) {$/;"	f
+lodepng_color_mode_copy	lib/lodepng.cpp	/^unsigned lodepng_color_mode_copy(LodePNGColorMode* dest, const LodePNGColorMode* source) {$/;"	f
+lodepng_color_mode_equal	lib/lodepng.cpp	/^static int lodepng_color_mode_equal(const LodePNGColorMode* a, const LodePNGColorMode* b) {$/;"	f	file:
+lodepng_color_mode_init	lib/lodepng.cpp	/^void lodepng_color_mode_init(LodePNGColorMode* info) {$/;"	f
+lodepng_color_mode_make	lib/lodepng.cpp	/^LodePNGColorMode lodepng_color_mode_make(LodePNGColorType colortype, unsigned bitdepth) {$/;"	f
+lodepng_color_stats_add	lib/lodepng.cpp	/^static void lodepng_color_stats_add(LodePNGColorStats* stats,$/;"	f	file:
+lodepng_color_stats_init	lib/lodepng.cpp	/^void lodepng_color_stats_init(LodePNGColorStats* stats) {$/;"	f
+lodepng_compress_settings_init	lib/lodepng.cpp	/^void lodepng_compress_settings_init(LodePNGCompressSettings* settings) {$/;"	f
+lodepng_compute_color_stats	lib/lodepng.cpp	/^void lodepng_compute_color_stats(LodePNGColorStats* stats,$/;"	f
+lodepng_convert	lib/lodepng.cpp	/^unsigned lodepng_convert(unsigned char* out, const unsigned char* in,$/;"	f
+lodepng_convert_rgb	lib/lodepng.cpp	/^unsigned lodepng_convert_rgb($/;"	f
+lodepng_crc32	lib/lodepng.cpp	/^unsigned lodepng_crc32(const unsigned char* data, size_t length) {$/;"	f
+lodepng_crc32_table	lib/lodepng.cpp	/^static unsigned lodepng_crc32_table[256] = {$/;"	v	file:
+lodepng_decode	lib/lodepng.cpp	/^unsigned lodepng_decode(unsigned char** out, unsigned* w, unsigned* h,$/;"	f
+lodepng_decode24	lib/lodepng.cpp	/^unsigned lodepng_decode24(unsigned char** out, unsigned* w, unsigned* h, const unsigned char* in, size_t insize) {$/;"	f
+lodepng_decode24_file	lib/lodepng.cpp	/^unsigned lodepng_decode24_file(unsigned char** out, unsigned* w, unsigned* h, const char* filename) {$/;"	f
+lodepng_decode32	lib/lodepng.cpp	/^unsigned lodepng_decode32(unsigned char** out, unsigned* w, unsigned* h, const unsigned char* in, size_t insize) {$/;"	f
+lodepng_decode32_file	lib/lodepng.cpp	/^unsigned lodepng_decode32_file(unsigned char** out, unsigned* w, unsigned* h, const char* filename) {$/;"	f
+lodepng_decode_file	lib/lodepng.cpp	/^unsigned lodepng_decode_file(unsigned char** out, unsigned* w, unsigned* h, const char* filename,$/;"	f
+lodepng_decode_memory	lib/lodepng.cpp	/^unsigned lodepng_decode_memory(unsigned char** out, unsigned* w, unsigned* h, const unsigned char* in,$/;"	f
+lodepng_decoder_settings_init	lib/lodepng.cpp	/^void lodepng_decoder_settings_init(LodePNGDecoderSettings* settings) {$/;"	f
+lodepng_decompress_settings_init	lib/lodepng.cpp	/^void lodepng_decompress_settings_init(LodePNGDecompressSettings* settings) {$/;"	f
+lodepng_default_compress_settings	lib/lodepng.cpp	/^const LodePNGCompressSettings lodepng_default_compress_settings = {2, 1, DEFAULT_WINDOWSIZE, 3, 128, 1, 0, 0, 0};$/;"	v
+lodepng_default_decompress_settings	lib/lodepng.cpp	/^const LodePNGDecompressSettings lodepng_default_decompress_settings = {0, 0, 0, 0, 0};$/;"	v
+lodepng_deflate	lib/lodepng.cpp	/^unsigned lodepng_deflate(unsigned char** out, size_t* outsize,$/;"	f
+lodepng_deflatev	lib/lodepng.cpp	/^static unsigned lodepng_deflatev(ucvector* out, const unsigned char* in, size_t insize,$/;"	f	file:
+lodepng_encode	lib/lodepng.cpp	/^unsigned lodepng_encode(unsigned char** out, size_t* outsize,$/;"	f
+lodepng_encode24	lib/lodepng.cpp	/^unsigned lodepng_encode24(unsigned char** out, size_t* outsize, const unsigned char* image, unsigned w, unsigned h) {$/;"	f
+lodepng_encode24_file	lib/lodepng.cpp	/^unsigned lodepng_encode24_file(const char* filename, const unsigned char* image, unsigned w, unsigned h) {$/;"	f
+lodepng_encode32	lib/lodepng.cpp	/^unsigned lodepng_encode32(unsigned char** out, size_t* outsize, const unsigned char* image, unsigned w, unsigned h) {$/;"	f
+lodepng_encode32_file	lib/lodepng.cpp	/^unsigned lodepng_encode32_file(const char* filename, const unsigned char* image, unsigned w, unsigned h) {$/;"	f
+lodepng_encode_file	lib/lodepng.cpp	/^unsigned lodepng_encode_file(const char* filename, const unsigned char* image, unsigned w, unsigned h,$/;"	f
+lodepng_encode_memory	lib/lodepng.cpp	/^unsigned lodepng_encode_memory(unsigned char** out, size_t* outsize, const unsigned char* image,$/;"	f
+lodepng_encoder_settings_init	lib/lodepng.cpp	/^void lodepng_encoder_settings_init(LodePNGEncoderSettings* settings) {$/;"	f
+lodepng_error_text	lib/lodepng.cpp	/^const char* lodepng_error_text(unsigned code) {$/;"	f
+lodepng_filesize	lib/lodepng.cpp	/^static long lodepng_filesize(const char* filename) {$/;"	f	file:
+lodepng_free	lib/lodepng.cpp	/^static void lodepng_free(void* ptr) {$/;"	f	file:
+lodepng_get_bpp	lib/lodepng.cpp	/^unsigned lodepng_get_bpp(const LodePNGColorMode* info) {$/;"	f
+lodepng_get_bpp_lct	lib/lodepng.cpp	/^static unsigned lodepng_get_bpp_lct(LodePNGColorType colortype, unsigned bitdepth) {$/;"	f	file:
+lodepng_get_channels	lib/lodepng.cpp	/^unsigned lodepng_get_channels(const LodePNGColorMode* info) {$/;"	f
+lodepng_get_raw_size	lib/lodepng.cpp	/^size_t lodepng_get_raw_size(unsigned w, unsigned h, const LodePNGColorMode* color) {$/;"	f
+lodepng_get_raw_size_idat	lib/lodepng.cpp	/^static size_t lodepng_get_raw_size_idat(unsigned w, unsigned h, const LodePNGColorMode* color) {$/;"	f	file:
+lodepng_get_raw_size_lct	lib/lodepng.cpp	/^size_t lodepng_get_raw_size_lct(unsigned w, unsigned h, LodePNGColorType colortype, unsigned bitdepth) {$/;"	f
+lodepng_has_palette_alpha	lib/lodepng.cpp	/^unsigned lodepng_has_palette_alpha(const LodePNGColorMode* info) {$/;"	f
+lodepng_huffman_code_lengths	lib/lodepng.cpp	/^unsigned lodepng_huffman_code_lengths(unsigned* lengths, const unsigned* frequencies,$/;"	f
+lodepng_inflate	lib/lodepng.cpp	/^unsigned lodepng_inflate(unsigned char** out, size_t* outsize,$/;"	f
+lodepng_inflatev	lib/lodepng.cpp	/^static unsigned lodepng_inflatev(ucvector* out,$/;"	f	file:
+lodepng_info_cleanup	lib/lodepng.cpp	/^void lodepng_info_cleanup(LodePNGInfo* info) {$/;"	f
+lodepng_info_copy	lib/lodepng.cpp	/^unsigned lodepng_info_copy(LodePNGInfo* dest, const LodePNGInfo* source) {$/;"	f
+lodepng_info_init	lib/lodepng.cpp	/^void lodepng_info_init(LodePNGInfo* info) {$/;"	f
+lodepng_inspect	lib/lodepng.cpp	/^unsigned lodepng_inspect(unsigned* w, unsigned* h, LodePNGState* state,$/;"	f
+lodepng_inspect_chunk	lib/lodepng.cpp	/^unsigned lodepng_inspect_chunk(LodePNGState* state, size_t pos,$/;"	f
+lodepng_is_alpha_type	lib/lodepng.cpp	/^unsigned lodepng_is_alpha_type(const LodePNGColorMode* info) {$/;"	f
+lodepng_is_greyscale_type	lib/lodepng.cpp	/^unsigned lodepng_is_greyscale_type(const LodePNGColorMode* info) {$/;"	f
+lodepng_is_palette_type	lib/lodepng.cpp	/^unsigned lodepng_is_palette_type(const LodePNGColorMode* info) {$/;"	f
+lodepng_load_file	lib/lodepng.cpp	/^unsigned lodepng_load_file(unsigned char** out, size_t* outsize, const char* filename) {$/;"	f
+lodepng_malloc	lib/lodepng.cpp	/^static void* lodepng_malloc(size_t size) {$/;"	f	file:
+lodepng_mulofl	lib/lodepng.cpp	/^static int lodepng_mulofl(size_t a, size_t b, size_t* result) {$/;"	f	file:
+lodepng_palette_add	lib/lodepng.cpp	/^unsigned lodepng_palette_add(LodePNGColorMode* info,$/;"	f
+lodepng_palette_clear	lib/lodepng.cpp	/^void lodepng_palette_clear(LodePNGColorMode* info) {$/;"	f
+lodepng_pixel_overflow	lib/lodepng.cpp	/^static int lodepng_pixel_overflow(unsigned w, unsigned h,$/;"	f	file:
+lodepng_read32bitInt	lib/lodepng.cpp	/^unsigned lodepng_read32bitInt(const unsigned char* buffer) {$/;"	f
+lodepng_realloc	lib/lodepng.cpp	/^static void* lodepng_realloc(void* ptr, size_t new_size) {$/;"	f	file:
+lodepng_save_file	lib/lodepng.cpp	/^unsigned lodepng_save_file(const unsigned char* buffer, size_t buffersize, const char* filename) {$/;"	f
+lodepng_set32bitInt	lib/lodepng.cpp	/^static void lodepng_set32bitInt(unsigned char* buffer, unsigned value) {$/;"	f	file:
+lodepng_set_icc	lib/lodepng.cpp	/^unsigned lodepng_set_icc(LodePNGInfo* info, const char* name, const unsigned char* profile, unsigned profile_size) {$/;"	f
+lodepng_state_cleanup	lib/lodepng.cpp	/^void lodepng_state_cleanup(LodePNGState* state) {$/;"	f
+lodepng_state_copy	lib/lodepng.cpp	/^void lodepng_state_copy(LodePNGState* dest, const LodePNGState* source) {$/;"	f
+lodepng_state_init	lib/lodepng.cpp	/^void lodepng_state_init(LodePNGState* state) {$/;"	f
+lodepng_zlib_compress	lib/lodepng.cpp	/^unsigned lodepng_zlib_compress(unsigned char** out, size_t* outsize, const unsigned char* in,$/;"	f
+lodepng_zlib_decompress	lib/lodepng.cpp	/^unsigned lodepng_zlib_decompress(unsigned char** out, size_t* outsize, const unsigned char* in,$/;"	f
+lpal	lib/stb_image.h	/^   stbi_uc lpal[256][4];$/;"	m	struct:__anon19
 mButtonDown	event.hpp	/^	bool mButtonDown = false;$/;"	m	class:EventHandler
 mButtonDown	window.hpp	/^	bool mButtonDown = false;$/;"	m	class:XWindow
-main	main.cpp	/^int main()$/;"	f
+ma	lib/stb_image.h	/^   unsigned int mr,mg,mb,ma, all_a;$/;"	m	struct:__anon16
+main	main.cpp	/^int main(int argc, char *argv[])$/;"	f
+marker	lib/stb_image.h	/^   unsigned char  marker;      \/\/ marker seen while filling entropy buffer$/;"	m	struct:__anon8
 mask	window.hpp	/^	uint32_t mask = 0;$/;"	m	class:XWindow
+max_x	lib/stb_image.h	/^   int max_x, max_y;$/;"	m	struct:__anon19
+max_y	lib/stb_image.h	/^   int max_x, max_y;$/;"	m	struct:__anon19
+maxbitlen	lib/lodepng.cpp	/^  unsigned maxbitlen; \/*maximum number of bits a single code can get*\/$/;"	m	struct:HuffmanTree	file:
+maxcode	lib/stb_image.h	/^   int maxcode[17];$/;"	m	struct:__anon11
+maxcode	lib/stb_image.h	/^   unsigned int maxcode[18];$/;"	m	struct:__anon7
+mb	lib/stb_image.h	/^   unsigned int mr,mg,mb,ma, all_a;$/;"	m	struct:__anon16
+memory	lib/lodepng.cpp	/^  BPMNode* memory;$/;"	m	struct:BPMLists	file:
 memory	mem.hpp	/^	vk::DeviceMemory memory;$/;"	m	struct:BufferBlock
 memory	mem.hpp	/^	vk::DeviceMemory memory;$/;"	m	struct:ImageBlock
+memsize	lib/lodepng.cpp	/^  unsigned memsize;$/;"	m	struct:BPMLists	file:
+mg	lib/stb_image.h	/^   unsigned int mr,mg,mb,ma, all_a;$/;"	m	struct:__anon16
 min	painter.cpp	/^void min(const Pixel& a, const Pixel& b, Pixel& o)$/;"	f
 min	painter.hpp	/^	add, sub, min, over, overPreMul, numModes$/;"	m	class:Blend
+minmatch	lib/lodepng.h	/^  unsigned minmatch; \/*mininum lz77 length. 3 is normally best, 6 can be better for some PNGs. Default: 0*\/$/;"	m	struct:LodePNGCompressSettings
+minute	lib/lodepng.h	/^  unsigned minute;  \/*0-59*\/$/;"	m	struct:LodePNGTime
 mm	event.hpp	/^	MemoryManager& mm;$/;"	m	class:EventHandler
 mm	painter.hpp	/^	MemoryManager& mm;$/;"	m	class:Painter
+model	description.hpp	/^	glm::mat4* model = nullptr;$/;"	m	struct:UboDynamic
+month	lib/lodepng.h	/^  unsigned month;   \/*1-12*\/$/;"	m	struct:LodePNGTime
 mouseX	window.hpp	/^	int16_t mouseX = 0;$/;"	m	class:XWindow
 mouseY	window.hpp	/^	int16_t mouseY = 0;$/;"	m	class:XWindow
-multisampling	pipe.hpp	/^	vk::PipelineMultisampleStateCreateInfo multisampling;$/;"	m	class:Pipe
+mr	lib/stb_image.h	/^   unsigned int mr,mg,mb,ma, all_a;$/;"	m	struct:__anon16
 multisampling	renderer.hpp	/^	vk::PipelineMultisampleStateCreateInfo multisampling;$/;"	m	class:Renderer
+nextfree	lib/lodepng.cpp	/^  unsigned nextfree;$/;"	m	struct:BPMLists	file:
+nicematch	lib/lodepng.h	/^  unsigned nicematch; \/*stop searching if >= this length found. Set to 258 for best compression. Default: 128*\/$/;"	m	struct:LodePNGCompressSettings
+nomore	lib/stb_image.h	/^   int            nomore;      \/\/ flag if we saw a marker so must stop$/;"	m	struct:__anon8
 normCoords	event.cpp	/^float normCoords(int16_t windowCoord, int16_t extent)$/;"	f
-occupantCount	description.hpp	/^	size_t occupantCount;$/;"	m	class:Description
+num_bits	lib/stb_image.h	/^   int num_bits;$/;"	m	struct:__anon12
+num_channels	lib/stb_image.h	/^   int num_channels;$/;"	m	struct:__anon5
+numcodes	lib/lodepng.cpp	/^  unsigned numcodes; \/*number of symbols in the alphabet = number of codes*\/$/;"	m	struct:HuffmanTree	file:
+numcolors	lib/lodepng.h	/^  unsigned numcolors; \/*amount of colors, up to 257. Not valid if bits == 16 or allow_palette is disabled.*\/$/;"	m	struct:LodePNGColorStats
+numfree	lib/lodepng.cpp	/^  unsigned numfree;$/;"	m	struct:BPMLists	file:
+numpixels	lib/lodepng.h	/^  size_t numpixels;$/;"	m	struct:LodePNGColorStats
 occupants	description.hpp	/^	std::vector<std::shared_ptr<Occupant>> occupants;$/;"	m	class:Description
+offset	lib/stb_image.h	/^   int bpp, offset, hsz;$/;"	m	struct:__anon16
 offsetX	painter.hpp	/^	int16_t offsetX;$/;"	m	struct:Bristle
 offsetY	painter.hpp	/^	int16_t offsetY;$/;"	m	struct:Bristle
 open	window.cpp	/^void XWindow::open()$/;"	f	class:XWindow
+operator =	lib/lodepng.cpp	/^State& State::operator=(const State& other) {$/;"	f	class:lodepng::State
+order	lib/stb_image.h	/^   int scan_n, order[4];$/;"	m	struct:__anon8
+out	lib/stb_image.h	/^   stbi_uc *idata, *expanded, *out;$/;"	m	struct:__anon14
+out	lib/stb_image.h	/^   stbi_uc *out;                 \/\/ output buffer (always 4 components)$/;"	m	struct:__anon19
 over	painter.cpp	/^void over(const Pixel& a, const Pixel& b, Pixel& o)$/;"	f
 over	painter.hpp	/^	add, sub, min, over, overPreMul, numModes$/;"	m	class:Blend
 overPixels	painter.cpp	/^void Painter::overPixels(Pixels& pixelsTop, Pixels& pixelsBottom, Pixels& target)$/;"	f	class:Painter
@@ -315,29 +902,43 @@ pHostMemory	mem.hpp	/^	void* pHostMemory;$/;"	m	struct:ImageBlock
 pImageMemory	painter.hpp	/^	void* pImageMemory;$/;"	m	class:Painter
 pMemory	context.hpp	/^	std::unique_ptr<MemoryManager> pMemory;$/;"	m	class:Context
 pViewport	renderer.hpp	/^	Viewport* pViewport; \/\/non-owning pointer$/;"	m	class:Renderer
+paethPredictor	lib/lodepng.cpp	/^static unsigned char paethPredictor(short a, short b, short c) {$/;"	f	file:
 paint	event.hpp	/^	paint, sculpt, viewer, numStates$/;"	m	class:EventState
 paint	painter.cpp	/^void Painter::paint(int16_t x, int16_t y)$/;"	f	class:Painter
 paintLoop	oldPrograms.hpp	/^void paintLoop($/;"	f
 paintTimer	painter.cpp	/^Timer paintTimer;$/;"	v
 painter	event.hpp	/^	Painter& painter;$/;"	m	class:EventHandler
+pal	lib/stb_image.h	/^   stbi_uc  pal[256][4];$/;"	m	struct:__anon19
+palette	lib/lodepng.h	/^  unsigned char palette[1024]; \/*Remembers up to the first 256 RGBA colors, in no particular order, only valid when numcolors is valid*\/$/;"	m	struct:LodePNGColorStats
+palette	lib/lodepng.h	/^  unsigned char* palette; \/*palette in RGBARGBA... order. When allocated, must be either 0, or have size 1024*\/$/;"	m	struct:LodePNGColorMode
+palettesize	lib/lodepng.h	/^  size_t palettesize; \/*palette size in number of colors (amount of bytes is 4 * palettesize)*\/$/;"	m	struct:LodePNGColorMode
+parse	lib/stb_image.h	/^   int parse, step;$/;"	m	struct:__anon19
 performChecks	util.cpp	/^void performChecks(const Swapchain& swapchain)$/;"	f
+phys_defined	lib/lodepng.h	/^  unsigned phys_defined; \/*if 0, there is no pHYs chunk and the values below are undefined, if 1 else there is one*\/$/;"	m	struct:LodePNGInfo
+phys_unit	lib/lodepng.h	/^  unsigned phys_unit; \/*may be 0 (unknown unit) or 1 (metre)*\/$/;"	m	struct:LodePNGInfo
+phys_x	lib/lodepng.h	/^  unsigned phys_x; \/*pixels per unit in x direction*\/$/;"	m	struct:LodePNGInfo
+phys_y	lib/lodepng.h	/^  unsigned phys_y; \/*pixels per unit in y direction*\/$/;"	m	struct:LodePNGInfo
 physicalDevice	context.hpp	/^	vk::PhysicalDevice physicalDevice;$/;"	m	class:Context
 physicalDeviceFeatures	context.hpp	/^	vk::PhysicalDeviceFeatures physicalDeviceFeatures;$/;"	m	class:Context
 physicalDeviceMemoryProperties	context.hpp	/^	vk::PhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;$/;"	m	class:Context
 physicalDeviceProperties	context.hpp	/^	vk::PhysicalDeviceProperties physicalDeviceProperties;$/;"	m	class:Context
 pickQueueFamilyIndex	context.cpp	/^uint32_t Context::pickQueueFamilyIndex(vk::SurfaceKHR surface) const$/;"	f	class:Context
 pipe	event.hpp	/^	Pipe& pipe;$/;"	m	class:EventHandler
-pipelineLayout	pipe.hpp	/^	vk::PipelineLayout pipelineLayout;$/;"	m	class:Pipe
 pipelineLayout	renderer.hpp	/^	vk::PipelineLayout pipelineLayout;$/;"	m	class:Renderer
 pixels	painter.hpp	/^	Pixels pixels;$/;"	m	struct:Layer
 pointBasedOccupants	description.hpp	/^	std::vector<std::shared_ptr<PointBased>> pointBasedOccupants;$/;"	m	class:Description
 points	occupant.hpp	/^	std::vector<Point> points;$/;"	m	class:PointBased
 pollEvents	window.cpp	/^void XWindow::pollEvents()$/;"	f	class:XWindow
 pos	occupant.hpp	/^	glm::vec3 pos;$/;"	m	struct:Point
+postProcessScanlines	lib/lodepng.cpp	/^static unsigned postProcessScanlines(unsigned char* out, unsigned char* in,$/;"	f	file:
+preProcessScanlines	lib/lodepng.cpp	/^static unsigned preProcessScanlines(unsigned char** out, size_t* outsize, const unsigned char* in,$/;"	f	file:
+predefined_filters	lib/lodepng.h	/^  const unsigned char* predefined_filters;$/;"	m	struct:LodePNGEncoderSettings
+prefix	lib/stb_image.h	/^   stbi__int16 prefix;$/;"	m	struct:__anon18
 prepareDescriptorSets	description.cpp	/^void Description::prepareDescriptorSets(uint32_t count)$/;"	f	class:Description
-prepareDescriptors	pipe.cpp	/^void Pipe::prepareDescriptors(uint32_t count)$/;"	f	class:Pipe
 prepareForBufferPaint	painter.cpp	/^void Painter::prepareForBufferPaint(const Viewport& viewport)$/;"	f	class:Painter
+prepareUniformBuffers	description.cpp	/^void Description::prepareUniformBuffers(const uint32_t count)$/;"	f	class:Description
 presentMode	swapchain.hpp	/^	vk::PresentModeKHR presentMode;$/;"	m	class:Swapchain
+print	occupant.hpp	/^	void print()$/;"	f	struct:Point
 printAlphaComposite	util.cpp	/^void printAlphaComposite(const vk::SurfaceCapabilitiesKHR surfCaps)$/;"	f
 printAvailableDevices	context.cpp	/^void Context::printAvailableDevices()$/;"	f	class:Context
 printCurrentExtent	util.cpp	/^void printCurrentExtent(const Swapchain& swapchain)$/;"	f
@@ -350,54 +951,97 @@ printDeviceQueueFamilyInfo	context.cpp	/^void Context::printDeviceQueueFamilyInf
 printFormatsAvailable	util.cpp	/^void printFormatsAvailable(const Swapchain& swapchain)$/;"	f
 printImageCounts	util.cpp	/^void printImageCounts(const Swapchain& swapchain)$/;"	f
 printInstanceExtensionProperties	context.cpp	/^void Context::printInstanceExtensionProperties()$/;"	f	class:Context
+printMaxDynamicUBOs	util.hpp	/^void printMaxDynamicUBOs(vk::Device device)$/;"	f
 printMousePosition	window.cpp	/^void XWindow::printMousePosition()$/;"	f	class:XWindow
 printPoints	occupant.cpp	/^void PointBased::printPoints()$/;"	f	class:PointBased
 printPresentModes	util.cpp	/^void printPresentModes(const Swapchain& swapchain)$/;"	f
 printSurfaceCapabilities	util.cpp	/^void printSurfaceCapabilities(const Swapchain& swapchain)$/;"	f
 program1	programs.hpp	/^void program1()$/;"	f
-program2	programs.hpp	/^void program2()$/;"	f
-proj	camera.hpp	/^	glm::mat4 proj;$/;"	m	struct:ViewTransforms
+program2	programs.hpp	/^void program2(int count)$/;"	f
+progressive	lib/stb_image.h	/^   int            progressive;$/;"	m	struct:__anon8
+projection	camera.hpp	/^	glm::mat4 projection;$/;"	m	class:Camera
+projection	description.hpp	/^	glm::mat4 projection;$/;"	m	struct:UboVS
 queue	commander.hpp	/^	vk::Queue& queue;$/;"	m	class:Commander
 queue	context.hpp	/^	vk::Queue queue;$/;"	m	class:Context
 queueFamilies	context.hpp	/^	std::vector<vk::QueueFamilyProperties> queueFamilies;$/;"	m	class:Context
 r	painter.hpp	/^	float r = 0.0;$/;"	m	struct:Pixel
 r	painter.hpp	/^	float r,g,b,a;$/;"	m	struct:Layer
-rasterizer	pipe.hpp	/^	vk::PipelineRasterizationStateCreateInfo rasterizer;$/;"	m	class:Pipe
 rasterizer	renderer.hpp	/^	vk::PipelineRasterizationStateCreateInfo rasterizer;$/;"	m	class:Renderer
+ratio	lib/stb_image.h	/^   int flags, bgindex, ratio, transparent, eflags;$/;"	m	struct:__anon19
+raw_coeff	lib/stb_image.h	/^      void *raw_data, *raw_coeff;$/;"	m	struct:__anon8::__anon9
+raw_data	lib/stb_image.h	/^      void *raw_data, *raw_coeff;$/;"	m	struct:__anon8::__anon9
+read	lib/stb_image.h	/^   int      (*read)  (void *user,char *data,int size);   \/\/ fill 'data' with 'size' bytes.  return number of bytes actually read$/;"	m	struct:__anon2
+readBitFromReversedStream	lib/lodepng.cpp	/^static unsigned char readBitFromReversedStream(size_t* bitpointer, const unsigned char* bitstream) {$/;"	f	file:
+readBits	lib/lodepng.cpp	/^static unsigned readBits(LodePNGBitReader* reader, size_t nbits) {$/;"	f	file:
+readBitsFromReversedStream	lib/lodepng.cpp	/^static unsigned readBitsFromReversedStream(size_t* bitpointer, const unsigned char* bitstream, size_t nbits) {$/;"	f	file:
+readChunk_PLTE	lib/lodepng.cpp	/^static unsigned readChunk_PLTE(LodePNGColorMode* color, const unsigned char* data, size_t chunkLength) {$/;"	f	file:
+readChunk_bKGD	lib/lodepng.cpp	/^static unsigned readChunk_bKGD(LodePNGInfo* info, const unsigned char* data, size_t chunkLength) {$/;"	f	file:
+readChunk_cHRM	lib/lodepng.cpp	/^static unsigned readChunk_cHRM(LodePNGInfo* info, const unsigned char* data, size_t chunkLength) {$/;"	f	file:
+readChunk_gAMA	lib/lodepng.cpp	/^static unsigned readChunk_gAMA(LodePNGInfo* info, const unsigned char* data, size_t chunkLength) {$/;"	f	file:
+readChunk_iCCP	lib/lodepng.cpp	/^static unsigned readChunk_iCCP(LodePNGInfo* info, const LodePNGDecompressSettings* zlibsettings,$/;"	f	file:
+readChunk_iTXt	lib/lodepng.cpp	/^static unsigned readChunk_iTXt(LodePNGInfo* info, const LodePNGDecompressSettings* zlibsettings,$/;"	f	file:
+readChunk_pHYs	lib/lodepng.cpp	/^static unsigned readChunk_pHYs(LodePNGInfo* info, const unsigned char* data, size_t chunkLength) {$/;"	f	file:
+readChunk_sRGB	lib/lodepng.cpp	/^static unsigned readChunk_sRGB(LodePNGInfo* info, const unsigned char* data, size_t chunkLength) {$/;"	f	file:
+readChunk_tEXt	lib/lodepng.cpp	/^static unsigned readChunk_tEXt(LodePNGInfo* info, const unsigned char* data, size_t chunkLength) {$/;"	f	file:
+readChunk_tIME	lib/lodepng.cpp	/^static unsigned readChunk_tIME(LodePNGInfo* info, const unsigned char* data, size_t chunkLength) {$/;"	f	file:
+readChunk_tRNS	lib/lodepng.cpp	/^static unsigned readChunk_tRNS(LodePNGColorMode* color, const unsigned char* data, size_t chunkLength) {$/;"	f	file:
+readChunk_zTXt	lib/lodepng.cpp	/^static unsigned readChunk_zTXt(LodePNGInfo* info, const LodePNGDecompressSettings* zlibsettings,$/;"	f	file:
 readFile	io.cpp	/^std::vector<char> io::readFile(const std::string& filename)$/;"	f	class:io
+read_from_callbacks	lib/stb_image.h	/^   int read_from_callbacks;$/;"	m	struct:__anon3
+read_text_chunks	lib/lodepng.h	/^  unsigned read_text_chunks; \/*if false but remember_unknown_chunks is true, they're stored in the unknown chunks*\/$/;"	m	struct:LodePNGDecoderSettings
 recordCopyBufferToImages	commander.cpp	/^void Commander::recordCopyBufferToImages($/;"	f	class:Commander
 recordCopyImageToSwapImages	commander.cpp	/^void Commander::recordCopyImageToSwapImages($/;"	f	class:Commander
 recordDrawVert	commander.cpp	/^void Commander::recordDrawVert($/;"	f	class:Commander
+remember_unknown_chunks	lib/lodepng.h	/^  unsigned remember_unknown_chunks;$/;"	m	struct:LodePNGDecoderSettings
+removePaddingBits	lib/lodepng.cpp	/^static void removePaddingBits(unsigned char* out, const unsigned char* in,$/;"	f	file:
+render	renderer.cpp	/^void Renderer::render()$/;"	f	class:Renderer
 renderFinishedSemaphores	commander.hpp	/^	std::vector<vk::Semaphore> renderFinishedSemaphores;$/;"	m	class:Commander
-renderFrame	commander.cpp	/^void Commander::renderFrame(Swapchain& swapchain)$/;"	f	class:Commander
+renderFrame	commander.cpp	/^uint8_t Commander::renderFrame(Swapchain& swapchain)$/;"	f	class:Commander
 renderPass	renderer.hpp	/^	vk::RenderPass renderPass;$/;"	m	class:Renderer
 renderer	event.hpp	/^	Renderer& renderer;$/;"	m	class:EventHandler
 requestUserInput	io.cpp	/^std::string io::requestUserInput()$/;"	f	class:io
+resample	lib/stb_image.h	/^   resample_row_func resample;$/;"	m	struct:__anon10
+resample_row_1	lib/stb_image.h	/^static stbi_uc *resample_row_1(stbi_uc *out, stbi_uc *in_near, stbi_uc *in_far, int w, int hs)$/;"	f
+resample_row_func	lib/stb_image.h	/^typedef stbi_uc *(*resample_row_func)(stbi_uc *out, stbi_uc *in0, stbi_uc *in1,$/;"	t
+resample_row_hv_2_kernel	lib/stb_image.h	/^   stbi_uc *(*resample_row_hv_2_kernel)(stbi_uc *out, stbi_uc *in_near, stbi_uc *in_far, int w, int hs);$/;"	m	struct:__anon8
 resetCommandBuffer	commander.cpp	/^void Commander::resetCommandBuffer(uint32_t index)$/;"	f	class:Commander
 resetCommandBuffers	commander.cpp	/^void Commander::resetCommandBuffers()$/;"	f	class:Commander
 resetCurrentBuffer	commander.cpp	/^void Commander::resetCurrentBuffer()$/;"	f	class:Commander
 resizeCanvas	painter.cpp	/^void Painter::resizeCanvas(const uint32_t width, const uint32_t height)$/;"	f	class:Painter
+restart_interval	lib/stb_image.h	/^   int restart_interval, todo;$/;"	m	struct:__anon8
+rgb	lib/stb_image.h	/^   int            rgb;$/;"	m	struct:__anon8
+rgba16ToPixel	lib/lodepng.cpp	/^static void rgba16ToPixel(unsigned char* out, size_t i,$/;"	f	file:
+rgba8ToPixel	lib/lodepng.cpp	/^static unsigned rgba8ToPixel(unsigned char* out, size_t i,$/;"	f	file:
+rotate	occupant.cpp	/^void Occupant::rotate(float angle, glm::vec3 axis)$/;"	f	class:Occupant
 runPaintProgram	oldPrograms.hpp	/^void runPaintProgram($/;"	f
 runSculpt	oldPrograms.hpp	/^int runSculpt()$/;"	f
+s	lib/stb_image.h	/^   stbi__context *s;$/;"	m	struct:__anon14
+s	lib/stb_image.h	/^   stbi__context *s;$/;"	m	struct:__anon8
 saveSwapImage	io.cpp	/^void io::saveSwapImage($/;"	f	class:io
-scissor	pipe.hpp	/^	vk::Rect2D scissor;$/;"	m	class:Pipe
+save_file	lib/lodepng.cpp	/^unsigned save_file(const std::vector<unsigned char>& buffer, const std::string& filename) {$/;"	f	namespace:lodepng
+scale	occupant.cpp	/^void Occupant::scale(float scale)$/;"	f	class:Occupant
+scan_n	lib/stb_image.h	/^   int scan_n, order[4];$/;"	m	struct:__anon8
 scissor	viewport.hpp	/^	vk::Rect2D scissor;$/;"	m	class:Viewport
 screen	window.hpp	/^	xcb_screen_t* screen;$/;"	m	class:XWindow
 sculpt	event.hpp	/^	paint, sculpt, viewer, numStates$/;"	m	class:EventState
 sculpter	event.hpp	/^	Sculpter& sculpter;$/;"	m	class:EventHandler
 sculpter	oldPrograms.hpp	/^Sculpter sculpter;$/;"	v
+searchCodeIndex	lib/lodepng.cpp	/^static size_t searchCodeIndex(const unsigned* array, size_t array_size, size_t value) {$/;"	f	file:
+second	lib/lodepng.h	/^  unsigned second;  \/*0-60 (to allow for leap seconds)*\/$/;"	m	struct:LodePNGTime
 semaphoresCreated	commander.hpp	/^	bool semaphoresCreated = false;$/;"	m	class:Commander
 sendNotifications	window.cpp	/^void XWindow::sendNotifications() $/;"	f	class:XWindow
 setAlpha	painter.cpp	/^void Painter::setAlpha(float a)$/;"	f	class:Painter
 setBackground	painter.cpp	/^void Painter::setBackground()$/;"	f	class:Painter
+setBitOfReversedStream	lib/lodepng.cpp	/^static void setBitOfReversedStream(size_t* bitpointer, unsigned char* bitstream, unsigned char bit) {$/;"	f	file:
 setBrushSize	painter.cpp	/^void Painter::setBrushSize(float r)$/;"	f	class:Painter
 setClass	window.cpp	/^void XWindow::setClass()$/;"	f	class:XWindow
 setCurrentColor	painter.cpp	/^void Painter::setCurrentColor(float r, float g, float b)$/;"	f	class:Painter
+setCurrentSwapIndex	description.cpp	/^void Description::setCurrentSwapIndex(uint8_t curIndex)$/;"	f	class:Description
 setDeviceExtensions	context.cpp	/^void Context::setDeviceExtensions(vk::DeviceCreateInfo& createInfo)$/;"	f	class:Context
 setEvents	window.cpp	/^void XWindow::setEvents()$/;"	f	class:XWindow
 setForeground	painter.cpp	/^void Painter::setForeground()$/;"	f	class:Painter
 setFormat	swapchain.cpp	/^void Swapchain::setFormat()$/;"	f	class:Swapchain
-setImageCount	swapchain.cpp	/^void Swapchain::setImageCount(int count)$/;"	f	class:Swapchain
+setImageCount	swapchain.cpp	/^void Swapchain::setImageCount(const uint32_t count)$/;"	f	class:Swapchain
 setImages	swapchain.cpp	/^void Swapchain::setImages()$/;"	f	class:Swapchain
 setName	window.cpp	/^void XWindow::setName()$/;"	f	class:XWindow
 setPresentMode	swapchain.cpp	/^void Swapchain::setPresentMode()$/;"	f	class:Swapchain
@@ -408,76 +1052,443 @@ setState	event.cpp	/^void EventHandler::setState(EventState eventState)$/;"	f	cl
 setSurfaceCapabilities	swapchain.cpp	/^void Swapchain::setSurfaceCapabilities()$/;"	f	class:Swapchain
 setSwapExtent	swapchain.cpp	/^void Swapchain::setSwapExtent(int width, int height)$/;"	f	class:Swapchain
 setSwapchainImagesToPresent	commander.cpp	/^void Commander::setSwapchainImagesToPresent(Swapchain& swapchain)$/;"	f	class:Commander
+setTransform	occupant.cpp	/^void Occupant::setTransform(glm::mat4 transform)$/;"	f	class:Occupant
+setup	renderer.cpp	/^void Renderer::setup(Viewport& viewport, Description& description)$/;"	f	class:Renderer
 setupDebugMessenger	context.cpp	/^void Context::setupDebugMessenger()$/;"	f	class:Context
+size	lib/lodepng.cpp	/^  size_t size; \/*size in number of unsigned longs*\/$/;"	m	struct:uivector	file:
+size	lib/lodepng.cpp	/^  size_t size; \/*used size*\/$/;"	m	struct:ucvector	file:
+size	lib/stb_image.h	/^   stbi_uc  size[257];$/;"	m	struct:__anon7
+size	lib/stb_image.h	/^   stbi_uc  size[288];$/;"	m	struct:__anon11
+size	lib/stb_image.h	/^   stbi_uc size,type,channel;$/;"	m	struct:__anon17
 size	mem.hpp	/^	unsigned long size;$/;"	m	struct:BufferBlock
 size	window.hpp	/^	std::vector<int> size;$/;"	m	class:XWindow
+skip	lib/stb_image.h	/^   void     (*skip)  (void *user,int n);                 \/\/ skip the next 'n' bytes, or 'unget' the last -n bytes if negative$/;"	m	struct:__anon2
+spec_end	lib/stb_image.h	/^   int            spec_end;$/;"	m	struct:__anon8
+spec_start	lib/stb_image.h	/^   int            spec_start;$/;"	m	struct:__anon8
+srgb_defined	lib/lodepng.h	/^  unsigned srgb_defined; \/* Whether an sRGB chunk is present (0 = not present, 1 = present). *\/$/;"	m	struct:LodePNGInfo
+srgb_intent	lib/lodepng.h	/^  unsigned srgb_intent;  \/* Rendering intent: 0=perceptual, 1=rel. colorimetric, 2=saturation, 3=abs. colorimetric *\/$/;"	m	struct:LodePNGInfo
 stack	painter.hpp	/^	Stack stack;$/;"	m	class:Painter
 start	util.cpp	/^void Timer::start()$/;"	f	class:Timer
 startTime	util.hpp	/^	std::clock_t startTime, endTime;$/;"	m	class:Timer
+start_x	lib/stb_image.h	/^   int start_x, start_y;$/;"	m	struct:__anon19
+start_y	lib/stb_image.h	/^   int start_x, start_y;$/;"	m	struct:__anon19
 state	event.hpp	/^	EventState state = EventState::paint;$/;"	m	class:EventHandler
 state	viewport.hpp	/^	vk::PipelineViewportStateCreateInfo state;$/;"	m	class:Viewport
+stbi__DNL	lib/stb_image.h	3150;"	d
+stbi__EOI	lib/stb_image.h	3152;"	d
+stbi__SOF	lib/stb_image.h	3153;"	d
+stbi__SOF_progressive	lib/stb_image.h	3156;"	d
+stbi__SOI	lib/stb_image.h	3151;"	d
+stbi__SOS	lib/stb_image.h	3154;"	d
+stbi__YCbCr_to_RGB_row	lib/stb_image.h	/^static void stbi__YCbCr_to_RGB_row(stbi_uc *out, const stbi_uc *y, const stbi_uc *pcb, const stbi_uc *pcr, int count, int step)$/;"	f
+stbi__YCbCr_to_RGB_simd	lib/stb_image.h	/^static void stbi__YCbCr_to_RGB_simd(stbi_uc *out, stbi_uc const *y, stbi_uc const *pcb, stbi_uc const *pcr, int count, int step)$/;"	f
+stbi__addsizes_valid	lib/stb_image.h	/^static int stbi__addsizes_valid(int a, int b)$/;"	f
+stbi__at_eof	lib/stb_image.h	/^stbi_inline static int stbi__at_eof(stbi__context *s)$/;"	f
+stbi__bit_reverse	lib/stb_image.h	/^stbi_inline static int stbi__bit_reverse(int v, int bits)$/;"	f
+stbi__bitcount	lib/stb_image.h	/^static int stbi__bitcount(unsigned int a)$/;"	f
+stbi__bitreverse16	lib/stb_image.h	/^stbi_inline static int stbi__bitreverse16(int n)$/;"	f
+stbi__blinn_8x8	lib/stb_image.h	/^static stbi_uc stbi__blinn_8x8(stbi_uc x, stbi_uc y)$/;"	f
+stbi__bmask	lib/stb_image.h	/^static const stbi__uint32 stbi__bmask[17]={0,1,3,7,15,31,63,127,255,511,1023,2047,4095,8191,16383,32767,65535};$/;"	v
+stbi__bmp_data	lib/stb_image.h	/^} stbi__bmp_data;$/;"	t	typeref:struct:__anon16
+stbi__bmp_info	lib/stb_image.h	/^static int stbi__bmp_info(stbi__context *s, int *x, int *y, int *comp)$/;"	f
+stbi__bmp_load	lib/stb_image.h	/^static void *stbi__bmp_load(stbi__context *s, int *x, int *y, int *comp, int req_comp, stbi__result_info *ri)$/;"	f
+stbi__bmp_parse_header	lib/stb_image.h	/^static void *stbi__bmp_parse_header(stbi__context *s, stbi__bmp_data *info)$/;"	f
+stbi__bmp_test	lib/stb_image.h	/^static int stbi__bmp_test(stbi__context *s)$/;"	f
+stbi__bmp_test_raw	lib/stb_image.h	/^static int stbi__bmp_test_raw(stbi__context *s)$/;"	f
+stbi__build_fast_ac	lib/stb_image.h	/^static void stbi__build_fast_ac(stbi__int16 *fast_ac, stbi__huffman *h)$/;"	f
+stbi__build_huffman	lib/stb_image.h	/^static int stbi__build_huffman(stbi__huffman *h, int *count)$/;"	f
+stbi__check_png_header	lib/stb_image.h	/^static int stbi__check_png_header(stbi__context *s)$/;"	f
+stbi__clamp	lib/stb_image.h	/^stbi_inline static stbi_uc stbi__clamp(int x)$/;"	f
+stbi__cleanup_jpeg	lib/stb_image.h	/^static void stbi__cleanup_jpeg(stbi__jpeg *j)$/;"	f
+stbi__compute_huffman_codes	lib/stb_image.h	/^static int stbi__compute_huffman_codes(stbi__zbuf *a)$/;"	f
+stbi__compute_transparency	lib/stb_image.h	/^static int stbi__compute_transparency(stbi__png *z, stbi_uc tc[3], int out_n)$/;"	f
+stbi__compute_transparency16	lib/stb_image.h	/^static int stbi__compute_transparency16(stbi__png *z, stbi__uint16 tc[3], int out_n)$/;"	f
+stbi__compute_y	lib/stb_image.h	/^static stbi_uc stbi__compute_y(int r, int g, int b)$/;"	f
+stbi__compute_y_16	lib/stb_image.h	/^static stbi__uint16 stbi__compute_y_16(int r, int g, int b)$/;"	f
+stbi__context	lib/stb_image.h	/^} stbi__context;$/;"	t	typeref:struct:__anon3
+stbi__convert_16_to_8	lib/stb_image.h	/^static stbi_uc *stbi__convert_16_to_8(stbi__uint16 *orig, int w, int h, int channels)$/;"	f
+stbi__convert_8_to_16	lib/stb_image.h	/^static stbi__uint16 *stbi__convert_8_to_16(stbi_uc *orig, int w, int h, int channels)$/;"	f
+stbi__convert_format	lib/stb_image.h	/^static unsigned char *stbi__convert_format(unsigned char *data, int img_n, int req_comp, unsigned int x, unsigned int y)$/;"	f
+stbi__convert_format16	lib/stb_image.h	/^static stbi__uint16 *stbi__convert_format16(stbi__uint16 *data, int img_n, int req_comp, unsigned int x, unsigned int y)$/;"	f
+stbi__copyval	lib/stb_image.h	/^static void stbi__copyval(int channel,stbi_uc *dest,const stbi_uc *src)$/;"	f
+stbi__cpuid3	lib/stb_image.h	/^static int stbi__cpuid3(void)$/;"	f
+stbi__create_png_image	lib/stb_image.h	/^static int stbi__create_png_image(stbi__png *a, stbi_uc *image_data, stbi__uint32 image_data_len, int out_n, int depth, int color, int interlaced)$/;"	f
+stbi__create_png_image_raw	lib/stb_image.h	/^static int stbi__create_png_image_raw(stbi__png *a, stbi_uc *raw, stbi__uint32 raw_len, int out_n, stbi__uint32 x, stbi__uint32 y, int depth, int color)$/;"	f
+stbi__de_iphone	lib/stb_image.h	/^static void stbi__de_iphone(stbi__png *z)$/;"	f
+stbi__de_iphone_flag	lib/stb_image.h	/^static int stbi__de_iphone_flag = 0;$/;"	v
+stbi__decode_jpeg_header	lib/stb_image.h	/^static int stbi__decode_jpeg_header(stbi__jpeg *z, int scan)$/;"	f
+stbi__decode_jpeg_image	lib/stb_image.h	/^static int stbi__decode_jpeg_image(stbi__jpeg *j)$/;"	f
+stbi__depth_scale_table	lib/stb_image.h	/^static const stbi_uc stbi__depth_scale_table[9] = { 0, 0xff, 0x55, 0, 0x11, 0,0,0, 0x01 };$/;"	v
+stbi__div16	lib/stb_image.h	3277;"	d
+stbi__div4	lib/stb_image.h	3228;"	d
+stbi__do_png	lib/stb_image.h	/^static void *stbi__do_png(stbi__png *p, int *x, int *y, int *n, int req_comp, stbi__result_info *ri)$/;"	f
+stbi__do_zlib	lib/stb_image.h	/^static int stbi__do_zlib(stbi__zbuf *a, char *obuf, int olen, int exp, int parse_header)$/;"	f
+stbi__err	lib/stb_image.h	/^static int stbi__err(const char *str)$/;"	f
+stbi__err	lib/stb_image.h	974;"	d
+stbi__err	lib/stb_image.h	976;"	d
+stbi__err	lib/stb_image.h	978;"	d
+stbi__errpf	lib/stb_image.h	981;"	d
+stbi__errpuc	lib/stb_image.h	982;"	d
+stbi__expand_png_palette	lib/stb_image.h	/^static int stbi__expand_png_palette(stbi__png *a, stbi_uc *palette, int len, int pal_img_n)$/;"	f
+stbi__extend_receive	lib/stb_image.h	/^stbi_inline static int stbi__extend_receive(stbi__jpeg *j, int n)$/;"	f
+stbi__f2f	lib/stb_image.h	2229;"	d
+stbi__fill_bits	lib/stb_image.h	/^static void stbi__fill_bits(stbi__zbuf *z)$/;"	f
+stbi__float2fixed	lib/stb_image.h	3433;"	d
+stbi__float2int	lib/stb_image.h	1700;"	d
+stbi__float_postprocess	lib/stb_image.h	/^static void stbi__float_postprocess(float *result, int *x, int *y, int *comp, int req_comp)$/;"	f
+stbi__fopen	lib/stb_image.h	/^static FILE *stbi__fopen(char const *filename, char const *mode)$/;"	f
+stbi__free_jpeg_components	lib/stb_image.h	/^static int stbi__free_jpeg_components(stbi__jpeg *z, int ncomp, int why)$/;"	f
+stbi__fsh	lib/stb_image.h	2230;"	d
+stbi__g_failure_reason	lib/stb_image.h	/^static const char *stbi__g_failure_reason;$/;"	v
+stbi__get16be	lib/stb_image.h	/^static int stbi__get16be(stbi__context *s)$/;"	f
+stbi__get16le	lib/stb_image.h	/^static int stbi__get16le(stbi__context *s)$/;"	f
+stbi__get32be	lib/stb_image.h	/^static stbi__uint32 stbi__get32be(stbi__context *s)$/;"	f
+stbi__get32le	lib/stb_image.h	/^static stbi__uint32 stbi__get32le(stbi__context *s)$/;"	f
+stbi__get8	lib/stb_image.h	/^stbi_inline static stbi_uc stbi__get8(stbi__context *s)$/;"	f
+stbi__get_chunk_header	lib/stb_image.h	/^static stbi__pngchunk stbi__get_chunk_header(stbi__context *s)$/;"	f
+stbi__get_marker	lib/stb_image.h	/^static stbi_uc stbi__get_marker(stbi__jpeg *j)$/;"	f
+stbi__getn	lib/stb_image.h	/^static int stbi__getn(stbi__context *s, stbi_uc *buffer, int n)$/;"	f
+stbi__gif	lib/stb_image.h	/^} stbi__gif;$/;"	t	typeref:struct:__anon19
+stbi__gif_header	lib/stb_image.h	/^static int stbi__gif_header(stbi__context *s, stbi__gif *g, int *comp, int is_info)$/;"	f
+stbi__gif_info	lib/stb_image.h	/^static int stbi__gif_info(stbi__context *s, int *x, int *y, int *comp)$/;"	f
+stbi__gif_info_raw	lib/stb_image.h	/^static int stbi__gif_info_raw(stbi__context *s, int *x, int *y, int *comp)$/;"	f
+stbi__gif_load	lib/stb_image.h	/^static void *stbi__gif_load(stbi__context *s, int *x, int *y, int *comp, int req_comp, stbi__result_info *ri)$/;"	f
+stbi__gif_load_next	lib/stb_image.h	/^static stbi_uc *stbi__gif_load_next(stbi__context *s, stbi__gif *g, int *comp, int req_comp, stbi_uc *two_back)$/;"	f
+stbi__gif_lzw	lib/stb_image.h	/^} stbi__gif_lzw;$/;"	t	typeref:struct:__anon18
+stbi__gif_parse_colortable	lib/stb_image.h	/^static void stbi__gif_parse_colortable(stbi__context *s, stbi_uc pal[256][4], int num_entries, int transp)$/;"	f
+stbi__gif_test	lib/stb_image.h	/^static int stbi__gif_test(stbi__context *s)$/;"	f
+stbi__gif_test_raw	lib/stb_image.h	/^static int stbi__gif_test_raw(stbi__context *s)$/;"	f
+stbi__grow_buffer_unsafe	lib/stb_image.h	/^static void stbi__grow_buffer_unsafe(stbi__jpeg *j)$/;"	f
+stbi__h2l_gamma_i	lib/stb_image.h	/^static float stbi__h2l_gamma_i=1.0f\/2.2f, stbi__h2l_scale_i=1.0f;$/;"	v
+stbi__h2l_scale_i	lib/stb_image.h	/^static float stbi__h2l_gamma_i=1.0f\/2.2f, stbi__h2l_scale_i=1.0f;$/;"	v
+stbi__hdr_convert	lib/stb_image.h	/^static void stbi__hdr_convert(float *output, stbi_uc *input, int req_comp)$/;"	f
+stbi__hdr_gettoken	lib/stb_image.h	/^static char *stbi__hdr_gettoken(stbi__context *z, char *buffer)$/;"	f
+stbi__hdr_info	lib/stb_image.h	/^static int stbi__hdr_info(stbi__context *s, int *x, int *y, int *comp)$/;"	f
+stbi__hdr_load	lib/stb_image.h	/^static float *stbi__hdr_load(stbi__context *s, int *x, int *y, int *comp, int req_comp, stbi__result_info *ri)$/;"	f
+stbi__hdr_test	lib/stb_image.h	/^static int stbi__hdr_test(stbi__context* s)$/;"	f
+stbi__hdr_test_core	lib/stb_image.h	/^static int stbi__hdr_test_core(stbi__context *s, const char *signature)$/;"	f
+stbi__hdr_to_ldr	lib/stb_image.h	/^static stbi_uc *stbi__hdr_to_ldr(float   *data, int x, int y, int comp)$/;"	f
+stbi__high_bit	lib/stb_image.h	/^static int stbi__high_bit(unsigned int z)$/;"	f
+stbi__huffman	lib/stb_image.h	/^} stbi__huffman;$/;"	t	typeref:struct:__anon7
+stbi__idct_block	lib/stb_image.h	/^static void stbi__idct_block(stbi_uc *out, int out_stride, short data[64])$/;"	f
+stbi__idct_simd	lib/stb_image.h	/^static void stbi__idct_simd(stbi_uc *out, int out_stride, short data[64])$/;"	f
+stbi__info_main	lib/stb_image.h	/^static int stbi__info_main(stbi__context *s, int *x, int *y, int *comp)$/;"	f
+stbi__int16	lib/stb_image.h	/^typedef   signed short stbi__int16;$/;"	t
+stbi__int16	lib/stb_image.h	/^typedef int16_t  stbi__int16;$/;"	t
+stbi__int32	lib/stb_image.h	/^typedef   signed int   stbi__int32;$/;"	t
+stbi__int32	lib/stb_image.h	/^typedef int32_t  stbi__int32;$/;"	t
+stbi__is_16_main	lib/stb_image.h	/^static int stbi__is_16_main(stbi__context *s)$/;"	f
+stbi__jbias	lib/stb_image.h	/^static const int stbi__jbias[16] = {0,-1,-3,-7,-15,-31,-63,-127,-255,-511,-1023,-2047,-4095,-8191,-16383,-32767};$/;"	v
+stbi__jpeg	lib/stb_image.h	/^} stbi__jpeg;$/;"	t	typeref:struct:__anon8
+stbi__jpeg_decode_block	lib/stb_image.h	/^static int stbi__jpeg_decode_block(stbi__jpeg *j, short data[64], stbi__huffman *hdc, stbi__huffman *hac, stbi__int16 *fac, int b, stbi__uint16 *dequant)$/;"	f
+stbi__jpeg_decode_block_prog_ac	lib/stb_image.h	/^static int stbi__jpeg_decode_block_prog_ac(stbi__jpeg *j, short data[64], stbi__huffman *hac, stbi__int16 *fac)$/;"	f
+stbi__jpeg_decode_block_prog_dc	lib/stb_image.h	/^static int stbi__jpeg_decode_block_prog_dc(stbi__jpeg *j, short data[64], stbi__huffman *hdc, int b)$/;"	f
+stbi__jpeg_dequantize	lib/stb_image.h	/^static void stbi__jpeg_dequantize(short *data, stbi__uint16 *dequant)$/;"	f
+stbi__jpeg_dezigzag	lib/stb_image.h	/^static const stbi_uc stbi__jpeg_dezigzag[64+15] =$/;"	v
+stbi__jpeg_finish	lib/stb_image.h	/^static void stbi__jpeg_finish(stbi__jpeg *z)$/;"	f
+stbi__jpeg_get_bit	lib/stb_image.h	/^stbi_inline static int stbi__jpeg_get_bit(stbi__jpeg *j)$/;"	f
+stbi__jpeg_get_bits	lib/stb_image.h	/^stbi_inline static int stbi__jpeg_get_bits(stbi__jpeg *j, int n)$/;"	f
+stbi__jpeg_huff_decode	lib/stb_image.h	/^stbi_inline static int stbi__jpeg_huff_decode(stbi__jpeg *j, stbi__huffman *h)$/;"	f
+stbi__jpeg_info	lib/stb_image.h	/^static int stbi__jpeg_info(stbi__context *s, int *x, int *y, int *comp)$/;"	f
+stbi__jpeg_info_raw	lib/stb_image.h	/^static int stbi__jpeg_info_raw(stbi__jpeg *j, int *x, int *y, int *comp)$/;"	f
+stbi__jpeg_load	lib/stb_image.h	/^static void *stbi__jpeg_load(stbi__context *s, int *x, int *y, int *comp, int req_comp, stbi__result_info *ri)$/;"	f
+stbi__jpeg_reset	lib/stb_image.h	/^static void stbi__jpeg_reset(stbi__jpeg *j)$/;"	f
+stbi__jpeg_test	lib/stb_image.h	/^static int stbi__jpeg_test(stbi__context *s)$/;"	f
+stbi__l2h_gamma	lib/stb_image.h	/^static float stbi__l2h_gamma=2.2f, stbi__l2h_scale=1.0f;$/;"	v
+stbi__l2h_scale	lib/stb_image.h	/^static float stbi__l2h_gamma=2.2f, stbi__l2h_scale=1.0f;$/;"	v
+stbi__ldr_to_hdr	lib/stb_image.h	/^static float   *stbi__ldr_to_hdr(stbi_uc *data, int x, int y, int comp)$/;"	f
+stbi__load_and_postprocess_16bit	lib/stb_image.h	/^static stbi__uint16 *stbi__load_and_postprocess_16bit(stbi__context *s, int *x, int *y, int *comp, int req_comp)$/;"	f
+stbi__load_and_postprocess_8bit	lib/stb_image.h	/^static unsigned char *stbi__load_and_postprocess_8bit(stbi__context *s, int *x, int *y, int *comp, int req_comp)$/;"	f
+stbi__load_gif_main	lib/stb_image.h	/^static void *stbi__load_gif_main(stbi__context *s, int **delays, int *x, int *y, int *z, int *comp, int req_comp)$/;"	f
+stbi__load_main	lib/stb_image.h	/^static void *stbi__load_main(stbi__context *s, int *x, int *y, int *comp, int req_comp, stbi__result_info *ri, int bpc)$/;"	f
+stbi__loadf_main	lib/stb_image.h	/^static float *stbi__loadf_main(stbi__context *s, int *x, int *y, int *comp, int req_comp)$/;"	f
+stbi__mad2sizes_valid	lib/stb_image.h	/^static int stbi__mad2sizes_valid(int a, int b, int add)$/;"	f
+stbi__mad3sizes_valid	lib/stb_image.h	/^static int stbi__mad3sizes_valid(int a, int b, int c, int add)$/;"	f
+stbi__mad4sizes_valid	lib/stb_image.h	/^static int stbi__mad4sizes_valid(int a, int b, int c, int d, int add)$/;"	f
+stbi__malloc	lib/stb_image.h	/^static void *stbi__malloc(size_t size)$/;"	f
+stbi__malloc_mad2	lib/stb_image.h	/^static void *stbi__malloc_mad2(int a, int b, int add)$/;"	f
+stbi__malloc_mad3	lib/stb_image.h	/^static void *stbi__malloc_mad3(int a, int b, int c, int add)$/;"	f
+stbi__malloc_mad4	lib/stb_image.h	/^static void *stbi__malloc_mad4(int a, int b, int c, int d, int add)$/;"	f
+stbi__mul2sizes_valid	lib/stb_image.h	/^static int stbi__mul2sizes_valid(int a, int b)$/;"	f
+stbi__out_gif_code	lib/stb_image.h	/^static void stbi__out_gif_code(stbi__gif *g, stbi__uint16 code)$/;"	f
+stbi__paeth	lib/stb_image.h	/^static int stbi__paeth(int a, int b, int c)$/;"	f
+stbi__parse_entropy_coded_data	lib/stb_image.h	/^static int stbi__parse_entropy_coded_data(stbi__jpeg *z)$/;"	f
+stbi__parse_huffman_block	lib/stb_image.h	/^static int stbi__parse_huffman_block(stbi__zbuf *a)$/;"	f
+stbi__parse_png_file	lib/stb_image.h	/^static int stbi__parse_png_file(stbi__png *z, int scan, int req_comp)$/;"	f
+stbi__parse_uncompressed_block	lib/stb_image.h	/^static int stbi__parse_uncompressed_block(stbi__zbuf *a)$/;"	f
+stbi__parse_zlib	lib/stb_image.h	/^static int stbi__parse_zlib(stbi__zbuf *a, int parse_header)$/;"	f
+stbi__parse_zlib_header	lib/stb_image.h	/^static int stbi__parse_zlib_header(stbi__zbuf *a)$/;"	f
+stbi__pic_info	lib/stb_image.h	/^static int stbi__pic_info(stbi__context *s, int *x, int *y, int *comp)$/;"	f
+stbi__pic_is4	lib/stb_image.h	/^static int stbi__pic_is4(stbi__context *s,const char *str)$/;"	f
+stbi__pic_load	lib/stb_image.h	/^static void *stbi__pic_load(stbi__context *s,int *px,int *py,int *comp,int req_comp, stbi__result_info *ri)$/;"	f
+stbi__pic_load_core	lib/stb_image.h	/^static stbi_uc *stbi__pic_load_core(stbi__context *s,int width,int height,int *comp, stbi_uc *result)$/;"	f
+stbi__pic_packet	lib/stb_image.h	/^} stbi__pic_packet;$/;"	t	typeref:struct:__anon17
+stbi__pic_test	lib/stb_image.h	/^static int stbi__pic_test(stbi__context *s)$/;"	f
+stbi__pic_test_core	lib/stb_image.h	/^static int stbi__pic_test_core(stbi__context *s)$/;"	f
+stbi__png	lib/stb_image.h	/^} stbi__png;$/;"	t	typeref:struct:__anon14
+stbi__png_info	lib/stb_image.h	/^static int stbi__png_info(stbi__context *s, int *x, int *y, int *comp)$/;"	f
+stbi__png_info_raw	lib/stb_image.h	/^static int stbi__png_info_raw(stbi__png *p, int *x, int *y, int *comp)$/;"	f
+stbi__png_is16	lib/stb_image.h	/^static int stbi__png_is16(stbi__context *s)$/;"	f
+stbi__png_load	lib/stb_image.h	/^static void *stbi__png_load(stbi__context *s, int *x, int *y, int *comp, int req_comp, stbi__result_info *ri)$/;"	f
+stbi__png_test	lib/stb_image.h	/^static int stbi__png_test(stbi__context *s)$/;"	f
+stbi__pngchunk	lib/stb_image.h	/^} stbi__pngchunk;$/;"	t	typeref:struct:__anon13
+stbi__pnm_getinteger	lib/stb_image.h	/^static int      stbi__pnm_getinteger(stbi__context *s, char *c)$/;"	f
+stbi__pnm_info	lib/stb_image.h	/^static int      stbi__pnm_info(stbi__context *s, int *x, int *y, int *comp)$/;"	f
+stbi__pnm_isdigit	lib/stb_image.h	/^static int      stbi__pnm_isdigit(char c)$/;"	f
+stbi__pnm_isspace	lib/stb_image.h	/^static int      stbi__pnm_isspace(char c)$/;"	f
+stbi__pnm_load	lib/stb_image.h	/^static void *stbi__pnm_load(stbi__context *s, int *x, int *y, int *comp, int req_comp, stbi__result_info *ri)$/;"	f
+stbi__pnm_skip_whitespace	lib/stb_image.h	/^static void     stbi__pnm_skip_whitespace(stbi__context *s, char *c)$/;"	f
+stbi__pnm_test	lib/stb_image.h	/^static int      stbi__pnm_test(stbi__context *s)$/;"	f
+stbi__process_frame_header	lib/stb_image.h	/^static int stbi__process_frame_header(stbi__jpeg *z, int scan)$/;"	f
+stbi__process_gif_raster	lib/stb_image.h	/^static stbi_uc *stbi__process_gif_raster(stbi__context *s, stbi__gif *g)$/;"	f
+stbi__process_marker	lib/stb_image.h	/^static int stbi__process_marker(stbi__jpeg *z, int m)$/;"	f
+stbi__process_scan_header	lib/stb_image.h	/^static int stbi__process_scan_header(stbi__jpeg *z)$/;"	f
+stbi__psd_decode_rle	lib/stb_image.h	/^static int stbi__psd_decode_rle(stbi__context *s, stbi_uc *p, int pixelCount)$/;"	f
+stbi__psd_info	lib/stb_image.h	/^static int stbi__psd_info(stbi__context *s, int *x, int *y, int *comp)$/;"	f
+stbi__psd_is16	lib/stb_image.h	/^static int stbi__psd_is16(stbi__context *s)$/;"	f
+stbi__psd_load	lib/stb_image.h	/^static void *stbi__psd_load(stbi__context *s, int *x, int *y, int *comp, int req_comp, stbi__result_info *ri, int bpc)$/;"	f
+stbi__psd_test	lib/stb_image.h	/^static int stbi__psd_test(stbi__context *s)$/;"	f
+stbi__readval	lib/stb_image.h	/^static stbi_uc *stbi__readval(stbi__context *s, int channel, stbi_uc *dest)$/;"	f
+stbi__refill_buffer	lib/stb_image.h	/^static void stbi__refill_buffer(stbi__context *s)$/;"	f
+stbi__resample	lib/stb_image.h	/^} stbi__resample;$/;"	t	typeref:struct:__anon10
+stbi__resample_row_generic	lib/stb_image.h	/^static stbi_uc *stbi__resample_row_generic(stbi_uc *out, stbi_uc *in_near, stbi_uc *in_far, int w, int hs)$/;"	f
+stbi__resample_row_h_2	lib/stb_image.h	/^static stbi_uc*  stbi__resample_row_h_2(stbi_uc *out, stbi_uc *in_near, stbi_uc *in_far, int w, int hs)$/;"	f
+stbi__resample_row_hv_2	lib/stb_image.h	/^static stbi_uc *stbi__resample_row_hv_2(stbi_uc *out, stbi_uc *in_near, stbi_uc *in_far, int w, int hs)$/;"	f
+stbi__resample_row_hv_2_simd	lib/stb_image.h	/^static stbi_uc *stbi__resample_row_hv_2_simd(stbi_uc *out, stbi_uc *in_near, stbi_uc *in_far, int w, int hs)$/;"	f
+stbi__resample_row_v_2	lib/stb_image.h	/^static stbi_uc* stbi__resample_row_v_2(stbi_uc *out, stbi_uc *in_near, stbi_uc *in_far, int w, int hs)$/;"	f
+stbi__result_info	lib/stb_image.h	/^} stbi__result_info;$/;"	t	typeref:struct:__anon5
+stbi__rewind	lib/stb_image.h	/^static void stbi__rewind(stbi__context *s)$/;"	f
+stbi__setup_jpeg	lib/stb_image.h	/^static void stbi__setup_jpeg(stbi__jpeg *j)$/;"	f
+stbi__shiftsigned	lib/stb_image.h	/^static int stbi__shiftsigned(unsigned int v, int shift, int bits)$/;"	f
+stbi__skip	lib/stb_image.h	/^static void stbi__skip(stbi__context *s, int n)$/;"	f
+stbi__sse2_available	lib/stb_image.h	/^static int stbi__sse2_available(void)$/;"	f
+stbi__start_callbacks	lib/stb_image.h	/^static void stbi__start_callbacks(stbi__context *s, stbi_io_callbacks *c, void *user)$/;"	f
+stbi__start_file	lib/stb_image.h	/^static void stbi__start_file(stbi__context *s, FILE *f)$/;"	f
+stbi__start_mem	lib/stb_image.h	/^static void stbi__start_mem(stbi__context *s, stbi_uc const *buffer, int len)$/;"	f
+stbi__stdio_callbacks	lib/stb_image.h	/^static stbi_io_callbacks stbi__stdio_callbacks =$/;"	v
+stbi__stdio_eof	lib/stb_image.h	/^static int stbi__stdio_eof(void *user)$/;"	f
+stbi__stdio_read	lib/stb_image.h	/^static int stbi__stdio_read(void *user, char *data, int size)$/;"	f
+stbi__stdio_skip	lib/stb_image.h	/^static void stbi__stdio_skip(void *user, int n)$/;"	f
+stbi__tga_get_comp	lib/stb_image.h	/^static int stbi__tga_get_comp(int bits_per_pixel, int is_grey, int* is_rgb16)$/;"	f
+stbi__tga_info	lib/stb_image.h	/^static int stbi__tga_info(stbi__context *s, int *x, int *y, int *comp)$/;"	f
+stbi__tga_load	lib/stb_image.h	/^static void *stbi__tga_load(stbi__context *s, int *x, int *y, int *comp, int req_comp, stbi__result_info *ri)$/;"	f
+stbi__tga_read_rgb16	lib/stb_image.h	/^static void stbi__tga_read_rgb16(stbi__context *s, stbi_uc* out)$/;"	f
+stbi__tga_test	lib/stb_image.h	/^static int stbi__tga_test(stbi__context *s)$/;"	f
+stbi__uint16	lib/stb_image.h	/^typedef uint16_t stbi__uint16;$/;"	t
+stbi__uint16	lib/stb_image.h	/^typedef unsigned short stbi__uint16;$/;"	t
+stbi__uint32	lib/stb_image.h	/^typedef uint32_t stbi__uint32;$/;"	t
+stbi__uint32	lib/stb_image.h	/^typedef unsigned int   stbi__uint32;$/;"	t
+stbi__unpremultiply_on_load	lib/stb_image.h	/^static int stbi__unpremultiply_on_load = 0;$/;"	v
+stbi__vertical_flip	lib/stb_image.h	/^static void stbi__vertical_flip(void *image, int w, int h, int bytes_per_pixel)$/;"	f
+stbi__vertical_flip_slices	lib/stb_image.h	/^static void stbi__vertical_flip_slices(void *image, int w, int h, int z, int bytes_per_pixel)$/;"	f
+stbi__vertically_flip_on_load	lib/stb_image.h	/^static int stbi__vertically_flip_on_load = 0;$/;"	v
+stbi__zbuf	lib/stb_image.h	/^} stbi__zbuf;$/;"	t	typeref:struct:__anon12
+stbi__zbuild_huffman	lib/stb_image.h	/^static int stbi__zbuild_huffman(stbi__zhuffman *z, const stbi_uc *sizelist, int num)$/;"	f
+stbi__zdefault_distance	lib/stb_image.h	/^static const stbi_uc stbi__zdefault_distance[32] =$/;"	v
+stbi__zdefault_length	lib/stb_image.h	/^static const stbi_uc stbi__zdefault_length[288] =$/;"	v
+stbi__zdist_base	lib/stb_image.h	/^static const int stbi__zdist_base[32] = { 1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,$/;"	v
+stbi__zdist_extra	lib/stb_image.h	/^static const int stbi__zdist_extra[32] =$/;"	v
+stbi__zexpand	lib/stb_image.h	/^static int stbi__zexpand(stbi__zbuf *z, char *zout, int n)  \/\/ need to make room for n bytes$/;"	f
+stbi__zget8	lib/stb_image.h	/^stbi_inline static stbi_uc stbi__zget8(stbi__zbuf *z)$/;"	f
+stbi__zhuffman	lib/stb_image.h	/^} stbi__zhuffman;$/;"	t	typeref:struct:__anon11
+stbi__zhuffman_decode	lib/stb_image.h	/^stbi_inline static int stbi__zhuffman_decode(stbi__zbuf *a, stbi__zhuffman *z)$/;"	f
+stbi__zhuffman_decode_slowpath	lib/stb_image.h	/^static int stbi__zhuffman_decode_slowpath(stbi__zbuf *a, stbi__zhuffman *z)$/;"	f
+stbi__zlength_base	lib/stb_image.h	/^static const int stbi__zlength_base[31] = {$/;"	v
+stbi__zlength_extra	lib/stb_image.h	/^static const int stbi__zlength_extra[31]=$/;"	v
+stbi__zreceive	lib/stb_image.h	/^stbi_inline static unsigned int stbi__zreceive(stbi__zbuf *z, int n)$/;"	f
+stbi_convert_iphone_png_to_rgb	lib/stb_image.h	/^STBIDEF void stbi_convert_iphone_png_to_rgb(int flag_true_if_should_convert)$/;"	f
+stbi_convert_wchar_to_utf8	lib/stb_image.h	/^STBIDEF int stbi_convert_wchar_to_utf8(char *buffer, size_t bufferlen, const wchar_t* input)$/;"	f
+stbi_failure_reason	lib/stb_image.h	/^STBIDEF const char *stbi_failure_reason(void)$/;"	f
+stbi_hdr_to_ldr_gamma	lib/stb_image.h	/^STBIDEF void   stbi_hdr_to_ldr_gamma(float gamma) { stbi__h2l_gamma_i = 1\/gamma; }$/;"	f
+stbi_hdr_to_ldr_scale	lib/stb_image.h	/^STBIDEF void   stbi_hdr_to_ldr_scale(float scale) { stbi__h2l_scale_i = 1\/scale; }$/;"	f
+stbi_image_free	lib/stb_image.h	/^STBIDEF void stbi_image_free(void *retval_from_stbi_load)$/;"	f
+stbi_info	lib/stb_image.h	/^STBIDEF int stbi_info(char const *filename, int *x, int *y, int *comp)$/;"	f
+stbi_info_from_callbacks	lib/stb_image.h	/^STBIDEF int stbi_info_from_callbacks(stbi_io_callbacks const *c, void *user, int *x, int *y, int *comp)$/;"	f
+stbi_info_from_file	lib/stb_image.h	/^STBIDEF int stbi_info_from_file(FILE *f, int *x, int *y, int *comp)$/;"	f
+stbi_info_from_memory	lib/stb_image.h	/^STBIDEF int stbi_info_from_memory(stbi_uc const *buffer, int len, int *x, int *y, int *comp)$/;"	f
+stbi_inline	lib/stb_image.h	557;"	d
+stbi_inline	lib/stb_image.h	559;"	d
+stbi_inline	lib/stb_image.h	562;"	d
+stbi_io_callbacks	lib/stb_image.h	/^} stbi_io_callbacks;$/;"	t	typeref:struct:__anon2
+stbi_is_16_bit	lib/stb_image.h	/^STBIDEF int stbi_is_16_bit(char const *filename)$/;"	f
+stbi_is_16_bit_from_callbacks	lib/stb_image.h	/^STBIDEF int stbi_is_16_bit_from_callbacks(stbi_io_callbacks const *c, void *user)$/;"	f
+stbi_is_16_bit_from_file	lib/stb_image.h	/^STBIDEF int stbi_is_16_bit_from_file(FILE *f)$/;"	f
+stbi_is_16_bit_from_memory	lib/stb_image.h	/^STBIDEF int stbi_is_16_bit_from_memory(stbi_uc const *buffer, int len)$/;"	f
+stbi_is_hdr	lib/stb_image.h	/^STBIDEF int      stbi_is_hdr          (char const *filename)$/;"	f
+stbi_is_hdr_from_callbacks	lib/stb_image.h	/^STBIDEF int      stbi_is_hdr_from_callbacks(stbi_io_callbacks const *clbk, void *user)$/;"	f
+stbi_is_hdr_from_file	lib/stb_image.h	/^STBIDEF int stbi_is_hdr_from_file(FILE *f)$/;"	f
+stbi_is_hdr_from_memory	lib/stb_image.h	/^STBIDEF int stbi_is_hdr_from_memory(stbi_uc const *buffer, int len)$/;"	f
+stbi_ldr_to_hdr_gamma	lib/stb_image.h	/^STBIDEF void   stbi_ldr_to_hdr_gamma(float gamma) { stbi__l2h_gamma = gamma; }$/;"	f
+stbi_ldr_to_hdr_scale	lib/stb_image.h	/^STBIDEF void   stbi_ldr_to_hdr_scale(float scale) { stbi__l2h_scale = scale; }$/;"	f
+stbi_load	lib/stb_image.h	/^STBIDEF stbi_uc *stbi_load(char const *filename, int *x, int *y, int *comp, int req_comp)$/;"	f
+stbi_load_16	lib/stb_image.h	/^STBIDEF stbi_us *stbi_load_16(char const *filename, int *x, int *y, int *comp, int req_comp)$/;"	f
+stbi_load_16_from_callbacks	lib/stb_image.h	/^STBIDEF stbi_us *stbi_load_16_from_callbacks(stbi_io_callbacks const *clbk, void *user, int *x, int *y, int *channels_in_file, int desired_channels)$/;"	f
+stbi_load_16_from_memory	lib/stb_image.h	/^STBIDEF stbi_us *stbi_load_16_from_memory(stbi_uc const *buffer, int len, int *x, int *y, int *channels_in_file, int desired_channels)$/;"	f
+stbi_load_from_callbacks	lib/stb_image.h	/^STBIDEF stbi_uc *stbi_load_from_callbacks(stbi_io_callbacks const *clbk, void *user, int *x, int *y, int *comp, int req_comp)$/;"	f
+stbi_load_from_file	lib/stb_image.h	/^STBIDEF stbi_uc *stbi_load_from_file(FILE *f, int *x, int *y, int *comp, int req_comp)$/;"	f
+stbi_load_from_file_16	lib/stb_image.h	/^STBIDEF stbi__uint16 *stbi_load_from_file_16(FILE *f, int *x, int *y, int *comp, int req_comp)$/;"	f
+stbi_load_from_memory	lib/stb_image.h	/^STBIDEF stbi_uc *stbi_load_from_memory(stbi_uc const *buffer, int len, int *x, int *y, int *comp, int req_comp)$/;"	f
+stbi_load_gif_from_memory	lib/stb_image.h	/^STBIDEF stbi_uc *stbi_load_gif_from_memory(stbi_uc const *buffer, int len, int **delays, int *x, int *y, int *z, int *comp, int req_comp)$/;"	f
+stbi_loadf	lib/stb_image.h	/^STBIDEF float *stbi_loadf(char const *filename, int *x, int *y, int *comp, int req_comp)$/;"	f
+stbi_loadf_from_callbacks	lib/stb_image.h	/^STBIDEF float *stbi_loadf_from_callbacks(stbi_io_callbacks const *clbk, void *user, int *x, int *y, int *comp, int req_comp)$/;"	f
+stbi_loadf_from_file	lib/stb_image.h	/^STBIDEF float *stbi_loadf_from_file(FILE *f, int *x, int *y, int *comp, int req_comp)$/;"	f
+stbi_loadf_from_memory	lib/stb_image.h	/^STBIDEF float *stbi_loadf_from_memory(stbi_uc const *buffer, int len, int *x, int *y, int *comp, int req_comp)$/;"	f
+stbi_lrot	lib/stb_image.h	593;"	d
+stbi_lrot	lib/stb_image.h	595;"	d
+stbi_set_flip_vertically_on_load	lib/stb_image.h	/^STBIDEF void stbi_set_flip_vertically_on_load(int flag_true_if_should_flip)$/;"	f
+stbi_set_unpremultiply_on_load	lib/stb_image.h	/^STBIDEF void stbi_set_unpremultiply_on_load(int flag_true_if_should_unpremultiply)$/;"	f
+stbi_uc	lib/stb_image.h	/^typedef unsigned char stbi_uc;$/;"	t
+stbi_us	lib/stb_image.h	/^typedef unsigned short stbi_us;$/;"	t
+stbi_zlib_decode_buffer	lib/stb_image.h	/^STBIDEF int stbi_zlib_decode_buffer(char *obuffer, int olen, char const *ibuffer, int ilen)$/;"	f
+stbi_zlib_decode_malloc	lib/stb_image.h	/^STBIDEF char *stbi_zlib_decode_malloc(char const *buffer, int len, int *outlen)$/;"	f
+stbi_zlib_decode_malloc_guesssize	lib/stb_image.h	/^STBIDEF char *stbi_zlib_decode_malloc_guesssize(const char *buffer, int len, int initial_size, int *outlen)$/;"	f
+stbi_zlib_decode_malloc_guesssize_headerflag	lib/stb_image.h	/^STBIDEF char *stbi_zlib_decode_malloc_guesssize_headerflag(const char *buffer, int len, int initial_size, int *outlen, int parse_header)$/;"	f
+stbi_zlib_decode_noheader_buffer	lib/stb_image.h	/^STBIDEF int stbi_zlib_decode_noheader_buffer(char *obuffer, int olen, const char *ibuffer, int ilen)$/;"	f
+stbi_zlib_decode_noheader_malloc	lib/stb_image.h	/^STBIDEF char *stbi_zlib_decode_noheader_malloc(char const *buffer, int len, int *outlen)$/;"	f
+step	lib/stb_image.h	/^   int parse, step;$/;"	m	struct:__anon19
+string_cleanup	lib/lodepng.cpp	/^static void string_cleanup(char** out) {$/;"	f	file:
 sub	painter.cpp	/^void sub(const Pixel& a, const Pixel& b, Pixel& o)$/;"	f
 sub	painter.hpp	/^	add, sub, min, over, overPreMul, numModes$/;"	m	class:Blend
+succ_high	lib/stb_image.h	/^   int            succ_high;$/;"	m	struct:__anon8
+succ_low	lib/stb_image.h	/^   int            succ_low;$/;"	m	struct:__anon8
+suffix	lib/stb_image.h	/^   stbi_uc suffix;$/;"	m	struct:__anon18
 surfCaps	swapchain.hpp	/^	vk::SurfaceCapabilitiesKHR surfCaps;$/;"	m	class:Swapchain
 surface	swapchain.hpp	/^	vk::SurfaceKHR surface;$/;"	m	class:Swapchain
 swapchain	event.hpp	/^	Swapchain& swapchain;$/;"	m	class:EventHandler
 swapchain	swapchain.hpp	/^	vk::SwapchainKHR swapchain;$/;"	m	class:Swapchain
 swapchain	viewport.hpp	/^	Swapchain swapchain;$/;"	m	class:Viewport
 swapchainCreated	swapchain.hpp	/^	bool swapchainCreated = false;$/;"	m	class:Swapchain
+swapchainImageCount	viewport.hpp	/^	uint32_t swapchainImageCount;$/;"	m	class:Viewport
 switchToLayer	painter.cpp	/^void Painter::switchToLayer(int index)$/;"	f	class:Painter
+tail	lib/lodepng.cpp	/^  struct BPMNode* tail; \/*the next nodes in this chain (null if last)*\/$/;"	m	struct:BPMNode	typeref:struct:BPMNode::BPMNode	file:
+text_compression	lib/lodepng.h	/^  unsigned text_compression;$/;"	m	struct:LodePNGEncoderSettings
+text_keys	lib/lodepng.h	/^  char** text_keys; \/*the keyword of a text chunk (e.g. "Comment")*\/$/;"	m	struct:LodePNGInfo
+text_num	lib/lodepng.h	/^  size_t text_num; \/*the amount of texts in these char** buffers (there may be more texts in itext)*\/$/;"	m	struct:LodePNGInfo
+text_strings	lib/lodepng.h	/^  char** text_strings; \/*the actual text*\/$/;"	m	struct:LodePNGInfo
+time	lib/lodepng.h	/^  LodePNGTime time;$/;"	m	struct:LodePNGInfo
+time_defined	lib/lodepng.h	/^  unsigned time_defined; \/*set to 1 to make the encoder generate a tIME chunk*\/$/;"	m	struct:LodePNGInfo
+todo	lib/stb_image.h	/^   int restart_interval, todo;$/;"	m	struct:__anon8
 toggleErase	painter.cpp	/^void Painter::toggleErase()$/;"	f	class:Painter
+tq	lib/stb_image.h	/^      int tq;$/;"	m	struct:__anon8::__anon9
 transform	occupant.hpp	/^	glm::mat4 transform;$/;"	m	class:Occupant
 transitionImageLayout	commander.cpp	/^void Commander::transitionImageLayout($/;"	f	class:Commander
+translate	occupant.cpp	/^void Occupant::translate(float x, float y, float z)$/;"	f	class:Occupant
+transparent	lib/stb_image.h	/^   int flags, bgindex, ratio, transparent, eflags;$/;"	m	struct:__anon19
+tree1d	lib/lodepng.cpp	/^  unsigned* tree1d;$/;"	m	struct:HuffmanTree	file:
+tree2d	lib/lodepng.cpp	/^  unsigned* tree2d;$/;"	m	struct:HuffmanTree	file:
+triangleFun	programs.hpp	/^void triangleFun(Description& desc, uint32_t count)$/;"	f
 trueFrame	commander.hpp	/^	size_t trueFrame = 0;$/;"	m	class:Commander
-uboBlocks	camera.hpp	/^	std::vector<BufferBlock>* uboBlocks;$/;"	m	class:Camera
+type	lib/stb_image.h	/^   stbi__uint32 type;$/;"	m	struct:__anon13
+type	lib/stb_image.h	/^   stbi_uc size,type,channel;$/;"	m	struct:__anon17
+uboBlocks	description.hpp	/^	std::vector<BufferBlock>* uboBlocks;$/;"	m	class:Description
+uboDynamicBlocks	description.hpp	/^	std::vector<BufferBlock>* uboDynamicBlocks;$/;"	m	class:Description
+uboDynamicData	description.hpp	/^	UboDynamic uboDynamicData;$/;"	m	class:Description
+uboView	description.hpp	/^	UboVS uboView;$/;"	m	class:Description
+ucvector	lib/lodepng.cpp	/^typedef struct ucvector {$/;"	s	file:
+ucvector	lib/lodepng.cpp	/^} ucvector;$/;"	t	typeref:struct:ucvector	file:
+ucvector_cleanup	lib/lodepng.cpp	/^static void ucvector_cleanup(void* p) {$/;"	f	file:
+ucvector_init	lib/lodepng.cpp	/^static void ucvector_init(ucvector* p) {$/;"	f	file:
+ucvector_init_buffer	lib/lodepng.cpp	/^static void ucvector_init_buffer(ucvector* p, unsigned char* buffer, size_t size) {$/;"	f	file:
+ucvector_push_back	lib/lodepng.cpp	/^static unsigned ucvector_push_back(ucvector* p, unsigned char c) {$/;"	f	file:
+ucvector_reserve	lib/lodepng.cpp	/^static unsigned ucvector_reserve(ucvector* p, size_t allocsize) {$/;"	f	file:
+ucvector_resize	lib/lodepng.cpp	/^static unsigned ucvector_resize(ucvector* p, size_t size) {$/;"	f	file:
+uivector	lib/lodepng.cpp	/^typedef struct uivector {$/;"	s	file:
+uivector	lib/lodepng.cpp	/^} uivector;$/;"	t	typeref:struct:uivector	file:
+uivector_cleanup	lib/lodepng.cpp	/^static void uivector_cleanup(void* p) {$/;"	f	file:
+uivector_init	lib/lodepng.cpp	/^static void uivector_init(uivector* p) {$/;"	f	file:
+uivector_push_back	lib/lodepng.cpp	/^static unsigned uivector_push_back(uivector* p, unsigned c) {$/;"	f	file:
+uivector_reserve	lib/lodepng.cpp	/^static unsigned uivector_reserve(uivector* p, size_t allocsize) {$/;"	f	file:
+uivector_resize	lib/lodepng.cpp	/^static unsigned uivector_resize(uivector* p, size_t size) {$/;"	f	file:
+uivector_resizev	lib/lodepng.cpp	/^static unsigned uivector_resizev(uivector* p, size_t size, unsigned value) {$/;"	f	file:
+unfilter	lib/lodepng.cpp	/^static unsigned unfilter(unsigned char* out, const unsigned char* in, unsigned w, unsigned h, unsigned bpp) {$/;"	f	file:
+unfilterScanline	lib/lodepng.cpp	/^static unsigned unfilterScanline(unsigned char* recon, const unsigned char* scanline, const unsigned char* precon,$/;"	f	file:
 uniformBufferBlocks	mem.hpp	/^	std::vector<BufferBlock> uniformBufferBlocks;$/;"	m	class:MemoryManager
+unknown_chunks_data	lib/lodepng.h	/^  unsigned char* unknown_chunks_data[3];$/;"	m	struct:LodePNGInfo
+unknown_chunks_size	lib/lodepng.h	/^  size_t unknown_chunks_size[3]; \/*size in bytes of the unknown chunks, given for protection*\/$/;"	m	struct:LodePNGInfo
 unmapBuffers	mem.cpp	/^void MemoryManager::unmapBuffers()$/;"	f	class:MemoryManager
+update	renderer.cpp	/^void Renderer::update()$/;"	f	class:Renderer
+updateAllCurrentUbos	description.cpp	/^void Description::updateAllCurrentUbos()$/;"	f	class:Description
+updateCommandBuffer	description.cpp	/^void Description::updateCommandBuffer()$/;"	f	class:Description
 updateDescriptorSets	description.cpp	/^void Description::updateDescriptorSets($/;"	f	class:Description
-updateDescriptorSets	pipe.cpp	/^void Pipe::updateDescriptorSets($/;"	f	class:Pipe
-updateModelXForm	camera.cpp	/^void Camera::updateModelXForm(float theta)$/;"	f	class:Camera
+updateDynamicUniformBuffers	description.cpp	/^void Description::updateDynamicUniformBuffers()$/;"	f	class:Description
+updateHashChain	lib/lodepng.cpp	/^static void updateHashChain(Hash* hash, size_t wpos, unsigned hashval, unsigned short numzeros) {$/;"	f	file:
+updateUniformBuffers	description.cpp	/^void Description::updateUniformBuffers()$/;"	f	class:Description
+updateVertexBuffer	description.cpp	/^void Description::updateVertexBuffer()$/;"	f	class:Description
+update_adler32	lib/lodepng.cpp	/^static unsigned update_adler32(unsigned adler, const unsigned char* data, unsigned len) {$/;"	f	file:
+use_lz77	lib/lodepng.h	/^  unsigned use_lz77; \/*whether or not to use LZ77. Should be 1 for proper compression.*\/$/;"	m	struct:LodePNGCompressSettings
+v	lib/stb_image.h	/^      int h,v;$/;"	m	struct:__anon8::__anon9
+val	lib/lodepng.cpp	/^  int* val; \/*circular pos to hash value*\/$/;"	m	struct:Hash	file:
+validate_uint32	lib/stb_image.h	/^typedef unsigned char validate_uint32[sizeof(stbi__uint32)==4 ? 1 : -1];$/;"	t
+value	lib/stb_image.h	/^   stbi__uint16 value[288];$/;"	m	struct:__anon11
+values	lib/stb_image.h	/^   stbi_uc  values[256];$/;"	m	struct:__anon7
 values	window.hpp	/^	uint32_t values[2];$/;"	m	class:XWindow
-vertexBlock	description.hpp	/^	std::shared_ptr<BufferBlock> vertexBlock;$/;"	m	class:Description
-vertexBlock	mem.cpp	/^BufferBlock* MemoryManager::vertexBlock(size_t size)$/;"	f	class:MemoryManager
-vertexInputState	pipe.hpp	/^	vk::PipelineVertexInputStateCreateInfo vertexInputState;$/;"	m	class:Pipe
+vertexBlock	description.hpp	/^	BufferBlock* vertexBlock; \/\/does not have ownership$/;"	m	class:Description
 vertexInputState	renderer.hpp	/^	vk::PipelineVertexInputStateCreateInfo vertexInputState;$/;"	m	class:Renderer
-view	camera.hpp	/^	glm::mat4 view;$/;"	m	struct:ViewTransforms
+vertices	description.hpp	/^	Point* vertices;$/;"	m	class:Description
+view	camera.hpp	/^	glm::mat4 view;$/;"	m	class:Camera
+view	description.hpp	/^	glm::mat4 view;$/;"	m	struct:UboVS
 viewer	event.hpp	/^	paint, sculpt, viewer, numStates$/;"	m	class:EventState
-viewport	pipe.hpp	/^	vk::Viewport viewport;$/;"	m	class:Pipe
 viewport	viewport.hpp	/^	vk::Viewport viewport;$/;"	m	class:Viewport
 viewportIsBound	renderer.hpp	/^	bool viewportIsBound;$/;"	m	class:Renderer
-viewportState	pipe.hpp	/^	vk::PipelineViewportStateCreateInfo viewportState;$/;"	m	class:Pipe
 viewportState	renderer.hpp	/^	vk::PipelineViewportStateCreateInfo viewportState;$/;"	m	class:Renderer
+vs	lib/stb_image.h	/^   int hs,vs;   \/\/ expansion factor in each axis$/;"	m	struct:__anon10
+w	lib/stb_image.h	/^   int w,h;$/;"	m	struct:__anon19
+w2	lib/stb_image.h	/^      int x,y,w2,h2;$/;"	m	struct:__anon8::__anon9
+w_lores	lib/stb_image.h	/^   int w_lores; \/\/ horizontal pixels pre-expansion$/;"	m	struct:__anon10
 waitForEvent	window.cpp	/^xcb_generic_event_t* XWindow::waitForEvent()$/;"	f	class:XWindow
+weight	lib/lodepng.cpp	/^  int weight; \/*the sum of all weights in this chain*\/$/;"	m	struct:BPMNode	file:
 width	mem.hpp	/^	uint32_t width, height, depth;$/;"	m	struct:ImageBlock
 width	renderer.hpp	/^	uint32_t width;$/;"	m	class:Renderer
 width	viewport.hpp	/^	uint32_t width, height;$/;"	m	class:Viewport
 window	swapchain.hpp	/^	const XWindow& window;$/;"	m	class:Swapchain
 window	viewport.hpp	/^	XWindow window;$/;"	m	class:Viewport
 window	window.hpp	/^	xcb_window_t window;$/;"	m	class:XWindow
+windowsize	lib/lodepng.h	/^  unsigned windowsize; \/*must be a power of two <= 32768. higher compresses more but is slower. Default value: 2048.*\/$/;"	m	struct:LodePNGCompressSettings
 wipePixels	painter.cpp	/^void Painter::wipePixels(Pixels& pixels)$/;"	f	class:Painter
 wmDeleteWin	window.hpp	/^	xcb_atom_t wmDeleteWin;$/;"	m	class:XWindow
 wmProtocols	window.hpp	/^	xcb_atom_t wmProtocols;$/;"	m	class:XWindow
-world	camera.hpp	/^	glm::mat4 world;$/;"	m	struct:ViewTransforms
 writeBackgroundToBuffer	painter.cpp	/^void Painter::writeBackgroundToBuffer()$/;"	f	class:Painter
+writeBits	lib/lodepng.cpp	/^static void writeBits(LodePNGBitWriter* writer, unsigned value, size_t nbits) {$/;"	f	file:
+writeBitsReversed	lib/lodepng.cpp	/^static void writeBitsReversed(LodePNGBitWriter* writer, unsigned value, size_t nbits) {$/;"	f	file:
 writeCurrentLayerToBuffer	painter.cpp	/^void Painter::writeCurrentLayerToBuffer()$/;"	f	class:Painter
 writeForegroundToBuffer	painter.cpp	/^void Painter::writeForegroundToBuffer()$/;"	f	class:Painter
+writeLZ77data	lib/lodepng.cpp	/^static void writeLZ77data(LodePNGBitWriter* writer, const uivector* lz77_encoded,$/;"	f	file:
 writePixelToBuffer	painter.cpp	/^void Painter::writePixelToBuffer(const Pixel& pixel, const size_t index)$/;"	f	class:Painter
 writePixelsToBuffer	painter.cpp	/^void Painter::writePixelsToBuffer(Pixels& pixels)$/;"	f	class:Painter
+writeSignature	lib/lodepng.cpp	/^static void writeSignature(ucvector* out) {$/;"	f	file:
 writeToHostImageMemory	painter.cpp	/^void Painter::writeToHostImageMemory(int16_t x, int16_t y)$/;"	f	class:Painter
 writeToLayer	painter.cpp	/^void Painter::writeToLayer(Layer& layer, int16_t x, int16_t y, float a)$/;"	f	class:Painter
-xforms	camera.hpp	/^	ViewTransforms xforms;$/;"	m	class:Camera
+x	lib/stb_image.h	/^      int x,y,w2,h2;$/;"	m	struct:__anon8::__anon9
+y	lib/stb_image.h	/^      int x,y,w2,h2;$/;"	m	struct:__anon8::__anon9
+year	lib/lodepng.h	/^  unsigned year;    \/*2 bytes used (0-65535)*\/$/;"	m	struct:LodePNGTime
+ypos	lib/stb_image.h	/^   int ypos;    \/\/ which pre-expansion row we're on$/;"	m	struct:__anon10
+ystep	lib/stb_image.h	/^   int ystep;   \/\/ how far through vertical expansion we are$/;"	m	struct:__anon10
+z_distance	lib/stb_image.h	/^   stbi__zhuffman z_length, z_distance;$/;"	m	struct:__anon12
+z_expandable	lib/stb_image.h	/^   int   z_expandable;$/;"	m	struct:__anon12
+z_length	lib/stb_image.h	/^   stbi__zhuffman z_length, z_distance;$/;"	m	struct:__anon12
+zbuffer	lib/stb_image.h	/^   stbi_uc *zbuffer, *zbuffer_end;$/;"	m	struct:__anon12
+zbuffer_end	lib/stb_image.h	/^   stbi_uc *zbuffer, *zbuffer_end;$/;"	m	struct:__anon12
+zeros	lib/lodepng.cpp	/^  unsigned short* zeros; \/*length of zeros streak, used as a second hash chain*\/$/;"	m	struct:Hash	file:
+zlib_compress	lib/lodepng.cpp	/^static unsigned zlib_compress(unsigned char** out, size_t* outsize, const unsigned char* in,$/;"	f	file:
+zlib_decompress	lib/lodepng.cpp	/^static unsigned zlib_decompress(unsigned char** out, size_t* outsize, const unsigned char* in,$/;"	f	file:
+zlibsettings	lib/lodepng.h	/^  LodePNGCompressSettings zlibsettings; \/*settings for the zlib encoder, such as window size, ...*\/$/;"	m	struct:LodePNGEncoderSettings
+zlibsettings	lib/lodepng.h	/^  LodePNGDecompressSettings zlibsettings; \/*in here is the setting to ignore Adler32 checksums*\/$/;"	m	struct:LodePNGDecoderSettings
+zout	lib/stb_image.h	/^   char *zout;$/;"	m	struct:__anon12
+zout_end	lib/stb_image.h	/^   char *zout_end;$/;"	m	struct:__anon12
+zout_start	lib/stb_image.h	/^   char *zout_start;$/;"	m	struct:__anon12
 ~Camera	camera.cpp	/^Camera::~Camera()$/;"	f	class:Camera
 ~Commander	commander.cpp	/^Commander::~Commander()$/;"	f	class:Commander
 ~Context	context.cpp	/^Context::~Context()$/;"	f	class:Context
 ~Description	description.cpp	/^Description::~Description()$/;"	f	class:Description
 ~EventHandler	event.cpp	/^EventHandler::~EventHandler()$/;"	f	class:EventHandler
 ~Geo	geo.cpp	/^Geo::~Geo()$/;"	f	class:Geo
+~LodePNGState	lib/lodepng.h	/^  virtual ~LodePNGState(){}$/;"	f	struct:LodePNGState
 ~MemoryManager	mem.cpp	/^MemoryManager::~MemoryManager()$/;"	f	class:MemoryManager
 ~Occupant	occupant.cpp	/^Occupant::~Occupant()$/;"	f	class:Occupant
 ~Painter	painter.cpp	/^Painter::~Painter ()$/;"	f	class:Painter
-~Pipe	pipe.cpp	/^Pipe::~Pipe()$/;"	f	class:Pipe
 ~PointBased	occupant.cpp	/^PointBased::~PointBased()$/;"	f	class:PointBased
 ~Renderer	renderer.cpp	/^Renderer::~Renderer()$/;"	f	class:Renderer
 ~Sculpter	sculpter.cpp	/^Sculpter::~Sculpter()$/;"	f	class:Sculpter
+~State	lib/lodepng.cpp	/^State::~State() {$/;"	f	class:lodepng::State
 ~Swapchain	swapchain.cpp	/^Swapchain::~Swapchain()$/;"	f	class:Swapchain
 ~Viewport	viewport.cpp	/^Viewport::~Viewport()$/;"	f	class:Viewport
