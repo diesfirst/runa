@@ -6,6 +6,7 @@
 constexpr int MAX_FRAMES_IN_FLIGHT = 3;
 
 class Swapchain; //forward declaration
+struct DrawableInfo;
 
 class Commander
 {
@@ -37,7 +38,7 @@ public:
 			uint32_t width, uint32_t height, uint32_t depth);
 
 	
-	void recordDrawVert(
+	void recordDraw(
 		vk::RenderPass& renderpass,
 	 	std::vector<vk::Framebuffer>& framebuffers,
 		vk::Buffer& vertexBuffer,
@@ -46,15 +47,16 @@ public:
 		uint32_t width, uint32_t height,
 		uint32_t vertexCount);
 
-	void recordDrawVert(
+	void recordDraw(
 		vk::RenderPass& renderpass,
 	 	std::vector<vk::Framebuffer>& framebuffers,
 		vk::Buffer& vertexBuffer,
+		vk::Buffer& indexBuffer,
 		vk::Pipeline& graphicsPipeline,
 		vk::PipelineLayout& pipelineLayout,
 		std::vector<vk::DescriptorSet>& descriptorSets,
 		uint32_t width, uint32_t height,
-		uint32_t vertexCount, uint32_t geoCount, uint32_t dynamicAlignment);
+		std::vector<DrawableInfo>&, uint32_t dynamicAlignment);
 		
 	void recordCopyImageToSwapImages(const Swapchain&, vk::Image);
 

@@ -38,6 +38,8 @@ public:
 
 	BufferBlock* getVertexBlock(uint32_t size);
 
+	BufferBlock* getIndexBlock(uint32_t size);
+
 	void printInstanceExtensionProperties();
 
 	void printDeviceMemoryHeapInfo();

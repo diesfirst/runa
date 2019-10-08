@@ -1,5 +1,6 @@
 #include "commander.hpp"
 #include "swapchain.hpp"
+#include "description.hpp"
 
 Commander::Commander(vk::Device& device, vk::Queue& queue, uint32_t queueFamily) :
 	device(device),
@@ -363,15 +364,16 @@ void Commander::copyImageToBuffer(
 	endSingleTimeCommand(cmdBuffer);
 }
 
-void Commander::recordDrawVert(
+void Commander::recordDraw(
 		vk::RenderPass& renderpass,
 	 	std::vector<vk::Framebuffer>& framebuffers,
 		vk::Buffer& vertexBuffer,
+		vk::Buffer& indexBuffer,
 		vk::Pipeline& graphicsPipeline,
 		vk::PipelineLayout& pipelineLayout,
 		std::vector<vk::DescriptorSet>& descriptorSets,
 		uint32_t width, uint32_t height,
-		uint32_t vertexCount, uint32_t geoCount, uint32_t dynamicAlignment)
+		std::vector<DrawableInfo>& drawInfos, uint32_t dynamicAlignment)
 {
 	vk::CommandBufferBeginInfo beginInfo;
 	beginInfo.setFlags(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
@@ -395,9 +397,12 @@ void Commander::recordDrawVert(
 		commandBuffers[i].bindPipeline(
 				vk::PipelineBindPoint::eGraphics, 
 				graphicsPipeline);
+		//first binding, buffers, offsets
 		commandBuffers[i].bindVertexBuffers(0, vertexBuffer, {0});
+		//buffer, offset, type
+		commandBuffers[i].bindIndexBuffer(indexBuffer, 0, vk::IndexType::eUint32);
 
-		for (int j = 0; j < geoCount; ++j) 
+		for (int j = 0; j < drawInfos.size(); ++j) 
 		{
 			uint32_t dynamicOffset = j * dynamicAlignment;
 			commandBuffers[i].bindDescriptorSets(
@@ -406,8 +411,13 @@ void Commander::recordDrawVert(
 					0,
 					descriptorSets[i],
 					dynamicOffset);
-			//vert count. instance count, vert offset, instance offset
-			commandBuffers[i].draw(3, 1, j * 3, 0); 
+//			commandBuffers[i].draw(3, 1, 0, 0);
+			commandBuffers[i].drawIndexed(
+					drawInfos[j].numberOfIndices,
+					1,
+					drawInfos[j].indexBufferOffset,
+					drawInfos[j].vertexIndexOffset,
+					0);
 		}
 		commandBuffers[i].endRenderPass();
 		commandBuffers[i].end();

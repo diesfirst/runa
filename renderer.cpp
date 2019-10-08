@@ -5,6 +5,9 @@
 #include "io.hpp"
 #include <iostream>
 #include "description.hpp"
+#include "util.hpp"
+
+Timer renderTimer;
 
 std::vector<vk::PipelineShaderStageCreateInfo> createShaderStageInfos(
 		vk::ShaderModule& vertModule,
@@ -62,11 +65,11 @@ void Renderer::setup(Viewport& viewport, Description& description)
 {
 	bindToViewport(viewport);
 	bindToDescription(description);
+	initPipelineLayout();
+	createGraphicsPipeline();
 	description.createCamera(viewport.getWidth(), viewport.getHeight());
 	description.prepareUniformBuffers(viewport.getSwapImageCount());
 	description.prepareDescriptorSets(viewport.getSwapImageCount());
-	initPipelineLayout();
-	createGraphicsPipeline();
 }
 
 void Renderer::createRenderPass(vk::Format colorFormat)
@@ -151,16 +154,17 @@ void Renderer::createFramebuffers()
 
 void Renderer::update()
 {
-	vk::Buffer& vertBuffer = pDescription->getVkVertexBuffer();
-	context.pCommander->recordDrawVert(
+	context.queue.waitIdle();
+	context.pCommander->recordDraw(
 			renderPass,
 			framebuffers,
-			vertBuffer,
+			pDescription->getVkVertexBuffer(),
+			pDescription->getVkIndexBuffer(),
 			graphicsPipeline,
 			pipelineLayout,
 			pDescription->descriptorSets,
 			width, height,
-			pDescription->getVertexCount(), pDescription->getGeoCount(), 
+			pDescription->getDrawInfos(),
 			pDescription->getDynamicAlignment());
 }
 

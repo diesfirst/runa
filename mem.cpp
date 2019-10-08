@@ -2,6 +2,18 @@
 #include <cstring>
 #include <iostream>
 
+BufferBlock::BufferBlock(const vk::Device& device) :
+	device(device)
+{
+}
+
+BufferBlock::~BufferBlock()
+{
+	device.unmapMemory(memory);
+	device.destroyBuffer(buffer);
+	device.freeMemory(memory);
+}
+
 MemoryManager::MemoryManager(const vk::Device& device) :
 	device(device)
 {
@@ -9,15 +21,6 @@ MemoryManager::MemoryManager(const vk::Device& device) :
 
 MemoryManager::~MemoryManager()
 {
-	unmapBuffers();
-	destroyBuffers();
-}
-
-uint32_t MemoryManager::addBufferBlock()
-{
-	BufferBlock block;
-	BufferBlocks.push_back(block);
-	return BufferBlocks.size() - 1;
 }
 
 uint32_t MemoryManager::addImageBlock()
@@ -27,8 +30,9 @@ uint32_t MemoryManager::addImageBlock()
 	return ImageBlocks.size() - 1;
 }
 
-void MemoryManager::createBuffer(BufferBlock& block, uint32_t size, vk::BufferUsageFlagBits usage)
+std::shared_ptr<BufferBlock> MemoryManager::createBuffer(uint32_t size, vk::BufferUsageFlagBits usage)
 {
+	std::shared_ptr<BufferBlock> block = std::make_shared<BufferBlock>(device);
 	std::cout << "MM Size: " << size << std::endl;
 
 	vk::BufferCreateInfo bufferInfo;
@@ -37,52 +41,25 @@ void MemoryManager::createBuffer(BufferBlock& block, uint32_t size, vk::BufferUs
 	bufferInfo.setUsage(usage);
 	bufferInfo.setSharingMode(vk::SharingMode::eExclusive);
 
-	block.buffer = device.createBuffer(bufferInfo);
+	block->buffer = device.createBuffer(bufferInfo);
 
-	auto memReqs = device.getBufferMemoryRequirements(block.buffer);
-
-	vk::MemoryAllocateInfo allocInfo;
-	allocInfo.setMemoryTypeIndex(9); //always host visible for now
-	allocInfo.setAllocationSize(memReqs.size);
-	std::cout << "Mem reqs size:" << memReqs.size << std::endl;
-
-	block.memory = device.allocateMemory(allocInfo);
-
-	device.bindBufferMemory(block.buffer, block.memory, 0);
-
-	block.pHostMemory = device.mapMemory(block.memory, 0, size);
-	block.size = size;
-}
-
-uint32_t MemoryManager::createBuffer(uint32_t size, vk::BufferUsageFlagBits usage)
-{
-	uint32_t index = addBufferBlock();
-	BufferBlock& block = BufferBlocks[index];
-	std::cout << "MM Size: " << size << std::endl;
-
-	vk::BufferCreateInfo bufferInfo;
-
-	bufferInfo.setSize(size);
-	bufferInfo.setUsage(usage);
-	bufferInfo.setSharingMode(vk::SharingMode::eExclusive);
-
-	block.buffer = device.createBuffer(bufferInfo);
-
-	auto memReqs = device.getBufferMemoryRequirements(block.buffer);
+	auto memReqs = device.getBufferMemoryRequirements(block->buffer);
 
 	vk::MemoryAllocateInfo allocInfo;
 	allocInfo.setMemoryTypeIndex(9); //always host visible for now
 	allocInfo.setAllocationSize(memReqs.size);
 	std::cout << "Mem reqs size:" << memReqs.size << std::endl;
 
-	block.memory = device.allocateMemory(allocInfo);
+	block->memory = device.allocateMemory(allocInfo);
 
-	device.bindBufferMemory(block.buffer, block.memory, 0);
+	device.bindBufferMemory(block->buffer, block->memory, 0);
 
-	block.pHostMemory = device.mapMemory(block.memory, 0, size);
-	block.size = size;
+	void* res = device.mapMemory(block->memory, 0, size);
+	assert(res != (void*)VK_ERROR_MEMORY_MAP_FAILED);
+	block->pHostMemory = res;
+	block->size = size;
 
-	return index;
+	return block;
 }
 
 uint32_t MemoryManager::createImage(
@@ -126,67 +103,30 @@ uint32_t MemoryManager::createImage(
 	return index;
 }
 
-void MemoryManager::createUniformBuffers(size_t count, vk::DeviceSize bufferSize)
-{
-	uniformBufferBlocks.resize(count);
-	for (int i = 0; i < count; ++i) 
-	{
-		createBuffer(
-			uniformBufferBlocks[i],
-			bufferSize,
-			vk::BufferUsageFlagBits::eUniformBuffer);
-	}
-}
-
-std::vector<BufferBlock>* MemoryManager::createUBOBlocks(
+std::shared_ptr<BufferBlock>* MemoryManager::createUBOBlocks(
 		size_t count, size_t size)
 {
-	uniformBufferBlocks.resize(count);
-	for (int i = 0; i < count; ++i) 
+	for (size_t i = 0; i < count; ++i) 
 	{
-		createBuffer(
-				uniformBufferBlocks[i],
+		auto block = createBuffer(
 				size,
 				vk::BufferUsageFlagBits::eUniformBuffer);
+		uniformBufferBlocks.push_back(block);
 	}
-	return &uniformBufferBlocks;
+	return uniformBufferBlocks.data();
 }
 
-std::vector<BufferBlock>* MemoryManager::createDynamicUBOBlocks(
+std::shared_ptr<BufferBlock>* MemoryManager::createDynamicUBOBlocks(
 		size_t count, size_t size)
 {
-	dynamicUBOBlocks.resize(count);
-	for (int i = 0; i < count; ++i) 
+	for (size_t i = 0; i < count; ++i) 
 	{
-		createBuffer(
-				dynamicUBOBlocks[i],
+		auto block = createBuffer(
 				size,
 				vk::BufferUsageFlagBits::eUniformBuffer);
+		dynamicUBOBlocks.push_back(block);
 	}
-	return &dynamicUBOBlocks;
-}
-
-void MemoryManager::unmapBuffers()
-{
-	for (BufferBlock block : BufferBlocks) {
-		device.unmapMemory(block.memory);
-	}
-	for (BufferBlock block : uniformBufferBlocks) {
-		device.unmapMemory(block.memory);
-	}
-}
-
-void MemoryManager::destroyBuffers()
-{
-	for (BufferBlock block : BufferBlocks) {
-		device.destroyBuffer(block.buffer); device.freeMemory(block.memory);
-	}
-	for (BufferBlock block : uniformBufferBlocks) {
-		device.destroyBuffer(block.buffer); device.freeMemory(block.memory);
-	}
-	for (BufferBlock block : dynamicUBOBlocks) {
-		device.destroyBuffer(block.buffer); device.freeMemory(block.memory);
-	}
+	return dynamicUBOBlocks.data();
 }
 
 void MemoryManager::getImageSubresourceLayout(vk::Image image)
@@ -202,10 +142,16 @@ void MemoryManager::getImageSubresourceLayout(vk::Image image)
 
 BufferBlock* MemoryManager::createVertexBlock(size_t size)
 {
-	int index = createBuffer(
+	vertexBlock = createBuffer(
 			size, 
 			vk::BufferUsageFlagBits::eVertexBuffer);
-	BufferBlock* block = &BufferBlocks[index];
-	return block;
+	return vertexBlock.get();
 }
 
+BufferBlock* MemoryManager::createIndexBlock(size_t size)
+{
+	indexBlock = createBuffer(
+			size, 
+			vk::BufferUsageFlagBits::eIndexBuffer);
+	return indexBlock.get();
+}

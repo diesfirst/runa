@@ -4,8 +4,7 @@
 #include <vector>
 #include "context.hpp"
 #include "mem.hpp"
-#include "geo.hpp"
-#include "camera.hpp"
+#include "occupant.hpp"
 
 class Viewport; //not a strong dependency
 
@@ -22,21 +21,29 @@ struct UboVS
 	glm::mat4 view;
 };
 
+struct DrawableInfo
+{
+	uint32_t indexBufferOffset;
+	uint32_t numberOfIndices;
+	uint32_t vertexIndexOffset;
+};
+
 class Description
 {
 public:
 	Description(Context&);
 	~Description();
 	void createCamera(const uint16_t width, const uint16_t height);
-	void createGeo();
 	Triangle* createTriangle();
-	void createTriangle(Point, Point, Point);
+	Quad* createQuad();
 	std::vector<vk::DescriptorSet> descriptorSets;
 	vk::Buffer& getVkVertexBuffer();
+	vk::Buffer& getVkIndexBuffer();
 	uint32_t getVertexCount();
-	uint32_t getGeoCount();
+	uint32_t getMeshCount();
 	uint32_t getOccupantCount();
 	uint32_t getDynamicAlignment();
+	std::vector<DrawableInfo>& getDrawInfos();
 	vk::DescriptorSetLayout* getPDescriptorSetLayout();
 	void prepareDescriptorSets(const uint32_t count);
 	void prepareUniformBuffers(const uint32_t count);
@@ -51,24 +58,33 @@ private:
 	Context& context;
 	std::vector<std::shared_ptr<Occupant>> occupants;
 	std::vector<std::shared_ptr<PointBased>> pointBasedOccupants;
-	std::vector<std::shared_ptr<Geo>> geometry;
+	std::vector<std::shared_ptr<Mesh>> meshes;
 	std::vector<std::shared_ptr<Camera>> cameras;
+	std::vector<DrawableInfo> drawInfos;
 	std::shared_ptr<Camera> curCamera;
 	BufferBlock* vertexBlock; //does not have ownership
-	std::vector<BufferBlock>* uboBlocks;
-	std::vector<BufferBlock>* uboDynamicBlocks;
+	BufferBlock* indexBlock; //does not have ownership
+	std::shared_ptr<BufferBlock>* uboBlocks;
+	std::shared_ptr<BufferBlock>* uboDynamicBlocks;
 	uint8_t curSwapIndex = 0;
 	UboVS uboView;
 	UboDynamic uboDynamicData;
 	size_t dynamicAlignment;
+
 	Point* vertices;
+	uint32_t* indices;
+	uint32_t curVertOffset = 0; 
+	uint32_t curIndexOffset = 0;
+
 	vk::DescriptorSetLayout descriptorSetLayout;
 	uint32_t descriptorSetCount;
 	bool descriptorsPrepared = false;
 	vk::DescriptorPool descriptorPool;
 
 	void updateCommandBuffer();
-	void updateVertexBuffer();
+	void oldUpdateVertexBuffer();
+	void updateVertexBuffer(const PointBased&);
+	void updateIndexBuffer(const Mesh&);
 	void updateUniformBuffers();
 	void updateDynamicUniformBuffers();
 	void initDescriptorSetLayout();

@@ -6,8 +6,13 @@ Description::Description(Context& context) :
 	context(context)
 {
 	//arbitrary size for now...
+	//could be more performant to wrap the index and vertex buffer
+	//into a single uber buffer
 	vertexBlock = context.getVertexBlock(10000);
+	indexBlock = context.getIndexBlock(10000);
 	vertices = static_cast<Point*>(vertexBlock->pHostMemory);
+	indices = static_cast<uint32_t*>(indexBlock->pHostMemory);
+	initDescriptorSetLayout();
 	//one descriptor set for world transform
 }
 
@@ -29,24 +34,26 @@ void Description::createCamera(const uint16_t width, const uint16_t height)
 
 Triangle* Description::createTriangle()
 {
-	geometry.push_back(std::make_shared<Triangle>());
-	pointBasedOccupants.push_back(geometry.back());
-	occupants.push_back(geometry.back());
-	updateVertexBuffer();
-	return (Triangle*)geometry.back().get();
-}
-
-void Description::createTriangle(Point p0, Point p1, Point p2)
-{
-	geometry.push_back(std::make_shared<Triangle>(p0, p1, p2));
-	pointBasedOccupants.push_back(geometry.back());
-	occupants.push_back(geometry.back());
-	updateVertexBuffer();
+	auto triangle = std::make_shared<Triangle>();
+	meshes.push_back(triangle);
+	pointBasedOccupants.push_back(triangle);
+	occupants.push_back(triangle);
+	//must update index buffer first since it uses curVertOffset
+	//to adjust the indices
+	updateIndexBuffer(*triangle);
+	updateVertexBuffer(*triangle);
+//	oldUpdateVertexBuffer();
+	return triangle.get();
 }
 
 vk::Buffer& Description::getVkVertexBuffer()
 {
 	return vertexBlock->buffer;
+}
+
+vk::Buffer& Description::getVkIndexBuffer()
+{
+	return indexBlock->buffer;
 }
 
 uint32_t Description::getVertexCount()
@@ -59,9 +66,9 @@ uint32_t Description::getVertexCount()
 	return nPoints;
 }
 
-uint32_t Description::getGeoCount()
+uint32_t Description::getMeshCount()
 {
-	return geometry.size();
+	return meshes.size();
 }
 
 uint32_t Description::getOccupantCount()
@@ -73,6 +80,11 @@ uint32_t Description::getDynamicAlignment()
 {
 	assert (dynamicAlignment != 0);
 	return dynamicAlignment;
+}
+
+std::vector<DrawableInfo>& Description::getDrawInfos()
+{
+	return drawInfos;
 }
 
 vk::DescriptorSetLayout* Description::getPDescriptorSetLayout()
@@ -108,17 +120,28 @@ void Description::updateCommandBuffer()
 {
 }
 
-void Description::updateVertexBuffer()
+void Description::updateVertexBuffer(const PointBased& newPointBased)
 {
-	uint32_t offset = 0;
-	for (auto pItem : pointBasedOccupants) 
-	{
-		std::memcpy(
-				vertices + offset, 
-				pItem->points.data(), 
-				sizeof(Point) * pItem->points.size());
-		offset += pItem->points.size();
-	}
+	uint32_t nPoints =  newPointBased.points.size();
+	assert(vertices != nullptr);
+	const Point* data = newPointBased.points.data();
+	std::memcpy(
+			vertices,
+			data,
+			sizeof(Point) * nPoints
+			);
+	curVertOffset += nPoints;
+}
+
+void Description::updateIndexBuffer(const Mesh& newMesh)
+{
+	uint32_t nIndices = newMesh.indices.size();
+	std::memcpy(
+			indices + curIndexOffset,
+			newMesh.indices.data(),
+			sizeof(uint32_t) * nIndices);
+	drawInfos.push_back({curIndexOffset, nIndices, curVertOffset});
+	curIndexOffset += nIndices;
 }
 
 void Description::initDescriptorSetLayout()
@@ -178,12 +201,12 @@ void Description::createDescriptorSets(uint32_t count)
 	descriptorSets.resize(count);
 	descriptorSets = context.device.allocateDescriptorSets(allocInfo);
 
-	for (int i = 0; i < count; ++i) 
+	for (uint32_t i = 0; i < count; ++i) 
 	{
 		std::array<vk::WriteDescriptorSet, 2> writes;
 
 		vk::DescriptorBufferInfo uboBufferInfo;
-		uboBufferInfo.setBuffer((*uboBlocks)[i].buffer);
+		uboBufferInfo.setBuffer(uboBlocks[i]->buffer);
 		uboBufferInfo.setOffset(0);
 		uboBufferInfo.setRange(VK_WHOLE_SIZE);
 		
@@ -195,9 +218,10 @@ void Description::createDescriptorSets(uint32_t count)
 		writes[0].setPBufferInfo(&uboBufferInfo);
 
 		vk::DescriptorBufferInfo uboDynBufferInfo;
-		uboDynBufferInfo.setBuffer((*uboDynamicBlocks)[i].buffer);
+		uboDynBufferInfo.setBuffer(uboDynamicBlocks[i]->buffer);
 		uboDynBufferInfo.setOffset(0);
-		uboDynBufferInfo.setRange(VK_WHOLE_SIZE);
+		uboDynBufferInfo.setRange(dynamicAlignment);
+		//set to size of the ubo dynamic data per model
 
 		writes[1].setDstSet(descriptorSets[i]);
 		writes[1].setDescriptorType(vk::DescriptorType::eUniformBufferDynamic);
@@ -240,7 +264,6 @@ void Description::updateDescriptorSets(
 
 void Description::prepareDescriptorSets(uint32_t count)
 {
-	initDescriptorSetLayout();
 	createDescriptorPool(count);
 	createDescriptorSets(count);
 	descriptorsPrepared = true;
@@ -255,8 +278,7 @@ void Description::prepareUniformBuffers(const uint32_t count)
 	dA = (dA + minUboAlignment - 1) & ~(minUboAlignment - 1);
 	size_t bufferSize = MAX_OCCUPANTS * dA;
 	dynamicAlignment = dA;
-	uboDynamicData.model = (glm::mat4*) 
-		aligned_alloc(minUboAlignment, bufferSize);
+	uboDynamicData.model = (glm::mat4*)aligned_alloc(minUboAlignment, bufferSize);
 
 	uboBlocks = 
 		context.pMemory->createUBOBlocks(count, sizeof(UboVS));
@@ -278,20 +300,20 @@ void Description::updateUniformBuffers()
 	assert (curCamera.get() != nullptr);
 	uboView.projection = curCamera->projection;
 	uboView.view = curCamera->view;
-	memcpy((*uboBlocks)[curSwapIndex].pHostMemory, &uboView, sizeof(UboVS));
+	memcpy(uboBlocks[curSwapIndex]->pHostMemory, &uboView, sizeof(UboVS));
 }
 
 void Description::updateDynamicUniformBuffers()
 {
-	uint32_t nGeos = getGeoCount();
+	uint32_t nMeshes = getMeshCount();
 	char* pModelMemory = (char*)uboDynamicData.model;
-	for (size_t i = 0; i < nGeos; ++i) 
+	for (size_t i = 0; i < nMeshes; ++i) 
 	{
 		glm::mat4* mat = (glm::mat4*)(pModelMemory + i * dynamicAlignment);
-		*mat = geometry[i]->getTransform();
+		*mat = meshes[i]->getTransform();
 	}
-	memcpy((*uboDynamicBlocks)[curSwapIndex].pHostMemory, uboDynamicData.model,
-		nGeos * dynamicAlignment);	
+	memcpy(uboDynamicBlocks[curSwapIndex]->pHostMemory, uboDynamicData.model,
+		nMeshes * dynamicAlignment);	
 }
 
 void Description::setCurrentSwapIndex(uint8_t curIndex)

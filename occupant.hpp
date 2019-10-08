@@ -2,6 +2,7 @@
 #define OCCUPANT_H
 
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 #include <iostream>
 
@@ -46,6 +47,74 @@ public:
 
 	std::vector<Point> points;
 
+};
+
+class Geo : public PointBased
+{
+public:
+	Geo();
+	virtual ~Geo();
+
+private:
+
+};
+
+class Mesh : public Geo
+{
+public:
+	Mesh ();
+	virtual ~Mesh ();
+	std::vector<uint32_t> indices;
+
+private:
+};
+
+class Triangle : public Mesh
+{
+public:
+	Triangle(
+			Point p0,
+			Point p1,
+			Point p2);
+	Triangle(
+			glm::vec3 = {-0.5, 0.5, 0.0},
+			glm::vec3 = {0.0, -0.5, 0.0},
+			glm::vec3 = {0.5, 0.5, 0.0});
+	Triangle(
+			glm::vec2,
+			glm::vec2,
+			glm::vec2);
+
+private:
+
+};
+
+class Quad : public Mesh
+{
+public:
+	Quad(
+			glm::vec3 = {-0.5, -0.5, 0.0}, //top left
+			glm::vec3 = {0.5, -0.5, 0.0}, //top right
+			glm::vec3 = {0.5, 0.5, 0.0}, //bottom right
+			glm::vec3 = {-0.5, 0.5, 0.0}); //bottom left
+	virtual ~Quad ();
+
+private:
+	/* data */
+};
+
+class Camera : public Occupant
+{
+public:
+	Camera (int w, int h);
+	virtual ~Camera ();
+
+	glm::mat4 projection;
+	glm::mat4 view;
+
+private:
+
+	/* data */
 };
 
 #endif /* OCCUPANT_H */

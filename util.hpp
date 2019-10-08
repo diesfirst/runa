@@ -9,9 +9,7 @@
 class Swapchain;
 class Context;
 
-void printMaxDynamicUBOs(vk::Device device)
-{
-}
+void printMaxDynamicUBOs(vk::Device device);
 
 void printImageCounts(const Swapchain&);
 

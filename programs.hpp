@@ -4,6 +4,9 @@
 #include <thread>
 #include <chrono>
 #include <random>
+#include "util.hpp"
+
+Timer myTimer;
 
 void triangleFun(Description& desc, uint32_t count)
 {
@@ -26,7 +29,6 @@ void triangleFun(Description& desc, uint32_t count)
 			points[i].color.g = uniform_color(e1);
 			points[i].color.b = uniform_color(e1);
 		}
-		desc.createTriangle(points[0], points[1], points[2]);
 	}
 }
 
@@ -45,17 +47,24 @@ void program1()
 	tri2->rotate(3.14, glm::vec3(0, 0, 1));
 	renderer.setup(viewport, description); 
 	//renderer must update after new geo is created
-	renderer.update();
+	renderer.update(); 
 	renderer.render();
 	std::this_thread::sleep_for(std::chrono::seconds(2));
+	auto tri3 = description.createTriangle();
+	renderer.update();
+	tri3->translate(0.4, 0, 0);
+	tri3->scale(0.3);
 	tri2->rotate(1, glm::vec3(0, 0, 1));
+	myTimer.start();
 	renderer.render();
+	myTimer.end("Render");
 	std::cout << "frame 2" << std::endl;
 	std::this_thread::sleep_for(std::chrono::seconds(2));
+	glm::vec3 axis(0, 0, 1);
+	tri3->rotate(1.4, axis);
 
 	float angle1 = 0.1;
 	float angle2 = -0.12;
-	glm::vec3 axis(0, 0, 1);
 	while (true)
 	{
 		tri2->rotate(angle1, axis);
@@ -66,15 +75,15 @@ void program1()
 	context.queue.waitIdle();
 }
 
-void program2(int count)
+void program3()
 {
 	Context context;
 	Viewport viewport(context);
 	Renderer renderer(context);
 	Description description(context);
+	description.createTriangle();
 	//binds to viewport and description and creates the graphics Pipeline
 	renderer.setup(viewport, description); 
-	triangleFun(description, count);
 	//renderer must update after new geo is created
 	renderer.update();
 	renderer.render();

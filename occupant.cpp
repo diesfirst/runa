@@ -64,3 +64,87 @@ void PointBased::printPoints()
 		std::cout << "Point pos: " << point.pos.x << " " << point.pos.y << std::endl;
 	}
 }
+
+Geo::Geo()
+{
+}
+
+Geo::~Geo()
+{
+}
+
+Mesh::Mesh()
+{
+}
+
+Mesh::~Mesh()
+{
+}
+
+Triangle::Triangle(Point p0, Point p1, Point p2)
+{
+	points.push_back(p0);
+	points.push_back(p1);
+	points.push_back(p2);
+	indices = {0, 1, 2};
+}
+
+Triangle::Triangle(
+		glm::vec3 pos1,
+		glm::vec3 pos2,
+		glm::vec3 pos3)
+{
+	points.resize(3);
+	points[0].pos = pos1;
+	points[1].pos = pos2;
+	points[2].pos = pos3;
+	indices = {0, 1, 2};
+}
+
+Triangle::Triangle(
+		glm::vec2 pos1,
+		glm::vec2 pos2,
+		glm::vec2 pos3)
+{
+	points.resize(3);
+	points[0].pos = glm::vec3(pos1, 0.0);
+	points[1].pos = glm::vec3(pos2, 0.0);
+	points[2].pos = glm::vec3(pos3, 0.0);
+	indices = {0, 1, 2};
+}
+
+Quad::Quad(
+		glm::vec3 pos0,
+		glm::vec3 pos1,
+		glm::vec3 pos2,
+		glm::vec3 pos3)
+{
+	points.resize(4);
+	points[0].pos = pos0;
+	points[1].pos = pos1;
+	points[2].pos = pos2;
+	points[3].pos = pos3;
+	indices = {0, 1, 2, 2, 3, 0};
+}
+
+Quad::~Quad()
+{
+}
+
+Camera::Camera(int windowWidth, int windowHeight)
+{
+	view = glm::mat4(1.0);
+//	view = glm::lookAt(
+//			glm::vec3(2.0f, 2.0f, 2.0f),
+//			glm::vec3(0.0f, 0.0f, 0.0f),
+//			glm::vec3(0.0f, 0.0f, 1.0f));
+	projection = glm::perspective(
+			glm::radians(45.0f),
+			windowWidth / (float) windowHeight,
+			0.1f, 10.0f);
+	projection[1][1] *= -1; //must flip y
+}
+
+Camera::~Camera()
+{
+}

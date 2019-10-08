@@ -211,6 +211,11 @@ BufferBlock* Context::getVertexBlock(uint32_t size)
 	return pMemory->createVertexBlock(size);
 }
 
+BufferBlock* Context::getIndexBlock(uint32_t size)
+{
+	return pMemory->createIndexBlock(size);
+}
+
 void Context::setDeviceExtensions(vk::DeviceCreateInfo& createInfo)
 {
 	const uint8_t extCount = 1;
