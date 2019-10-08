@@ -32,61 +32,31 @@ void triangleFun(Description& desc, uint32_t count)
 	}
 }
 
-void program1()
-{
-	Context context;
-	Viewport viewport(context);
-	Renderer renderer(context);
-	Description description(context);
-	//binds to viewport and description and creates the graphics Pipeline
-	Triangle* tri1 = description.createTriangle();
-	Triangle* tri2 = description.createTriangle();
-	tri1->scale(0.2);
-	tri2->translate(-.1, .3, 0);
-	tri2->scale(0.2);
-	tri2->rotate(3.14, glm::vec3(0, 0, 1));
-	renderer.setup(viewport, description); 
-	//renderer must update after new geo is created
-	renderer.update(); 
-	renderer.render();
-	std::this_thread::sleep_for(std::chrono::seconds(2));
-	auto tri3 = description.createTriangle();
-	renderer.update();
-	tri3->translate(0.4, 0, 0);
-	tri3->scale(0.3);
-	tri2->rotate(1, glm::vec3(0, 0, 1));
-	myTimer.start();
-	renderer.render();
-	myTimer.end("Render");
-	std::cout << "frame 2" << std::endl;
-	std::this_thread::sleep_for(std::chrono::seconds(2));
-	glm::vec3 axis(0, 0, 1);
-	tri3->rotate(1.4, axis);
-
-	float angle1 = 0.1;
-	float angle2 = -0.12;
-	while (true)
-	{
-		tri2->rotate(angle1, axis);
-		tri1->rotate(angle2, axis);
-		renderer.render();
-		std::this_thread::sleep_for(std::chrono::milliseconds(40));
-	}
-	context.queue.waitIdle();
-}
-
 void program3()
 {
 	Context context;
 	Viewport viewport(context);
 	Renderer renderer(context);
 	Description description(context);
-	description.createTriangle();
 	//binds to viewport and description and creates the graphics Pipeline
 	renderer.setup(viewport, description); 
 	//renderer must update after new geo is created
 	renderer.update();
 	renderer.render();
-	context.queue.waitIdle();
+
+	int x;
+	std::cout << "1 for a triangle, 2 for a quad" << std::endl;
+	std::cin >> x;
+	if (x == 1)
+	{
+		description.createMesh<Triangle>();
+	}
+	else
+	{
+		description.createMesh<Quad>();
+	}
+	renderer.update();
+	renderer.render();
 	std::this_thread::sleep_for(std::chrono::seconds(4));
+	context.queue.waitIdle();
 }

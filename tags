@@ -428,6 +428,7 @@ createImage	mem.cpp	/^uint32_t MemoryManager::createImage($/;"	f	class:MemoryMan
 createImageViews	swapchain.cpp	/^void Swapchain::createImageViews()$/;"	f	class:Swapchain
 createIndexBlock	mem.cpp	/^BufferBlock* MemoryManager::createIndexBlock(size_t size)$/;"	f	class:MemoryManager
 createInstance	context.cpp	/^void Context::createInstance()$/;"	f	class:Context
+createMesh	description.hpp	/^	template<typename T> T* createMesh()$/;"	f	class:Description
 createPhysicalDevice	context.cpp	/^void Context::createPhysicalDevice()$/;"	f	class:Context
 createPoint	occupant.cpp	/^void PointBased::createPoint(float x, float y)$/;"	f	class:PointBased
 createPoint	occupant.cpp	/^void PointBased::createPoint(float x, float y, float z)$/;"	f	class:PointBased
@@ -437,7 +438,6 @@ createShaderStageInfos	renderer.cpp	/^std::vector<vk::PipelineShaderStageCreateI
 createSurface	swapchain.cpp	/^void Swapchain::createSurface()$/;"	f	class:Swapchain
 createSwapchain	swapchain.cpp	/^void Swapchain::createSwapchain()$/;"	f	class:Swapchain
 createSyncObjects	commander.cpp	/^void Commander::createSyncObjects()$/;"	f	class:Commander
-createTriangle	description.cpp	/^Triangle* Description::createTriangle()$/;"	f	class:Description
 createTriangle	sculpter.cpp	/^void Sculpter::createTriangle()$/;"	f	class:Sculpter
 createUBOBlocks	mem.cpp	/^std::shared_ptr<BufferBlock>* MemoryManager::createUBOBlocks($/;"	f	class:MemoryManager
 createVertexBlock	mem.cpp	/^BufferBlock* MemoryManager::createVertexBlock(size_t size)$/;"	f	class:MemoryManager
@@ -970,7 +970,6 @@ printMousePosition	window.cpp	/^void XWindow::printMousePosition()$/;"	f	class:X
 printPoints	occupant.cpp	/^void PointBased::printPoints()$/;"	f	class:PointBased
 printPresentModes	util.cpp	/^void printPresentModes(const Swapchain& swapchain)$/;"	f
 printSurfaceCapabilities	util.cpp	/^void printSurfaceCapabilities(const Swapchain& swapchain)$/;"	f
-program1	programs.hpp	/^void program1()$/;"	f
 program3	programs.hpp	/^void program3()$/;"	f
 progressive	lib/stb_image.h	/^   int            progressive;$/;"	m	struct:__anon8
 projection	description.hpp	/^	glm::mat4 projection;$/;"	m	struct:UboVS

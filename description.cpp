@@ -32,20 +32,6 @@ void Description::createCamera(const uint16_t width, const uint16_t height)
 	}
 }
 
-Triangle* Description::createTriangle()
-{
-	auto triangle = std::make_shared<Triangle>();
-	meshes.push_back(triangle);
-	pointBasedOccupants.push_back(triangle);
-	occupants.push_back(triangle);
-	//must update index buffer first since it uses curVertOffset
-	//to adjust the indices
-	updateIndexBuffer(*triangle);
-	updateVertexBuffer(*triangle);
-//	oldUpdateVertexBuffer();
-	return triangle.get();
-}
-
 vk::Buffer& Description::getVkVertexBuffer()
 {
 	return vertexBlock->buffer;
@@ -124,10 +110,9 @@ void Description::updateVertexBuffer(const PointBased& newPointBased)
 {
 	uint32_t nPoints =  newPointBased.points.size();
 	assert(vertices != nullptr);
-	const Point* data = newPointBased.points.data();
 	std::memcpy(
-			vertices,
-			data,
+			vertices + curVertOffset,
+			newPointBased.points.data(),
 			sizeof(Point) * nPoints
 			);
 	curVertOffset += nPoints;

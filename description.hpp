@@ -34,8 +34,7 @@ public:
 	Description(Context&);
 	~Description();
 	void createCamera(const uint16_t width, const uint16_t height);
-	Triangle* createTriangle();
-	Quad* createQuad();
+
 	std::vector<vk::DescriptorSet> descriptorSets;
 	vk::Buffer& getVkVertexBuffer();
 	vk::Buffer& getVkIndexBuffer();
@@ -53,6 +52,17 @@ public:
 	static vk::VertexInputBindingDescription getBindingDescription();
 	static std::array<vk::VertexInputAttributeDescription, 2> 
 		getAttributeDescriptions();
+
+	template<typename T> T* createMesh()
+	{
+		auto mesh = std::make_shared<T>();
+		meshes.push_back(mesh);
+		pointBasedOccupants.push_back(mesh);
+		occupants.push_back(mesh);
+		updateIndexBuffer(*mesh);
+		updateVertexBuffer(*mesh);
+		return mesh.get();
+	}
 
 private:
 	Context& context;
