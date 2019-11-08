@@ -58,11 +58,33 @@ void PointBased::createPoint(float x, float y, float z)
 			glm::vec3(1.0, 1.0, 1.0)});
 }
 
-void PointBased::printPoints()
+Point* PointBased::getPoint(uint32_t index)
+{
+	if (index > points.size())
+	{
+		std::cout << "Index: " << index << std::endl;
+		std::cout << "Cannot get point, index out of range. Number of points: " 
+			<< points.size() << std::endl;
+		return nullptr;
+	}
+	return &points[index];
+}
+
+void PointBased::printPoints() const
 {
 	for (auto point : points) {
 		std::cout << "Point pos: " << point.pos.x << " " << point.pos.y << std::endl;
 	}
+}
+
+void PointBased::setVertOffset(uint32_t offset)
+{
+	vertOffset = offset;
+}
+
+u_int32_t PointBased::getVertOffset() const
+{
+	return vertOffset;
 }
 
 Geo::Geo()

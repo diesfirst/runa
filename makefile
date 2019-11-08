@@ -1,9 +1,13 @@
-CFLAGS = -g -std=c++17 -Wall -O0
-LDFLAGS = -lxcb -lvulkan -lX11
+INCDIRS = -isystem /opt/hfs18.5/toolkit/include -isystem /opt/hfs18.5/toolkit/include/python2.7
+WFLAGS = -Wno-deprecated -std=c++17 -isystem /opt/hfs18.5/toolkit/include -isystem /opt/hfs18.5/toolkit/include/python2.7 -Wall -W -Wno-parentheses -Wno-sign-compare -Wno-reorder -Wno-uninitialized -Wunused -Wno-unused-parameter -Wno-unused-local-typedefs
+CFLAGS = -g -std=c++17 -O2 -D_GLIBCXX_USE_CXX11_ABI=0 $(WFLAGS) $(INCDIRS)
+LDFLAGS = -lxcb -lvulkan -lX11 
+LDIRS = -L/opt/hfs18.5/dsolib -L/opt/hfs18.5/python/lib -L/usr/X11R6/lib64 -L/usr/X11R6/lib
+LUSD = -lHoudiniUSD -lhboost_system -lhboost_python -lpxr_usd -lpxr_tf -lpxr_sdf -lpxr_usdGeom -lpxr_usdImaging -lpxr_hd -lpxr_vt -lpxr_gf -lpython2.7 -lGL -lXext -lXi -ldl -Wl,-rpath,/opt/hfs18.5/dsolib
 DEPS = main.o context.o swapchain.o window.o viewport.o renderer.o description.o mem.o commander.o occupant.o lodepng.o util.o io.o
 
 app : $(DEPS) shaders/*.spv
-	g++ $(CFLAGS) -o app $(DEPS) $(LDFLAGS) ; ctags -R .
+	g++ $(DEPS) -lpthread -o app $(LDIRS) $(LUSD) $(LDFLAGS) ; ctags -R .
 
 window.o : window.cpp window.hpp
 	g++ -c $(CFLAGS) window.cpp
@@ -51,7 +55,7 @@ renderer.o : renderer.cpp renderer.hpp context.hpp commander.hpp mem.hpp util.hp
 	g++ -c $(CFLAGS) renderer.cpp
 
 main.o : main.cpp programs.hpp viewport.hpp renderer.hpp description.hpp
-	g++ -c $(CFLAGS) main.cpp
+	g++ -c $(CFLAGS) main.cpp 
 
 .PHONY: clean shaders
 

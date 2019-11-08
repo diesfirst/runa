@@ -5,8 +5,8 @@
 #include "swapchain.hpp"
 #include "window.hpp"
 
-constexpr uint16_t WIDTH = 1200;
-constexpr uint16_t HEIGHT = 1200;
+constexpr uint16_t WIDTH = 800;
+constexpr uint16_t HEIGHT = 800;
 constexpr uint8_t SWAP_IMG_COUNT = 3;
 
 class Viewport

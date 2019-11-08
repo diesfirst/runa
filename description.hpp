@@ -48,6 +48,7 @@ public:
 	void prepareUniformBuffers(const uint32_t count);
 	void setCurrentSwapIndex(uint8_t swapIndex);
 	void updateAllCurrentUbos();
+	void update(PointBased*);
 
 	static vk::VertexInputBindingDescription getBindingDescription();
 	static std::array<vk::VertexInputAttributeDescription, 2> 
@@ -59,6 +60,7 @@ public:
 		meshes.push_back(mesh);
 		pointBasedOccupants.push_back(mesh);
 		occupants.push_back(mesh);
+		mesh->setVertOffset(curVertOffset);
 		updateIndexBuffer(*mesh);
 		updateVertexBuffer(*mesh);
 		return mesh.get();

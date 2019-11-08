@@ -280,6 +280,16 @@ void Description::updateAllCurrentUbos()
 	updateDynamicUniformBuffers();
 }
 
+void Description::update(PointBased* pb)
+{
+	uint32_t vertOffset = pb->getVertOffset();
+	uint32_t range = pb->points.size();
+	std::memcpy(
+			vertices + vertOffset,
+			pb->points.data(),
+			sizeof(Point) * range);
+}
+
 void Description::updateUniformBuffers()
 {
 	assert (curCamera.get() != nullptr);

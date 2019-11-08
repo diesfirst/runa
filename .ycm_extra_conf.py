@@ -37,6 +37,8 @@ flags = [
     '-x',
     'c++',
     '-I/usr/include/vulkan',
+    '-isystem/opt/hfs18.0/toolkit/include',
+    '-isystem/opt/hfs18.0/toolkit/include/python2.7',
     '-std=c++17',
 ]
 

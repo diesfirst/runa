@@ -33,6 +33,10 @@ struct Point
 		std::cout << "y: " << pos.y << std::endl;
 		std::cout << "z: " << pos.z << std::endl;
 	}
+	void setColor(float r, float g, float b)
+	{
+		color = {r, g, b};
+	}
 };
 
 class PointBased : public Occupant
@@ -43,9 +47,14 @@ public:
 
 	void createPoint(float x, float y);
 	void createPoint(float x, float y, float z);
-	void printPoints();
+	Point* getPoint(uint32_t i);
+	void printPoints() const;
+	void setVertOffset(uint32_t);
+	uint32_t getVertOffset() const;
 
 	std::vector<Point> points;
+private:
+	u_int32_t vertOffset = 0;
 
 };
 

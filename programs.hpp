@@ -5,58 +5,94 @@
 #include <chrono>
 #include <random>
 #include "util.hpp"
+#include <pxr/usd/usd/stage.h>
+#include <pxr/usd/usdGeom/sphere.h>
+#include <pxr/usdImaging/usdImaging/sphereAdapter.h>
+#include <pxr/imaging/hd/meshTopology.h>
+#include <pxr/imaging/hd/meshUtil.h>
+
 
 Timer myTimer;
 
-void triangleFun(Description& desc, uint32_t count)
+void program1()
 {
-	std::random_device r;
-	std::default_random_engine e1(r());
-	std::uniform_real_distribution<float> uniform_dist(-1.0, 1.0);
-	std::uniform_real_distribution<float> uniform_color(0.0, 1.0);
-	for (uint32_t i = 0; i < count; ++i) {
-		std::array<Point, 3> points;
-		glm::vec3 color(
-				uniform_color(e1),
-				uniform_color(e1),
-				uniform_color(e1));
-		for (int i = 0; i < 3; ++i) {
-			points[i].pos.x = uniform_dist(e1);
-			points[i].pos.y = uniform_dist(e1);
-			points[i].pos.z = uniform_dist(e1);
-			points[i].color = color;
-			points[i].color.r = uniform_color(e1);
-			points[i].color.g = uniform_color(e1);
-			points[i].color.b = uniform_color(e1);
-		}
-	}
+	auto stage = pxr::UsdStage::CreateNew("stage1.usd");
+
+	pxr::SdfPath spherePath("/ball");
+	auto ball = stage->DefinePrim(spherePath, pxr::TfToken("Sphere"));
+
+	pxr::UsdImagingSphereAdapter sphereAdapter;
+	auto topo = sphereAdapter.GetMeshTopology();
+	auto points = sphereAdapter.GetMeshPoints(ball, pxr::UsdTimeCode());
+	auto type = topo.GetType();
+
+	if (topo.IsArrayValued())
+		std::cout << "The gibbet is array valued, Sir" << std::endl;
+	auto meshTopo = topo.Get<pxr::HdMeshTopology>();
+	if (points.IsArrayValued())
+		std::cout << "The points be array valued!" << std::endl;
+
+	std::cout << "Topo stuff:" << std::endl;
+	std::cout << meshTopo.GetNumPoints() << " num points" << std::endl;
+	std::cout << meshTopo.GetNumFaceVaryings() << " GetNumFaceVaryings" << std::endl;
+	std::cout << meshTopo.GetNumFaces() << " num faces" << std::endl;
+	std::cout << "indices" << std::endl;
+	auto indices = meshTopo.GetFaceVertexIndices();
+	auto faceVertCounts = meshTopo.GetFaceVertexCounts();
+	std::cout << indices << std::endl;
+	std::cout << "counts" << std::endl;
+	std::cout << faceVertCounts << std::endl;
+
+	pxr::HdMeshUtil meshUtil(&meshTopo, spherePath);
+
+	pxr::VtVec3iArray triIndices;
+	pxr::VtIntArray primitiveParams;
+	meshUtil.ComputeTriangleIndices(&triIndices, &primitiveParams);
+
+	std::cout << "Tri indices" << std::endl;
+	std::cout << triIndices << std::endl;
+	std::cout << "Prim Params" << std::endl;
+	std::cout << primitiveParams << std::endl;
+	std::cout << "triIndices size:"
+	       << triIndices.size()
+	       << "Prim params size:"
+	       << primitiveParams.size()
+	       << std::endl;
+
+
 }
 
-void program3()
+void program4()
 {
 	Context context;
-	Viewport viewport(context);
-	Renderer renderer(context);
-	Description description(context);
-	//binds to viewport and description and creates the graphics Pipeline
-	renderer.setup(viewport, description); 
-	//renderer must update after new geo is created
-	renderer.update();
-	renderer.render();
+	std::cout << "yeet" << std::endl;
+	Viewport myViewport(context);
+	Renderer ren(context);
+	Description scene(context);
 
-	int x;
-	std::cout << "1 for a triangle, 2 for a quad" << std::endl;
-	std::cin >> x;
-	if (x == 1)
-	{
-		description.createMesh<Triangle>();
-	}
-	else
-	{
-		description.createMesh<Quad>();
-	}
-	renderer.update();
-	renderer.render();
+	auto tri1 = scene.createMesh<Triangle>();
+	tri1->translate(-0.5, 0, 0);
+	tri1->scale(0.2);
+	std::cout << "This the memory address of tri1: " << tri1 << std::endl;
+
+	ren.setup(myViewport, scene);
+	ren.update();
+	ren.render();
+
+	std::cout << "Choose a point" << std::endl;
+	uint32_t index;
+	std::cin >> index;
+	auto p0 = tri1->getPoint(index);
+
+	std::cout << "Choose a color" << std::endl;
+	float r,g,b;
+	std::cin >> r;
+	std::cin >> g;
+	std::cin >> b;
+	p0->setColor(r,g,b);
+	scene.update(tri1);
+	ren.render();
 	std::this_thread::sleep_for(std::chrono::seconds(4));
+
 	context.queue.waitIdle();
 }
