@@ -35,6 +35,7 @@ public:
 	~Description();
 	void createCamera(const uint16_t width, const uint16_t height);
 
+	void loadImage(std::string path);
 	std::vector<vk::DescriptorSet> descriptorSets;
 	vk::Buffer& getVkVertexBuffer();
 	vk::Buffer& getVkIndexBuffer();
@@ -76,8 +77,8 @@ private:
 	std::shared_ptr<Camera> curCamera;
 	BufferBlock* vertexBlock; //does not have ownership
 	BufferBlock* indexBlock; //does not have ownership
-	std::shared_ptr<BufferBlock>* uboBlocks;
-	std::shared_ptr<BufferBlock>* uboDynamicBlocks;
+	std::vector<BufferBlock*> uboBlocks;
+	std::vector<BufferBlock*> uboDynamicBlocks;
 	uint8_t curSwapIndex = 0;
 	UboVS uboView;
 	UboDynamic uboDynamicData;

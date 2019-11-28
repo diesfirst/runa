@@ -2,6 +2,6 @@
 
 int main(int argc, char *argv[])
 {
-	program1();
+	program0();
 	return 0;
 }

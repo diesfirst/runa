@@ -4,34 +4,56 @@
 
 Occupant::Occupant()
 {
-	transform = glm::mat4(1.0); //identity
 }
 
 Occupant::~Occupant()
 {
 }
 
-glm::mat4& Occupant::getTransform()
+Image::Image()
+{
+}
+
+Image::Image(uint32_t w, uint32_t h)
+{
+	width = w;
+	height = h;
+}
+
+Image::~Image()
+{	
+}
+
+Transformable::Transformable()
+{
+	transform = glm::mat4(1.0); //identity
+}
+
+Transformable::~Transformable()
+{
+}
+
+glm::mat4& Transformable::getTransform()
 {
 	return transform;
 }
 
-void Occupant::setTransform(glm::mat4 transform)
+void Transformable::setTransform(glm::mat4 transform)
 {
 	this->transform = transform;
 }
 
-void Occupant::scale(float scale)
+void Transformable::scale(float scale)
 {
 	setTransform(glm::scale(transform, glm::vec3(scale,scale,scale)));
 }
 
-void Occupant::translate(float x, float y, float z)
+void Transformable::translate(float x, float y, float z)
 {
 	setTransform(glm::translate(transform, glm::vec3(x, y, z)));
 }
 
-void Occupant::rotate(float angle, glm::vec3 axis)
+void Transformable::rotate(float angle, glm::vec3 axis)
 {
 	setTransform(glm::rotate(transform, angle, axis));
 }

@@ -5,12 +5,33 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 #include <iostream>
+#include "mem.hpp"
 
 class Occupant
 {
 public:
 	Occupant();
 	virtual ~Occupant();
+
+private:
+};
+
+class Image : public Occupant
+{
+public:
+	Image();
+	Image(uint32_t width, uint32_t height);
+	virtual ~Image();
+	uint32_t width;
+	uint32_t height;
+};
+
+class Transformable : public Occupant
+{
+public:
+	Transformable();
+	virtual ~Transformable();
+
 	glm::mat4& getTransform();
 	void setTransform(glm::mat4 transform);
 	void scale(float scale);
@@ -19,7 +40,6 @@ public:
 
 	glm::mat4 transform;
 
-private:
 };
 
 struct Point
@@ -39,7 +59,7 @@ struct Point
 	}
 };
 
-class PointBased : public Occupant
+class PointBased : public Transformable
 {
 public:
 	PointBased();
@@ -112,7 +132,7 @@ private:
 	/* data */
 };
 
-class Camera : public Occupant
+class Camera : public Transformable
 {
 public:
 	Camera (int w, int h);

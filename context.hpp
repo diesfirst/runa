@@ -56,6 +56,8 @@ public:
 	
 	void printAvailableDevices();
 
+	void checkLayers(std::vector<const char*>);
+
 	vk::Queue queue;
 	std::unique_ptr<Commander> pCommander;
 	std::unique_ptr<MemoryManager> pMemory;
@@ -68,9 +70,14 @@ private:
 	std::vector<vk::ExtensionProperties> instanceExtensionProperties;
 	std::vector<vk::QueueFamilyProperties> queueFamilies;
 	std::vector<vk::ExtensionProperties> deviceExtensionProperties;
+	VkDebugUtilsMessengerEXT debugMessenger;
 	vk::DispatchLoaderDynamic dispatcher;
 
 	void createContext();
+
+	void setupDebugMessenger2();
+
+	void destroyDebugMessenger();
 
 	void destroyContext();
 
@@ -92,15 +99,6 @@ private:
 
 	void setupDebugMessenger();
 
-	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-			VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-			VkDebugUtilsMessageTypeFlagsEXT messageType,
-			const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-			void* pUserData) 
-	{
-	    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
-	    return VK_FALSE;
-	}
 };
 
 #endif /* ifndef CONTEXT_H */

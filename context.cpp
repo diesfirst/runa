@@ -1,6 +1,17 @@
 #include "context.hpp"
 
 //public
+//
+
+static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+		VkDebugUtilsMessageTypeFlagsEXT messageType,
+		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+		void* pUserData) 
+{
+    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+    return VK_FALSE;
+}
 
 Context::Context()
 {
@@ -14,7 +25,9 @@ Context::~Context()
 {
 	pCommander.reset();
 	pMemory.reset();
-	destroyContext();
+	device.destroy();
+	destroyDebugMessenger();
+	instance.destroy();
 }
 
 void Context::deviceReport()
@@ -39,7 +52,7 @@ void Context::createContext()
 	checkInstanceExtensionProperties();
 	printInstanceExtensionProperties();
 	createInstance();
-	if (enableValidation) setupDebugMessenger();
+	if (enableValidation) setupDebugMessenger2();
 	createPhysicalDevice();
 	createDevice();
 	setQueue();
@@ -47,18 +60,20 @@ void Context::createContext()
 
 void Context::destroyContext()
 {
-	device.destroy();
-	instance.destroy();
 }
 
 void Context::createInstance()
 {
 	std::vector<const char*> extensions;
-	extensions.push_back("VK_EXT_debug_utils");
+	extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 	extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 	extensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
 	std::vector<const char*> layers;
+	layers.push_back("VK_LAYER_KHRONOS_validation");
 	layers.push_back("VK_LAYER_LUNARG_standard_validation");
+//	layers.push_back("VK_LAYER_LUNARG_api_dump");
+
+	checkLayers(layers);
 
 	vk::InstanceCreateInfo instanceInfo;
 	instanceInfo.enabledExtensionCount = extensions.size();
@@ -228,22 +243,50 @@ void Context::setDeviceExtensions(vk::DeviceCreateInfo& createInfo)
 void Context::setupDebugMessenger()
 {
 	vk::DebugUtilsMessengerCreateInfoEXT dbCreateInfo;
-	dbCreateInfo.messageSeverity =
+	dbCreateInfo.setMessageSeverity(
 		vk::DebugUtilsMessageSeverityFlagBitsEXT::eError |
 		vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
-		vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose;
-	dbCreateInfo.messageType =
+		vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
+		vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo);
+	dbCreateInfo.setMessageType(
 		vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
 		vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance |
-		vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation;
-	dbCreateInfo.pfnUserCallback = (PFN_vkDebugUtilsMessengerCallbackEXT)debugCallback;
+		vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation);
+	dbCreateInfo.setPfnUserCallback(debugCallback);
 	std::cout << "going for it" << std::endl;
 	dispatcher.init(instance);
-	auto messenger = instance.createDebugUtilsMessengerEXT(
-			dbCreateInfo, 
+	std::cout << "mm" << std::endl;
+	auto messenger = instance.createDebugUtilsMessengerEXTUnique(
+			dbCreateInfo,
 			nullptr,
 			dispatcher);
 	std::cout << "Made it" << std::endl;
+}
+
+void Context::setupDebugMessenger2()
+{
+	VkDebugUtilsMessengerCreateInfoEXT dbCreateInfo;
+	dbCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+	dbCreateInfo.messageSeverity = 
+		VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+		VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT |
+		VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+		VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
+	dbCreateInfo.messageType = 
+		VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+		VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT |
+		VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
+	dbCreateInfo.pfnUserCallback = debugCallback;
+	auto func = (PFN_vkCreateDebugUtilsMessengerEXT) instance.getProcAddr("vkCreateDebugUtilsMessengerEXT");
+	assert(func != nullptr);
+	func(instance, &dbCreateInfo, nullptr, &debugMessenger);
+}
+
+void Context::destroyDebugMessenger()
+{
+	auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) instance.getProcAddr("vkDestroyDebugUtilsMessengerEXT");
+	assert(func != nullptr);
+	func(instance, debugMessenger, nullptr);
 }
 
 void Context::printAvailableDevices()
@@ -251,5 +294,25 @@ void Context::printAvailableDevices()
 	for (const auto device : instance.enumeratePhysicalDevices()) {
 		std::string name = device.getProperties().deviceName;
 		std::cout << "Device name: " << name << std::endl;
+	}
+}
+
+void Context::checkLayers(std::vector<const char*> layers)
+{
+	auto layerProperties = vk::enumerateInstanceLayerProperties();
+	for (auto layerProp : layerProperties) {
+		std::cout << layerProp.layerName << std::endl;
+	}
+	for (auto layerName : layers) {
+		bool layerFound = false;
+		for (auto layerProp : layerProperties) {
+			if (strcmp(layerName, layerProp.layerName) == 0) {
+				layerFound = true;
+				break;
+			}
+		} if (!layerFound) 
+		{
+			throw std::runtime_error("layer requested but not found");
+		}
 	}
 }

@@ -5,64 +5,27 @@
 #include <chrono>
 #include <random>
 #include "util.hpp"
-#include <pxr/usd/usd/stage.h>
-#include <pxr/usd/usdGeom/sphere.h>
-#include <pxr/usdImaging/usdImaging/sphereAdapter.h>
-#include <pxr/imaging/hd/meshTopology.h>
-#include <pxr/imaging/hd/meshUtil.h>
 
 
 Timer myTimer;
 
-void program1()
+void program0()
 {
-	auto stage = pxr::UsdStage::CreateNew("stage1.usd");
+	Context context;
+	Viewport viewport(context);
+	Renderer renderer(context);
+	Description scene(context);
+	renderer.setup(viewport, scene);
 
-	pxr::SdfPath spherePath("/ball");
-	auto ball = stage->DefinePrim(spherePath, pxr::TfToken("Sphere"));
+	auto quad = scene.createMesh<Quad>();
 
-	pxr::UsdImagingSphereAdapter sphereAdapter;
-	auto topo = sphereAdapter.GetMeshTopology();
-	auto points = sphereAdapter.GetMeshPoints(ball, pxr::UsdTimeCode());
-	auto type = topo.GetType();
-
-	if (topo.IsArrayValued())
-		std::cout << "The gibbet is array valued, Sir" << std::endl;
-	auto meshTopo = topo.Get<pxr::HdMeshTopology>();
-	if (points.IsArrayValued())
-		std::cout << "The points be array valued!" << std::endl;
-
-	std::cout << "Topo stuff:" << std::endl;
-	std::cout << meshTopo.GetNumPoints() << " num points" << std::endl;
-	std::cout << meshTopo.GetNumFaceVaryings() << " GetNumFaceVaryings" << std::endl;
-	std::cout << meshTopo.GetNumFaces() << " num faces" << std::endl;
-	std::cout << "indices" << std::endl;
-	auto indices = meshTopo.GetFaceVertexIndices();
-	auto faceVertCounts = meshTopo.GetFaceVertexCounts();
-	std::cout << indices << std::endl;
-	std::cout << "counts" << std::endl;
-	std::cout << faceVertCounts << std::endl;
-
-	pxr::HdMeshUtil meshUtil(&meshTopo, spherePath);
-
-	pxr::VtVec3iArray triIndices;
-	pxr::VtIntArray primitiveParams;
-	meshUtil.ComputeTriangleIndices(&triIndices, &primitiveParams);
-
-	std::cout << "Tri indices" << std::endl;
-	std::cout << triIndices << std::endl;
-	std::cout << "Prim Params" << std::endl;
-	std::cout << primitiveParams << std::endl;
-	std::cout << "triIndices size:"
-	       << triIndices.size()
-	       << "Prim params size:"
-	       << primitiveParams.size()
-	       << std::endl;
-
-
+	renderer.update();
+	renderer.render();
+	std::this_thread::sleep_for(std::chrono::seconds(4));
+	context.queue.waitIdle();
 }
 
-void program4()
+void program1()
 {
 	Context context;
 	std::cout << "yeet" << std::endl;

@@ -1,6 +1,8 @@
 #include "description.hpp"
 #include <cstring>
 #include <bitset>
+#define STB_IMAGE_IMPLEMENTATION
+#include "lib/stb_image.h"
 
 Description::Description(Context& context) :
 	context(context)
@@ -30,6 +32,13 @@ void Description::createCamera(const uint16_t width, const uint16_t height)
 	{
 		curCamera = cameras[0];
 	}
+}
+
+void Description::loadImage(std::string path)
+{
+	int width, height, channels;
+	auto pixels = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+	auto image = std::make_shared<Image>(width, height);
 }
 
 vk::Buffer& Description::getVkVertexBuffer()
