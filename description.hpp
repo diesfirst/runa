@@ -83,6 +83,7 @@ private:
 	UboVS uboView;
 	UboDynamic uboDynamicData;
 	size_t dynamicAlignment;
+	std::unique_ptr<Image> texture1;
 
 	Point* vertices;
 	uint32_t* indices;

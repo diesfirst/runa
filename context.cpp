@@ -221,12 +221,22 @@ uint32_t Context::getGraphicsQueueFamilyIndex() const
 	return 0;
 }
 
-BufferBlock* Context::getVertexBlock(uint32_t size)
+ImageBlock* Context::getImageBlock(uint32_t width, uint32_t height) const
+{
+	return pMemory->createImageBlock(width, height);
+}
+
+BufferBlock* Context::getStagingBuffer(uint32_t size) const
+{
+	return pMemory->createStagingBuffer(size);
+}
+
+BufferBlock* Context::getVertexBlock(uint32_t size) const
 {
 	return pMemory->createVertexBlock(size);
 }
 
-BufferBlock* Context::getIndexBlock(uint32_t size)
+BufferBlock* Context::getIndexBlock(uint32_t size) const
 {
 	return pMemory->createIndexBlock(size);
 }

@@ -3,7 +3,7 @@
     "layer" : {
         "name": "VK_LAYER_KHRONOS_validation",
         "type": "GLOBAL",
-        "library_path": "./libVkLayer_khronos_validation.so",
+        "library_path": "../../Vulkan/1.1.126.0/source/Vulkan-ValidationLayers/build/layers/libVkLayer_khronos_validation.so",
         "api_version": "1.1.126",
         "implementation_version": "1",
         "description": "Khronos Validation Layer",

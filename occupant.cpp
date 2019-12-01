@@ -10,18 +10,47 @@ Occupant::~Occupant()
 {
 }
 
-Image::Image()
+Image::Image(const Context& context, std::string imageFilePath)
 {
+
 }
 
-Image::Image(uint32_t w, uint32_t h)
+Image::Image(const Context* context, uint16_t w, uint16_t h, uint8_t channelCount)
 {
 	width = w;
 	height = h;
+	pContext = context;
+	layout = vk::ImageLayout::eUndefined;
+	imageSize = w * h * channelCount;
+	bufferBlock = context->getStagingBuffer(imageSize);
+	imageBlock = context->getImageBlock(w, h);
 }
+//currently always mapped to host memory
 
 Image::~Image()
 {	
+}
+
+
+void Image::loadArray(unsigned char* array, size_t size)
+{
+	assert(bufferBlock != nullptr);
+	memcpy(bufferBlock->pHostMemory, array, size);
+	transitionLayoutTo(vk::ImageLayout::eTransferDstOptimal);
+	pContext->pCommander->copyBufferToImage(
+			bufferBlock->buffer,
+			imageBlock->image,
+			width, height, 0);
+}
+
+void Image::transitionLayoutTo(vk::ImageLayout newLayout)
+{
+	assert(pContext != nullptr);
+	pContext->pCommander->transitionImageLayout(
+			imageBlock->image,
+			layout,
+			newLayout);
+	layout = newLayout;
 }
 
 Transformable::Transformable()

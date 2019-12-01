@@ -1,10 +1,11 @@
 #include "swapchain.hpp"
 #include "window.hpp"
 
-Swapchain::Swapchain(const Context& context, const XWindow& window, const uint32_t count) :
+Swapchain::Swapchain(const Context& context, const XWindow& window, const uint8_t count) :
 	context(context),
 	window(window)
 {
+	imageCount = count;
 	createSurface();
 	//this will pass the surface to the context in order to select
 	//an appropriate queue. currently the context will just print out
@@ -15,7 +16,6 @@ Swapchain::Swapchain(const Context& context, const XWindow& window, const uint32
 	setSwapExtent();
 	setFormat();
 	setPresentMode();
-	setImageCount(count);
 	createSwapchain();
 	setImages();
 	createImageViews();
@@ -139,6 +139,21 @@ void Swapchain::createImageViews()
 		createInfo.setImage(image);
 		imageViews.push_back(context.device.createImageView(createInfo));
 	}
+}
+
+uint8_t Swapchain::getCurrentIndex() const
+{
+	return currentIndex;
+}
+
+uint8_t Swapchain::getImageCount() const
+{
+	return imageCount;
+}
+
+void Swapchain::incrementIndex()
+{
+	currentIndex = (currentIndex + 1) % imageCount;
 }
 
 uint32_t Swapchain::acquireNextImage(const vk::Semaphore& semaphore)

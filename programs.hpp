@@ -19,10 +19,32 @@ void program0()
 
 	auto quad = scene.createMesh<Quad>();
 
+	constexpr int waitTime = 400;
 	renderer.update();
 	renderer.render();
-	std::this_thread::sleep_for(std::chrono::seconds(4));
+	std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
+	quad->rotate(.1, {0, 0, 1});
+	renderer.render();
+	std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
+	quad->rotate(.1, {0, 0, 1});
+	renderer.render();
+	std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
+	quad->rotate(.1, {0, 0, 1});
+	renderer.render();
+	std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
 	context.queue.waitIdle();
+}
+
+void textureTest()
+{
+	Context context;
+	Viewport viewport(context);
+	Renderer renderer(context);
+	Description scene(context);
+	renderer.setup(viewport, scene);
+
+	scene.loadImage("./images/sunflower.jpg");
+
 }
 
 void program1()

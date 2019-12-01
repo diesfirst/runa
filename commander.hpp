@@ -25,6 +25,8 @@ public:
 	void initializeCommandBuffers(const Swapchain&);
 
 	uint8_t renderFrame(Swapchain&);
+	
+	void presentSwapImage(vk::SwapchainKHR swapchain, uint32_t index);
 
 	void cleanUp();
 
@@ -59,6 +61,12 @@ public:
 		std::vector<DrawableInfo>&, uint32_t dynamicAlignment);
 		
 	void recordCopyImageToSwapImages(const Swapchain&, vk::Image);
+	
+	void copyBufferToImage(
+		vk::Buffer buffer,
+		vk::Image image,
+		uint32_t width, uint32_t height,
+		uint32_t bufferOffset);
 
 	void copyImageToBuffer(
 			vk::Image,

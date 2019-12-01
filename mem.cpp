@@ -21,7 +21,7 @@ ImageBlock::ImageBlock(const vk::Device& device) :
 
 ImageBlock::~ImageBlock()
 {
-	device.unmapMemory(memory);
+//	device.unmapMemory(memory);
 	device.destroyImage(image);
 	device.freeMemory(memory);
 }
@@ -70,27 +70,36 @@ std::unique_ptr<BufferBlock> MemoryManager::createBuffer(uint32_t size, vk::Buff
 	return block;
 }
 
-std::shared_ptr<ImageBlock> MemoryManager::createImage(
+std::unique_ptr<ImageBlock> MemoryManager::createImage(
+		uint32_t width,
+		uint32_t height)
+{
+	vk::ImageUsageFlags usage = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled;
+	return createImage(width, height, usage);
+}
+		
+
+std::unique_ptr<ImageBlock> MemoryManager::createImage(
 		uint32_t width,
 		uint32_t height,
-		uint32_t depth,
-		vk::ImageUsageFlagBits usage)
+		vk::ImageUsageFlags usage)
 {
-	auto block = std::make_shared<ImageBlock>(device);
+	auto block = std::make_unique<ImageBlock>(device);
 
 	vk::ImageCreateInfo createInfo;
 	vk::Extent3D extent;
 	extent.setWidth(width);
 	extent.setHeight(height);
-	extent.setDepth(depth);
+	extent.setDepth(1);
 	createInfo.setImageType(vk::ImageType::e2D);
 	createInfo.setExtent(extent);
 	createInfo.setMipLevels(1);
 	createInfo.setArrayLayers(1);
 	createInfo.setFormat(vk::Format::eR8G8B8A8Unorm);
-	createInfo.setTiling(vk::ImageTiling::eLinear);
+	createInfo.setTiling(vk::ImageTiling::eOptimal);
 	createInfo.setInitialLayout(vk::ImageLayout::eUndefined);
 	createInfo.setUsage(usage);
+	createInfo.setSamples(vk::SampleCountFlagBits::e1);
 	createInfo.setSharingMode(vk::SharingMode::eExclusive);
 
 	block->image = device.createImage(createInfo);
@@ -99,13 +108,14 @@ std::shared_ptr<ImageBlock> MemoryManager::createImage(
 
 	vk::MemoryAllocateInfo memAllocInfo;
 	memAllocInfo.setAllocationSize(imgMemReq.size);
-	memAllocInfo.setMemoryTypeIndex(9); //because it worked for the buffer
+	memAllocInfo.setMemoryTypeIndex(7); //device local
 
 	block->memory = device.allocateMemory(memAllocInfo);
 
 	device.bindImageMemory(block->image, block->memory, 0);
 
-	block->pHostMemory = device.mapMemory(block->memory, 0, imgMemReq.size);
+//	block->pHostMemory = device.mapMemory(block->memory, 0, imgMemReq.size);
+//	we wont be mapping the memory right now
 
 	return block;
 }
@@ -151,6 +161,24 @@ void MemoryManager::getImageSubresourceLayout(vk::Image image)
 	vk::SubresourceLayout subresLayout = 
 		device.getImageSubresourceLayout(image, subresource);
 	std::cout << "Row pitch: " << subresLayout.rowPitch << std::endl;
+}
+
+BufferBlock* MemoryManager::createStagingBuffer(size_t size)
+{
+	auto block = createBuffer(
+			size, 
+			vk::BufferUsageFlagBits::eTransferSrc);
+	auto blockPtr = block.get();
+	stagingBuffers.push_back(std::move(block));
+	return blockPtr;
+}
+
+ImageBlock* MemoryManager::createImageBlock(uint32_t width, uint32_t height)
+{
+	auto block = createImage(width, height);
+	auto blockPtr = block.get();
+	imageBlocks.push_back(std::move(block));
+	return blockPtr;
 }
 
 BufferBlock* MemoryManager::createVertexBlock(size_t size)

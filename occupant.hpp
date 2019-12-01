@@ -5,7 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 #include <iostream>
-#include "mem.hpp"
+#include "context.hpp"
 
 class Occupant
 {
@@ -19,11 +19,19 @@ private:
 class Image : public Occupant
 {
 public:
-	Image();
-	Image(uint32_t width, uint32_t height);
+	Image(const Context& context, std::string imageFilePath);
+	Image(const Context* context, uint16_t width, uint16_t height, uint8_t channels);
+	void transitionLayoutTo(vk::ImageLayout);
+	void loadArray(unsigned char* array, size_t size);
 	virtual ~Image();
-	uint32_t width;
-	uint32_t height;
+	uint16_t width;
+	uint16_t height;
+private:
+	const Context* pContext;
+	vk::DeviceSize imageSize;
+	vk::ImageLayout layout;
+	BufferBlock* bufferBlock;
+	ImageBlock* imageBlock;
 };
 
 class Transformable : public Occupant

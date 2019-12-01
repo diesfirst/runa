@@ -40,7 +40,7 @@ util.o : util.cpp util.hpp swapchain.hpp context.hpp
 lodepng.o : lib/lodepng.cpp lib/lodepng.h
 	g++ -c $(CFLAGS) lib/lodepng.cpp
 
-occupant.o : occupant.cpp occupant.hpp 
+occupant.o : occupant.cpp occupant.hpp context.hpp
 	g++ -c $(CFLAGS) occupant.cpp
 
 sculpter.o : sculpter.cpp sculpter.hpp 

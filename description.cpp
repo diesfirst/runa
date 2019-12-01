@@ -37,8 +37,10 @@ void Description::createCamera(const uint16_t width, const uint16_t height)
 void Description::loadImage(std::string path)
 {
 	int width, height, channels;
-	auto pixels = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
-	auto image = std::make_shared<Image>(width, height);
+	stbi_uc* pixels = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+	assert (pixels);
+	texture1 = std::make_unique<Image>(&context, width, height, 4);
+	texture1->loadArray(pixels, width * height * 4);
 }
 
 vk::Buffer& Description::getVkVertexBuffer()

@@ -12,8 +12,10 @@ constexpr uint8_t SWAP_IMG_COUNT = 3;
 class Viewport
 {
 public:
-	Viewport(Context& context, const uint16_t width = WIDTH, const uint16_t height = HEIGHT);
+	Viewport(const Context& context, const uint16_t width = WIDTH, const uint16_t height = HEIGHT);
 	~Viewport();
+
+	void present();
 
 	uint32_t getWidth() const;
 	uint32_t getHeight() const;
@@ -25,6 +27,7 @@ public:
 	vk::PipelineViewportStateCreateInfo* getPViewportState();
 
 private:
+	const Context& context;
 	XWindow window;
 	Swapchain swapchain;
 	uint32_t width, height;

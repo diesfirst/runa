@@ -37,16 +37,21 @@ public:
 
 	std::unique_ptr<BufferBlock> createBuffer(
 			uint32_t size, vk::BufferUsageFlagBits);
-	std::shared_ptr<ImageBlock> createImage(
+
+	std::unique_ptr<ImageBlock> createImage(
+			uint32_t width,
+			uint32_t height); //automatic transfer dest and sample usage
+
+	std::unique_ptr<ImageBlock> createImage(
 			uint32_t width,
 			uint32_t height,
-			uint32_t depth,
-			vk::ImageUsageFlagBits);
+			vk::ImageUsageFlags);
 
 	void createUniformBuffers(size_t count, vk::DeviceSize bufferSize);
 	BufferBlock* createVertexBlock(size_t size);
 	BufferBlock* createIndexBlock(size_t size);
-	BufferBlock* createImageBlock(size_t size);
+	BufferBlock* createStagingBuffer(size_t size);
+	ImageBlock* createImageBlock(uint32_t width, uint32_t height);
 	std::vector<BufferBlock*> createUBOBlocks(
 			size_t count, size_t size);
 	std::vector<BufferBlock*> createDynamicUBOBlocks(
@@ -63,5 +68,7 @@ private:
 	void getImageSubresourceLayout(vk::Image);
 	std::vector<std::unique_ptr<BufferBlock>> uniformBufferBlocks;
 	std::vector<std::unique_ptr<BufferBlock>> dynamicUBOBlocks;
+	std::vector<std::unique_ptr<BufferBlock>> stagingBuffers;
+	std::vector<std::unique_ptr<ImageBlock>> imageBlocks;
 };
 #endif

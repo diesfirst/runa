@@ -325,6 +325,42 @@ void Commander::recordCopyBufferToImages(
 	}
 }
 
+//note this function assumes image is in the correct layout
+void Commander::copyBufferToImage(
+		vk::Buffer buffer,
+		vk::Image image,
+		uint32_t width, uint32_t height,
+		uint32_t bufferOffset) 
+{
+	vk::ImageSubresourceLayers imgSubResLayers;
+	imgSubResLayers.setAspectMask(vk::ImageAspectFlagBits::eColor);
+	imgSubResLayers.setMipLevel(0);
+	imgSubResLayers.setBaseArrayLayer(0);
+	imgSubResLayers.setLayerCount(1);
+
+	vk::BufferImageCopy region;
+	region.setImageExtent({
+			width,
+			height,
+			1});
+	region.setImageOffset({0,0,0});
+	region.setBufferOffset(bufferOffset); //in bytes
+	region.setBufferRowLength(0); //specify possible padding values between rows
+	region.setBufferImageHeight(0);
+	region.setImageSubresource(imgSubResLayers);
+
+	auto cmdBuffer = beginSingleTimeCommand();
+
+	cmdBuffer.copyBufferToImage(
+			buffer,
+			image,
+			vk::ImageLayout::eTransferDstOptimal,
+			region);
+
+	endSingleTimeCommand(cmdBuffer);
+}
+
+
 void Commander::copyImageToBuffer(
 		vk::Image image,
 		vk::Buffer buffer,
@@ -498,6 +534,14 @@ uint8_t Commander::renderFrame(Swapchain& swapchain)
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
 	return currentFrame;
+}
+
+void Commander::presentSwapImage(vk::SwapchainKHR swapchain, uint32_t index)
+{
+	vk::PresentInfoKHR presentInfo;
+	presentInfo.setSwapchainCount(1);
+	presentInfo.setPImageIndices(&index);
+	presentInfo.setPSwapchains(&swapchain);
 }
 
 void Commander::resetCommandBuffers()

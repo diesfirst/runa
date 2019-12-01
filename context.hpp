@@ -36,9 +36,13 @@ public:
 	
 	void setQueue();
 
-	BufferBlock* getVertexBlock(uint32_t size);
+	ImageBlock* getImageBlock(uint32_t width, uint32_t height) const;
 
-	BufferBlock* getIndexBlock(uint32_t size);
+	BufferBlock* getStagingBuffer(uint32_t size) const;
+
+	BufferBlock* getVertexBlock(uint32_t size) const;
+
+	BufferBlock* getIndexBlock(uint32_t size) const;
 
 	void printInstanceExtensionProperties();
 

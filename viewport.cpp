@@ -1,6 +1,7 @@
 #include "viewport.hpp"
 
-Viewport::Viewport(Context& context, const uint16_t width, const uint16_t height) :
+Viewport::Viewport(const Context& context, const uint16_t width, const uint16_t height) :
+	context(context),
 	window(width, height),
 	swapchain(context, window, SWAP_IMG_COUNT), //set to 3 swapchain images
 	viewport(0, 0, width, height, 0, 1) //need to look up what these args do
@@ -23,6 +24,13 @@ Viewport::~Viewport()
 {
 }
 
+void Viewport::present()
+{
+	uint8_t index = swapchain.getCurrentIndex();
+	context.pCommander->presentSwapImage(swapchain.swapchain, index);
+	swapchain.incrementIndex();
+}
+
 vk::Extent2D Viewport::getExtent() const
 {
 	return extent;
@@ -40,7 +48,7 @@ uint32_t Viewport::getHeight() const
 
 uint8_t Viewport::getSwapImageCount() const
 {
-	return swapchain.imageCount;
+	return swapchain.getImageCount();
 }
 
 Swapchain& Viewport::getSwapchain()
