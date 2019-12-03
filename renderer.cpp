@@ -25,9 +25,10 @@ std::vector<vk::PipelineShaderStageCreateInfo> createShaderStageInfos(
 }
 
 
-Renderer::Renderer(
-		const Context& context) :
-	context(context)
+Renderer::Renderer(const Context& context) :
+	context(context),
+	device(context.device),
+	graphicsQueue(context.queue)
 {
 	viewportIsBound = false;
 	descriptionIsBound = false;
@@ -40,6 +41,9 @@ Renderer::~Renderer()
 	context.device.destroyPipelineLayout(pipelineLayout);
 	context.device.destroyPipeline(graphicsPipeline);
 	context.device.destroyRenderPass(renderPass);
+	for (auto semaphore : swapImageSemaphores) {
+		context.device.destroySemaphore(semaphore);
+	}
 	for (auto framebuffer : framebuffers) 
 	{
 		context.device.destroyFramebuffer(framebuffer);
@@ -65,11 +69,46 @@ void Renderer::setup(Viewport& viewport, Description& description)
 {
 	bindToViewport(viewport);
 	bindToDescription(description);
+	uint32_t swapImageCount = viewport.getSwapImageCount(); 
+	drawCommandBlock = context.pCommander->
+		createCommandBlock(swapImageCount);
 	initPipelineLayout();
 	createGraphicsPipeline();
 	description.createCamera(viewport.getWidth(), viewport.getHeight());
-	description.prepareUniformBuffers(viewport.getSwapImageCount());
-	description.prepareDescriptorSets(viewport.getSwapImageCount());
+	description.prepareUniformBuffers(swapImageCount);
+	description.prepareDescriptorSets(swapImageCount);
+	maxFramesInFlight = swapImageCount;
+	initSwapImageSemaphores(swapImageCount);
+	initPresentInfos(swapImageCount);
+	initDrawSubmitInfos(swapImageCount);
+	std::cout << "got drawblock" << std::endl;
+}
+
+void Renderer::initPresentInfos(uint32_t count)
+{
+	presentInfos.resize(count);
+	for (int i = 0; i < count; i++) {
+		presentInfos[i].setPSwapchains(pViewport->getPSwapchain());
+		presentInfos[i].setSwapchainCount(1);
+	}
+	
+}
+
+void Renderer::initDrawSubmitInfos(uint32_t count)
+{
+	assert (drawCommandBlock);
+	drawSubmitInfos.resize(count);
+	for (int i = 0; i < count; i++) 
+	{
+		drawSubmitInfos[i].setCommandBufferCount(1);
+		drawSubmitInfos[i].setPCommandBuffers(&drawCommandBlock->commandBuffers[i]);
+		//GPU - GPU synchronization
+		drawSubmitInfos[i].setWaitSemaphoreCount(1);
+		//will wait until acuired image is available to write to
+		drawSubmitInfos[i].setSignalSemaphoreCount(1);
+		//will be signalled when draw completes
+		drawSubmitInfos[i].setPSignalSemaphores(&drawCommandBlock->semaphores[i]);
+	}
 }
 
 void Renderer::createRenderPass(vk::Format colorFormat)
@@ -126,7 +165,7 @@ void Renderer::createRenderPass(vk::Format colorFormat)
 	createInfo.setPSubpasses(subpasses.data());
 	createInfo.setDependencyCount(subpassDependencies.size());
 	createInfo.setPDependencies(subpassDependencies.data());
-  renderPass = context.device.createRenderPass(createInfo);
+  	renderPass = context.device.createRenderPass(createInfo);
 }
 
 
@@ -154,8 +193,11 @@ void Renderer::createFramebuffers()
 
 void Renderer::update()
 {
+	assert (drawCommandBlock); //make sure its initialized
+	std::cout << "in update" << std::endl;
 	context.queue.waitIdle();
 	context.pCommander->recordDraw(
+			drawCommandBlock->getCommandBuffers(),
 			renderPass,
 			framebuffers,
 			pDescription->getVkVertexBuffer(),
@@ -168,11 +210,53 @@ void Renderer::update()
 			pDescription->getDynamicAlignment());
 }
 
+void Renderer::submitDrawCommand(uint32_t index)
+{
+	//CPU block
+	device.waitForFences(
+			drawCommandBlock->fences[index],
+			true,
+			UINT64_MAX);
+	device.resetFences(drawCommandBlock->fences[index]);
+
+	vk::PipelineStageFlags stageFlags = 
+		vk::PipelineStageFlagBits::eColorAttachmentOutput;
+
+	drawSubmitInfos[index].setPWaitDstStageMask(&stageFlags);
+	drawSubmitInfos[index].setPWaitSemaphores(&swapImageSemaphores[swapCounter]);
+	graphicsQueue.submit(
+			drawSubmitInfos[index],
+			drawCommandBlock->fences[index]);
+
+	//adjust state variables
+	swapCounter = (swapCounter + 1) % maxFramesInFlight;
+}
+
+void Renderer::presentSwapImage(uint32_t index)
+{
+	presentInfos[index].setPImageIndices(&index);
+	presentInfos[index].setPWaitSemaphores(&drawCommandBlock->semaphores[index]);
+	presentInfos[index].setWaitSemaphoreCount(1);
+	std::cout << "index: " << index << std::endl;
+	graphicsQueue.presentKHR(presentInfos[index]);
+}
+
 void Renderer::render()
 {
-	pDescription->updateAllCurrentUbos();
-	uint8_t curIndex = context.pCommander->renderFrame(pViewport->getSwapchain());
-	pDescription->setCurrentSwapIndex(curIndex);
+	std::cout << "start render" << std::endl;
+	uint32_t index = pViewport->acquireSwapImageIndex(
+			swapImageSemaphores[swapCounter]);
+	pDescription->updateAllCurrentUbos(index);
+	std::cout << "index: " << index << std::endl;
+	submitDrawCommand(index);
+	presentSwapImage(index);
+
+//	context.pCommander->submitDrawCommand(
+//			drawSubmitInfos[swapImageIndex],
+//			&swapImageSemaphores[swapCounter]);
+			
+//	uint8_t curIndex = context.pCommander->renderFrame(pViewport->getSwapchain());
+	
 }
 
 vk::ShaderModule Renderer::createShaderModule(const std::vector<char>& code)
@@ -181,6 +265,16 @@ vk::ShaderModule Renderer::createShaderModule(const std::vector<char>& code)
 	info.setCodeSize(code.size());
 	info.setPCode(reinterpret_cast<const uint32_t*>(code.data()));
 	return context.device.createShaderModule(info);
+}
+
+void Renderer::initSwapImageSemaphores(uint32_t count)
+{
+	vk::SemaphoreCreateInfo info;
+	swapImageSemaphores.resize(count);
+	for (int i = 0; i < count; i++) {
+		swapImageSemaphores[i] = context.device.createSemaphore(info);
+	}
+	
 }
 
 void Renderer::initVertexInputState()

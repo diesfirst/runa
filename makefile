@@ -31,7 +31,7 @@ swapchain.o : swapchain.cpp swapchain.hpp context.hpp window.hpp
 painter.o : painter.cpp painter.hpp swapchain.hpp util.hpp
 	g++ -c $(CFLAGS) painter.cpp
 
-commander.o : commander.cpp commander.hpp swapchain.hpp painter.hpp
+commander.o : commander.cpp commander.hpp 
 	g++ -c $(CFLAGS) commander.cpp
 
 util.o : util.cpp util.hpp swapchain.hpp context.hpp

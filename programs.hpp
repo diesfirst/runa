@@ -19,8 +19,18 @@ void program0()
 
 	auto quad = scene.createMesh<Quad>();
 
-	constexpr int waitTime = 400;
+	constexpr int waitTime = 1000;
 	renderer.update();
+	renderer.render();
+	std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
+	quad->rotate(.1, {0, 0, 1});
+	std::cout << "about to render again" << std::endl;
+	renderer.render();
+	std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
+	quad->rotate(.1, {0, 0, 1});
+	renderer.render();
+	std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
+	quad->rotate(.1, {0, 0, 1});
 	renderer.render();
 	std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
 	quad->rotate(.1, {0, 0, 1});

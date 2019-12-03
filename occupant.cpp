@@ -37,7 +37,7 @@ void Image::loadArray(unsigned char* array, size_t size)
 	assert(bufferBlock != nullptr);
 	memcpy(bufferBlock->pHostMemory, array, size);
 	transitionLayoutTo(vk::ImageLayout::eTransferDstOptimal);
-	pContext->pCommander->copyBufferToImage(
+	pContext->pCommander->copyBufferToImageSingleTime(
 			bufferBlock->buffer,
 			imageBlock->image,
 			width, height, 0);

@@ -281,14 +281,14 @@ void Description::prepareUniformBuffers(const uint32_t count)
 	uboDynamicBlocks = 
 		context.pMemory->createDynamicUBOBlocks(count, bufferSize);
 
-	updateUniformBuffers(); //initial swapIndex assumed 0
-	updateDynamicUniformBuffers();//initial swapIndex assumed 0
+	updateUniformBuffers(0); //initial swapIndex assumed 0
+	updateDynamicUniformBuffers(0);//initial swapIndex assumed 0
 }
 
-void Description::updateAllCurrentUbos()
+void Description::updateAllCurrentUbos(uint32_t swapIndex)
 {
-	updateUniformBuffers();
-	updateDynamicUniformBuffers();
+	updateUniformBuffers(swapIndex);
+	updateDynamicUniformBuffers(swapIndex);
 }
 
 void Description::update(PointBased* pb)
@@ -301,7 +301,7 @@ void Description::update(PointBased* pb)
 			sizeof(Point) * range);
 }
 
-void Description::updateUniformBuffers()
+void Description::updateUniformBuffers(uint32_t curSwapIndex)
 {
 	assert (curCamera.get() != nullptr);
 	uboView.projection = curCamera->projection;
@@ -309,7 +309,7 @@ void Description::updateUniformBuffers()
 	memcpy(uboBlocks[curSwapIndex]->pHostMemory, &uboView, sizeof(UboVS));
 }
 
-void Description::updateDynamicUniformBuffers()
+void Description::updateDynamicUniformBuffers(uint32_t curSwapIndex)
 {
 	uint32_t nMeshes = getMeshCount();
 	char* pModelMemory = (char*)uboDynamicData.model;
@@ -322,7 +322,3 @@ void Description::updateDynamicUniformBuffers()
 		nMeshes * dynamicAlignment);	
 }
 
-void Description::setCurrentSwapIndex(uint8_t curIndex)
-{
-	curSwapIndex = curIndex;
-}

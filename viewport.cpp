@@ -16,7 +16,6 @@ Viewport::Viewport(const Context& context, const uint16_t width, const uint16_t 
 	state.setScissorCount(1);
 	state.setViewportCount(1);
 	swapchainImageCount = SWAP_IMG_COUNT;
-	context.pCommander->allocateCommandBuffers(SWAP_IMG_COUNT);
 	window.open();
 }
 
@@ -29,6 +28,11 @@ void Viewport::present()
 	uint8_t index = swapchain.getCurrentIndex();
 	context.pCommander->presentSwapImage(swapchain.swapchain, index);
 	swapchain.incrementIndex();
+}
+
+uint32_t Viewport::acquireSwapImageIndex(vk::Semaphore semaphore)
+{
+	return swapchain.acquireNextImage(semaphore);
 }
 
 vk::Extent2D Viewport::getExtent() const
@@ -54,6 +58,11 @@ uint8_t Viewport::getSwapImageCount() const
 Swapchain& Viewport::getSwapchain()
 {
 	return swapchain;
+}
+
+vk::SwapchainKHR* Viewport::getPSwapchain()
+{
+	return &swapchain.swapchain;
 }
 
 const std::vector<vk::ImageView>& Viewport::getSwapImageViews() const

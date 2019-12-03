@@ -5,8 +5,31 @@
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 3;
 
-class Swapchain; //forward declaration
-struct DrawableInfo;
+struct DrawableInfo
+{
+	uint32_t indexBufferOffset;
+	uint32_t numberOfIndices;
+	uint32_t vertexIndexOffset;
+};
+
+
+class CommandBlock
+{
+public: 
+	CommandBlock(const vk::CommandPool& pool, const vk::Device& device, uint32_t size);
+	~CommandBlock();
+	std::vector<vk::CommandBuffer>& getCommandBuffers();
+	uint32_t getSize() const;
+	vk::CommandBuffer* getPCommandBuffer(uint32_t index);
+	std::vector<vk::CommandBuffer> commandBuffers;
+	std::vector<vk::Semaphore> semaphores;
+	std::vector<vk::Fence> fences;
+private:
+	uint32_t size;
+	const vk::Device& device;
+	void initSemaphores(uint32_t size);
+	void initFences(uint32_t size);
+};
 
 class Commander
 {
@@ -16,17 +39,16 @@ public:
 
 	void createCommandPool(uint32_t queueFamily); // must be called
 
-	void createSyncObjects();
-
-	void setQueue(vk::Queue& queue); 
-
-	void setSwapchain(const Swapchain&);
-
-	void initializeCommandBuffers(const Swapchain&);
-
-	uint8_t renderFrame(Swapchain&);
+	std::unique_ptr<CommandBlock> createCommandBlock(const uint32_t count) const;
 	
-	void presentSwapImage(vk::SwapchainKHR swapchain, uint32_t index);
+	void submitDrawCommand(
+		CommandBlock* drawCommandBlock, 
+		vk::Semaphore* pImageAcquiredSemaphore, 
+		uint32_t swapImageIndex);
+
+	uint8_t renderFrame(const vk::SwapchainKHR* swapchain);
+	
+	void presentSwapImage(vk::SwapchainKHR& swapchain, uint32_t index);
 
 	void cleanUp();
 
@@ -35,9 +57,10 @@ public:
 	void endSingleTimeCommand(vk::CommandBuffer);
 
 	void recordCopyBufferToImages(
+			std::vector<vk::CommandBuffer>&,
 			vk::Buffer,
 			const std::vector<vk::Image>,
-			uint32_t width, uint32_t height, uint32_t depth);
+			uint32_t width, uint32_t height);
 
 	
 	void recordDraw(
@@ -50,6 +73,7 @@ public:
 		uint32_t vertexCount);
 
 	void recordDraw(
+		std::vector<vk::CommandBuffer>& commandBuffers,
 		vk::RenderPass& renderpass,
 	 	std::vector<vk::Framebuffer>& framebuffers,
 		vk::Buffer& vertexBuffer,
@@ -60,9 +84,7 @@ public:
 		uint32_t width, uint32_t height,
 		std::vector<DrawableInfo>&, uint32_t dynamicAlignment);
 		
-	void recordCopyImageToSwapImages(const Swapchain&, vk::Image);
-	
-	void copyBufferToImage(
+	void copyBufferToImageSingleTime(
 		vk::Buffer buffer,
 		vk::Image image,
 		uint32_t width, uint32_t height,
@@ -73,9 +95,7 @@ public:
 			vk::Buffer,
 			uint32_t width, uint32_t height, uint32_t depth);
 
-	void allocateCommandBuffers(const uint32_t count);
-
-	void setSwapchainImagesToPresent(Swapchain&);
+	void allocateDrawCommandBuffers(const uint32_t count);
 
 	void transitionImageLayout(
 			vk::Image,
@@ -92,11 +112,11 @@ public:
 
 private:
 	vk::CommandPool commandPool;
-	std::vector<vk::CommandBuffer> commandBuffers;
+	std::vector<vk::CommandBuffer> drawCommandBuffers;
 	const vk::Device& device;
-	vk::Queue& queue;
+	vk::Queue& graphicsQueue;
+	vk::Queue& primaryQueue;
 	bool commandPoolCreated = false;
-	bool semaphoresCreated = false;
 	std::vector<vk::ClearColorValue> clearColors;
 	uint8_t currentFrame = 0;
 	size_t trueFrame = 0;

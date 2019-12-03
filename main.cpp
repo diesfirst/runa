@@ -2,6 +2,6 @@
 
 int main(int argc, char *argv[])
 {
-	program0();
+	textureTest();
 	return 0;
 }

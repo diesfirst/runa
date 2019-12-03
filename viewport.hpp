@@ -16,11 +16,15 @@ public:
 	~Viewport();
 
 	void present();
+	//semaphore will signal when we can do something with the image
+	//but can use the index for recording command purposes
+	uint32_t acquireSwapImageIndex(vk::Semaphore);
 
 	uint32_t getWidth() const;
 	uint32_t getHeight() const;
 	uint8_t getSwapImageCount() const;
 	Swapchain& getSwapchain(); 
+	vk::SwapchainKHR* getPSwapchain();
 	vk::Extent2D getExtent() const;
 	const std::vector<vk::ImageView>& getSwapImageViews() const;
 	vk::ImageView getSwapImageView(uint32_t i) const;

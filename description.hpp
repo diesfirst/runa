@@ -21,13 +21,6 @@ struct UboVS
 	glm::mat4 view;
 };
 
-struct DrawableInfo
-{
-	uint32_t indexBufferOffset;
-	uint32_t numberOfIndices;
-	uint32_t vertexIndexOffset;
-};
-
 class Description
 {
 public:
@@ -47,8 +40,7 @@ public:
 	vk::DescriptorSetLayout* getPDescriptorSetLayout();
 	void prepareDescriptorSets(const uint32_t count);
 	void prepareUniformBuffers(const uint32_t count);
-	void setCurrentSwapIndex(uint8_t swapIndex);
-	void updateAllCurrentUbos();
+	void updateAllCurrentUbos(uint32_t swapIndex);
 	void update(PointBased*);
 
 	static vk::VertexInputBindingDescription getBindingDescription();
@@ -79,7 +71,6 @@ private:
 	BufferBlock* indexBlock; //does not have ownership
 	std::vector<BufferBlock*> uboBlocks;
 	std::vector<BufferBlock*> uboDynamicBlocks;
-	uint8_t curSwapIndex = 0;
 	UboVS uboView;
 	UboDynamic uboDynamicData;
 	size_t dynamicAlignment;
@@ -99,8 +90,8 @@ private:
 	void oldUpdateVertexBuffer();
 	void updateVertexBuffer(const PointBased&);
 	void updateIndexBuffer(const Mesh&);
-	void updateUniformBuffers();
-	void updateDynamicUniformBuffers();
+	void updateUniformBuffers(uint32_t swapIndex);
+	void updateDynamicUniformBuffers(uint32_t swapIndex);
 	void initDescriptorSetLayout();
 	void createDescriptorPool(uint32_t descriptorSetCount);
 	void createDescriptorSets(uint32_t descriptorSetCount);
