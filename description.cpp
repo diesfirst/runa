@@ -34,13 +34,14 @@ void Description::createCamera(const uint16_t width, const uint16_t height)
 	}
 }
 
-void Description::loadImage(std::string path)
+Image* Description::loadImage(std::string path)
 {
 	int width, height, channels;
 	stbi_uc* pixels = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
 	assert (pixels);
 	texture1 = std::make_unique<Image>(&context, width, height, 4);
 	texture1->loadArray(pixels, width * height * 4);
+	return texture1.get();
 }
 
 vk::Buffer& Description::getVkVertexBuffer()

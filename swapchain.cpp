@@ -19,11 +19,13 @@ Swapchain::Swapchain(const Context& context, const XWindow& window, const uint8_
 	createSwapchain();
 	setImages();
 	createImageViews();
+	initSyncObjects();
 }
 
 Swapchain::~Swapchain()
 {	
 	destroyImageViews();
+	destroySyncObjects();
 	context.device.destroySwapchainKHR(swapchain);
 	context.instance.destroySurfaceKHR(surface);
 }
@@ -34,6 +36,22 @@ void Swapchain::createSurface()
 	surfaceCreateInfo.connection  = window.connection;
 	surfaceCreateInfo.window = window.window;
 	surface = context.instance.createXcbSurfaceKHR(surfaceCreateInfo);
+}
+
+void Swapchain::initSyncObjects()
+{
+	acquisitionSemaphores.resize(imageCount);
+	acquisitionFences.resize(imageCount);
+	vk::SemaphoreCreateInfo semaphoreInfo;
+	vk::FenceCreateInfo fenceInfo;
+	for (uint8_t i = 0; i < imageCount; i++) 
+	{
+		acquisitionSemaphores[i] = context.device.createSemaphore(semaphoreInfo);
+		acquisitionFences[i] = context.device.createFence(fenceInfo);
+		std::cout << "semaphore" << i << ' ' << acquisitionSemaphores[i] << std::endl;
+		std::cout << "fence" << i << ' ' << acquisitionFences[i] << std::endl;
+	}
+	
 }
 
 void Swapchain::setQueueFamilyIndex()
@@ -151,28 +169,57 @@ uint8_t Swapchain::getImageCount() const
 	return imageCount;
 }
 
-void Swapchain::incrementIndex()
+std::tuple<uint32_t, vk::Semaphore*> Swapchain::acquireNextImageNoFence()
 {
-	currentIndex = (currentIndex + 1) % imageCount;
-}
-
-uint32_t Swapchain::acquireNextImage(const vk::Semaphore& semaphore)
-{
+	syncIndex = (1 + syncIndex) % imageCount;
 	auto result = context.device.acquireNextImageKHR(
 			swapchain,
 			UINT64_MAX, //so it will wait forever
-			semaphore, //will be signalled when we can do something with this
-			vk::Fence()); //empty fence
+			//will be signalled when we can do something with this
+			acquisitionSemaphores[syncIndex], 
+			vk::Fence());
 	if (result.result != vk::Result::eSuccess) 
 	{
 		std::cerr << "Invalid acquire result: " << vk::to_string(result.result);
 		throw std::error_code(result.result);
 	}
 
-	currentIndex = result.value;
+	std::cout << "&acquisitionSemaphores[syncIndex]" 
+		<< &acquisitionSemaphores[syncIndex] << std::endl;
 
-	return currentIndex;
+	std::cout << "Fence: " << acquisitionFences[syncIndex] << std::endl;
+
+	return std::make_tuple(
+			result.value, 
+			&acquisitionSemaphores[syncIndex]);
 }
+
+std::tuple<uint32_t, vk::Semaphore*, vk::Fence*> Swapchain::acquireNextImage()
+{
+	syncIndex = (1 + syncIndex) % imageCount;
+	auto result = context.device.acquireNextImageKHR(
+			swapchain,
+			UINT64_MAX, //so it will wait forever
+			//will be signalled when we can do something with this
+			acquisitionSemaphores[syncIndex], 
+			acquisitionFences[syncIndex]);
+	if (result.result != vk::Result::eSuccess) 
+	{
+		std::cerr << "Invalid acquire result: " << vk::to_string(result.result);
+		throw std::error_code(result.result);
+	}
+
+	std::cout << "&acquisitionSemaphores[syncIndex]" 
+		<< &acquisitionSemaphores[syncIndex] << std::endl;
+
+	std::cout << "Fence: " << acquisitionFences[syncIndex] << std::endl;
+
+	return std::make_tuple(
+			result.value, 
+			&acquisitionSemaphores[syncIndex],
+			&acquisitionFences[syncIndex]);
+}
+
 
 void Swapchain::destroyImageViews()
 {
@@ -180,4 +227,14 @@ void Swapchain::destroyImageViews()
 	{
 		context.device.destroyImageView(imageView);
 	}
+}
+
+void Swapchain::destroySyncObjects()
+{
+	for (uint8_t i = 0; i < imageCount; i++) 
+	{
+		context.device.destroySemaphore(acquisitionSemaphores[i]);
+		context.device.destroyFence(acquisitionFences[i]);
+	}
+	
 }

@@ -58,20 +58,10 @@ public:
 
 	void recordCopyBufferToImages(
 			std::vector<vk::CommandBuffer>&,
-			vk::Buffer,
-			const std::vector<vk::Image>,
+			vk::Buffer&,
+			const std::vector<vk::Image>&,
 			uint32_t width, uint32_t height);
-
 	
-	void recordDraw(
-		vk::RenderPass& renderpass,
-	 	std::vector<vk::Framebuffer>& framebuffers,
-		vk::Buffer& vertexBuffer,
-		vk::Pipeline& graphicsPipeline,
-		vk::PipelineLayout& pipelineLayout,
-		uint32_t width, uint32_t height,
-		uint32_t vertexCount);
-
 	void recordDraw(
 		std::vector<vk::CommandBuffer>& commandBuffers,
 		vk::RenderPass& renderpass,
@@ -85,20 +75,25 @@ public:
 		std::vector<DrawableInfo>&, uint32_t dynamicAlignment);
 		
 	void copyBufferToImageSingleTime(
-		vk::Buffer buffer,
-		vk::Image image,
+		vk::Buffer& buffer,
+		vk::Image& image,
 		uint32_t width, uint32_t height,
 		uint32_t bufferOffset);
 
 	void copyImageToBuffer(
-			vk::Image,
-			vk::Buffer,
+			vk::Image&,
+			vk::Buffer&,
 			uint32_t width, uint32_t height, uint32_t depth);
+
+	void copyImageToImage(
+			vk::Image&,
+			vk::Image&,
+			uint32_t width, uint32_t height);
 
 	void allocateDrawCommandBuffers(const uint32_t count);
 
 	void transitionImageLayout(
-			vk::Image,
+			vk::Image&,
 			vk::ImageLayout oldLayout,
 			vk::ImageLayout newLayout);
 

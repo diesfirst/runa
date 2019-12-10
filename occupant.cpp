@@ -43,6 +43,11 @@ void Image::loadArray(unsigned char* array, size_t size)
 			width, height, 0);
 }
 
+vk::Image* Image::getPVKImage() const
+{
+	return &imageBlock->image;
+}
+
 void Image::transitionLayoutTo(vk::ImageLayout newLayout)
 {
 	assert(pContext != nullptr);

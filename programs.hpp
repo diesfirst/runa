@@ -7,6 +7,7 @@
 #include "util.hpp"
 
 
+constexpr int waitTime = 10000;
 Timer myTimer;
 
 void program0()
@@ -19,7 +20,6 @@ void program0()
 
 	auto quad = scene.createMesh<Quad>();
 
-	constexpr int waitTime = 1000;
 	renderer.update();
 	renderer.render();
 	std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
@@ -53,7 +53,10 @@ void textureTest()
 	Description scene(context);
 	renderer.setup(viewport, scene);
 
-	scene.loadImage("./images/sunflower.jpg");
+	Image* image = scene.loadImage("./images/sunflower.jpg");
+
+	renderer.copyImageToSwapImage(image);
+	std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
 
 }
 

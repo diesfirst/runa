@@ -15,10 +15,10 @@ public:
 	Viewport(const Context& context, const uint16_t width = WIDTH, const uint16_t height = HEIGHT);
 	~Viewport();
 
-	void present();
 	//semaphore will signal when we can do something with the image
 	//but can use the index for recording command purposes
-	uint32_t acquireSwapImageIndex(vk::Semaphore);
+	std::tuple<uint32_t, vk::Semaphore*> acquireSwapImageIndexNoFence();
+	std::tuple<uint32_t, vk::Semaphore*, vk::Fence*> acquireSwapImageIndex();
 
 	uint32_t getWidth() const;
 	uint32_t getHeight() const;
@@ -29,6 +29,7 @@ public:
 	const std::vector<vk::ImageView>& getSwapImageViews() const;
 	vk::ImageView getSwapImageView(uint32_t i) const;
 	vk::PipelineViewportStateCreateInfo* getPViewportState();
+	vk::Image& getSwapchainImage(uint32_t index);
 
 private:
 	const Context& context;

@@ -4,7 +4,6 @@
 #include "viewport.hpp"
 #include "io.hpp"
 #include <iostream>
-#include "description.hpp"
 #include "util.hpp"
 
 Timer renderTimer;
@@ -38,16 +37,10 @@ Renderer::Renderer(const Context& context) :
 
 Renderer::~Renderer()
 {
+	destroyFramebuffers();
 	context.device.destroyPipelineLayout(pipelineLayout);
 	context.device.destroyPipeline(graphicsPipeline);
 	context.device.destroyRenderPass(renderPass);
-	for (auto semaphore : swapImageSemaphores) {
-		context.device.destroySemaphore(semaphore);
-	}
-	for (auto framebuffer : framebuffers) 
-	{
-		context.device.destroyFramebuffer(framebuffer);
-	}
 }
 
 void Renderer::bindToViewport(Viewport& viewport)
@@ -78,7 +71,6 @@ void Renderer::setup(Viewport& viewport, Description& description)
 	description.prepareUniformBuffers(swapImageCount);
 	description.prepareDescriptorSets(swapImageCount);
 	maxFramesInFlight = swapImageCount;
-	initSwapImageSemaphores(swapImageCount);
 	initPresentInfos(swapImageCount);
 	initDrawSubmitInfos(swapImageCount);
 	std::cout << "got drawblock" << std::endl;
@@ -210,7 +202,7 @@ void Renderer::update()
 			pDescription->getDynamicAlignment());
 }
 
-void Renderer::submitDrawCommand(uint32_t index)
+void Renderer::submitDrawCommand(uint32_t index, vk::Semaphore* pSemaphore)
 {
 	//CPU block
 	device.waitForFences(
@@ -223,13 +215,47 @@ void Renderer::submitDrawCommand(uint32_t index)
 		vk::PipelineStageFlagBits::eColorAttachmentOutput;
 
 	drawSubmitInfos[index].setPWaitDstStageMask(&stageFlags);
-	drawSubmitInfos[index].setPWaitSemaphores(&swapImageSemaphores[swapCounter]);
+	std::cout << "submit Draw pSemaphore" << pSemaphore << std::endl;
+	drawSubmitInfos[index].setPWaitSemaphores(pSemaphore);
 	graphicsQueue.submit(
 			drawSubmitInfos[index],
 			drawCommandBlock->fences[index]);
 
 	//adjust state variables
-	swapCounter = (swapCounter + 1) % maxFramesInFlight;
+//	swapCounter = (swapCounter + 1) % maxFramesInFlight;
+}
+
+void Renderer::copyImageToSwapImage(Image* pImage)
+{
+	auto [index, pSemaphore, pFence] = pViewport->acquireSwapImageIndex();
+	device.waitForFences(1, pFence, true, UINT64_MAX);
+	device.resetFences(1, pFence);
+	std::cout << "Index" << index << std::endl;
+	std::cout << "pIndex " << &index << std::endl;
+	pImage->transitionLayoutTo(vk::ImageLayout::eTransferSrcOptimal);
+	vk::Image& swapImage = pViewport->getSwapchainImage(index);
+	context.pCommander->transitionImageLayout(
+			swapImage, 
+			vk::ImageLayout::eUndefined, //swap images are initially in this layout
+			vk::ImageLayout::eTransferDstOptimal);
+	context.pCommander->copyImageToImage(
+			*pImage->getPVKImage(),
+			swapImage,
+			pImage->width,
+			pImage->height);
+	context.pCommander->transitionImageLayout(
+			swapImage,
+			vk::ImageLayout::eTransferDstOptimal,
+			vk::ImageLayout::ePresentSrcKHR);
+
+	vk::PresentInfoKHR presentInfo;
+	presentInfo.setPSwapchains(pViewport->getPSwapchain());
+	presentInfo.setSwapchainCount(1);
+	presentInfo.setPImageIndices(&index);
+	//presentInfo.setPWaitSemaphores(&drawCommandBlock->semaphores[index]);
+	//presentInfo.setWaitSemaphoreCount(1);
+	std::cout << "index: " << index << std::endl;
+	graphicsQueue.presentKHR(presentInfo);
 }
 
 void Renderer::presentSwapImage(uint32_t index)
@@ -244,19 +270,12 @@ void Renderer::presentSwapImage(uint32_t index)
 void Renderer::render()
 {
 	std::cout << "start render" << std::endl;
-	uint32_t index = pViewport->acquireSwapImageIndex(
-			swapImageSemaphores[swapCounter]);
+	auto [index, pSwapImageAcquiredSemaphore] = pViewport->acquireSwapImageIndexNoFence();
+	std::cout << "render() pSemaphore" << pSwapImageAcquiredSemaphore << std::endl;
 	pDescription->updateAllCurrentUbos(index);
 	std::cout << "index: " << index << std::endl;
-	submitDrawCommand(index);
+	submitDrawCommand(index, pSwapImageAcquiredSemaphore);
 	presentSwapImage(index);
-
-//	context.pCommander->submitDrawCommand(
-//			drawSubmitInfos[swapImageIndex],
-//			&swapImageSemaphores[swapCounter]);
-			
-//	uint8_t curIndex = context.pCommander->renderFrame(pViewport->getSwapchain());
-	
 }
 
 vk::ShaderModule Renderer::createShaderModule(const std::vector<char>& code)
@@ -265,16 +284,6 @@ vk::ShaderModule Renderer::createShaderModule(const std::vector<char>& code)
 	info.setCodeSize(code.size());
 	info.setPCode(reinterpret_cast<const uint32_t*>(code.data()));
 	return context.device.createShaderModule(info);
-}
-
-void Renderer::initSwapImageSemaphores(uint32_t count)
-{
-	vk::SemaphoreCreateInfo info;
-	swapImageSemaphores.resize(count);
-	for (int i = 0; i < count; i++) {
-		swapImageSemaphores[i] = context.device.createSemaphore(info);
-	}
-	
 }
 
 void Renderer::initVertexInputState()

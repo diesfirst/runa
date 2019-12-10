@@ -83,6 +83,8 @@ void Context::createInstance()
 
 	instance = vk::createInstance(instanceInfo);
 }
+////0x559a5e312af0
+
 
 void Context::checkInstanceExtensionProperties()
 {

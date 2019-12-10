@@ -126,7 +126,7 @@ void Commander::endSingleTimeCommand(vk::CommandBuffer commandBuffer)
 }
 
 void Commander::transitionImageLayout(
-		vk::Image image,
+		vk::Image& image,
 		vk::ImageLayout oldLayout,
 		vk::ImageLayout newLayout)
 {
@@ -163,8 +163,8 @@ void Commander::transitionImageLayout(
 
 void Commander::recordCopyBufferToImages(
 		std::vector<vk::CommandBuffer>& commandBuffers,
-		vk::Buffer buffer,
-		std::vector<vk::Image> images,
+		vk::Buffer& buffer,
+		const std::vector<vk::Image>& images,
 		uint32_t width, uint32_t height)
 {
 	assert (commandBuffers.size() == images.size());
@@ -251,8 +251,8 @@ void Commander::recordCopyBufferToImages(
 
 //note this function assumes image is in the correct layout
 void Commander::copyBufferToImageSingleTime(
-		vk::Buffer buffer,
-		vk::Image image,
+		vk::Buffer& buffer,
+		vk::Image& image,
 		uint32_t width, uint32_t height,
 		uint32_t bufferOffset) 
 {
@@ -286,8 +286,8 @@ void Commander::copyBufferToImageSingleTime(
 
 
 void Commander::copyImageToBuffer(
-		vk::Image image,
-		vk::Buffer buffer,
+		vk::Image& image,
+		vk::Buffer& buffer,
 		uint32_t width, uint32_t height, uint32_t depth)
 {
 	transitionImageLayout(
@@ -322,6 +322,41 @@ void Commander::copyImageToBuffer(
 			&region);
 
 	endSingleTimeCommand(cmdBuffer);
+}
+
+//a new model that assumes images already in correct layout
+void Commander::copyImageToImage(
+		vk::Image& srcImage,
+		vk::Image& dstImage,
+		uint32_t height, uint32_t width)
+{
+	vk::ImageSubresourceLayers srcSubresource;
+	srcSubresource.setMipLevel(0);
+	srcSubresource.setAspectMask(vk::ImageAspectFlagBits::eColor);
+	srcSubresource.setBaseArrayLayer(0);
+	srcSubresource.setLayerCount(1);
+
+	vk::ImageSubresourceLayers dstSubresource;
+	dstSubresource.setMipLevel(0);
+	dstSubresource.setAspectMask(vk::ImageAspectFlagBits::eColor);
+	dstSubresource.setBaseArrayLayer(0);
+	dstSubresource.setLayerCount(1);
+
+	vk::ImageCopy copy;
+	copy.setExtent({width, height, 1});
+	copy.setDstOffset(0);
+	copy.setSrcOffset(0);
+	copy.setSrcSubresource(srcSubresource);
+	copy.setDstSubresource(dstSubresource);
+
+	auto cmdBuffer = beginSingleTimeCommand();
+
+	cmdBuffer.copyImage(
+			srcImage, 
+			vk::ImageLayout::eTransferSrcOptimal, 
+			dstImage, 
+			vk::ImageLayout::eTransferDstOptimal, 
+			1, &copy);
 }
 
 void Commander::recordDraw(

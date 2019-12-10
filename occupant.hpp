@@ -23,6 +23,7 @@ public:
 	Image(const Context* context, uint16_t width, uint16_t height, uint8_t channels);
 	void transitionLayoutTo(vk::ImageLayout);
 	void loadArray(unsigned char* array, size_t size);
+	vk::Image* getPVKImage() const;
 	virtual ~Image();
 	uint16_t width;
 	uint16_t height;

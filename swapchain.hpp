@@ -2,6 +2,7 @@
 #define SWAPCHAIN_H
 
 #include "context.hpp"
+#include <tuple>
 
 class XWindow; //forward declaration
 
@@ -20,17 +21,13 @@ public:
 
 	void createSwapchain();
 
-	void createFramebuffers();
+	std::tuple<uint32_t, vk::Semaphore*> acquireNextImageNoFence();
 
-	uint32_t acquireNextImage(const vk::Semaphore&);
+	std::tuple<uint32_t, vk::Semaphore*, vk::Fence*> acquireNextImage();
 
 	uint8_t getCurrentIndex() const;
 
 	uint8_t getImageCount() const;
-
-	void incrementIndex();
-
-
 
 private:
 	vk::ColorSpaceKHR colorSpace;
@@ -42,13 +39,17 @@ private:
 	vk::SwapchainKHR swapchain;
 	vk::SurfaceCapabilitiesKHR surfCaps;
 	vk::SurfaceKHR surface;
-	std::vector<vk::Framebuffer> framebuffers;
 	vk::Extent2D extent;
 	uint32_t currentIndex{0};
 	vk::Format colorFormat;
 	uint8_t imageCount;
+	std::vector<vk::Semaphore> acquisitionSemaphores;
+	std::vector<vk::Fence> acquisitionFences;
+	uint8_t syncIndex = 0;
 
 	bool swapchainCreated = false;
+
+	void initSyncObjects();
 
 	void setImageCount(const uint32_t count = 3);
 
@@ -69,6 +70,8 @@ private:
 	void createImageViews();
 
 	void destroyImageViews();
+
+	void destroySyncObjects();
 
 
 };

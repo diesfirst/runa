@@ -2,11 +2,12 @@
 #define RENDERER_H
 
 #include "context.hpp"
+#include "description.hpp"
 #include <memory>
+#include <tuple>
 
 class Viewport;
 class Swapchain;
-class Description;
 
 class Renderer
 {
@@ -21,6 +22,8 @@ public:
 	void update();
 	void render();
 	void submitDrawCommand(uint32_t index);
+	void submitDrawCommand(uint32_t index, vk::Semaphore*);
+	void copyImageToSwapImage(Image* image);
 	void presentSwapImage(uint32_t index);
 
 private:
@@ -60,11 +63,9 @@ private:
 	//in the future, there may be multiple swap chains we want to render to
 	//so this will likely become part of a struct of both swap chains and semaphores
 	//and associated frame counter
-	std::vector<vk::Semaphore> swapImageSemaphores;
-	void initSwapImageSemaphores(uint32_t count);
+	//void initSwapImageSemaphores(uint32_t count);
 	void initDrawSubmitInfos(uint32_t count);
 	void initPresentInfos(uint32_t count);
-	uint8_t swapCounter = 0;
 	uint8_t maxFramesInFlight;
 	
 	void destroyFramebuffers();

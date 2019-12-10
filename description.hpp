@@ -28,7 +28,7 @@ public:
 	~Description();
 	void createCamera(const uint16_t width, const uint16_t height);
 
-	void loadImage(std::string path);
+	Image* loadImage(std::string path);
 	std::vector<vk::DescriptorSet> descriptorSets;
 	vk::Buffer& getVkVertexBuffer();
 	vk::Buffer& getVkIndexBuffer();

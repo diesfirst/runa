@@ -23,16 +23,14 @@ Viewport::~Viewport()
 {
 }
 
-void Viewport::present()
+std::tuple<uint32_t, vk::Semaphore*> Viewport::acquireSwapImageIndexNoFence()
 {
-	uint8_t index = swapchain.getCurrentIndex();
-	context.pCommander->presentSwapImage(swapchain.swapchain, index);
-	swapchain.incrementIndex();
+	return swapchain.acquireNextImageNoFence();
 }
 
-uint32_t Viewport::acquireSwapImageIndex(vk::Semaphore semaphore)
+std::tuple<uint32_t, vk::Semaphore*, vk::Fence*> Viewport::acquireSwapImageIndex()
 {
-	return swapchain.acquireNextImage(semaphore);
+	return swapchain.acquireNextImage();
 }
 
 vk::Extent2D Viewport::getExtent() const
@@ -78,4 +76,9 @@ vk::ImageView Viewport::getSwapImageView(uint32_t i) const
 vk::PipelineViewportStateCreateInfo* Viewport::getPViewportState()
 {
 	return &state;
+}
+
+vk::Image& Viewport::getSwapchainImage(uint32_t index)
+{
+	return swapchain.images[index];
 }

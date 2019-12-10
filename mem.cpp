@@ -74,7 +74,7 @@ std::unique_ptr<ImageBlock> MemoryManager::createImage(
 		uint32_t width,
 		uint32_t height)
 {
-	vk::ImageUsageFlags usage = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled;
+	vk::ImageUsageFlags usage = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc;
 	return createImage(width, height, usage);
 }
 		

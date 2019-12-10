@@ -1,0 +1,27 @@
+Create some new objects:
+	A render-frame object:
+		  RenderFrame is a container for per-frame data, including BufferPool objects,
+		  synchronization primitives (semaphores, fences) and the swapchain RenderTarget.
+		 
+		  When creating a RenderTarget, we need to provide images that will be used as attachments
+		  within a RenderPass. The RenderFrame is responsible for creating a RenderTarget using
+		  RenderTarget::CreateFunc. A custom RenderTarget::CreateFunc can be provided if a different
+		  render target is required.
+		 
+		  A RenderFrame cannot be destroyed individually since frames are managed by the RenderContext,
+		  the whole context must be destroyed. This is because each RenderFrame holds Vulkan objects
+		  such as the swapchain image.
+The submit draw function can return the semaphore that will be signalled on its completion
+That semaphore can be a member of the rendererer. Before the draw function, it can be set to a VK_NULL
+Create a render pipeline object to store the render state
+A render pipeline is a sequence of subpass objects
+Beef up the CommandBuffer wrapper class. Should contain things like color bleck states, rasterization states, push constants
+RenderPipeline objects will store Subpass objects, which will represent stages of the renderpass.
+RenderContext will store the RenderFrame objects, which each will Hold a Render Target, which each will hold a set of images, image views, and image attachments, typically for each swapchain image (which could be a set of size 1, but could also have an image for depth). 
+The RenderFrame will store the syncronization primitives for that RenderTarget. 
+The RenderContext will take a Device and a Surface as input. It will create the swapchain and own it. It can also be passed a swapchain on creation. (RenderContext == Renderer?)
+The RenderPipeline object will be passed a commandbuffer from the RenderContext for it to record its renderpasses into
+The Objects that actually do the drawing will be the Subpass Objects. They can be passed elements of the scene on creation, like meshes, as well as shader sources. They will be owned by the RenderPipeline. 
+The draw command, like all other vulkan commands, will be performed by a function contained the the beefed up CommandBuffer object, after it is passed to a function in the Subpass.
+So the subpasses' draw functions will actually call the commandbuffer's draw function, giving their relevant state data to it.
+The RenderFrame object will also hold the buffers for things like UBO's. so we will have per-frame UBO's like we do now, or at least the buffers that hold the UBO data on the GPU end.
