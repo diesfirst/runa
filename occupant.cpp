@@ -10,20 +10,20 @@ Occupant::~Occupant()
 {
 }
 
-Image::Image(const Context& context, std::string imageFilePath)
+Image::Image(const Context& context, std::string imageFilePath) :
+	context(context),
+	memory(*context.pMemory)
 {
 
 }
 
-Image::Image(const Context* context, uint16_t w, uint16_t h, uint8_t channelCount)
+Image::Image(const Context& context, uint16_t w, uint16_t h, uint8_t channelCount) :
+	context(context)
 {
 	width = w;
 	height = h;
-	pContext = context;
 	layout = vk::ImageLayout::eUndefined;
 	imageSize = w * h * channelCount;
-	bufferBlock = context->getStagingBuffer(imageSize);
-	imageBlock = context->getImageBlock(w, h);
 }
 //currently always mapped to host memory
 
@@ -32,11 +32,11 @@ Image::~Image()
 }
 
 
-void Image::loadArray(unsigned char* array, size_t size)
+void Image::loadArray(Command& command, unsigned char* array, size_t size)
 {
-	assert(bufferBlock != nullptr);
+	auto buffer_block = memory.requestBuffer();
 	memcpy(bufferBlock->pHostMemory, array, size);
-	transitionLayoutTo(vk::ImageLayout::eTransferDstOptimal);
+	transitionLayout(command, vk::ImageLayout::eTransferDstOptimal);
 	pContext->pCommander->copyBufferToImageSingleTime(
 			bufferBlock->buffer,
 			imageBlock->image,
@@ -48,7 +48,7 @@ vk::Image* Image::getPVKImage() const
 	return &imageBlock->image;
 }
 
-void Image::transitionLayoutTo(vk::ImageLayout newLayout)
+void Image::transitionLayout(vk::ImageLayout newLayout)
 {
 	assert(pContext != nullptr);
 	pContext->pCommander->transitionImageLayout(
@@ -57,6 +57,8 @@ void Image::transitionLayoutTo(vk::ImageLayout newLayout)
 			newLayout);
 	layout = newLayout;
 }
+
+
 
 Transformable::Transformable()
 {

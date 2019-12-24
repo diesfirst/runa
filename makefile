@@ -5,7 +5,7 @@ LDFLAGS = -lpthread -lxcb -lvulkan -lX11
 LDIRS = -Llib/loader/ 
 LINK = $(LDIRS) $(LDFLAGS)
 LUSD = -lHoudiniUSD -lhboost_system -lhboost_python -lpxr_usd -lpxr_tf -lpxr_sdf -lpxr_usdGeom -lpxr_usdImaging -lpxr_hd -lpxr_vt -lpxr_gf -lpython2.7 -lGL -lXext -lXi -ldl -Wl,-rpath,/opt/hfs18.5/dsolib
-DEPS = main.o context.o swapchain.o window.o viewport.o renderer.o description.o mem.o commander.o occupant.o lodepng.o util.o io.o
+DEPS = main.o context.o swapchain.o window.o renderer.o mem.o commander.o description.o
 
 app : $(DEPS) shaders/*.spv
 	g++ $(DEPS) -o app $(LINK) ; ctags -R .
@@ -52,7 +52,7 @@ viewport.o : viewport.cpp viewport.hpp swapchain.hpp window.hpp
 description.o : description.cpp description.hpp context.hpp mem.hpp occupant.hpp
 	g++ -c $(CFLAGS) description.cpp
 
-renderer.o : renderer.cpp renderer.hpp context.hpp commander.hpp mem.hpp util.hpp
+renderer.o : renderer.cpp renderer.hpp context.hpp commander.hpp mem.hpp util.hpp swapchain.hpp window.hpp
 	g++ -c $(CFLAGS) renderer.cpp
 
 main.o : main.cpp programs.hpp viewport.hpp renderer.hpp description.hpp
@@ -64,4 +64,4 @@ clean:
 	rm -f *.o .*.swp app
 
 shaders: 
-	cd shaders && glslangValidator -V *.glsl
+	cd shaders && /home/michaelb/Dev/Vulkan/1.1.126.0/x86_64/bin/glslc -o *.vert && /home/michaelb/Dev/Vulkan/1.1.126.0/x86_64/bin/glslc -o *.frag

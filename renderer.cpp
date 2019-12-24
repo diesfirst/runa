@@ -1,109 +1,76 @@
 //storage space for now, but may be a class for 3D to 2D conversions
 #include <vector>
 #include "renderer.hpp"
-#include "viewport.hpp"
 #include "io.hpp"
 #include <iostream>
 #include "util.hpp"
+#include <fstream>
 
 Timer renderTimer;
 
-std::vector<vk::PipelineShaderStageCreateInfo> createShaderStageInfos(
-		vk::ShaderModule& vertModule,
-		vk::ShaderModule& fragModule)
+Shader::Shader(const vk::Device& device, std::string filepath) :
+	device{device}
 {
-	vk::PipelineShaderStageCreateInfo vertInfo;
-	vk::PipelineShaderStageCreateInfo fragInfo;
-	vertInfo.setStage(vk::ShaderStageFlagBits::eVertex);
-	vertInfo.setModule(vertModule);
-	vertInfo.setPName("main");
-	fragInfo.setStage(vk::ShaderStageFlagBits::eFragment);
-	fragInfo.setModule(fragModule);
-	fragInfo.setPName("main");
-	return std::vector<vk::PipelineShaderStageCreateInfo>({vertInfo, fragInfo});
+	std::cout << "Shade constructed" << std::endl;
+	loadFile(filepath);
+	createModule();
+	stageInfo.setPName("main");
+	stageInfo.setModule(module);
 }
 
-
-Renderer::Renderer(const Context& context) :
-	context(context),
-	device(context.device),
-	graphicsQueue(context.queue)
+Shader::~Shader()
 {
-	viewportIsBound = false;
-	descriptionIsBound = false;
-	createRenderPass(vk::Format::eB8G8R8A8Unorm); //by inspection
-	initAll();
+	if (module)
+		device.destroyShaderModule(module);
 }
 
-Renderer::~Renderer()
+Shader::Shader(Shader&& other) :
+	device{other.device},
+	shaderCode{std::move(other.shaderCode)},
+	codeSize{other.codeSize},
+	module{std::move(other.module)},
+	stageInfo{std::move(other.stageInfo)}
 {
-	destroyFramebuffers();
-	context.device.destroyPipelineLayout(pipelineLayout);
-	context.device.destroyPipeline(graphicsPipeline);
-	context.device.destroyRenderPass(renderPass);
+	other.module = nullptr;
 }
 
-void Renderer::bindToViewport(Viewport& viewport)
+void Shader::loadFile(std::string filepath)
 {
-	pViewport = &viewport;
-	width = viewport.getWidth();
-	height = viewport.getHeight();
-	viewportIsBound = true;
-	createFramebuffers();
+	std::ifstream file(filepath, std::ios::ate | std::ios::binary);
+	//ate: start reading at end of file. allows us to get the size of the file
+	//binary: read the file as binary file
+	assert(file.is_open());
+	codeSize = (size_t) file.tellg();
+	shaderCode.resize(codeSize);
+
+	file.seekg(0);
+	file.read(shaderCode.data(), codeSize);
+	file.close();
 }
 
-void Renderer::bindToDescription(Description& description)
+void Shader::createModule()
 {
-	pDescription = &description;
-	descriptionIsBound = true;
+	vk::ShaderModuleCreateInfo ci;
+	ci.setPCode(reinterpret_cast<const uint32_t*>(shaderCode.data()));
+	ci.setCodeSize(codeSize);
+	module = device.createShaderModule(ci);
 }
 
-void Renderer::setup(Viewport& viewport, Description& description)
+VertShader::VertShader(const vk::Device& device, std::string filepath) :
+	Shader(device, filepath)
 {
-	bindToViewport(viewport);
-	bindToDescription(description);
-	uint32_t swapImageCount = viewport.getSwapImageCount(); 
-	drawCommandBlock = context.pCommander->
-		createCommandBlock(swapImageCount);
-	initPipelineLayout();
-	createGraphicsPipeline();
-	description.createCamera(viewport.getWidth(), viewport.getHeight());
-	description.prepareUniformBuffers(swapImageCount);
-	description.prepareDescriptorSets(swapImageCount);
-	maxFramesInFlight = swapImageCount;
-	initPresentInfos(swapImageCount);
-	initDrawSubmitInfos(swapImageCount);
-	std::cout << "got drawblock" << std::endl;
+	stageInfo.setStage(vk::ShaderStageFlagBits::eVertex);
 }
 
-void Renderer::initPresentInfos(uint32_t count)
+FragShader::FragShader(const vk::Device& device, std::string filepath) :
+	Shader(device, filepath)
 {
-	presentInfos.resize(count);
-	for (int i = 0; i < count; i++) {
-		presentInfos[i].setPSwapchains(pViewport->getPSwapchain());
-		presentInfos[i].setSwapchainCount(1);
-	}
-	
+	stageInfo.setStage(vk::ShaderStageFlagBits::eFragment);
 }
 
-void Renderer::initDrawSubmitInfos(uint32_t count)
-{
-	assert (drawCommandBlock);
-	drawSubmitInfos.resize(count);
-	for (int i = 0; i < count; i++) 
-	{
-		drawSubmitInfos[i].setCommandBufferCount(1);
-		drawSubmitInfos[i].setPCommandBuffers(&drawCommandBlock->commandBuffers[i]);
-		//GPU - GPU synchronization
-		drawSubmitInfos[i].setWaitSemaphoreCount(1);
-		//will wait until acuired image is available to write to
-		drawSubmitInfos[i].setSignalSemaphoreCount(1);
-		//will be signalled when draw completes
-		drawSubmitInfos[i].setPSignalSemaphores(&drawCommandBlock->semaphores[i]);
-	}
-}
-
-void Renderer::createRenderPass(vk::Format colorFormat)
+RenderPass::RenderPass(const vk::Device& device, const vk::Format format, uint32_t id) :
+	device{device},
+	id{id}
 {
 	std::vector<vk::AttachmentDescription> attachments;
 	std::vector<vk::AttachmentReference> references;
@@ -111,7 +78,7 @@ void Renderer::createRenderPass(vk::Format colorFormat)
 	std::vector<vk::SubpassDependency> subpassDependencies;
 
 	vk::AttachmentDescription attachment;
-	attachment.setFormat(colorFormat);
+	attachment.setFormat(format);
 	attachment.setSamples(vk::SampleCountFlagBits::e1);
 	//Sets what to do with data in the attachment
 	//before rendering
@@ -157,257 +124,621 @@ void Renderer::createRenderPass(vk::Format colorFormat)
 	createInfo.setPSubpasses(subpasses.data());
 	createInfo.setDependencyCount(subpassDependencies.size());
 	createInfo.setPDependencies(subpassDependencies.data());
-  	renderPass = context.device.createRenderPass(createInfo);
+  	handle = device.createRenderPass(createInfo);
+}
+
+RenderPass::~RenderPass()
+{
+	if (handle)
+		device.destroyRenderPass(handle);
+}
+
+RenderPass::RenderPass(RenderPass&& other) :
+	device{other.device},
+	id{other.id},
+	handle{other.handle}
+{
+	other.handle = nullptr;
+}
+
+bool RenderPass::operator<(const RenderPass& rhs)
+{
+	return handle == rhs.handle;
 }
 
 
-void Renderer::createFramebuffers()
+const vk::RenderPass& RenderPass::getHandle() const
 {
-	if (!viewportIsBound)
-		throw std::runtime_error("Viewport not bound!");
-	vk::FramebufferCreateInfo createInfo;
-	createInfo.setWidth(width);
-	createInfo.setHeight(height);
-	std::cout << "width: " << width << std::endl;
-	std::cout << "height: " << height << std::endl;
-	createInfo.setRenderPass(renderPass); 
-	createInfo.setAttachmentCount(1);
-	createInfo.setLayers(1);
-	std::array<vk::ImageView, 1> imageViewsTemp;
-	for (int i = 0; i < pViewport->getSwapImageCount(); ++i)
+	return handle;
+}
+
+const uint32_t RenderPass::getId() const
+{
+	return id;
+}
+
+RenderTarget::RenderTarget(std::unique_ptr<mm::Image> swapimage)
+{
+	images.push_back(std::move(swapimage));
+}
+
+RenderTarget::~RenderTarget()
+{
+}
+
+RenderFrame::RenderFrame(
+		const Context& context, 
+		std::unique_ptr<RenderTarget>&& renderTarget,
+		uint32_t width, uint32_t height) :
+	context(context),
+	device(context.device),
+	swapchainRenderTarget{std::move(renderTarget)},
+	commandPool{CommandPool(device, context.queue, context.getGraphicsQueueFamilyIndex())},
+	width{width},
+	height{height}
+{
+	vk::SemaphoreCreateInfo semaInfo;
+	vk::FenceCreateInfo fenceInfo;
+	semaphore = device.createSemaphore(semaInfo);
+	fence = device.createFence(fenceInfo);
+	createDescriptorPool();
+}
+
+RenderFrame::~RenderFrame()
+{
+	if (semaphore)
 	{
-		imageViewsTemp[0] = pViewport->getSwapImageView(i);
-		createInfo.setPAttachments(imageViewsTemp.data());
-		framebuffers.push_back(
-				context.device.createFramebuffer(createInfo));
+		device.destroySemaphore(semaphore);
 	}
+	if (fence)	
+		device.destroyFence(fence);
+	if (descriptorPool)
+		device.destroyDescriptorPool(descriptorPool);
 }
 
-void Renderer::update()
+RenderFrame::RenderFrame(RenderFrame&& other) :
+	context(other.context),
+	device(other.device),
+	commandPool(std::move(other.commandPool)),
+	fence(other.fence),
+	semaphore(other.semaphore),
+	descriptorPool(other.descriptorPool),
+	descriptorSets{std::move(other.descriptorSets)},
+	width{other.width},
+	height{other.height},
+	renderBuffer{other.renderBuffer},
+	frameBuffers{other.frameBuffers},
+	swapchainRenderTarget{std::move(other.swapchainRenderTarget)}
 {
-	assert (drawCommandBlock); //make sure its initialized
-	std::cout << "in update" << std::endl;
-	context.queue.waitIdle();
-	context.pCommander->recordDraw(
-			drawCommandBlock->getCommandBuffers(),
-			renderPass,
-			framebuffers,
-			pDescription->getVkVertexBuffer(),
-			pDescription->getVkIndexBuffer(),
-			graphicsPipeline,
-			pipelineLayout,
-			pDescription->descriptorSets,
-			width, height,
-			pDescription->getDrawInfos(),
-			pDescription->getDynamicAlignment());
+	other.semaphore = nullptr;
+	other.fence = nullptr;
+	other.descriptorPool = nullptr;
 }
 
-void Renderer::submitDrawCommand(uint32_t index, vk::Semaphore* pSemaphore)
+vk::Framebuffer& RenderFrame::createFramebuffer(
+		const RenderPass& renderPass)
 {
-	//CPU block
-	device.waitForFences(
-			drawCommandBlock->fences[index],
-			true,
-			UINT64_MAX);
-	device.resetFences(drawCommandBlock->fences[index]);
+	std::array<vk::ImageView, 1> attachments;
+	attachments[0] = swapchainRenderTarget->images[0]->getView();
 
-	vk::PipelineStageFlags stageFlags = 
-		vk::PipelineStageFlagBits::eColorAttachmentOutput;
-
-	drawSubmitInfos[index].setPWaitDstStageMask(&stageFlags);
-	std::cout << "submit Draw pSemaphore" << pSemaphore << std::endl;
-	drawSubmitInfos[index].setPWaitSemaphores(pSemaphore);
-	graphicsQueue.submit(
-			drawSubmitInfos[index],
-			drawCommandBlock->fences[index]);
-
-	//adjust state variables
-//	swapCounter = (swapCounter + 1) % maxFramesInFlight;
+	vk::FramebufferCreateInfo ci;
+	ci.setWidth(width);
+	ci.setHeight(height);
+	ci.setAttachmentCount(attachments.size());
+	ci.setPAttachments(attachments.data());
+	ci.setLayers(1);
+	ci.setRenderPass(renderPass.getHandle());
+	frameBuffers.emplace(renderPass.getId(), device.createFramebuffer(ci));
+	return frameBuffers.at(renderPass.getId());
 }
 
-void Renderer::copyImageToSwapImage(Image* pImage)
+vk::Framebuffer& RenderFrame::requestFrameBuffer(const RenderPass& renderPass)
 {
-	auto [index, pSemaphore, pFence] = pViewport->acquireSwapImageIndex();
-	device.waitForFences(1, pFence, true, UINT64_MAX);
-	device.resetFences(1, pFence);
-	std::cout << "Index" << index << std::endl;
-	std::cout << "pIndex " << &index << std::endl;
-	pImage->transitionLayoutTo(vk::ImageLayout::eTransferSrcOptimal);
-	vk::Image& swapImage = pViewport->getSwapchainImage(index);
-	context.pCommander->transitionImageLayout(
-			swapImage, 
-			vk::ImageLayout::eUndefined, //swap images are initially in this layout
-			vk::ImageLayout::eTransferDstOptimal);
-	context.pCommander->copyImageToImage(
-			*pImage->getPVKImage(),
-			swapImage,
-			pImage->width,
-			pImage->height);
-	context.pCommander->transitionImageLayout(
-			swapImage,
-			vk::ImageLayout::eTransferDstOptimal,
-			vk::ImageLayout::ePresentSrcKHR);
-
-	vk::PresentInfoKHR presentInfo;
-	presentInfo.setPSwapchains(pViewport->getPSwapchain());
-	presentInfo.setSwapchainCount(1);
-	presentInfo.setPImageIndices(&index);
-	//presentInfo.setPWaitSemaphores(&drawCommandBlock->semaphores[index]);
-	//presentInfo.setWaitSemaphoreCount(1);
-	std::cout << "index: " << index << std::endl;
-	graphicsQueue.presentKHR(presentInfo);
+	if (frameBuffers.find(renderPass.getId()) == frameBuffers.end())
+	{
+		return createFramebuffer(renderPass);
+	}
+	else
+		return frameBuffers.at(renderPass.getId());
 }
 
-void Renderer::presentSwapImage(uint32_t index)
+CommandBuffer& RenderFrame::getRenderBuffer()
 {
-	presentInfos[index].setPImageIndices(&index);
-	presentInfos[index].setPWaitSemaphores(&drawCommandBlock->semaphores[index]);
-	presentInfos[index].setWaitSemaphoreCount(1);
-	std::cout << "index: " << index << std::endl;
-	graphicsQueue.presentKHR(presentInfos[index]);
+	if (!renderBuffer)
+	{
+		renderBuffer = &requestCommandBuffer();
+		return *renderBuffer;
+	}
+	else
+		return *renderBuffer;
+}
+
+vk::Semaphore RenderFrame::requestSemaphore()
+{
+	return semaphore;
+}
+
+CommandBuffer& RenderFrame::requestCommandBuffer()
+{	
+	return commandPool.requestCommandBuffer();
+}
+
+//this is a basic implementation that will allow us to create up to 1 uniform buffer
+//and up to 1 image sampler
+void RenderFrame::createDescriptorPool()
+{
+	vk::DescriptorPoolSize uboSize;
+	vk::DescriptorPoolSize imageSamplerSize;
+	uboSize.setType(vk::DescriptorType::eUniformBufferDynamic);
+	uboSize.setDescriptorCount(1);
+	imageSamplerSize.setType(vk::DescriptorType::eCombinedImageSampler);
+	imageSamplerSize.setDescriptorCount(1);
+
+	//should work fine but may cause error
+	std::array<vk::DescriptorPoolSize, 2> sizes{uboSize, imageSamplerSize};
+
+	vk::DescriptorPoolCreateInfo ci;
+	ci.setMaxSets(1); //currently allow just one descriptor set
+	ci.setPPoolSizes(sizes.data());
+	ci.setPoolSizeCount(sizes.size());
+
+	descriptorPool = device.createDescriptorPool(ci);
+}
+
+void RenderFrame::createDescriptorSet(std::vector<vk::DescriptorSetLayout>& layouts)
+{
+	vk::DescriptorSetAllocateInfo ai;
+	ai.setPSetLayouts(layouts.data());
+	ai.setDescriptorSetCount(layouts.size());
+	ai.setDescriptorPool(descriptorPool);
+	descriptorSets = device.allocateDescriptorSets(ai);
+}
+
+GraphicsPipeline::GraphicsPipeline(
+		const vk::Device& device, 
+		const vk::PipelineLayout& layout,
+		const vk::RenderPass& renderPass,
+		const uint32_t subpassIndex,
+		const vk::Rect2D renderArea,
+		const std::vector<const Shader*>& shaders,
+		const vk::PipelineVertexInputStateCreateInfo& vertexInputState) :
+	device{device}
+{
+	vk::Viewport viewport = createViewport(renderArea);
+	vk::Rect2D scissor = renderArea;
+
+	auto attachmentState0 = createColorBlendAttachmentState();
+	std::vector<vk::PipelineColorBlendAttachmentState> attachmentStates{attachmentState0};
+
+	auto shaderStageInfos = extractShaderStageInfos(shaders);
+	auto viewportState = createViewportState(viewport, scissor);
+	auto multisampleState = createMultisampleState();
+	auto rasterizationState = createRasterizationState();
+	auto colorBlendState = createColorBlendState(attachmentStates);
+	auto depthStencilState = createDepthStencilState(); //not ready yet
+	auto inputAssemblySate = createInputAssemblyState();
+
+	vk::GraphicsPipelineCreateInfo ci;
+	ci.setLayout(layout);
+	ci.setPStages(shaderStageInfos.data());
+	ci.setStageCount(shaders.size());
+	ci.setSubpass(subpassIndex);
+	ci.setRenderPass(renderPass);
+	ci.setPDynamicState(nullptr); 
+	//we could use this to specify some pipeline elements
+	//as dynamic. worth looking into.
+	ci.setPViewportState(&viewportState);
+	ci.setPMultisampleState(&multisampleState);
+	ci.setPTessellationState(nullptr);
+	ci.setPRasterizationState(&rasterizationState);
+	ci.setPColorBlendState(&colorBlendState);
+	ci.setBasePipelineHandle(nullptr);
+	ci.setBasePipelineIndex(0);
+	ci.setPVertexInputState(&vertexInputState);
+	ci.setPDepthStencilState(nullptr); //null for now
+	ci.setPInputAssemblyState(&inputAssemblySate);
+	handle = device.createGraphicsPipeline({}, ci);
+}
+
+GraphicsPipeline::~GraphicsPipeline()
+{
+	if (handle)
+		device.destroyPipeline(handle);
+}
+
+GraphicsPipeline::GraphicsPipeline(GraphicsPipeline&& other) :
+	device{other.device},
+	handle{std::move(other.handle)}
+{
+	other.handle = nullptr;
+}
+
+vk::Pipeline& GraphicsPipeline::getHandle()
+{
+	return handle;
+}
+
+vk::Viewport GraphicsPipeline::createViewport(const vk::Rect2D& renderArea)
+{
+	vk::Viewport viewport;
+	viewport.x = renderArea.offset.x;
+	viewport.y = renderArea.offset.y;
+	viewport.width = renderArea.extent.width;
+	viewport.height = renderArea.extent.height;
+	viewport.minDepth = 0.0;
+	viewport.maxDepth = 1.0;
+	return viewport;
+}
+
+vk::PipelineViewportStateCreateInfo GraphicsPipeline::createViewportState(
+		const vk::Viewport& viewport,
+		const vk::Rect2D& scissor)
+{
+	vk::PipelineViewportStateCreateInfo ci;
+	ci.setPScissors(&scissor);
+	ci.setPViewports(&viewport);
+	ci.setScissorCount(1);
+	ci.setViewportCount(1);
+	return ci;
+}
+
+vk::PipelineMultisampleStateCreateInfo GraphicsPipeline::createMultisampleState()
+{
+	vk::PipelineMultisampleStateCreateInfo ci;
+	ci.setSampleShadingEnable(false);
+	ci.setAlphaToOneEnable(false);
+	ci.setAlphaToCoverageEnable(false);
+	ci.setRasterizationSamples(vk::SampleCountFlagBits::e1);
+	ci.setPSampleMask(nullptr);
+	ci.setMinSampleShading(1.0);
+	return ci;
+}
+
+vk::PipelineRasterizationStateCreateInfo GraphicsPipeline::createRasterizationState()
+{
+	vk::PipelineRasterizationStateCreateInfo ci;
+	ci.setDepthBiasEnable(false);
+	ci.setDepthClampEnable(false);
+	ci.setRasterizerDiscardEnable(false);
+	ci.setCullMode(vk::CullModeFlagBits::eBack);
+	ci.setFrontFace(vk::FrontFace::eClockwise);
+	ci.setLineWidth(1.0);
+	ci.setPolygonMode(vk::PolygonMode::eFill);
+	ci.setDepthBiasClamp(0.0);
+	ci.setDepthBiasSlopeFactor(0.0);
+	ci.setDepthBiasConstantFactor(0.0);
+	return ci;
+}
+
+vk::PipelineColorBlendStateCreateInfo GraphicsPipeline::createColorBlendState(
+		std::vector<vk::PipelineColorBlendAttachmentState>& attachmentStates)
+{
+	vk::PipelineColorBlendStateCreateInfo ci;
+	ci.setLogicOpEnable(false);
+	ci.setPAttachments(attachmentStates.data());
+	ci.setAttachmentCount(attachmentStates.size());
+	ci.setLogicOp(vk::LogicOp::eCopy);
+	ci.setBlendConstants({0,0,0,0});
+	return ci;
+}
+
+vk::PipelineColorBlendAttachmentState GraphicsPipeline::createColorBlendAttachmentState()
+{
+	vk::ColorComponentFlags writeMask = 
+		vk::ColorComponentFlagBits::eA |
+		vk::ColorComponentFlagBits::eB |
+		vk::ColorComponentFlagBits::eG |
+		vk::ColorComponentFlagBits::eR;
+
+	vk::PipelineColorBlendAttachmentState ci;
+	ci.setBlendEnable(false);
+	ci.setAlphaBlendOp(vk::BlendOp::eAdd);
+	ci.setColorBlendOp(vk::BlendOp::eAdd);
+	ci.setColorWriteMask(writeMask);
+	ci.setDstAlphaBlendFactor(vk::BlendFactor::eZero);
+	ci.setDstColorBlendFactor(vk::BlendFactor::eZero);
+	ci.setSrcAlphaBlendFactor(vk::BlendFactor::eOne);
+	ci.setSrcColorBlendFactor(vk::BlendFactor::eOne);
+	return ci;
+}
+
+vk::PipelineVertexInputStateCreateInfo GraphicsPipeline::createVertexInputState(
+		const std::vector<vk::VertexInputAttributeDescription>& attributeDescriptions,
+		const std::vector<vk::VertexInputBindingDescription>& bindingDescriptions)
+{
+	vk::PipelineVertexInputStateCreateInfo ci;
+	ci.setPVertexAttributeDescriptions(attributeDescriptions.data());
+	ci.setVertexAttributeDescriptionCount(attributeDescriptions.size());
+	ci.setPVertexBindingDescriptions(bindingDescriptions.data());
+	ci.setVertexBindingDescriptionCount(bindingDescriptions.size());
+	return ci;
+}
+
+vk::PipelineDepthStencilStateCreateInfo GraphicsPipeline::createDepthStencilState()
+{
+	vk::PipelineDepthStencilStateCreateInfo ci;
+	ci.setDepthTestEnable(false); //set depth testing off for now
+	ci.setDepthWriteEnable(false);
+	ci.setStencilTestEnable(false);
+	ci.setDepthBoundsTestEnable(false);
+	//this is incomplete
+	return ci;
+}
+
+vk::PipelineInputAssemblyStateCreateInfo GraphicsPipeline::createInputAssemblyState()
+{
+	vk::PipelineInputAssemblyStateCreateInfo ci;
+	ci.setTopology(vk::PrimitiveTopology::eTriangleList);
+	ci.setPrimitiveRestartEnable(false);
+	return ci;
+}
+
+std::vector<vk::PipelineShaderStageCreateInfo> GraphicsPipeline::extractShaderStageInfos(
+		const std::vector<const Shader*>& shaders)
+{
+	std::vector<vk::PipelineShaderStageCreateInfo> stageInfos;
+	stageInfos.resize(shaders.size());
+	for (int i = 0; i < shaders.size(); i++) 
+	{
+		stageInfos[i] = shaders[i]->stageInfo;	
+	}
+	return stageInfos;
+}
+
+Renderer::Renderer(Context& context, XWindow& window) :
+	context(context),
+	device(context.device),
+	graphicsQueue(context.queue)
+{
+	swapchain = std::make_unique<Swapchain>(context, window, 2); //we hardcode 3 swap images
+	for (auto& imageHandle : swapchain->getImages()) 
+	{
+		auto image = std::make_unique<mm::Image>(
+				device, 
+				imageHandle, 
+				swapchain->getExtent3D(), 
+				swapchain->getFormat(), 
+				swapchain->getUsageFlags());
+		auto renderTarget{std::make_unique<RenderTarget>(std::move(image))};
+		auto renderFrame{RenderFrame(context, std::move(renderTarget),
+				swapchain->getExtent2D().width, swapchain->getExtent2D().height)};
+		frames.emplace_back(std::move(renderFrame));
+	}
+	//the following code will handle descriptor set creation
+	//while we don't need descriptor sets to create a Pipeline
+	//we do need to make the Pipeline aware of their layouts 
+	//if we do intend to use them
+	//----------------------------
+	createDefaultDescriptorSetLayout();
+	//we can now create the desriptorsets for the render frames 
+	//additionally we can create our pipeline layouts
+	createDefaultDescriptorLayoutSubset();
+	createDefaultPipelineLayout();
+
+	//note: this could have been done as soon as we had the layout
+	createDescriptorSets(frames, "default");
+	//----------------------------
+	//
+	//we'll create renderpass now. 
+	//note: we could have done this at any point
+	//createRenderPass("default", swapchain->getFormat());
+}
+
+Renderer::~Renderer()
+{
+	for (auto item: descriptorSetLayouts)
+	{
+		device.destroyDescriptorSetLayout(item.second);
+	}
+
+	for (auto item : pipelineLayouts) 
+	{
+		device.destroyPipelineLayout(item.second);
+	}
+	
+	device.waitIdle();
+	frames.clear();
+
+	descriptorSetLayouts.clear();
+	descriptorSetLayoutSubsets.clear();
+	pipelineLayouts.clear();
+}
+
+void Renderer::recordRenderCommands(const std::string pipelineName, const std::string renderPassName)
+{
+	for (auto& frame : frames) 
+	{
+		auto& commandBuffer = frame.getRenderBuffer();	
+		commandBuffer.begin();
+
+		auto& renderPass = renderPasses.at(renderPassName);
+		auto& frameBuffer = frame.requestFrameBuffer(renderPass);
+
+		//could add the render area and clear color data to the 
+		//RenderFrames, might make sense
+		vk::Rect2D renderArea;
+		renderArea.setOffset({0,0});
+		renderArea.setExtent(swapchain->getExtent2D());
+
+		vk::ClearColorValue clearColor;
+		clearColor.setFloat32({0.1,0.05,0.15,1.0});
+
+		vk::ClearValue clearValue;
+		clearValue.setColor(clearColor);
+
+		vk::RenderPassBeginInfo bi;
+		bi.setFramebuffer(frameBuffer);
+		bi.setRenderPass(renderPass.getHandle());
+		bi.setRenderArea(renderArea);
+		bi.setPClearValues(&clearValue);
+		bi.setClearValueCount(1);
+
+		commandBuffer.beginRenderPass(bi);
+		commandBuffer.bindGraphicsPipeline(graphicsPipelines.at(pipelineName).getHandle());
+		commandBuffer.drawVerts(3, 0);
+		commandBuffer.endRenderPass();
+
+		commandBuffer.end();
+	}
 }
 
 void Renderer::render()
 {
-	std::cout << "start render" << std::endl;
-	auto [index, pSwapImageAcquiredSemaphore] = pViewport->acquireSwapImageIndexNoFence();
-	std::cout << "render() pSemaphore" << pSwapImageAcquiredSemaphore << std::endl;
-	pDescription->updateAllCurrentUbos(index);
-	std::cout << "index: " << index << std::endl;
-	submitDrawCommand(index, pSwapImageAcquiredSemaphore);
-	presentSwapImage(index);
+	auto& renderBuffer = beginFrame();
+	assert(renderBuffer.isRecorded() && "Render buffer is not recorded");
+	auto submissionCompleteSemaphore = renderBuffer.submit(
+			imageAcquiredSemaphore, 
+			vk::PipelineStageFlagBits::eColorAttachmentOutput);
+
+	vk::PresentInfoKHR pi;
+	pi.setPSwapchains(&swapchain->getHandle());
+	pi.setPImageIndices(&activeFrameIndex);
+	pi.setSwapchainCount(1);
+	pi.setPWaitSemaphores(&submissionCompleteSemaphore);
+	pi.setWaitSemaphoreCount(1);
+
+	context.queue.presentKHR(pi);
 }
 
-vk::ShaderModule Renderer::createShaderModule(const std::vector<char>& code)
+CommandBuffer& Renderer::beginFrame()
 {
-	vk::ShaderModuleCreateInfo info;
-	info.setCodeSize(code.size());
-	info.setPCode(reinterpret_cast<const uint32_t*>(code.data()));
-	return context.device.createShaderModule(info);
+	//to do: look into storing the imageAcquiredSemaphore in the command buffer itself
+	auto& prevFrame = frames.at(activeFrameIndex);
+	imageAcquiredSemaphore = prevFrame.requestSemaphore();
+	std::cout << "acquiredSemaphore " << imageAcquiredSemaphore << std::endl;
+	activeFrameIndex = swapchain->acquireNextImage(imageAcquiredSemaphore, nullptr);
+	return frames.at(activeFrameIndex).getRenderBuffer();
 }
 
-void Renderer::initVertexInputState()
+void Renderer::bindToDescription(Description& description)
 {
+	pDescription = &description;
+	descriptionIsBound = true;
 }
 
-void Renderer::initInputAssemblyState()
+void Renderer::createRenderPass(std::string name, vk::Format colorFormat)
 {
-	inputAssemblyState.setTopology(vk::PrimitiveTopology::eTriangleList);
-	inputAssemblyState.setPrimitiveRestartEnable(false);
+	renderPasses.emplace(name, RenderPass(device, colorFormat, renderPassCount));
+	renderPassCount++;
 }
 
-void Renderer::initRasterizer()
+void Renderer::createGraphicsPipeline(
+		const std::string name, 
+		const std::string vertShader,
+		const std::string fragShader, 
+		const std::string renderPassName,
+		const bool geometric)
 {
-	//changing any of these may require enabling certain GPU features
-	//rasterizer has more possible settings but i left them at default
-	rasterizer.setDepthClampEnable(false);
-	rasterizer.setRasterizerDiscardEnable(false);
-	rasterizer.setPolygonMode(vk::PolygonMode::eFill);
-	rasterizer.setLineWidth(1.0); //in units of fragments
-	rasterizer.setCullMode(vk::CullModeFlagBits::eNone);
-	rasterizer.setFrontFace(vk::FrontFace::eClockwise);
-	rasterizer.setDepthBiasEnable(false);
-}
+	vk::Rect2D renderArea;
+	renderArea.setOffset({0,0});
+	renderArea.setExtent({
+			swapchain->getExtent3D().width, 
+			swapchain->getExtent3D().height});
 
-void Renderer::initMultisampling()
-{
-	//this will be useful, but disabled for now
-	//many settings left at default
-	multisampling.setSampleShadingEnable(false);
-	multisampling.setRasterizationSamples(vk::SampleCountFlagBits::e1);
-}
+	std::vector<const Shader*> shaderPointers; 
+	const Shader* vert = &vertexShaders.at(vertShader);
+	const Shader* frag = &fragmentShaders.at(fragShader);
+	shaderPointers.push_back(vert);
+	shaderPointers.push_back(frag);
 
-void Renderer::initColorAttachment()
-{
-	colorAttachmentState.setBlendEnable(false);
-	colorAttachmentState.setColorWriteMask(
-			vk::ColorComponentFlagBits::eA |
-			vk::ColorComponentFlagBits::eR |
-			vk::ColorComponentFlagBits::eG |
-			vk::ColorComponentFlagBits::eB);
-}
+	vk::PipelineLayout layout = pipelineLayouts.at("default");
+	vk::PipelineVertexInputStateCreateInfo vertexState;
 
-void Renderer::initColorBlending()
-{
-	colorBlending.setLogicOpEnable(false);
-	colorBlending.setAttachmentCount(1);
-	colorBlending.setPAttachments(&colorAttachmentState);
-}
+	auto& renderPass = renderPasses.at(renderPassName);
 
-void Renderer::initPipelineLayout()
-{
-	vk::PipelineLayoutCreateInfo info;
-	if (descriptionIsBound)
+	if (geometric)
 	{
-		std::cout << "Setting layout according to description at "
-			<< pDescription
-		 	<< std::endl;
-		info.setSetLayoutCount(1);
-		info.setPSetLayouts(pDescription->getPDescriptorSetLayout());
-		pipelineLayout = context.device.createPipelineLayout(info);
+		assert(descriptionIsBound);
+
+		auto attributeDescriptions = pDescription->getAttributeDescriptions();
+		auto vertexBindingDescriptions = pDescription->getBindingDescriptions();
+		vertexState = GraphicsPipeline::createVertexInputState(
+				attributeDescriptions,
+				vertexBindingDescriptions);
 	}
-	else
+
+	else 
 	{
-		std::cout << "Setting empty layout" << std::endl;
-		pipelineLayout = context.device.createPipelineLayout(info);
+		vertexState.setPVertexBindingDescriptions(nullptr);
+		vertexState.setPVertexAttributeDescriptions(nullptr);
+		vertexState.setVertexBindingDescriptionCount(0);
+		vertexState.setVertexAttributeDescriptionCount(0);
+	}
+
+	graphicsPipelines.emplace(name, GraphicsPipeline(
+				device,
+				layout,
+				renderPass.getHandle(),
+				0,
+				renderArea,
+				shaderPointers,
+				vertexState));
+}
+
+void Renderer::createDefaultDescriptorSetLayout()
+{
+	vk::DescriptorSetLayoutBinding uboBinding;
+	uboBinding.setDescriptorType(vk::DescriptorType::eUniformBufferDynamic);
+	uboBinding.setBinding(0);
+	uboBinding.setStageFlags(vk::ShaderStageFlagBits::eVertex);
+	uboBinding.setDescriptorCount(1);
+	uboBinding.setPImmutableSamplers(nullptr);
+
+	vk::DescriptorSetLayoutBinding samplerBinding;
+	samplerBinding.setDescriptorType(vk::DescriptorType::eCombinedImageSampler);
+	samplerBinding.setBinding(1);
+	samplerBinding.setStageFlags(vk::ShaderStageFlagBits::eFragment);
+	samplerBinding.setDescriptorCount(1);
+	samplerBinding.setPImmutableSamplers(nullptr);
+
+	std::array<vk::DescriptorSetLayoutBinding, 2> bindings{uboBinding, samplerBinding};
+
+	vk::DescriptorSetLayoutCreateInfo createInfo;
+	createInfo.setPBindings(bindings.data());
+	createInfo.setBindingCount(2);
+	auto layout = device.createDescriptorSetLayout(createInfo);
+
+	descriptorSetLayouts.insert({"default", std::move(layout)}); 
+	//create a default descriptor set layout presuming one ubo 
+	//and one texture sampler
+}
+
+void Renderer::createDefaultDescriptorLayoutSubset()
+{
+	assert(descriptorSetLayouts.find("default") != descriptorSetLayouts.end());
+
+	descriptorSetLayoutSubsets.insert({"default", std::vector<vk::DescriptorSetLayout>()});
+	descriptorSetLayoutSubsets.at("default").push_back(
+			descriptorSetLayouts.at("default"));
+}
+
+void Renderer::createDefaultPipelineLayout()
+{
+	assert(descriptorSetLayoutSubsets.find("default") != descriptorSetLayoutSubsets.end());
+
+	vk::PipelineLayoutCreateInfo ci;
+	ci.setPSetLayouts(descriptorSetLayoutSubsets.at("default").data());
+	ci.setSetLayoutCount(descriptorSetLayoutSubsets.at("default").size());
+	ci.setPPushConstantRanges(nullptr);
+	ci.setPushConstantRangeCount(0);
+
+	pipelineLayouts.insert({"default", device.createPipelineLayout(ci)});
+}
+
+void Renderer::createDescriptorSets(std::vector<RenderFrame>& frames, std::string layoutKey)
+{
+	for (auto& frame : frames) 
+	{
+		frame.createDescriptorSet(descriptorSetLayoutSubsets.at(layoutKey));	
 	}
 }
 
-void Renderer::initAll()
+const std::string Renderer::loadShader(
+		const std::string path, const std::string name, ShaderType type)
 {
-	initInputAssemblyState();
-	initRasterizer();
-	initMultisampling();
-	initColorAttachment();
-	initColorBlending();
-}
-
-void Renderer::createGraphicsPipeline()
-{
-	auto vertShaderCode = io::readFile("shaders/vert.spv");
-	auto fragShaderCode = io::readFile("shaders/frag.spv");
-	vk::ShaderModule vertShaderModule = createShaderModule(vertShaderCode);
-	vk::ShaderModule fragShaderModule = createShaderModule(fragShaderCode);
-
-	auto shaderStages = createShaderStageInfos(
-			vertShaderModule, fragShaderModule);
-	
-	auto bindingDescription = Description::getBindingDescription();
-	auto attributeDescriptions  = Description::getAttributeDescriptions();
-
-	vertexInputState.setVertexBindingDescriptionCount(1);
-	vertexInputState.setVertexAttributeDescriptionCount(
-			attributeDescriptions.size());
-	vertexInputState.setPVertexBindingDescriptions(&bindingDescription);
-	vertexInputState.setPVertexAttributeDescriptions(
-			attributeDescriptions.data());
-
-	vk::GraphicsPipelineCreateInfo info;
-	info.setStageCount(2);
-	info.setPStages(shaderStages.data());
-	info.setPVertexInputState(&vertexInputState);
-	info.setPInputAssemblyState(&inputAssemblyState);
-	info.setPViewportState(pViewport->getPViewportState());
-	info.setPRasterizationState(&rasterizer);
-	info.setPMultisampleState(&multisampling);
-	info.setPColorBlendState(&colorBlending);
-	info.setLayout(pipelineLayout);
-	info.setRenderPass(renderPass);
-	info.setSubpass(0);
-	//not used
-	info.setPDepthStencilState(nullptr);
-	info.setPDynamicState(nullptr);
-	info.setBasePipelineIndex(-1);
-	
-	graphicsPipeline = context.device.createGraphicsPipeline({}, info);
-
-	context.device.destroyShaderModule(vertShaderModule);
-	context.device.destroyShaderModule(fragShaderModule);
-}
-
-void Renderer::destroyFramebuffers()
-{
-	for (auto framebuffer : framebuffers) {
-		context.device.destroyFramebuffer(framebuffer);
-	}
+	if (type == ShaderType::vert)
+		vertexShaders.emplace(name, VertShader(device, path));
+	if (type == ShaderType::frag)
+		fragmentShaders.emplace(name, FragShader(device, path));
+	return name;
 }

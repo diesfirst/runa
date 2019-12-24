@@ -3,8 +3,6 @@
 
 #include <vulkan/vulkan.hpp>
 
-constexpr int MAX_FRAMES_IN_FLIGHT = 3;
-
 struct DrawableInfo
 {
 	uint32_t indexBufferOffset;
@@ -12,23 +10,64 @@ struct DrawableInfo
 	uint32_t vertexIndexOffset;
 };
 
+class CommandBuffer; //forward declaratiohn
 
-class CommandBlock
+class CommandPool
+{
+friend class CommandBuffer;
+public:
+	CommandPool(
+			const vk::Device&, 
+			const vk::Queue&,
+			uint32_t queueFamilyIndex, 
+			vk::CommandPoolCreateFlags = {}); //empty flags by default
+	virtual ~CommandPool();
+	CommandPool(CommandPool&&);
+	CommandPool(const CommandPool&) = delete;
+	CommandPool& operator=(CommandPool&&) = delete;
+	CommandPool& operator=(const CommandPool&) = delete;
+	CommandBuffer& requestCommandBuffer(
+			vk::CommandBufferLevel = vk::CommandBufferLevel::ePrimary);
+	void resetPool();
+
+private:
+	const vk::Device& device;
+	const vk::Queue& queue;
+	vk::CommandPool handle;
+	std::vector<std::unique_ptr<CommandBuffer>> primaryCommandBuffers;
+	uint32_t activePrimaryCommandBufferCount;
+};
+
+
+class CommandBuffer
 {
 public: 
-	CommandBlock(const vk::CommandPool& pool, const vk::Device& device, uint32_t size);
-	~CommandBlock();
-	std::vector<vk::CommandBuffer>& getCommandBuffers();
-	uint32_t getSize() const;
-	vk::CommandBuffer* getPCommandBuffer(uint32_t index);
-	std::vector<vk::CommandBuffer> commandBuffers;
-	std::vector<vk::Semaphore> semaphores;
-	std::vector<vk::Fence> fences;
+	CommandBuffer(
+			CommandPool& pool, 
+			vk::CommandBufferLevel level = vk::CommandBufferLevel::ePrimary);
+	virtual ~CommandBuffer();
+	CommandBuffer(const CommandBuffer&) = delete;
+	CommandBuffer& operator=(CommandBuffer&) = delete;
+	CommandBuffer& operator=(CommandBuffer&&) = delete;
+	CommandBuffer(CommandBuffer&&);
+	
+	void begin();
+	void beginRenderPass(vk::RenderPassBeginInfo&);
+	void bindGraphicsPipeline(vk::Pipeline& pipeline);
+	void drawVerts(uint32_t vertCount, uint32_t firstVertex);
+	void endRenderPass();
+	void end();
+	vk::Semaphore submit(vk::Semaphore& waitSemaphore, vk::PipelineStageFlags);
+	const bool isRecorded() const;
 private:
-	uint32_t size;
+	CommandPool& pool;
 	const vk::Device& device;
-	void initSemaphores(uint32_t size);
-	void initFences(uint32_t size);
+	const vk::Queue& queue;
+	std::vector<vk::CommandBuffer> buffers;
+	vk::CommandBuffer handle;
+	vk::Semaphore signalSemaphore;
+	vk::Fence fence;
+	bool recordingComplete{false};
 };
 
 class Commander
@@ -39,10 +78,10 @@ public:
 
 	void createCommandPool(uint32_t queueFamily); // must be called
 
-	std::unique_ptr<CommandBlock> createCommandBlock(const uint32_t count) const;
+	CommandBuffer requestCommandBuffer() const;
 	
 	void submitDrawCommand(
-		CommandBlock* drawCommandBlock, 
+		CommandBuffer* drawCommand, 
 		vk::Semaphore* pImageAcquiredSemaphore, 
 		uint32_t swapImageIndex);
 
@@ -106,7 +145,7 @@ public:
 	std::vector<vk::Fence> inFlightFences;
 
 private:
-	vk::CommandPool commandPool;
+	std::unique_ptr<CommandPool> commandPool;
 	std::vector<vk::CommandBuffer> drawCommandBuffers;
 	const vk::Device& device;
 	vk::Queue& graphicsQueue;

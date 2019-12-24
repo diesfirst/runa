@@ -25,3 +25,14 @@ The Objects that actually do the drawing will be the Subpass Objects. They can b
 The draw command, like all other vulkan commands, will be performed by a function contained the the beefed up CommandBuffer object, after it is passed to a function in the Subpass.
 So the subpasses' draw functions will actually call the commandbuffer's draw function, giving their relevant state data to it.
 The RenderFrame object will also hold the buffers for things like UBO's. so we will have per-frame UBO's like we do now, or at least the buffers that hold the UBO data on the GPU end.
+The RenderFrame object will hold a descriptor pool from which descriptor sets will be allocated. Will store the sets in a dictionary, so we could switch them out. 
+The will be a Pipeline object. This will hold a pipeline layout which describes the descriptor sets we will be binding before the draw calls.
+
+A descriptor is like a hardware view of an object. Usually is an address and some description of what the object is / how it should be accessed - from Nicolas Guillemot talk
+
+Interesting idea for multithreading command buffer generation:
+	The recommendation from Nvidia is to create 3 command pools per thread, round robin between them each frame. Each frame you can clear a whole pool of old command buffers in a single operation and allocate the new frame's command buffers from scratch very cheaply. Creating the pool is what's expensive. Carving the pool into buffers is cheap.
+
+Also, look into the VK_EXT_conditional_rendering extention. https://www.saschawillems.de/blog/2018/09/05/vulkan-conditional-rendering/
+
+Good recommendations page https://developer.samsung.com/game/usage

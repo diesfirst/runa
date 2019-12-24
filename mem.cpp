@@ -2,32 +2,108 @@
 #include <cstring>
 #include <iostream>
 
-BufferBlock::BufferBlock(const vk::Device& device) :
+namespace mm
+{
+
+Buffer::Buffer(const vk::Device& device) :
 	device(device)
 {
 }
 
-BufferBlock::~BufferBlock()
+Buffer::~Buffer()
 {
 	device.unmapMemory(memory);
-	device.destroyBuffer(buffer);
+	device.destroyBuffer(handle);
 	device.freeMemory(memory);
 }
 
-ImageBlock::ImageBlock(const vk::Device& device) :
+vk::Buffer& Buffer::getVkBuffer()
+{
+	return handle;
+}
+
+uint8_t* Buffer::map()
+{
+	assert(!isMapped);
+	void* res = device.mapMemory(memory, 0, size);
+	assert(res != (void*)VK_ERROR_MEMORY_MAP_FAILED);
+	pHostMemory = res;
+	isMapped = true;
+	return static_cast<uint8_t*>(pHostMemory);
+}
+
+void Buffer::unmap()
+{
+	assert(isMapped);
+	device.unmapMemory(memory);
+	pHostMemory = nullptr;
+	isMapped = false;
+}
+
+Image::Image(const vk::Device& device) :
 	device(device)
 {
 }
 
-ImageBlock::~ImageBlock()
+Image::Image(	
+		const vk::Device& device, 
+		const vk::Image handle, 
+		const vk::Extent3D extent, 
+		vk::Format format, 
+		vk::ImageUsageFlags usageFlags) :
+	device(device),
+	handle{handle},
+	extent(extent),
+	format(format),
+	usageFlags(usageFlags)
 {
-//	device.unmapMemory(memory);
-	device.destroyImage(image);
-	device.freeMemory(memory);
+	selfManaged = false;
+	vk::ComponentMapping components;
+	components.setA(vk::ComponentSwizzle::eIdentity);
+	components.setB(vk::ComponentSwizzle::eIdentity);
+	components.setG(vk::ComponentSwizzle::eIdentity);
+	components.setR(vk::ComponentSwizzle::eIdentity);
+
+	vk::ImageSubresourceRange subResRange;
+	subResRange.setAspectMask(vk::ImageAspectFlagBits::eColor);
+	subResRange.setLayerCount(1);
+	subResRange.setLevelCount(1);
+	subResRange.setBaseMipLevel(0);
+	subResRange.setBaseArrayLayer(0);
+	
+	vk::ImageViewCreateInfo viewInfo;
+	viewInfo.setImage(this->handle);
+	viewInfo.setFormat(format);
+	viewInfo.setViewType(vk::ImageViewType::e2D);
+	viewInfo.setComponents(components);
+	viewInfo.setSubresourceRange(subResRange);
+	view = device.createImageView(viewInfo);
 }
 
-MemoryManager::MemoryManager(const vk::Device& device) :
-	device(device)
+Image::~Image()
+{
+	if (isMapped)
+	{
+		device.unmapMemory(memory);
+	}
+	if (selfManaged)
+	{
+		device.destroyImage(handle);
+		device.freeMemory(memory);
+	}
+	if (view)
+		device.destroyImageView(view);
+}
+
+vk::ImageView& Image::getView()
+{
+	return view;
+}
+
+MemoryManager::MemoryManager(const vk::Device& device, const vk::PhysicalDevice& physDev) :
+	device(device),
+	physicalDevice(physDev),
+	memoryProperties(physDev.getMemoryProperties())
 {
 }
 
@@ -36,9 +112,14 @@ MemoryManager::~MemoryManager()
 }
 
 
-std::unique_ptr<BufferBlock> MemoryManager::createBuffer(uint32_t size, vk::BufferUsageFlagBits usage)
+
+std::unique_ptr<Buffer> MemoryManager::createBuffer(
+		uint32_t size, 
+		vk::BufferUsageFlagBits usage,
+		vk::MemoryPropertyFlags typeFlags)
 {
-	auto block = std::make_unique<BufferBlock>(device);
+	std::cout << "Creating buffer!" << std::endl;
+	auto buffer = std::make_unique<Buffer>(device);
 	std::cout << "MM Size: " << size << std::endl;
 
 	vk::BufferCreateInfo bufferInfo;
@@ -47,44 +128,52 @@ std::unique_ptr<BufferBlock> MemoryManager::createBuffer(uint32_t size, vk::Buff
 	bufferInfo.setUsage(usage);
 	bufferInfo.setSharingMode(vk::SharingMode::eExclusive);
 
-	block->buffer = device.createBuffer(bufferInfo);
+	buffer->handle = device.createBuffer(bufferInfo);
 
-	auto memReqs = device.getBufferMemoryRequirements(block->buffer);
+	auto memReqs = device.getBufferMemoryRequirements(buffer->handle);
+	uint32_t memoryTypeIndex = findMemoryType(memReqs.memoryTypeBits, typeFlags); 
+	std::cout << "Memory Type index: " << memoryTypeIndex << std::endl;
 
 	vk::MemoryAllocateInfo allocInfo;
-	allocInfo.setMemoryTypeIndex(9); //always host visible for now
+	//allocInfo.setMemoryTypeIndex(9); //always host visible for now
 	allocInfo.setAllocationSize(memReqs.size);
+	allocInfo.setMemoryTypeIndex(memoryTypeIndex);
 	std::cout << "Mem reqs size:" << memReqs.size << std::endl;
 	std::cout << "Mem reqs alignment:" << memReqs.alignment << std::endl;
 
+	buffer->memory = device.allocateMemory(allocInfo);
 
-	block->memory = device.allocateMemory(allocInfo);
+	device.bindBufferMemory(buffer->handle, buffer->memory, 0);
 
-	device.bindBufferMemory(block->buffer, block->memory, 0);
-
-	void* res = device.mapMemory(block->memory, 0, size);
-	assert(res != (void*)VK_ERROR_MEMORY_MAP_FAILED);
-	block->pHostMemory = res;
-	block->size = size;
-
-	return block;
+	return buffer;
 }
 
-std::unique_ptr<ImageBlock> MemoryManager::createImage(
+std::unique_ptr<Image> MemoryManager::createImage(
 		uint32_t width,
 		uint32_t height)
 {
 	vk::ImageUsageFlags usage = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc;
-	return createImage(width, height, usage);
+	return createImage(width, height, usage, vk::MemoryPropertyFlagBits::eDeviceLocal);
 }
-		
 
-std::unique_ptr<ImageBlock> MemoryManager::createImage(
+//mainly intended for wrapping up swapchain images
+std::unique_ptr<Image> MemoryManager::createImage(
+		vk::Image handle, vk::ImageLayout layout, 
+		uint32_t width, uint32_t height)
+{
+	auto image = std::make_unique<Image>(device);
+	image->handle = handle;
+	image->layout = layout;
+	return image;
+}
+
+std::unique_ptr<Image> MemoryManager::createImage(
 		uint32_t width,
 		uint32_t height,
-		vk::ImageUsageFlags usage)
+		vk::ImageUsageFlags usage,
+		vk::MemoryPropertyFlags typeFlags)
 {
-	auto block = std::make_unique<ImageBlock>(device);
+	auto image = std::make_unique<Image>(device);
 
 	vk::ImageCreateInfo createInfo;
 	vk::Extent3D extent;
@@ -102,49 +191,54 @@ std::unique_ptr<ImageBlock> MemoryManager::createImage(
 	createInfo.setSamples(vk::SampleCountFlagBits::e1);
 	createInfo.setSharingMode(vk::SharingMode::eExclusive);
 
-	block->image = device.createImage(createInfo);
+	image->handle = device.createImage(createInfo);
 
-	auto imgMemReq = device.getImageMemoryRequirements(block->image); 
+	auto memReqs = device.getImageMemoryRequirements(image->handle); 
+	uint32_t memoryTypeIndex = findMemoryType(memReqs.memoryTypeBits, typeFlags); 
 
 	vk::MemoryAllocateInfo memAllocInfo;
-	memAllocInfo.setAllocationSize(imgMemReq.size);
-	memAllocInfo.setMemoryTypeIndex(7); //device local
+	memAllocInfo.setAllocationSize(memReqs.size);
+	memAllocInfo.setMemoryTypeIndex(memoryTypeIndex); //was setting it to 7
 
-	block->memory = device.allocateMemory(memAllocInfo);
+	image->memory = device.allocateMemory(memAllocInfo);
 
-	device.bindImageMemory(block->image, block->memory, 0);
+	device.bindImageMemory(image->handle, image->memory, 0);
 
-//	block->pHostMemory = device.mapMemory(block->memory, 0, imgMemReq.size);
+//	image->pHostMemory = device.mapMemory(image->memory, 0, imgMemReq.size);
 //	we wont be mapping the memory right now
 
-	return block;
+	return image;
 }
 
-std::vector<BufferBlock*> MemoryManager::createUBOBlocks(
+std::vector<Buffer*> MemoryManager::createUBOBlocks(
 		size_t count, size_t size)
 {
-	std::vector<BufferBlock*> blockVector;
+	std::vector<Buffer*> blockVector;
 	for (size_t i = 0; i < count; ++i) 
 	{
 		auto block = createBuffer(
 				size,
-				vk::BufferUsageFlagBits::eUniformBuffer);
+				vk::BufferUsageFlagBits::eUniformBuffer,
+				vk::MemoryPropertyFlagBits::eHostCoherent |
+				vk::MemoryPropertyFlagBits::eHostVisible);
 
 		blockVector.push_back(block.get()); //must come before move
-		uniformBufferBlocks.push_back(std::move(block));
+		uniformBuffers.push_back(std::move(block));
 	}
 	return blockVector;
 }
 
-std::vector<BufferBlock*> MemoryManager::createDynamicUBOBlocks(
+std::vector<Buffer*> MemoryManager::createDynamicUBOBlocks(
 		size_t count, size_t size)
 {
-	std::vector<BufferBlock*> blockVector;
+	std::vector<Buffer*> blockVector;
 	for (size_t i = 0; i < count; ++i) 
 	{
 		auto block = createBuffer(
 				size,
-				vk::BufferUsageFlagBits::eUniformBuffer);
+				vk::BufferUsageFlagBits::eUniformBuffer,
+				vk::MemoryPropertyFlagBits::eHostCoherent | 
+				vk::MemoryPropertyFlagBits::eHostVisible);
 
 		blockVector.push_back(block.get()); //must come before move
 		dynamicUBOBlocks.push_back(std::move(block));
@@ -163,36 +257,53 @@ void MemoryManager::getImageSubresourceLayout(vk::Image image)
 	std::cout << "Row pitch: " << subresLayout.rowPitch << std::endl;
 }
 
-BufferBlock* MemoryManager::createStagingBuffer(size_t size)
+Buffer* MemoryManager::createStagingBuffer(size_t size)
 {
 	auto block = createBuffer(
 			size, 
-			vk::BufferUsageFlagBits::eTransferSrc);
+			vk::BufferUsageFlagBits::eTransferSrc,
+			vk::MemoryPropertyFlagBits::eHostCoherent |
+			vk::MemoryPropertyFlagBits::eHostVisible);
 	auto blockPtr = block.get();
 	stagingBuffers.push_back(std::move(block));
 	return blockPtr;
 }
 
-ImageBlock* MemoryManager::createImageBlock(uint32_t width, uint32_t height)
-{
-	auto block = createImage(width, height);
-	auto blockPtr = block.get();
-	imageBlocks.push_back(std::move(block));
-	return blockPtr;
-}
-
-BufferBlock* MemoryManager::createVertexBlock(size_t size)
+Buffer* MemoryManager::createVertexBlock(size_t size)
 {
 	vertexBlock = createBuffer(
 			size, 
-			vk::BufferUsageFlagBits::eVertexBuffer);
+			vk::BufferUsageFlagBits::eVertexBuffer,
+			vk::MemoryPropertyFlagBits::eDeviceLocal);
 	return vertexBlock.get();
 }
 
-BufferBlock* MemoryManager::createIndexBlock(size_t size)
+Buffer* MemoryManager::createIndexBlock(size_t size)
 {
 	indexBlock = createBuffer(
 			size, 
-			vk::BufferUsageFlagBits::eIndexBuffer);
+			vk::BufferUsageFlagBits::eIndexBuffer,
+			vk::MemoryPropertyFlagBits::eDeviceLocal);
 	return indexBlock.get();
 }
+
+uint32_t MemoryManager::findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties)
+{
+	for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) 
+	{
+		if (
+			(typeFilter & (1 << i)) && 
+			(memoryProperties.memoryTypes[i].propertyFlags & properties) == properties
+			) 
+		{
+		return i;
+	    }
+	}
+
+	throw std::runtime_error("Failed to find suitable memory");
+}
+
+
+}
+
+

@@ -15,37 +15,21 @@ class Context
 {
 public:
 	Context ();
-
 	virtual ~Context ();
-
 	void deviceReport();
-
 	vk::Device getDevice();
-
 	uint32_t pickQueueFamilyIndex(vk::SurfaceKHR surface) const;
-
 	vk::PhysicalDevice physicalDevice;
-
 	vk::Instance instance;
-
 	vk::Device device;
-
 	bool enableValidation = true;
-
 	uint32_t getGraphicsQueueFamilyIndex() const;
-	
 	void setQueue();
-
-	ImageBlock* getImageBlock(uint32_t width, uint32_t height) const;
-
-	BufferBlock* getStagingBuffer(uint32_t size) const;
-
-	BufferBlock* getVertexBlock(uint32_t size) const;
-
-	BufferBlock* getIndexBlock(uint32_t size) const;
-
+	mm::Image* getImageBlock(uint32_t width, uint32_t height) const;
+	mm::Buffer* getStagingBuffer(uint32_t size) const;
+	mm::Buffer* getVertexBlock(uint32_t size) const;
+	mm::Buffer* getIndexBlock(uint32_t size) const;
 	void printInstanceExtensionProperties();
-
 	void printDeviceMemoryHeapInfo();
 
 	void printDeviceMemoryTypeInfo();
@@ -63,8 +47,8 @@ public:
 	void checkLayers(std::vector<const char*>);
 
 	vk::Queue queue;
-	std::unique_ptr<Commander> pCommander;
-	std::unique_ptr<MemoryManager> pMemory;
+	std::unique_ptr<Commander> commander;
+	std::unique_ptr<mm::MemoryManager> memory;
 	//physical device properties
 	vk::PhysicalDeviceProperties physicalDeviceProperties;
 

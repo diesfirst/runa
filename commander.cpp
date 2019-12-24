@@ -1,62 +1,159 @@
 #include "commander.hpp"
 #include <iostream>
 
-CommandBlock::CommandBlock(const vk::CommandPool& pool, const vk::Device& device, const uint32_t size) :
+CommandPool::CommandPool(
+		const vk::Device& device, 
+		const vk::Queue& queue,
+		uint32_t queueFamilyIndex, 
+		vk::CommandPoolCreateFlags flags) :
 	device(device),
-	size(size)
+	queue(queue)
+{
+	vk::CommandPoolCreateInfo info;
+	info.setQueueFamilyIndex(queueFamilyIndex);
+	info.setFlags(flags);
+	handle = device.createCommandPool(info);
+}
+
+CommandPool::~CommandPool()
+{
+	if (handle)
+		device.destroyCommandPool(handle);
+}
+
+CommandPool::CommandPool(CommandPool&& other) :
+	device(other.device),
+	queue(other.queue),
+	handle(other.handle),
+	primaryCommandBuffers(std::move(other.primaryCommandBuffers)),
+	activePrimaryCommandBufferCount(other.activePrimaryCommandBufferCount)
+{
+	other.handle = nullptr;
+}
+
+CommandBuffer& CommandPool::requestCommandBuffer(vk::CommandBufferLevel level)
+{
+	if (level == vk::CommandBufferLevel::ePrimary)
+	{
+		if (activePrimaryCommandBufferCount < primaryCommandBuffers.size())
+		{
+			return *primaryCommandBuffers.at(activePrimaryCommandBufferCount++);
+		}
+		primaryCommandBuffers.emplace_back(std::make_unique<CommandBuffer>(*this, level));
+		activePrimaryCommandBufferCount++;
+		return *primaryCommandBuffers.back();
+	}
+	else
+	{
+		throw std::runtime_error("No support for secondary command buffers yet");
+	}
+}
+
+void CommandPool::resetPool()
+{
+	device.resetCommandPool(handle, {}); //do not release resources
+	activePrimaryCommandBufferCount = 0;
+}
+
+//level is primary by default
+CommandBuffer::CommandBuffer(CommandPool& pool, vk::CommandBufferLevel level) :
+	pool(pool),
+	queue(pool.queue),
+	device(pool.device)
 {
 	vk::CommandBufferAllocateInfo allocInfo;
-	allocInfo.setCommandPool(pool);
-	allocInfo.setCommandBufferCount(size);
+	allocInfo.setCommandPool(pool.handle);
+	allocInfo.setCommandBufferCount(1);
 	allocInfo.setLevel(vk::CommandBufferLevel::ePrimary);
-	commandBuffers.resize(size);
-	commandBuffers = device.allocateCommandBuffers(allocInfo);
-	std::cout << "CB SIZE ----- " << size << std::endl;
+	buffers = pool.device.allocateCommandBuffers(allocInfo);
+	handle = buffers.at(0);
 
-	initSemaphores(size);
-	initFences(size);
+	vk::SemaphoreCreateInfo semaInfo;
+	signalSemaphore = pool.device.createSemaphore(semaInfo);
+
+	vk::FenceCreateInfo fenceInfo;
+	fence = pool.device.createFence(fenceInfo);
 }
 
-CommandBlock::~CommandBlock()
+CommandBuffer::~CommandBuffer()
 {
-	std::cout << "CB destructor called" << std::endl;
-	std::cout << "size now: "<< size << std::endl;
-	for (uint32_t i = 0; i < size; i++)
-	{
-		device.destroySemaphore(semaphores[i]);
-		device.destroyFence(fences[i]); 
-	}
+	std::cout << "device " << device << std::endl;
+	pool.device.waitIdle();
+//	if (signalSemaphore)
+//		pool.device.destroySemaphore(signalSemaphore);
+//	if (fence)
+//		pool.device.destroyFence(fence);
+//	if (handle)
+//		pool.device.freeCommandBuffers(pool.handle, handle);
 }
 
-uint32_t CommandBlock::getSize() const
+CommandBuffer::CommandBuffer(CommandBuffer&& other) :
+	pool{other.pool},
+	device{other.device},
+	queue{other.queue},
+	buffers{std::move(other.buffers)},
+	handle{buffers.at(0)},
+	signalSemaphore{other.signalSemaphore},
+	fence{other.fence}
 {
-	return size;
+	other.fence = nullptr;
+	other.signalSemaphore = nullptr;
+	other.handle = nullptr;
+	other.buffers.clear();
 }
 
-std::vector<vk::CommandBuffer>& CommandBlock::getCommandBuffers()
+void CommandBuffer::begin()
 {
-	return commandBuffers;
+	vk::CommandBufferBeginInfo beginInfo;
+//	beginInfo.setFlags(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
+//	shoud not need this to resubmit 
+	handle.begin(beginInfo);
+	recordingComplete = false;
 }
 
-void CommandBlock::initSemaphores(uint32_t size)
+void CommandBuffer::beginRenderPass(vk::RenderPassBeginInfo& info)
 {
-	vk::SemaphoreCreateInfo info;
-	semaphores.resize(size);
-	for (int i = 0; i < size; i++) {
-		semaphores[i] = device.createSemaphore(info);
-	}
-	
+	handle.beginRenderPass(&info, vk::SubpassContents::eInline);
 }
 
-void CommandBlock::initFences(uint32_t size)
+void CommandBuffer::drawVerts(uint32_t vertCount, uint32_t firstVertex)
 {
-	vk::FenceCreateInfo info;
-	info.setFlags(vk::FenceCreateFlagBits::eSignaled); //created in signalled state
-	fences.resize(size);
-	for (int i = 0; i < size; i++) {
-		fences[i] = device.createFence(info);
-	}
-	
+	handle.draw(vertCount, 0, firstVertex, 0);
+}
+
+void CommandBuffer::endRenderPass()
+{
+	handle.endRenderPass();
+}
+
+void CommandBuffer::end()
+{
+	handle.end();
+	recordingComplete = true;
+}
+
+vk::Semaphore CommandBuffer::submit(vk::Semaphore& waitSemaphore, vk::PipelineStageFlags waitMask)
+{
+	vk::SubmitInfo si;
+	si.setPCommandBuffers(&handle);
+	si.setPWaitSemaphores(&waitSemaphore);
+	si.setPSignalSemaphores(&signalSemaphore);
+	si.setCommandBufferCount(1);
+	si.setWaitSemaphoreCount(1);
+	si.setSignalSemaphoreCount(1);
+	si.setPWaitDstStageMask(&waitMask);
+	queue.submit(si, nullptr);
+	return signalSemaphore;
+}
+
+const bool CommandBuffer::isRecorded() const
+{
+	return recordingComplete;
+}
+
+void CommandBuffer::bindGraphicsPipeline(vk::Pipeline& pipeline)
+{
+	handle.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
 }
 
 Commander::Commander(vk::Device& device, vk::Queue& graphicsQueue, uint32_t queueFamily) :
@@ -64,102 +161,13 @@ Commander::Commander(vk::Device& device, vk::Queue& graphicsQueue, uint32_t queu
 	graphicsQueue(graphicsQueue),
 	primaryQueue(graphicsQueue)
 {
-	createCommandPool(queueFamily);
+//	commandPool = std::make_unique<CommandPool>(device, queueFamily);
+//	commandPoolCreated = true;
 }
 
 Commander::~Commander()
 {
-	primaryQueue.waitIdle();
-	device.waitIdle();
-	device.destroyCommandPool(commandPool);
 }
-
-void Commander::createCommandPool(uint32_t queueFamily)
-{
-	vk::CommandPoolCreateInfo createInfo;
-	createInfo.setQueueFamilyIndex(queueFamily);
-	//might be useful to have a seperate pool for command buffers 
-	//that will never need to be reset (like for one time use)
-	createInfo.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
-	commandPool = device.createCommandPool(createInfo);
-	commandPoolCreated = true;
-}
-
-std::unique_ptr<CommandBlock> Commander::createCommandBlock(const uint32_t count) const
-{
-	return std::make_unique<CommandBlock>(commandPool, device, count);
-}
-
-vk::CommandBuffer Commander::beginSingleTimeCommand()
-{
-	vk::CommandBufferAllocateInfo allocInfo;
-	allocInfo.setCommandPool(commandPool);
-	allocInfo.setCommandBufferCount(1);
-	allocInfo.setLevel(vk::CommandBufferLevel::ePrimary);
-
-	auto commandBuffers = 
-		device.allocateCommandBuffers(allocInfo);
-
-	vk::CommandBuffer commandBuffer = commandBuffers[0];
-
-	vk::CommandBufferBeginInfo beginInfo;
-	beginInfo.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
-
-	commandBuffer.begin(beginInfo);
-
-	return commandBuffer;
-}
-
-void Commander::endSingleTimeCommand(vk::CommandBuffer commandBuffer)
-{
-	commandBuffer.end();
-
-	vk::SubmitInfo submitInfo;
-	submitInfo.setCommandBufferCount(1);
-	submitInfo.setPCommandBuffers(&commandBuffer);
-
-	primaryQueue.submit(submitInfo, {}); //null for a fence
-
-	primaryQueue.waitIdle();
-
-	device.freeCommandBuffers(commandPool, commandBuffer);
-}
-
-void Commander::transitionImageLayout(
-		vk::Image& image,
-		vk::ImageLayout oldLayout,
-		vk::ImageLayout newLayout)
-{
-	vk::ImageSubresourceRange subResRange;
-	subResRange.setAspectMask(vk::ImageAspectFlagBits::eColor);
-	subResRange.setLayerCount(1);
-	subResRange.setLevelCount(1);
-	subResRange.setBaseMipLevel(0);
-	subResRange.setBaseArrayLayer(0);
-
-	vk::ImageMemoryBarrier barrier;
-	barrier.setImage(image);
-	barrier.setOldLayout(oldLayout);
-	barrier.setNewLayout(newLayout);
-	barrier.setSrcAccessMask({});
-	barrier.setDstAccessMask({});
-	//this is kind of specific for the purpose of transitioning
-	//the painter image for mapping
-	barrier.setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
-	barrier.setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
-	barrier.setSubresourceRange(subResRange);
-
-	vk::CommandBuffer commandBuffer = beginSingleTimeCommand();
-	commandBuffer.pipelineBarrier(
-			vk::PipelineStageFlagBits::eTopOfPipe,
-			vk::PipelineStageFlagBits::eHost,
-			{},
-			nullptr,
-			nullptr,
-			barrier);
-	endSingleTimeCommand(commandBuffer);
-}
-
 
 void Commander::recordCopyBufferToImages(
 		std::vector<vk::CommandBuffer>& commandBuffers,
@@ -250,114 +258,7 @@ void Commander::recordCopyBufferToImages(
 }
 
 //note this function assumes image is in the correct layout
-void Commander::copyBufferToImageSingleTime(
-		vk::Buffer& buffer,
-		vk::Image& image,
-		uint32_t width, uint32_t height,
-		uint32_t bufferOffset) 
-{
-	vk::ImageSubresourceLayers imgSubResLayers;
-	imgSubResLayers.setAspectMask(vk::ImageAspectFlagBits::eColor);
-	imgSubResLayers.setMipLevel(0);
-	imgSubResLayers.setBaseArrayLayer(0);
-	imgSubResLayers.setLayerCount(1);
 
-	vk::BufferImageCopy region;
-	region.setImageExtent({
-			width,
-			height,
-			1});
-	region.setImageOffset({0,0,0});
-	region.setBufferOffset(bufferOffset); //in bytes
-	region.setBufferRowLength(0); //specify possible padding values between rows
-	region.setBufferImageHeight(0);
-	region.setImageSubresource(imgSubResLayers);
-
-	auto cmdBuffer = beginSingleTimeCommand();
-
-	cmdBuffer.copyBufferToImage(
-			buffer,
-			image,
-			vk::ImageLayout::eTransferDstOptimal,
-			region);
-
-	endSingleTimeCommand(cmdBuffer);
-}
-
-
-void Commander::copyImageToBuffer(
-		vk::Image& image,
-		vk::Buffer& buffer,
-		uint32_t width, uint32_t height, uint32_t depth)
-{
-	transitionImageLayout(
-			image,
-			vk::ImageLayout::eUndefined,
-			vk::ImageLayout::eTransferSrcOptimal);
-
-	vk::ImageSubresourceLayers imgSubResLayers;
-	imgSubResLayers.setAspectMask(vk::ImageAspectFlagBits::eColor);
-	imgSubResLayers.setMipLevel(0);
-	imgSubResLayers.setBaseArrayLayer(0);
-	imgSubResLayers.setLayerCount(1);
-
-	vk::BufferImageCopy region;
-	region.setImageExtent({
-			width,
-			height,
-			depth});
-	region.setImageOffset({	0,0,0});
-	region.setBufferOffset(0);
-	region.setBufferRowLength(0);
-	region.setBufferImageHeight(0);
-	region.setImageSubresource(imgSubResLayers);
-
-	vk::CommandBuffer cmdBuffer = beginSingleTimeCommand();
-
-	cmdBuffer.copyImageToBuffer(
-			image,
-			vk::ImageLayout::eTransferSrcOptimal,
-			buffer,
-			1,
-			&region);
-
-	endSingleTimeCommand(cmdBuffer);
-}
-
-//a new model that assumes images already in correct layout
-void Commander::copyImageToImage(
-		vk::Image& srcImage,
-		vk::Image& dstImage,
-		uint32_t height, uint32_t width)
-{
-	vk::ImageSubresourceLayers srcSubresource;
-	srcSubresource.setMipLevel(0);
-	srcSubresource.setAspectMask(vk::ImageAspectFlagBits::eColor);
-	srcSubresource.setBaseArrayLayer(0);
-	srcSubresource.setLayerCount(1);
-
-	vk::ImageSubresourceLayers dstSubresource;
-	dstSubresource.setMipLevel(0);
-	dstSubresource.setAspectMask(vk::ImageAspectFlagBits::eColor);
-	dstSubresource.setBaseArrayLayer(0);
-	dstSubresource.setLayerCount(1);
-
-	vk::ImageCopy copy;
-	copy.setExtent({width, height, 1});
-	copy.setDstOffset(0);
-	copy.setSrcOffset(0);
-	copy.setSrcSubresource(srcSubresource);
-	copy.setDstSubresource(dstSubresource);
-
-	auto cmdBuffer = beginSingleTimeCommand();
-
-	cmdBuffer.copyImage(
-			srcImage, 
-			vk::ImageLayout::eTransferSrcOptimal, 
-			dstImage, 
-			vk::ImageLayout::eTransferDstOptimal, 
-			1, &copy);
-}
 
 void Commander::recordDraw(
 		std::vector<vk::CommandBuffer>& commandBuffers,

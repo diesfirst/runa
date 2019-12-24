@@ -19,13 +19,11 @@ Swapchain::Swapchain(const Context& context, const XWindow& window, const uint8_
 	createSwapchain();
 	setImages();
 	createImageViews();
-	initSyncObjects();
 }
 
 Swapchain::~Swapchain()
 {	
 	destroyImageViews();
-	destroySyncObjects();
 	context.device.destroySwapchainKHR(swapchain);
 	context.instance.destroySurfaceKHR(surface);
 }
@@ -36,22 +34,6 @@ void Swapchain::createSurface()
 	surfaceCreateInfo.connection  = window.connection;
 	surfaceCreateInfo.window = window.window;
 	surface = context.instance.createXcbSurfaceKHR(surfaceCreateInfo);
-}
-
-void Swapchain::initSyncObjects()
-{
-	acquisitionSemaphores.resize(imageCount);
-	acquisitionFences.resize(imageCount);
-	vk::SemaphoreCreateInfo semaphoreInfo;
-	vk::FenceCreateInfo fenceInfo;
-	for (uint8_t i = 0; i < imageCount; i++) 
-	{
-		acquisitionSemaphores[i] = context.device.createSemaphore(semaphoreInfo);
-		acquisitionFences[i] = context.device.createFence(fenceInfo);
-		std::cout << "semaphore" << i << ' ' << acquisitionSemaphores[i] << std::endl;
-		std::cout << "fence" << i << ' ' << acquisitionFences[i] << std::endl;
-	}
-	
 }
 
 void Swapchain::setQueueFamilyIndex()
@@ -72,15 +54,12 @@ void Swapchain::setFormat()
 	colorSpace = vk::ColorSpaceKHR::eSrgbNonlinear; //available
 }
 
-void Swapchain::setSwapExtent(int width, int height)
+void Swapchain::setSwapExtent()
 {
 	if (surfCaps.currentExtent == -1) //forget what this means
 	{
 		extent.width = window.size[0];
 		extent.height = window.size[1];
-	}
-	if (width!=0 && height!=0)
-	{
 	}
 	else
 	{
@@ -114,10 +93,10 @@ void Swapchain::createSwapchain()
 	createInfo.setImageArrayLayers(1); //more than 1 for VR applications
 	//we will be drawing directly to the image
 	//as opposed to transfering data to it
-	createInfo.setImageUsage(
-			vk::ImageUsageFlagBits::eColorAttachment |
+	auto usageFlags = vk::ImageUsageFlagBits::eColorAttachment |
 			vk::ImageUsageFlagBits::eTransferDst |
-			vk::ImageUsageFlagBits::eTransferSrc);
+			vk::ImageUsageFlagBits::eTransferSrc;
+	createInfo.setImageUsage(usageFlags);
 	//this is so that each queue has exclusive 
 	//ownership of an image at a time
 	createInfo.setImageSharingMode(vk::SharingMode::eExclusive);
@@ -128,6 +107,31 @@ void Swapchain::createSwapchain()
 	swapchain = context.device.createSwapchainKHR(createInfo);
 	std::cout << "Swapchain created!" << std::endl;
 	swapchainCreated = true;
+}
+
+std::vector<vk::Image>& Swapchain::getImages()
+{
+	return images;
+}
+
+vk::Extent2D Swapchain::getExtent2D()
+{
+	return extent;
+}
+
+vk::Extent3D Swapchain::getExtent3D()
+{
+	return vk::Extent3D(extent.width, extent.height, 1);
+}
+
+vk::Format Swapchain::getFormat()
+{
+	return colorFormat;
+}
+
+vk::ImageUsageFlags Swapchain::getUsageFlags()
+{
+	return usageFlags;
 }
 
 void Swapchain::setImages()
@@ -169,55 +173,26 @@ uint8_t Swapchain::getImageCount() const
 	return imageCount;
 }
 
-std::tuple<uint32_t, vk::Semaphore*> Swapchain::acquireNextImageNoFence()
+const vk::SwapchainKHR& Swapchain::getHandle() const
 {
-	syncIndex = (1 + syncIndex) % imageCount;
-	auto result = context.device.acquireNextImageKHR(
-			swapchain,
-			UINT64_MAX, //so it will wait forever
-			//will be signalled when we can do something with this
-			acquisitionSemaphores[syncIndex], 
-			vk::Fence());
-	if (result.result != vk::Result::eSuccess) 
-	{
-		std::cerr << "Invalid acquire result: " << vk::to_string(result.result);
-		throw std::error_code(result.result);
-	}
-
-	std::cout << "&acquisitionSemaphores[syncIndex]" 
-		<< &acquisitionSemaphores[syncIndex] << std::endl;
-
-	std::cout << "Fence: " << acquisitionFences[syncIndex] << std::endl;
-
-	return std::make_tuple(
-			result.value, 
-			&acquisitionSemaphores[syncIndex]);
+	return swapchain;
 }
 
-std::tuple<uint32_t, vk::Semaphore*, vk::Fence*> Swapchain::acquireNextImage()
+uint32_t Swapchain::acquireNextImage(vk::Semaphore semaphore, vk::Fence fence)
 {
-	syncIndex = (1 + syncIndex) % imageCount;
 	auto result = context.device.acquireNextImageKHR(
 			swapchain,
 			UINT64_MAX, //so it will wait forever
 			//will be signalled when we can do something with this
-			acquisitionSemaphores[syncIndex], 
-			acquisitionFences[syncIndex]);
+			semaphore, 
+			fence);
 	if (result.result != vk::Result::eSuccess) 
 	{
 		std::cerr << "Invalid acquire result: " << vk::to_string(result.result);
 		throw std::error_code(result.result);
 	}
 
-	std::cout << "&acquisitionSemaphores[syncIndex]" 
-		<< &acquisitionSemaphores[syncIndex] << std::endl;
-
-	std::cout << "Fence: " << acquisitionFences[syncIndex] << std::endl;
-
-	return std::make_tuple(
-			result.value, 
-			&acquisitionSemaphores[syncIndex],
-			&acquisitionFences[syncIndex]);
+	return result.value;
 }
 
 
@@ -229,12 +204,3 @@ void Swapchain::destroyImageViews()
 	}
 }
 
-void Swapchain::destroySyncObjects()
-{
-	for (uint8_t i = 0; i < imageCount; i++) 
-	{
-		context.device.destroySemaphore(acquisitionSemaphores[i]);
-		context.device.destroyFence(acquisitionFences[i]);
-	}
-	
-}

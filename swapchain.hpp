@@ -21,13 +21,25 @@ public:
 
 	void createSwapchain();
 
+	std::vector<vk::Image>& getImages();
+
+	vk::Extent2D getExtent2D();
+
+	vk::Extent3D getExtent3D();
+
+	vk::Format getFormat();
+
+	vk::ImageUsageFlags getUsageFlags();
+
 	std::tuple<uint32_t, vk::Semaphore*> acquireNextImageNoFence();
 
-	std::tuple<uint32_t, vk::Semaphore*, vk::Fence*> acquireNextImage();
+	uint32_t acquireNextImage(vk::Semaphore, vk::Fence);
 
 	uint8_t getCurrentIndex() const;
 
 	uint8_t getImageCount() const;
+
+	const vk::SwapchainKHR& getHandle() const;
 
 private:
 	vk::ColorSpaceKHR colorSpace;
@@ -42,10 +54,8 @@ private:
 	vk::Extent2D extent;
 	uint32_t currentIndex{0};
 	vk::Format colorFormat;
+	vk::ImageUsageFlags usageFlags;
 	uint8_t imageCount;
-	std::vector<vk::Semaphore> acquisitionSemaphores;
-	std::vector<vk::Fence> acquisitionFences;
-	uint8_t syncIndex = 0;
 
 	bool swapchainCreated = false;
 
@@ -59,7 +69,7 @@ private:
 
 	void setSurfaceCapabilities();
 	
-	void setSwapExtent(int width=0, int height=0);
+	void setSwapExtent();
 
 	void setFormat();
 

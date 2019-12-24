@@ -16,15 +16,16 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 Context::Context()
 {
 	createContext();
-	pCommander = std::make_unique<Commander>(
+	commander = std::make_unique<Commander>(
 			device, queue, getGraphicsQueueFamilyIndex());
-	pMemory = std::make_unique<MemoryManager>(device);
+	memory = std::make_unique<mm::MemoryManager>(device, physicalDevice);
 }
 
 Context::~Context()
 {
-	pCommander.reset();
-	pMemory.reset();
+	std::cout << "context destructor called" << std::endl;
+	commander.reset();
+	memory.reset();
 	device.destroy();
 	destroyDebugMessenger();
 	instance.destroy();
@@ -221,26 +222,6 @@ uint32_t Context::pickQueueFamilyIndex(vk::SurfaceKHR surface) const
 uint32_t Context::getGraphicsQueueFamilyIndex() const
 {
 	return 0;
-}
-
-ImageBlock* Context::getImageBlock(uint32_t width, uint32_t height) const
-{
-	return pMemory->createImageBlock(width, height);
-}
-
-BufferBlock* Context::getStagingBuffer(uint32_t size) const
-{
-	return pMemory->createStagingBuffer(size);
-}
-
-BufferBlock* Context::getVertexBlock(uint32_t size) const
-{
-	return pMemory->createVertexBlock(size);
-}
-
-BufferBlock* Context::getIndexBlock(uint32_t size) const
-{
-	return pMemory->createIndexBlock(size);
 }
 
 void Context::setDeviceExtensions(vk::DeviceCreateInfo& createInfo)

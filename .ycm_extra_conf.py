@@ -36,9 +36,7 @@ import ycm_core
 flags = [
     '-x',
     'c++',
-    '-I/usr/include/vulkan',
-    '-isystem/opt/hfs18.0/toolkit/include',
-    '-isystem/opt/hfs18.0/toolkit/include/python2.7',
+    '-I/home/michaelb/Dev/Vulkan/1.1.126.0/x86_64/include/vulkan'
     '-std=c++17',
 ]
 

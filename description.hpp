@@ -43,8 +43,8 @@ public:
 	void updateAllCurrentUbos(uint32_t swapIndex);
 	void update(PointBased*);
 
-	static vk::VertexInputBindingDescription getBindingDescription();
-	static std::array<vk::VertexInputAttributeDescription, 2> 
+	static std::vector<vk::VertexInputBindingDescription> getBindingDescriptions();
+	static std::vector<vk::VertexInputAttributeDescription> 
 		getAttributeDescriptions();
 
 	template<typename T> T* createMesh()
@@ -67,10 +67,10 @@ private:
 	std::vector<std::shared_ptr<Camera>> cameras;
 	std::vector<DrawableInfo> drawInfos;
 	std::shared_ptr<Camera> curCamera;
-	BufferBlock* vertexBlock; //does not have ownership
-	BufferBlock* indexBlock; //does not have ownership
-	std::vector<BufferBlock*> uboBlocks;
-	std::vector<BufferBlock*> uboDynamicBlocks;
+	mm::Buffer* vertexBlock; //does not have ownership
+	mm::Buffer* indexBlock; //does not have ownership
+	std::vector<mm::Buffer*> uboBlocks;
+	std::vector<mm::Buffer*> uboDynamicBlocks;
 	UboVS uboView;
 	UboDynamic uboDynamicData;
 	size_t dynamicAlignment;
@@ -97,7 +97,7 @@ private:
 	void createDescriptorSets(uint32_t descriptorSetCount);
 	void updateDescriptorSets(
 			uint32_t descriptorCount, 
-			std::vector<BufferBlock>* uboBlocks,
+			std::vector<mm::Buffer>* uboBlocks,
 			size_t uboSize);
 };
 
