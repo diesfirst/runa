@@ -187,13 +187,15 @@ RenderFrame::RenderFrame(
 RenderFrame::~RenderFrame()
 {
 	if (semaphore)
-	{
 		device.destroySemaphore(semaphore);
-	}
 	if (fence)	
 		device.destroyFence(fence);
 	if (descriptorPool)
 		device.destroyDescriptorPool(descriptorPool);
+	for (auto item : frameBuffers) 
+	{
+		device.destroyFramebuffer(item.second);	
+	}
 }
 
 RenderFrame::RenderFrame(RenderFrame&& other) :
@@ -207,12 +209,13 @@ RenderFrame::RenderFrame(RenderFrame&& other) :
 	width{other.width},
 	height{other.height},
 	renderBuffer{other.renderBuffer},
-	frameBuffers{other.frameBuffers},
+	frameBuffers{std::move(other.frameBuffers)},
 	swapchainRenderTarget{std::move(other.swapchainRenderTarget)}
 {
 	other.semaphore = nullptr;
 	other.fence = nullptr;
 	other.descriptorPool = nullptr;
+	other.frameBuffers.clear();
 }
 
 vk::Framebuffer& RenderFrame::createFramebuffer(
@@ -521,7 +524,7 @@ Renderer::Renderer(Context& context, XWindow& window) :
 	//
 	//we'll create renderpass now. 
 	//note: we could have done this at any point
-	//createRenderPass("default", swapchain->getFormat());
+	createRenderPass("default", swapchain->getFormat());
 }
 
 Renderer::~Renderer()

@@ -9,6 +9,7 @@ CommandPool::CommandPool(
 	device(device),
 	queue(queue)
 {
+	std::cout << this << " CommandPool constructed" << std::endl;
 	vk::CommandPoolCreateInfo info;
 	info.setQueueFamilyIndex(queueFamilyIndex);
 	info.setFlags(flags);
@@ -24,10 +25,11 @@ CommandPool::~CommandPool()
 CommandPool::CommandPool(CommandPool&& other) :
 	device(other.device),
 	queue(other.queue),
-	handle(other.handle),
+	handle(std::move(other.handle)),
 	primaryCommandBuffers(std::move(other.primaryCommandBuffers)),
 	activePrimaryCommandBufferCount(other.activePrimaryCommandBufferCount)
 {
+	std::cout << this << " CommandPool move constructed" << std::endl;
 	other.handle = nullptr;
 }
 
@@ -77,14 +79,12 @@ CommandBuffer::CommandBuffer(CommandPool& pool, vk::CommandBufferLevel level) :
 
 CommandBuffer::~CommandBuffer()
 {
-	std::cout << "device " << device << std::endl;
-	pool.device.waitIdle();
-//	if (signalSemaphore)
-//		pool.device.destroySemaphore(signalSemaphore);
-//	if (fence)
-//		pool.device.destroyFence(fence);
+	if (signalSemaphore)
+		device.destroySemaphore(signalSemaphore);
+	if (fence)
+		device.destroyFence(fence);
 //	if (handle)
-//		pool.device.freeCommandBuffers(pool.handle, handle);
+//		device.freeCommandBuffers(pool.handle, handle);
 }
 
 CommandBuffer::CommandBuffer(CommandBuffer&& other) :
@@ -99,7 +99,6 @@ CommandBuffer::CommandBuffer(CommandBuffer&& other) :
 	other.fence = nullptr;
 	other.signalSemaphore = nullptr;
 	other.handle = nullptr;
-	other.buffers.clear();
 }
 
 void CommandBuffer::begin()
@@ -118,7 +117,7 @@ void CommandBuffer::beginRenderPass(vk::RenderPassBeginInfo& info)
 
 void CommandBuffer::drawVerts(uint32_t vertCount, uint32_t firstVertex)
 {
-	handle.draw(vertCount, 0, firstVertex, 0);
+	handle.draw(vertCount, 1, firstVertex, 0);
 }
 
 void CommandBuffer::endRenderPass()
