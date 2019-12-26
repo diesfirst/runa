@@ -3,10 +3,8 @@
 #include "renderer.hpp"
 #include "io.hpp"
 #include <iostream>
-#include "util.hpp"
 #include <fstream>
 
-Timer renderTimer;
 
 Shader::Shader(const vk::Device& device, std::string filepath) :
 	device{device}
@@ -24,14 +22,27 @@ Shader::~Shader()
 		device.destroyShaderModule(module);
 }
 
-Shader::Shader(Shader&& other) :
-	device{other.device},
-	shaderCode{std::move(other.shaderCode)},
-	codeSize{other.codeSize},
-	module{std::move(other.module)},
-	stageInfo{std::move(other.stageInfo)}
+//movement is tricky. going to disallow it for now
+//
+//Shader::Shader(Shader&& other) :
+//	device{other.device},
+//	shaderCode{std::move(other.shaderCode)},
+//	codeSize{other.codeSize},
+//	module{std::move(other.module)},
+//	stageInfo{std::move(other.stageInfo)},
+//	mapEntries{std::move(other.mapEntries)},
+//	specInfo{std::move(other.specInfo)},
+//	specializationFloats{std::move(other.specializationFloats)}
+//{
+//	std::cout << "shader move ctor called" << std::endl;
+//	other.module = nullptr;
+//	specInfo.setPMapEntries(mapEntries.data());
+//	specInfo.setPData(specializationFloats.data());
+//}
+
+const vk::PipelineShaderStageCreateInfo& Shader::getStageInfo() const
 {
-	other.module = nullptr;
+	return stageInfo;
 }
 
 void Shader::loadFile(std::string filepath)
@@ -66,6 +77,28 @@ FragShader::FragShader(const vk::Device& device, std::string filepath) :
 	Shader(device, filepath)
 {
 	stageInfo.setStage(vk::ShaderStageFlagBits::eFragment);
+	
+	//testing out the specialization constants
+	//---------------------------------------
+	//
+	mapEntries.resize(2);
+	mapEntries[0].setSize(sizeof(float));
+	mapEntries[0].setOffset(0 * sizeof(float));
+	mapEntries[0].setConstantID(0);
+	mapEntries[1].setSize(sizeof(float));
+	mapEntries[1].setOffset(1 * sizeof(float));
+	mapEntries[1].setConstantID(1);
+
+	specializationFloats.resize(2);
+	specializationFloats[0] = 500.0;
+	specializationFloats[1] = 500.0;
+
+	specInfo.setPMapEntries(mapEntries.data());
+	specInfo.setMapEntryCount(2);
+	specInfo.setPData(specializationFloats.data());
+	specInfo.setDataSize(sizeof(float) * specializationFloats.size());
+
+	stageInfo.setPSpecializationInfo(&specInfo);
 }
 
 RenderPass::RenderPass(const vk::Device& device, const vk::Format format, uint32_t id) :
@@ -152,7 +185,7 @@ const vk::RenderPass& RenderPass::getHandle() const
 	return handle;
 }
 
-const uint32_t RenderPass::getId() const
+uint32_t RenderPass::getId() const
 {
 	return id;
 }
@@ -406,7 +439,7 @@ vk::PipelineRasterizationStateCreateInfo GraphicsPipeline::createRasterizationSt
 	ci.setCullMode(vk::CullModeFlagBits::eBack);
 	ci.setFrontFace(vk::FrontFace::eClockwise);
 	ci.setLineWidth(1.0);
-	ci.setPolygonMode(vk::PolygonMode::eFill);
+	ci.setPolygonMode(vk::PolygonMode::eFillRectangleNV);
 	ci.setDepthBiasClamp(0.0);
 	ci.setDepthBiasSlopeFactor(0.0);
 	ci.setDepthBiasConstantFactor(0.0);
@@ -483,7 +516,7 @@ std::vector<vk::PipelineShaderStageCreateInfo> GraphicsPipeline::extractShaderSt
 	stageInfos.resize(shaders.size());
 	for (int i = 0; i < shaders.size(); i++) 
 	{
-		stageInfos[i] = shaders[i]->stageInfo;	
+		stageInfos[i] = shaders[i]->getStageInfo();
 	}
 	return stageInfos;
 }
@@ -608,7 +641,6 @@ CommandBuffer& Renderer::beginFrame()
 	//to do: look into storing the imageAcquiredSemaphore in the command buffer itself
 	auto& prevFrame = frames.at(activeFrameIndex);
 	imageAcquiredSemaphore = prevFrame.requestSemaphore();
-	std::cout << "acquiredSemaphore " << imageAcquiredSemaphore << std::endl;
 	activeFrameIndex = swapchain->acquireNextImage(imageAcquiredSemaphore, nullptr);
 	return frames.at(activeFrameIndex).getRenderBuffer();
 }
@@ -643,6 +675,8 @@ void Renderer::createGraphicsPipeline(
 	const Shader* frag = &fragmentShaders.at(fragShader);
 	shaderPointers.push_back(vert);
 	shaderPointers.push_back(frag);
+
+	auto& f = fragmentShaders.at(fragShader);
 
 	vk::PipelineLayout layout = pipelineLayouts.at("default");
 	vk::PipelineVertexInputStateCreateInfo vertexState;
@@ -740,8 +774,16 @@ const std::string Renderer::loadShader(
 		const std::string path, const std::string name, ShaderType type)
 {
 	if (type == ShaderType::vert)
-		vertexShaders.emplace(name, VertShader(device, path));
+		vertexShaders.emplace(
+				std::piecewise_construct,
+				std::forward_as_tuple(name),
+				std::forward_as_tuple(device, path));
 	if (type == ShaderType::frag)
-		fragmentShaders.emplace(name, FragShader(device, path));
+	{
+		fragmentShaders.emplace(
+				std::piecewise_construct, 
+				std::forward_as_tuple(name), 
+				std::forward_as_tuple(device, path));
+	}
 	return name;
 }

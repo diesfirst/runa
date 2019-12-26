@@ -36,4 +36,18 @@ private:
 	std::clock_t startTime, endTime;
 };
 
+void Timer::start()
+{
+	startTime = std::clock();
+}
+
+void Timer::end(const std::string& funcName)
+{
+	endTime = std::clock();
+	std::cout 
+		<< funcName << " completed in: " << std::endl
+		<< (endTime - startTime) / (double) CLOCKS_PER_SEC 
+		<< " s" << std::endl;
+}
+
 #endif

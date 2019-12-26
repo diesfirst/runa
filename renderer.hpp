@@ -16,15 +16,18 @@ class Shader
 public:
 	virtual ~Shader();
 	Shader(const Shader&) = delete; //no copy construction
-	Shader(Shader&& other);
+	Shader(Shader&& other) = delete;
 	Shader& operator=(Shader& other) = delete; //no copy assignment
 	Shader& operator=(Shader&& other) = delete; //no move assignment
 
-	vk::PipelineShaderStageCreateInfo getStageInfo();
-	vk::PipelineShaderStageCreateInfo stageInfo;
+	const vk::PipelineShaderStageCreateInfo& getStageInfo() const;
 
 protected:
 	Shader(const vk::Device&, std::string filepath);
+	vk::PipelineShaderStageCreateInfo stageInfo;
+	std::vector<vk::SpecializationMapEntry> mapEntries;
+	vk::SpecializationInfo specInfo;
+	std::vector<float> specializationFloats;
 
 private:
 	const vk::Device& device;
@@ -59,7 +62,7 @@ public:
 	RenderPass(RenderPass&&);
 	bool operator<(const RenderPass& rhs);
 	const vk::RenderPass& getHandle() const;
-	const uint32_t getId() const;
+	uint32_t getId() const;
 private:
 	const vk::Device& device;
 	vk::RenderPass handle;

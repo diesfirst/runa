@@ -145,7 +145,7 @@ vk::Semaphore CommandBuffer::submit(vk::Semaphore& waitSemaphore, vk::PipelineSt
 	return signalSemaphore;
 }
 
-const bool CommandBuffer::isRecorded() const
+bool CommandBuffer::isRecorded() const
 {
 	return recordingComplete;
 }

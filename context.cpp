@@ -118,6 +118,7 @@ void Context::createDevice()
 
 	std::vector<const char*> extensions;
 	extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+	extensions.push_back(VK_NV_FILL_RECTANGLE_EXTENSION_NAME);
 	deviceInfo.enabledExtensionCount = extensions.size();
 	deviceInfo.ppEnabledExtensionNames = extensions.data();
 	deviceInfo.setPEnabledFeatures(&physicalDeviceFeatures);

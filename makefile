@@ -64,4 +64,4 @@ clean:
 	rm -f *.o .*.swp app
 
 shaders: 
-	cd shaders && /home/michaelb/Dev/Vulkan/1.1.126.0/x86_64/bin/glslc -o *.vert && /home/michaelb/Dev/Vulkan/1.1.126.0/x86_64/bin/glslc -o *.frag
+	python3 compileShaders.py

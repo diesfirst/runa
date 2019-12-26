@@ -15,11 +15,13 @@ void program0()
 	XWindow window(500, 500);
 	window.open();
 	Renderer renderer(context, window);
-	auto v1 = renderer.loadShader("shaders/triangle.spv", "vert1", ShaderType::vert);
-	auto f1 = renderer.loadShader("shaders/simpleFrag.spv", "frag1", ShaderType::frag);
+	auto v1 = renderer.loadShader("shaders/big_triangle.spv", "vert1", ShaderType::vert);
+	auto f1 = renderer.loadShader("shaders/fragCoord.spv", "frag1", ShaderType::frag);
 	renderer.createGraphicsPipeline("carl", v1, f1, "default", false);
 	renderer.recordRenderCommands("carl", "default");
+	myTimer.start();
 	renderer.render();
-	sleep(5);
+	myTimer.end("Render");
+	sleep(50);
 }
 
