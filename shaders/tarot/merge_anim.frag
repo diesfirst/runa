@@ -5,15 +5,18 @@
 
 void main()
 {
-	vec3 color = vec3(0.);
+	vec4 color = vec4(0.);
 	vec2 st = getCoords();
+	vec2 mCoords = getMouseCoords();
 
-	float x = (ubo.frame / 100) * .15 - .15;
-	vec2 phase = vec2(x, .0);
-	float left = circleSDF(st + phase);
-	float right = circleSDF(st - phase);
+	vec2 phase = vec2(mCoords.x, mCoords.y);
+	float moving = circleSDF(st + .5 - phase);
+	float center = circleSDF(st);
 
-	color += flip(stroke(left, .5, .05), fill(right, .525));
+	color += flip(stroke(moving, .5, .05), fill(center, .525));
+//	color += vec3(st, .0);
 
-	outColor = vec4(color, 1.);
+	outColor = color;
 }
+
+

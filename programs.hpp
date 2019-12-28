@@ -7,8 +7,7 @@
 #include <unistd.h>
 #include "event.hpp"
 
-constexpr int waitTime = 10000;
-constexpr uint32_t N_FRAMES = 100;
+constexpr uint32_t N_FRAMES = 1000000;
 Timer myTimer;
 
 void program0(const std::string card_name)
@@ -28,8 +27,12 @@ void program0(const std::string card_name)
 
 	for (int i = 0; i < N_FRAMES; i++) 
 	{
-		auto input = eventHander.fetchUserInput(true);
-		renderer.setFragmentInput(i);
+		const auto input = eventHander.fetchUserInput(true);
+		renderer.setFragmentInput({
+				(float)i,
+				(float)input.mouseX,
+				(float)input.mouseY, 
+				false});
 		renderer.render();
 	}
 

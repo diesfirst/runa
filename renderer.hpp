@@ -11,6 +11,14 @@
 
 enum class ShaderType {vert, frag};
 
+struct FragmentInput
+{
+	float time{0};
+	float mouseX{0};
+	float mouseY{0};	
+	bool lmbDown{false};
+};
+
 class Shader
 {
 public:
@@ -181,7 +189,7 @@ public:
 			const std::string renderPassName,
 			const bool geometric);
 	void bindToDescription(Description& description);
-	void setFragmentInput(float input);
+	void setFragmentInput(FragmentInput input);
 	//in the future we should disect this function
 	//to allow for the renderpasses and 
 	//pipeline bindings to happen seperately,
@@ -202,7 +210,7 @@ private:
 	bool descriptionIsBound;
 	uint32_t renderPassCount{0};
 
-	float fragmentInput{0};
+	FragmentInput fragmentInput;
 
 	vk::Semaphore imageAcquiredSemaphore;
 
@@ -222,7 +230,7 @@ private:
 
 	CommandBuffer& beginFrame();
 
-	void updateDescriptor(uint32_t frame, float value);
+	void updateDescriptor(uint32_t frame, const FragmentInput& value);
 
 	void createDescriptorSets(
 			std::vector<RenderFrame>&, 

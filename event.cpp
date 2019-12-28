@@ -38,8 +38,6 @@ UserInput EventHandler::handleEvent(xcb_generic_event_t* event)
 	{
 		case XCB_MOTION_NOTIFY: 
 		{
-			if (!mButtonDown) 
-				break;
 			xcb_motion_notify_event_t* motion =
 				(xcb_motion_notify_event_t*)event;
 			return UserInput{motion->event_x, motion->event_y};

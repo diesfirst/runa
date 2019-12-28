@@ -116,10 +116,10 @@ RenderPass::RenderPass(const vk::Device& device, const vk::Format format, uint32
 	//Sets what to do with data in the attachment
 	//before rendering
 	attachment.setLoadOp(vk::AttachmentLoadOp::eClear);
+	attachment.setInitialLayout(vk::ImageLayout::eUndefined);
 	//Sets what we do with the data after rendering
 	//We want to show it so we will store it
 	attachment.setStoreOp(vk::AttachmentStoreOp::eStore);
-	attachment.setInitialLayout(vk::ImageLayout::eUndefined);
 	attachment.setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
 
 	attachments.push_back(attachment);
@@ -138,14 +138,14 @@ RenderPass::RenderPass(const vk::Device& device, const vk::Format format, uint32
 	vk::SubpassDependency dependency;
 	dependency.setSrcSubpass(
 			VK_SUBPASS_EXTERNAL);
-	dependency.setSrcAccessMask(
-			vk::AccessFlagBits::eColorAttachmentWrite);
-	dependency.setSrcStageMask(
-			vk::PipelineStageFlagBits::eColorAttachmentOutput);
 	dependency.setDstSubpass(
 			0);
+	dependency.setSrcAccessMask(
+			vk::AccessFlagBits::eShaderRead);
 	dependency.setDstAccessMask(
-			vk::AccessFlagBits::eColorAttachmentRead);
+			vk::AccessFlagBits::eColorAttachmentWrite);
+	dependency.setSrcStageMask(
+			vk::PipelineStageFlagBits::eFragmentShader);
 	dependency.setDstStageMask(
 			vk::PipelineStageFlagBits::eColorAttachmentOutput);
 	subpassDependencies.push_back(dependency);
@@ -350,7 +350,7 @@ void RenderFrame::createDescriptorSet(std::vector<vk::DescriptorSetLayout>& layo
 	descriptorSets = device.allocateDescriptorSets(ai);
 	
 	vk::DescriptorBufferInfo bi;
-	bi.setRange(sizeof(float)); //just one float for now
+	bi.setRange(sizeof(FragmentInput));
 	bi.setBuffer((*descriptorBuffer).getHandle());
 	bi.setOffset(0);
 
@@ -518,12 +518,12 @@ vk::PipelineColorBlendAttachmentState GraphicsPipeline::createColorBlendAttachme
 		vk::ColorComponentFlagBits::eR;
 
 	vk::PipelineColorBlendAttachmentState ci;
-	ci.setBlendEnable(false);
+	ci.setBlendEnable(true);
 	ci.setAlphaBlendOp(vk::BlendOp::eAdd);
 	ci.setColorBlendOp(vk::BlendOp::eAdd);
 	ci.setColorWriteMask(writeMask);
 	ci.setDstAlphaBlendFactor(vk::BlendFactor::eZero);
-	ci.setDstColorBlendFactor(vk::BlendFactor::eZero);
+	ci.setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha);
 	ci.setSrcAlphaBlendFactor(vk::BlendFactor::eOne);
 	ci.setSrcColorBlendFactor(vk::BlendFactor::eOne);
 	return ci;
@@ -646,7 +646,7 @@ void Renderer::recordRenderCommands(const std::string pipelineName, const std::s
 		renderArea.setExtent(swapchain->getExtent2D());
 
 		vk::ClearColorValue clearColor;
-		clearColor.setFloat32({0.1,0.05,0.15,1.0});
+		clearColor.setFloat32({0.4,0.05,0.15,1.0});
 
 		vk::ClearValue clearValue;
 		clearValue.setColor(clearColor);
@@ -694,7 +694,7 @@ void Renderer::render()
 	context.queue.presentKHR(pi);
 }
 
-void Renderer::setFragmentInput(float input)
+void Renderer::setFragmentInput(FragmentInput input)
 {
 	fragmentInput = input;
 }
@@ -847,11 +847,11 @@ void Renderer::createDescriptorSets(
 	}
 }
 
-void Renderer::updateDescriptor(uint32_t frameIndex, float value)
+void Renderer::updateDescriptor(uint32_t frameIndex, const FragmentInput& value)
 {
 	auto& buffer = frames[frameIndex].getDescriptorBuffer();
 	auto pHostMemory = buffer.getPHostMem();
-	memcpy(pHostMemory, &value, sizeof(float));
+	memcpy(pHostMemory, &value, sizeof(FragmentInput));
 }
 
 const std::string Renderer::loadShader(
