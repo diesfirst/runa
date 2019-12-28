@@ -5,6 +5,7 @@
 #include <random>
 #include "util.hpp"
 #include <unistd.h>
+#include "event.hpp"
 
 constexpr int waitTime = 10000;
 constexpr uint32_t N_FRAMES = 100;
@@ -17,6 +18,7 @@ void program0(const std::string card_name)
 	Context context;
 	XWindow window(600, 900);
 	window.open();
+	EventHandler eventHander(window);
 
 	Renderer renderer(context, window);
 	auto v1 = renderer.loadShader("shaders/tarot/fullscreen_tri.spv", "vert1", ShaderType::vert);
@@ -26,11 +28,9 @@ void program0(const std::string card_name)
 
 	for (int i = 0; i < N_FRAMES; i++) 
 	{
+		auto input = eventHander.fetchUserInput(true);
 		renderer.setFragmentInput(i);
-		myTimer.start();
 		renderer.render();
-		myTimer.end("Render");
-		usleep(50000);
 	}
 
 	sleep(50);

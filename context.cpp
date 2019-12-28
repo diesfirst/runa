@@ -16,17 +16,12 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 Context::Context()
 {
 	createContext();
-	commander = std::make_unique<Commander>(
-			device, queue, getGraphicsQueueFamilyIndex());
-	memory = std::make_unique<mm::MemoryManager>(device, physicalDevice);
 	deviceReport();
 }
 
 Context::~Context()
 {
 	std::cout << "context destructor called" << std::endl;
-	commander.reset();
-	memory.reset();
 	device.destroy();
 	destroyDebugMessenger();
 	instance.destroy();
@@ -102,6 +97,7 @@ void Context::createPhysicalDevice()
 	physicalDeviceMemoryProperties = physicalDevice.getMemoryProperties();
 	physicalDeviceFeatures = physicalDevice.getFeatures();
 	physicalDeviceFeatures.setFillModeNonSolid(true);
+	physicalDeviceFeatures.setSampleRateShading(true);
 	queueFamilies = physicalDevice.getQueueFamilyProperties();
 	deviceExtensionProperties = physicalDevice.enumerateDeviceExtensionProperties();
 }

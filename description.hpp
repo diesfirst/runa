@@ -6,20 +6,7 @@
 #include "mem.hpp"
 #include "occupant.hpp"
 
-class Viewport; //not a strong dependency
-
 constexpr size_t MAX_OCCUPANTS = 100;
-
-struct UboDynamic
-{
-	glm::mat4* model = nullptr;
-};
-
-struct UboVS
-{
-	glm::mat4 projection;
-	glm::mat4 view;
-};
 
 class Description
 {
@@ -28,7 +15,6 @@ public:
 	~Description();
 	void createCamera(const uint16_t width, const uint16_t height);
 
-	Image* loadImage(std::string path);
 	std::vector<vk::DescriptorSet> descriptorSets;
 	vk::Buffer& getVkVertexBuffer();
 	vk::Buffer& getVkIndexBuffer();
@@ -36,7 +22,6 @@ public:
 	uint32_t getMeshCount();
 	uint32_t getOccupantCount();
 	uint32_t getDynamicAlignment();
-	std::vector<DrawableInfo>& getDrawInfos();
 	vk::DescriptorSetLayout* getPDescriptorSetLayout();
 	void prepareDescriptorSets(const uint32_t count);
 	void prepareUniformBuffers(const uint32_t count);
@@ -65,40 +50,14 @@ private:
 	std::vector<std::shared_ptr<PointBased>> pointBasedOccupants;
 	std::vector<std::shared_ptr<Mesh>> meshes;
 	std::vector<std::shared_ptr<Camera>> cameras;
-	std::vector<DrawableInfo> drawInfos;
 	std::shared_ptr<Camera> curCamera;
-	mm::Buffer* vertexBlock; //does not have ownership
-	mm::Buffer* indexBlock; //does not have ownership
-	std::vector<mm::Buffer*> uboBlocks;
-	std::vector<mm::Buffer*> uboDynamicBlocks;
-	UboVS uboView;
-	UboDynamic uboDynamicData;
 	size_t dynamicAlignment;
-	std::unique_ptr<Image> texture1;
 
 	Point* vertices;
 	uint32_t* indices;
 	uint32_t curVertOffset = 0; 
 	uint32_t curIndexOffset = 0;
 
-	vk::DescriptorSetLayout descriptorSetLayout;
-	uint32_t descriptorSetCount;
-	bool descriptorsPrepared = false;
-	vk::DescriptorPool descriptorPool;
-
-	void updateCommandBuffer();
-	void oldUpdateVertexBuffer();
-	void updateVertexBuffer(const PointBased&);
-	void updateIndexBuffer(const Mesh&);
-	void updateUniformBuffers(uint32_t swapIndex);
-	void updateDynamicUniformBuffers(uint32_t swapIndex);
-	void initDescriptorSetLayout();
-	void createDescriptorPool(uint32_t descriptorSetCount);
-	void createDescriptorSets(uint32_t descriptorSetCount);
-	void updateDescriptorSets(
-			uint32_t descriptorCount, 
-			std::vector<mm::Buffer>* uboBlocks,
-			size_t uboSize);
 };
 
 #endif /* DESCRIPTION_H */

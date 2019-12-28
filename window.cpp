@@ -79,13 +79,12 @@ void XWindow::pollEvents()
 	}
 }
 
-xcb_generic_event_t* XWindow::waitForEvent()
+xcb_generic_event_t* XWindow::waitForEvent() const
 {
-	event = xcb_wait_for_event(connection);
-	return event;
+	return xcb_wait_for_event(connection);
 }
 
-void XWindow::printMousePosition()
+void XWindow::printMousePosition() const
 {
 	std::cout << "Mouse X: " << mouseX << std::endl;
 	std::cout << "Mouse Y: " << mouseY << std::endl;

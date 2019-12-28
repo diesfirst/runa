@@ -181,7 +181,6 @@ public:
 			const std::string renderPassName,
 			const bool geometric);
 	void bindToDescription(Description& description);
-	void update();
 	void setFragmentInput(float input);
 	//in the future we should disect this function
 	//to allow for the renderpasses and 
@@ -191,10 +190,6 @@ public:
 			const std::string pipelineName, 
 			const std::string renderPassName);
 	void render();
-	void submitDrawCommand(uint32_t index);
-	void submitDrawCommand(uint32_t index, vk::Semaphore*);
-	void copyImageToSwapImage(Image* image);
-	void presentSwapImage(uint32_t index);
 	const std::string loadShader(const std::string path, const std::string name, ShaderType); 
 
 private:
@@ -204,13 +199,8 @@ private:
 	std::vector<RenderFrame> frames;
 	std::unique_ptr<Swapchain> swapchain;
 	Description* pDescription; //non-owning pointer
-	uint32_t currentFrame;
 	bool descriptionIsBound;
-	std::vector<vk::Framebuffer> framebuffers;
-	std::vector<vk::SubmitInfo> drawSubmitInfos;
-	std::vector<vk::PresentInfoKHR> presentInfos;
 	uint32_t renderPassCount{0};
-	vk::PresentInfoKHR presentInfo;
 
 	float fragmentInput{0};
 
@@ -223,16 +213,8 @@ private:
 
 	std::unordered_map<std::string, vk::DescriptorSetLayout> descriptorSetLayouts;
 	std::unordered_map<std::string, vk::PipelineLayout> pipelineLayouts;
-	std::unordered_map<std::string, std::vector<vk::DescriptorSetLayout>> 
-		descriptorSetLayoutSubsets;
 	std::unordered_map<std::string, GraphicsPipeline> graphicsPipelines;
 	std::unordered_map<std::string, RenderPass> renderPasses;
-	//we can have multiple ordered sets of the descriptor set layouts we created.
-	//the pipeline layout takes a pointer to an ordered subset of the available 
-	//descriptor set layout we have created. if we wanted to make multiple
-	//pipelines we could turn this into a set of subsets (a vector or a map) to 
-	//create multiple pipeline layouts. not we may be able to avoid this in the
-	//pipeline layout creation
 	void createDefaultDescriptorSetLayout(const std::string name);
 	void createPipelineLayout(
 			const std::string name, 
@@ -245,19 +227,6 @@ private:
 	void createDescriptorSets(
 			std::vector<RenderFrame>&, 
 			const std::vector<std::string> setLayoutNames);
-
-	//these will be passed to the swap image acquisition function
-	//and then to the draw function
-	//by passing to the image acquisition function we say we want it 
-	//to be signalled when we can write to that image
-	//and the draw function will wait to write to the image until it is signalled
-	//
-	//in the future, there may be multiple swap chains we want to render to
-	//so this will likely become part of a struct of both swap chains and semaphores
-	//and associated frame counter
-	//void initSwapImageSemaphores(uint32_t count);
-	void initDrawSubmitInfos(uint32_t count);
-	void initPresentInfos(uint32_t count);
 };
 
 #endif /* RENDERER_H */

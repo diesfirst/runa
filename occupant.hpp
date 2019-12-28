@@ -16,27 +16,6 @@ public:
 private:
 };
 
-class Image : public Occupant
-{
-public:
-	Image(const Context& context, std::string imageFilePath);
-	Image(const Context& context, uint16_t width, uint16_t height, uint8_t channels);
-	virtual ~Image();
-	void transitionLayout(CommandBuffer& command, vk::ImageLayout);
-	void loadArray(CommandBuffer&, unsigned char* array, size_t size);
-	vk::Image* getVkImage() const;
-	uint16_t width;
-	uint16_t height;
-private:
-	uint8_t* data{nullptr};
-	bool isMapped = false;
-	const Context& context;
-	const mm::MemoryManager& memory;
-	vk::DeviceSize imageSize;
-	vk::ImageLayout layout;
-	mm::Image& image;
-};
-
 class Transformable : public Occupant
 {
 public:

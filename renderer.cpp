@@ -470,6 +470,8 @@ vk::PipelineViewportStateCreateInfo GraphicsPipeline::createViewportState(
 vk::PipelineMultisampleStateCreateInfo GraphicsPipeline::createMultisampleState()
 {
 	vk::PipelineMultisampleStateCreateInfo ci;
+	//turned sample shading on from physicalDevice features
+	//but currently will do nothing since its disables here
 	ci.setSampleShadingEnable(false);
 	ci.setAlphaToOneEnable(false);
 	ci.setAlphaToCoverageEnable(false);
@@ -624,7 +626,6 @@ Renderer::~Renderer()
 	frames.clear();
 
 	descriptorSetLayouts.clear();
-	descriptorSetLayoutSubsets.clear();
 	pipelineLayouts.clear();
 }
 
@@ -674,7 +675,6 @@ void Renderer::recordRenderCommands(const std::string pipelineName, const std::s
 void Renderer::render()
 {
 	auto& renderBuffer = beginFrame();
-	std::cout << "Acquired image " << activeFrameIndex << std::endl;
 	assert(renderBuffer.isRecorded() && "Render buffer is not recorded");
 
 	updateDescriptor(activeFrameIndex, fragmentInput);
@@ -692,7 +692,6 @@ void Renderer::render()
 	pi.setWaitSemaphoreCount(1);
 
 	context.queue.presentKHR(pi);
-	std::cout << "Presenting frame " << activeFrameIndex << std::endl;
 }
 
 void Renderer::setFragmentInput(float input)

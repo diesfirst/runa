@@ -43,16 +43,6 @@ uint32_t Description::getDynamicAlignment()
 	return dynamicAlignment;
 }
 
-std::vector<DrawableInfo>& Description::getDrawInfos()
-{
-	return drawInfos;
-}
-
-vk::DescriptorSetLayout* Description::getPDescriptorSetLayout()
-{
-	return &descriptorSetLayout;
-}
-
 std::vector<vk::VertexInputBindingDescription> Description::getBindingDescriptions()
 {
 	std::vector<vk::VertexInputBindingDescription> vec;
@@ -78,28 +68,5 @@ std::vector<vk::VertexInputAttributeDescription>
 	descriptions[1].format = vk::Format::eR32G32B32Sfloat;
 	descriptions[1].offset = offsetof(Point, color); //where is this macro from?
 	return descriptions;
-}
-
-void Description::updateVertexBuffer(const PointBased& newPointBased)
-{
-	uint32_t nPoints =  newPointBased.points.size();
-	assert(vertices != nullptr);
-	std::memcpy(
-			vertices + curVertOffset,
-			newPointBased.points.data(),
-			sizeof(Point) * nPoints
-			);
-	curVertOffset += nPoints;
-}
-
-void Description::updateIndexBuffer(const Mesh& newMesh)
-{
-	uint32_t nIndices = newMesh.indices.size();
-	std::memcpy(
-			indices + curIndexOffset,
-			newMesh.indices.data(),
-			sizeof(uint32_t) * nIndices);
-	drawInfos.push_back({curIndexOffset, nIndices, curVertOffset});
-	curIndexOffset += nIndices;
 }
 

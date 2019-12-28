@@ -161,29 +161,4 @@ vk::ImageView& Image::getView()
 	return view;
 }
 
-MemoryManager::MemoryManager(const vk::Device& device, const vk::PhysicalDevice& physDev) :
-	device(device),
-	physicalDevice(physDev),
-	memoryProperties(physDev.getMemoryProperties())
-{
 }
-
-MemoryManager::~MemoryManager()
-{
-}
-
-void MemoryManager::getImageSubresourceLayout(vk::Image image)
-{
-	vk::ImageSubresource subresource;
-	subresource.setMipLevel(0);
-	subresource.setArrayLayer(0);
-	subresource.setAspectMask(vk::ImageAspectFlagBits::eColor);
-	vk::SubresourceLayout subresLayout = 
-		device.getImageSubresourceLayout(image, subresource);
-	std::cout << "Row pitch: " << subresLayout.rowPitch << std::endl;
-}
-
-
-}
-
-

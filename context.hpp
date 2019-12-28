@@ -25,10 +25,6 @@ public:
 	bool enableValidation = true;
 	uint32_t getGraphicsQueueFamilyIndex() const;
 	void setQueue();
-	mm::Image* getImageBlock(uint32_t width, uint32_t height) const;
-	mm::Buffer* getStagingBuffer(uint32_t size) const;
-	mm::Buffer* getVertexBlock(uint32_t size) const;
-	mm::Buffer* getIndexBlock(uint32_t size) const;
 	void printInstanceExtensionProperties();
 	void printDeviceMemoryHeapInfo();
 
@@ -47,8 +43,6 @@ public:
 	void checkLayers(std::vector<const char*>);
 
 	vk::Queue queue;
-	std::unique_ptr<Commander> commander;
-	std::unique_ptr<mm::MemoryManager> memory;
 	//physical device properties
 	vk::PhysicalDeviceProperties physicalDeviceProperties;
 	vk::PhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
@@ -86,7 +80,6 @@ private:
 	void setValidationLayers();
 
 	void setupDebugMessenger();
-
 };
 
 #endif /* ifndef CONTEXT_H */

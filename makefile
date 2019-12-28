@@ -5,7 +5,7 @@ LDFLAGS = -lpthread -lxcb -lvulkan -lX11
 LDIRS = -Llib/loader/ 
 LINK = $(LDIRS) $(LDFLAGS)
 LUSD = -lHoudiniUSD -lhboost_system -lhboost_python -lpxr_usd -lpxr_tf -lpxr_sdf -lpxr_usdGeom -lpxr_usdImaging -lpxr_hd -lpxr_vt -lpxr_gf -lpython2.7 -lGL -lXext -lXi -ldl -Wl,-rpath,/opt/hfs18.5/dsolib
-DEPS = main.o context.o swapchain.o window.o renderer.o mem.o commander.o description.o
+DEPS = main.o context.o swapchain.o window.o renderer.o mem.o commander.o description.o event.o
 
 app : $(DEPS) shaders/*.spv
 	g++ $(DEPS) -o app $(LINK) ; ctags -R .
@@ -19,7 +19,7 @@ mem.o : mem.cpp mem.hpp
 io.o : io.cpp io.hpp lib/lodepng.h mem.hpp commander.hpp swapchain.hpp
 	g++ -c $(CFLAGS) io.cpp 
 
-event.o : event.cpp event.hpp commander.hpp mem.hpp swapchain.hpp painter.hpp io.hpp util.hpp sculpter.hpp renderer.hpp 
+event.o : event.cpp event.hpp window.hpp
 	g++ -c $(CFLAGS) event.cpp
 
 context.o : context.cpp context.hpp commander.hpp mem.hpp
@@ -43,19 +43,13 @@ lodepng.o : lib/lodepng.cpp lib/lodepng.h
 occupant.o : occupant.cpp occupant.hpp context.hpp
 	g++ -c $(CFLAGS) occupant.cpp
 
-sculpter.o : sculpter.cpp sculpter.hpp 
-	g++ -c  $(CFLAGS) sculpter.cpp
-
-viewport.o : viewport.cpp viewport.hpp swapchain.hpp window.hpp
-	g++ -c $(CFLAGS) viewport.cpp
-
 description.o : description.cpp description.hpp context.hpp mem.hpp occupant.hpp
 	g++ -c $(CFLAGS) description.cpp
 
 renderer.o : renderer.cpp renderer.hpp context.hpp commander.hpp mem.hpp util.hpp swapchain.hpp window.hpp
 	g++ -c $(CFLAGS) renderer.cpp
 
-main.o : main.cpp programs.hpp viewport.hpp renderer.hpp description.hpp
+main.o : main.cpp programs.hpp renderer.hpp description.hpp
 	g++ -c $(CFLAGS) main.cpp 
 
 .PHONY: clean shaders

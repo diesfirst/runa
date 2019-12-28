@@ -16,7 +16,7 @@ public:
 
 	std::vector<int> size;
 	
-	xcb_generic_event_t* waitForEvent();
+	xcb_generic_event_t* waitForEvent() const;
 
 	xcb_connection_t* connection;
 
@@ -26,7 +26,7 @@ public:
 	int16_t mouseY = 0;
 	bool mButtonDown = false;
 
-	void printMousePosition();
+	void printMousePosition() const;
 
 private:
 	xcb_screen_t* screen;
