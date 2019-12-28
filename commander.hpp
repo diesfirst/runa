@@ -54,11 +54,16 @@ public:
 	void begin();
 	void beginRenderPass(vk::RenderPassBeginInfo&);
 	void bindGraphicsPipeline(vk::Pipeline& pipeline);
+	void bindDescriptorSets(
+		const vk::PipelineLayout& layout, 
+		const std::vector<vk::DescriptorSet>& sets, 
+		const std::vector<uint32_t>& offsets);
 	void drawVerts(uint32_t vertCount, uint32_t firstVertex);
 	void endRenderPass();
 	void end();
 	vk::Semaphore submit(vk::Semaphore& waitSemaphore, vk::PipelineStageFlags);
 	bool isRecorded() const;
+	void waitForFence() const;
 private:
 	CommandPool& pool;
 	const vk::Device& device;

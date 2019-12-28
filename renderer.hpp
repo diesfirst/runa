@@ -21,6 +21,7 @@ public:
 	Shader& operator=(Shader&& other) = delete; //no move assignment
 
 	const vk::PipelineShaderStageCreateInfo& getStageInfo() const;
+	void setWindowResolution(const uint32_t w, const uint32_t h);
 
 protected:
 	Shader(const vk::Device&, std::string filepath);
@@ -96,6 +97,9 @@ public:
 	virtual ~RenderFrame();
 
 	void createDescriptorSet(std::vector<vk::DescriptorSetLayout>&);
+	void createDescriptorBuffer(bool map);
+	const std::vector<vk::DescriptorSet>& getDescriptorSets() const;
+	mm::Buffer& getDescriptorBuffer();
 	vk::Semaphore requestSemaphore();
 	CommandBuffer& getRenderBuffer();
 	CommandBuffer& requestCommandBuffer();
@@ -108,6 +112,7 @@ private:
 	CommandPool commandPool;
 	CommandBuffer* renderBuffer{nullptr};
 	vk::DescriptorPool descriptorPool;
+	std::unique_ptr<mm::Buffer> descriptorBuffer;
 	std::vector<vk::DescriptorSet> descriptorSets;
 	vk::Fence fence;
 	vk::Semaphore semaphore;
@@ -138,6 +143,7 @@ public:
 
 	vk::Viewport createViewport(const vk::Rect2D&);
 	vk::Pipeline& getHandle();
+	vk::PipelineLayout& getLayout();
 
 	static vk::PipelineVertexInputStateCreateInfo createVertexInputState(
 			const std::vector<vk::VertexInputAttributeDescription>&,
@@ -146,6 +152,7 @@ public:
 private:
 	vk::Pipeline handle;
 	const vk::Device& device;
+	vk::PipelineLayout layout;
 
 	std::vector<vk::PipelineShaderStageCreateInfo> extractShaderStageInfos(
 			const std::vector<const Shader*>& shaders);
@@ -175,11 +182,14 @@ public:
 			const bool geometric);
 	void bindToDescription(Description& description);
 	void update();
+	void setFragmentInput(float input);
 	//in the future we should disect this function
 	//to allow for the renderpasses and 
 	//pipeline bindings to happen seperately,
 	//having only 1 pipeline per commandbuffer is doomed
-	void recordRenderCommands(const std::string pipelineName, const std::string renderPassName);
+	void recordRenderCommands(
+			const std::string pipelineName, 
+			const std::string renderPassName);
 	void render();
 	void submitDrawCommand(uint32_t index);
 	void submitDrawCommand(uint32_t index, vk::Semaphore*);
@@ -200,6 +210,9 @@ private:
 	std::vector<vk::SubmitInfo> drawSubmitInfos;
 	std::vector<vk::PresentInfoKHR> presentInfos;
 	uint32_t renderPassCount{0};
+	vk::PresentInfoKHR presentInfo;
+
+	float fragmentInput{0};
 
 	vk::Semaphore imageAcquiredSemaphore;
 
@@ -220,13 +233,18 @@ private:
 	//pipelines we could turn this into a set of subsets (a vector or a map) to 
 	//create multiple pipeline layouts. not we may be able to avoid this in the
 	//pipeline layout creation
-	void createDefaultDescriptorSetLayout();
-	void createDefaultDescriptorLayoutSubset();
-	void createDefaultPipelineLayout();
+	void createDefaultDescriptorSetLayout(const std::string name);
+	void createPipelineLayout(
+			const std::string name, 
+			const std::vector<std::string> descriptorSetLayoutNames);
 
 	CommandBuffer& beginFrame();
 
-	void createDescriptorSets(std::vector<RenderFrame>&, std::string DescriptorSetLayoutKey);
+	void updateDescriptor(uint32_t frame, float value);
+
+	void createDescriptorSets(
+			std::vector<RenderFrame>&, 
+			const std::vector<std::string> setLayoutNames);
 
 	//these will be passed to the swap image acquisition function
 	//and then to the draw function

@@ -19,6 +19,7 @@ Context::Context()
 	commander = std::make_unique<Commander>(
 			device, queue, getGraphicsQueueFamilyIndex());
 	memory = std::make_unique<mm::MemoryManager>(device, physicalDevice);
+	deviceReport();
 }
 
 Context::~Context()
@@ -39,6 +40,8 @@ void Context::deviceReport()
 	printDeviceQueueFamilyInfo();
 //	printInstanceExtensionProperties();
 	printDeviceExtensionProperties();
+	printDeviceMemoryHeapInfo();
+	printDeviceMemoryTypeInfo();
 }
 
 vk::Device Context::getDevice()

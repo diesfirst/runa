@@ -51,9 +51,9 @@ public:
 	std::unique_ptr<mm::MemoryManager> memory;
 	//physical device properties
 	vk::PhysicalDeviceProperties physicalDeviceProperties;
+	vk::PhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
 
 private:
-	vk::PhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
 	vk::PhysicalDeviceFeatures physicalDeviceFeatures;
 	std::vector<vk::ExtensionProperties> instanceExtensionProperties;
 	std::vector<vk::QueueFamilyProperties> queueFamilies;

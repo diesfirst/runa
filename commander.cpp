@@ -74,6 +74,7 @@ CommandBuffer::CommandBuffer(CommandPool& pool, vk::CommandBufferLevel level) :
 	signalSemaphore = pool.device.createSemaphore(semaInfo);
 
 	vk::FenceCreateInfo fenceInfo;
+	fenceInfo.setFlags(vk::FenceCreateFlagBits::eSignaled); //signalled in default state
 	fence = pool.device.createFence(fenceInfo);
 }
 
@@ -115,6 +116,19 @@ void CommandBuffer::beginRenderPass(vk::RenderPassBeginInfo& info)
 	handle.beginRenderPass(&info, vk::SubpassContents::eInline);
 }
 
+void CommandBuffer::bindDescriptorSets(
+		const vk::PipelineLayout& layout, 
+		const std::vector<vk::DescriptorSet>& sets, 
+		const std::vector<uint32_t>& offsets)
+{
+	handle.bindDescriptorSets(
+			vk::PipelineBindPoint::eGraphics,
+			layout,
+			0, //first set is 0
+			sets,
+			offsets);
+}
+
 void CommandBuffer::drawVerts(uint32_t vertCount, uint32_t firstVertex)
 {
 	handle.draw(vertCount, 1, firstVertex, 0);
@@ -141,8 +155,15 @@ vk::Semaphore CommandBuffer::submit(vk::Semaphore& waitSemaphore, vk::PipelineSt
 	si.setWaitSemaphoreCount(1);
 	si.setSignalSemaphoreCount(1);
 	si.setPWaitDstStageMask(&waitMask);
-	queue.submit(si, nullptr);
+
+	device.resetFences(1, &fence);
+	queue.submit(si, fence);
 	return signalSemaphore;
+}
+
+void CommandBuffer::waitForFence() const
+{
+	device.waitForFences(1, &fence, true, UINT64_MAX);
 }
 
 bool CommandBuffer::isRecorded() const

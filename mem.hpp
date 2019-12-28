@@ -11,8 +11,19 @@ class Buffer
 friend class MemoryManager;
 public:
 	Buffer(const vk::Device& device);
+	Buffer(
+			const vk::Device&,
+			vk::PhysicalDeviceMemoryProperties,
+			uint32_t size,
+			vk::BufferUsageFlags,
+			vk::MemoryPropertyFlags);
 	~Buffer();
-	vk::Buffer& getVkBuffer();
+	Buffer(const Buffer&) = delete;
+	Buffer& operator=(Buffer&) = delete;
+	Buffer& operator=(Buffer&&) = delete;
+	Buffer(Buffer&&) = delete;
+	vk::Buffer& getHandle();
+	uint8_t* getPHostMem();
 	uint8_t* map();
 	void unmap();
 
@@ -23,6 +34,9 @@ private:
 	void* pHostMemory{nullptr};
 	unsigned long size;
 	bool isMapped = false;
+	vk::PhysicalDeviceMemoryProperties memoryProperties;
+
+	uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags);
 };
 
 class Image
@@ -93,6 +107,8 @@ public:
 
 	std::vector<Image> ImageBlocks;
 
+	static uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags);
+
 private:
 	const vk::Device& device;
 	const vk::PhysicalDevice& physicalDevice;
@@ -100,7 +116,6 @@ private:
 	uint32_t addBuffer();
 	uint32_t addImage();
 	void getImageSubresourceLayout(vk::Image);
-	uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags);
 	std::vector<std::unique_ptr<Buffer>> uniformBuffers;
 	std::vector<std::unique_ptr<Buffer>> dynamicUBOBlocks;
 	std::vector<std::unique_ptr<Buffer>> stagingBuffers;

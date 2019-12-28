@@ -9,11 +9,11 @@
 Shader::Shader(const vk::Device& device, std::string filepath) :
 	device{device}
 {
-	std::cout << "Shade constructed" << std::endl;
 	loadFile(filepath);
 	createModule();
 	stageInfo.setPName("main");
 	stageInfo.setModule(module);
+	std::cout << "Shader constructed" << std::endl;
 }
 
 Shader::~Shader()
@@ -50,7 +50,7 @@ void Shader::loadFile(std::string filepath)
 	std::ifstream file(filepath, std::ios::ate | std::ios::binary);
 	//ate: start reading at end of file. allows us to get the size of the file
 	//binary: read the file as binary file
-	assert(file.is_open());
+	assert(file.is_open() && "Failed to load shader file");
 	codeSize = (size_t) file.tellg();
 	shaderCode.resize(codeSize);
 
@@ -67,6 +67,28 @@ void Shader::createModule()
 	module = device.createShaderModule(ci);
 }
 
+void Shader::setWindowResolution(const uint32_t w, const uint32_t h)
+{
+	mapEntries.resize(2);
+	mapEntries[0].setSize(sizeof(float));
+	mapEntries[0].setOffset(0 * sizeof(float));
+	mapEntries[0].setConstantID(0);
+	mapEntries[1].setSize(sizeof(float));
+	mapEntries[1].setOffset(1 * sizeof(float));
+	mapEntries[1].setConstantID(1);
+
+	specializationFloats.resize(2);
+	specializationFloats[0] = w;
+	specializationFloats[1] = h;
+
+	specInfo.setPMapEntries(mapEntries.data());
+	specInfo.setMapEntryCount(2);
+	specInfo.setPData(specializationFloats.data());
+	specInfo.setDataSize(sizeof(float) * specializationFloats.size());
+
+	stageInfo.setPSpecializationInfo(&specInfo);
+}
+
 VertShader::VertShader(const vk::Device& device, std::string filepath) :
 	Shader(device, filepath)
 {
@@ -77,28 +99,6 @@ FragShader::FragShader(const vk::Device& device, std::string filepath) :
 	Shader(device, filepath)
 {
 	stageInfo.setStage(vk::ShaderStageFlagBits::eFragment);
-	
-	//testing out the specialization constants
-	//---------------------------------------
-	//
-	mapEntries.resize(2);
-	mapEntries[0].setSize(sizeof(float));
-	mapEntries[0].setOffset(0 * sizeof(float));
-	mapEntries[0].setConstantID(0);
-	mapEntries[1].setSize(sizeof(float));
-	mapEntries[1].setOffset(1 * sizeof(float));
-	mapEntries[1].setConstantID(1);
-
-	specializationFloats.resize(2);
-	specializationFloats[0] = 500.0;
-	specializationFloats[1] = 500.0;
-
-	specInfo.setPMapEntries(mapEntries.data());
-	specInfo.setMapEntryCount(2);
-	specInfo.setPData(specializationFloats.data());
-	specInfo.setDataSize(sizeof(float) * specializationFloats.size());
-
-	stageInfo.setPSpecializationInfo(&specInfo);
 }
 
 RenderPass::RenderPass(const vk::Device& device, const vk::Format format, uint32_t id) :
@@ -215,6 +215,7 @@ RenderFrame::RenderFrame(
 	semaphore = device.createSemaphore(semaInfo);
 	fence = device.createFence(fenceInfo);
 	createDescriptorPool();
+	createDescriptorBuffer(true);
 }
 
 RenderFrame::~RenderFrame()
@@ -243,12 +244,31 @@ RenderFrame::RenderFrame(RenderFrame&& other) :
 	height{other.height},
 	renderBuffer{other.renderBuffer},
 	frameBuffers{std::move(other.frameBuffers)},
-	swapchainRenderTarget{std::move(other.swapchainRenderTarget)}
+	swapchainRenderTarget{std::move(other.swapchainRenderTarget)},
+	descriptorBuffer{std::move(other.descriptorBuffer)}
 {
 	other.semaphore = nullptr;
 	other.fence = nullptr;
 	other.descriptorPool = nullptr;
 	other.frameBuffers.clear();
+}
+
+void RenderFrame::createDescriptorBuffer(bool map)
+{
+	descriptorBuffer = std::make_unique<mm::Buffer>(
+			device, 
+			context.physicalDeviceMemoryProperties, 
+			200, 
+			vk::BufferUsageFlagBits::eUniformBuffer,
+			vk::MemoryPropertyFlagBits::eHostVisible | 
+			vk::MemoryPropertyFlagBits::eHostCoherent);
+	if (map)
+		auto res = *descriptorBuffer->map(); //do not intend to use this yet
+}
+
+mm::Buffer& RenderFrame::getDescriptorBuffer()
+{
+	return *descriptorBuffer;
 }
 
 vk::Framebuffer& RenderFrame::createFramebuffer(
@@ -299,19 +319,19 @@ CommandBuffer& RenderFrame::requestCommandBuffer()
 	return commandPool.requestCommandBuffer();
 }
 
-//this is a basic implementation that will allow us to create up to 1 uniform buffer
-//and up to 1 image sampler
 void RenderFrame::createDescriptorPool()
 {
-	vk::DescriptorPoolSize uboSize;
+	vk::DescriptorPoolSize uboDynamicSize;
 	vk::DescriptorPoolSize imageSamplerSize;
-	uboSize.setType(vk::DescriptorType::eUniformBufferDynamic);
-	uboSize.setDescriptorCount(1);
+	vk::DescriptorPoolSize uboSize;
+	uboDynamicSize.setType(vk::DescriptorType::eUniformBufferDynamic);
+	uboDynamicSize.setDescriptorCount(1);
 	imageSamplerSize.setType(vk::DescriptorType::eCombinedImageSampler);
 	imageSamplerSize.setDescriptorCount(1);
+	uboSize.setType(vk::DescriptorType::eUniformBuffer);
+	uboSize.setDescriptorCount(1);
 
-	//should work fine but may cause error
-	std::array<vk::DescriptorPoolSize, 2> sizes{uboSize, imageSamplerSize};
+	std::array<vk::DescriptorPoolSize, 3> sizes{uboSize, imageSamplerSize, uboDynamicSize};
 
 	vk::DescriptorPoolCreateInfo ci;
 	ci.setMaxSets(1); //currently allow just one descriptor set
@@ -328,6 +348,28 @@ void RenderFrame::createDescriptorSet(std::vector<vk::DescriptorSetLayout>& layo
 	ai.setDescriptorSetCount(layouts.size());
 	ai.setDescriptorPool(descriptorPool);
 	descriptorSets = device.allocateDescriptorSets(ai);
+	
+	vk::DescriptorBufferInfo bi;
+	bi.setRange(sizeof(float)); //just one float for now
+	bi.setBuffer((*descriptorBuffer).getHandle());
+	bi.setOffset(0);
+
+	vk::WriteDescriptorSet dWrite;
+	dWrite.setDescriptorType(vk::DescriptorType::eUniformBuffer);
+	dWrite.setDstArrayElement(0);
+	dWrite.setDstSet(descriptorSets.at(0));
+	dWrite.setDstBinding(2);
+	dWrite.setPImageInfo(nullptr);
+	dWrite.setPBufferInfo(&bi);
+	dWrite.setDescriptorCount(1);
+	dWrite.setPTexelBufferView(nullptr);
+
+	device.updateDescriptorSets(dWrite, nullptr);
+}
+
+const std::vector<vk::DescriptorSet>& RenderFrame::getDescriptorSets() const
+{
+	return descriptorSets;
 }
 
 GraphicsPipeline::GraphicsPipeline(
@@ -338,7 +380,8 @@ GraphicsPipeline::GraphicsPipeline(
 		const vk::Rect2D renderArea,
 		const std::vector<const Shader*>& shaders,
 		const vk::PipelineVertexInputStateCreateInfo& vertexInputState) :
-	device{device}
+	device{device},
+	layout{layout}
 {
 	vk::Viewport viewport = createViewport(renderArea);
 	vk::Rect2D scissor = renderArea;
@@ -384,7 +427,8 @@ GraphicsPipeline::~GraphicsPipeline()
 
 GraphicsPipeline::GraphicsPipeline(GraphicsPipeline&& other) :
 	device{other.device},
-	handle{std::move(other.handle)}
+	handle{std::move(other.handle)},
+	layout{std::move(other.layout)}
 {
 	other.handle = nullptr;
 }
@@ -392,6 +436,11 @@ GraphicsPipeline::GraphicsPipeline(GraphicsPipeline&& other) :
 vk::Pipeline& GraphicsPipeline::getHandle()
 {
 	return handle;
+}
+
+vk::PipelineLayout& GraphicsPipeline::getLayout()
+{
+	return layout;
 }
 
 vk::Viewport GraphicsPipeline::createViewport(const vk::Rect2D& renderArea)
@@ -526,7 +575,7 @@ Renderer::Renderer(Context& context, XWindow& window) :
 	device(context.device),
 	graphicsQueue(context.queue)
 {
-	swapchain = std::make_unique<Swapchain>(context, window, 2); //we hardcode 3 swap images
+	swapchain = std::make_unique<Swapchain>(context, window, 3); //we hardcode 3 swap images
 	for (auto& imageHandle : swapchain->getImages()) 
 	{
 		auto image = std::make_unique<mm::Image>(
@@ -545,14 +594,13 @@ Renderer::Renderer(Context& context, XWindow& window) :
 	//we do need to make the Pipeline aware of their layouts 
 	//if we do intend to use them
 	//----------------------------
-	createDefaultDescriptorSetLayout();
+	createDefaultDescriptorSetLayout("default");
 	//we can now create the desriptorsets for the render frames 
 	//additionally we can create our pipeline layouts
-	createDefaultDescriptorLayoutSubset();
-	createDefaultPipelineLayout();
+	createPipelineLayout("default", {"default"});
 
 	//note: this could have been done as soon as we had the layout
-	createDescriptorSets(frames, "default");
+	createDescriptorSets(frames, {"default"});
 	//----------------------------
 	//
 	//we'll create renderpass now. 
@@ -609,8 +657,13 @@ void Renderer::recordRenderCommands(const std::string pipelineName, const std::s
 		bi.setPClearValues(&clearValue);
 		bi.setClearValueCount(1);
 
+		auto& pipeline = graphicsPipelines.at(pipelineName);
 		commandBuffer.beginRenderPass(bi);
-		commandBuffer.bindGraphicsPipeline(graphicsPipelines.at(pipelineName).getHandle());
+		commandBuffer.bindGraphicsPipeline(pipeline.getHandle());
+		commandBuffer.bindDescriptorSets(
+				pipeline.getLayout(),
+				frame.getDescriptorSets(),
+				{0});
 		commandBuffer.drawVerts(3, 0);
 		commandBuffer.endRenderPass();
 
@@ -621,7 +674,12 @@ void Renderer::recordRenderCommands(const std::string pipelineName, const std::s
 void Renderer::render()
 {
 	auto& renderBuffer = beginFrame();
+	std::cout << "Acquired image " << activeFrameIndex << std::endl;
 	assert(renderBuffer.isRecorded() && "Render buffer is not recorded");
+
+	updateDescriptor(activeFrameIndex, fragmentInput);
+
+	renderBuffer.waitForFence();
 	auto submissionCompleteSemaphore = renderBuffer.submit(
 			imageAcquiredSemaphore, 
 			vk::PipelineStageFlagBits::eColorAttachmentOutput);
@@ -634,6 +692,12 @@ void Renderer::render()
 	pi.setWaitSemaphoreCount(1);
 
 	context.queue.presentKHR(pi);
+	std::cout << "Presenting frame " << activeFrameIndex << std::endl;
+}
+
+void Renderer::setFragmentInput(float input)
+{
+	fragmentInput = input;
 }
 
 CommandBuffer& Renderer::beginFrame()
@@ -712,7 +776,7 @@ void Renderer::createGraphicsPipeline(
 				vertexState));
 }
 
-void Renderer::createDefaultDescriptorSetLayout()
+void Renderer::createDefaultDescriptorSetLayout(const std::string name)
 {
 	vk::DescriptorSetLayoutBinding uboBinding;
 	uboBinding.setDescriptorType(vk::DescriptorType::eUniformBufferDynamic);
@@ -728,46 +792,67 @@ void Renderer::createDefaultDescriptorSetLayout()
 	samplerBinding.setDescriptorCount(1);
 	samplerBinding.setPImmutableSamplers(nullptr);
 
-	std::array<vk::DescriptorSetLayoutBinding, 2> bindings{uboBinding, samplerBinding};
+	vk::DescriptorSetLayoutBinding fragmentInput;
+	fragmentInput.setDescriptorType(vk::DescriptorType::eUniformBuffer);
+	fragmentInput.setBinding(2);
+	fragmentInput.setStageFlags(vk::ShaderStageFlagBits::eFragment);
+	fragmentInput.setDescriptorCount(1);
+	fragmentInput.setPImmutableSamplers(nullptr);
+
+	std::array<vk::DescriptorSetLayoutBinding, 3> bindings{
+		uboBinding, 
+		samplerBinding,
+		fragmentInput};
 
 	vk::DescriptorSetLayoutCreateInfo createInfo;
 	createInfo.setPBindings(bindings.data());
-	createInfo.setBindingCount(2);
+	createInfo.setBindingCount(3);
 	auto layout = device.createDescriptorSetLayout(createInfo);
 
-	descriptorSetLayouts.insert({"default", std::move(layout)}); 
+	descriptorSetLayouts.insert({name, std::move(layout)}); 
 	//create a default descriptor set layout presuming one ubo 
 	//and one texture sampler
 }
 
-void Renderer::createDefaultDescriptorLayoutSubset()
+void Renderer::createPipelineLayout(
+		const std::string name, 
+		const std::vector<std::string> setLayoutNames)
 {
-	assert(descriptorSetLayouts.find("default") != descriptorSetLayouts.end());
-
-	descriptorSetLayoutSubsets.insert({"default", std::vector<vk::DescriptorSetLayout>()});
-	descriptorSetLayoutSubsets.at("default").push_back(
-			descriptorSetLayouts.at("default"));
-}
-
-void Renderer::createDefaultPipelineLayout()
-{
-	assert(descriptorSetLayoutSubsets.find("default") != descriptorSetLayoutSubsets.end());
+	std::vector<vk::DescriptorSetLayout> layouts;
+	for (auto layoutName : setLayoutNames) 
+	{
+		layouts.push_back(descriptorSetLayouts.at(layoutName));
+	}
 
 	vk::PipelineLayoutCreateInfo ci;
-	ci.setPSetLayouts(descriptorSetLayoutSubsets.at("default").data());
-	ci.setSetLayoutCount(descriptorSetLayoutSubsets.at("default").size());
+	ci.setPSetLayouts(layouts.data());
+	ci.setSetLayoutCount(layouts.size());
 	ci.setPPushConstantRanges(nullptr);
 	ci.setPushConstantRangeCount(0);
 
-	pipelineLayouts.insert({"default", device.createPipelineLayout(ci)});
+	pipelineLayouts.emplace("default", device.createPipelineLayout(ci));
 }
 
-void Renderer::createDescriptorSets(std::vector<RenderFrame>& frames, std::string layoutKey)
+void Renderer::createDescriptorSets(
+		std::vector<RenderFrame>& frames, 
+		const std::vector<std::string> setLayoutNames)
 {
 	for (auto& frame : frames) 
 	{
-		frame.createDescriptorSet(descriptorSetLayoutSubsets.at(layoutKey));	
+		std::vector<vk::DescriptorSetLayout> layouts;
+		for (auto layoutName : setLayoutNames) 
+		{
+			layouts.push_back(descriptorSetLayouts.at(layoutName));
+		}
+		frame.createDescriptorSet(layouts);
 	}
+}
+
+void Renderer::updateDescriptor(uint32_t frameIndex, float value)
+{
+	auto& buffer = frames[frameIndex].getDescriptorBuffer();
+	auto pHostMemory = buffer.getPHostMem();
+	memcpy(pHostMemory, &value, sizeof(float));
 }
 
 const std::string Renderer::loadShader(
@@ -784,6 +869,9 @@ const std::string Renderer::loadShader(
 				std::piecewise_construct, 
 				std::forward_as_tuple(name), 
 				std::forward_as_tuple(device, path));
+		fragmentShaders.at(name).setWindowResolution(
+				swapchain->getExtent2D().width,
+				swapchain->getExtent2D().height);
 	}
 	return name;
 }
