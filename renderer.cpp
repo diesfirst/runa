@@ -101,58 +101,84 @@ FragShader::FragShader(const vk::Device& device, std::string filepath) :
 	stageInfo.setStage(vk::ShaderStageFlagBits::eFragment);
 }
 
-RenderPass::RenderPass(const vk::Device& device, const vk::Format format, uint32_t id) :
+RenderPass::RenderPass(const vk::Device& device, const std::string name, uint32_t id) :
 	device{device},
-	id{id}
+	id{id},
+	name{name}
 {
-	std::vector<vk::AttachmentDescription> attachments;
-	std::vector<vk::AttachmentReference> references;
-	std::vector<vk::SubpassDescription> subpasses;
-	std::vector<vk::SubpassDependency> subpassDependencies;
+}
 
+void RenderPass::createColorAttachment(
+		const vk::Format format,
+		const vk::ImageLayout initialLayout,
+		const vk::ImageLayout finalLayout)
+{
 	vk::AttachmentDescription attachment;
 	attachment.setFormat(format);
 	attachment.setSamples(vk::SampleCountFlagBits::e1);
 	//Sets what to do with data in the attachment
 	//before rendering
 	attachment.setLoadOp(vk::AttachmentLoadOp::eClear);
-	attachment.setInitialLayout(vk::ImageLayout::eUndefined);
+	attachment.setInitialLayout(initialLayout);
 	//Sets what we do with the data after rendering
 	//We want to show it so we will store it
 	attachment.setStoreOp(vk::AttachmentStoreOp::eStore);
-	attachment.setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
+	attachment.setFinalLayout(finalLayout);
 
+	colorAttachments.push_back(attachment);
 	attachments.push_back(attachment);
 
 	vk::AttachmentReference colorRef;
 	colorRef.setAttachment(0); //our first attachment is color
 	colorRef.setLayout(vk::ImageLayout::eColorAttachmentOptimal);
 	references.push_back(colorRef);
+}
 
+void RenderPass::createBasicSubpassDependency()
+{
+	vk::SubpassDependency d0;
+	d0.setSrcSubpass(VK_SUBPASS_EXTERNAL);
+	d0.setDstSubpass(0);
+	d0.setSrcAccessMask(vk::AccessFlagBits::eMemoryRead);
+	d0.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite);
+	d0.setSrcStageMask(vk::PipelineStageFlagBits::eBottomOfPipe);
+	d0.setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+	subpassDependencies.push_back(d0);
+
+	vk::SubpassDependency d1;
+	d1.setSrcSubpass(0);
+	d1.setDstSubpass(VK_SUBPASS_EXTERNAL);
+	d1.setSrcAccessMask(vk::AccessFlagBits::eColorAttachmentWrite);
+	d1.setDstAccessMask(vk::AccessFlagBits::eMemoryRead);
+	d1.setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+	d1.setDstStageMask(vk::PipelineStageFlagBits::eBottomOfPipe);
+	subpassDependencies.push_back(d1);
+}
+
+void RenderPass::createSubpass()
+{
 	vk::SubpassDescription subpass;
 	subpass.setPipelineBindPoint(vk::PipelineBindPoint::eGraphics);
-	subpass.setColorAttachmentCount(1);
+	subpass.setColorAttachmentCount(colorAttachments.size());
 	subpass.setPColorAttachments(references.data());
+	subpass.setPResolveAttachments(nullptr);
+	subpass.setInputAttachmentCount(0);
+	subpass.setPInputAttachments(nullptr);
+	subpass.setPreserveAttachmentCount(0);
+	subpass.setPPreserveAttachments(nullptr);
+	subpass.setPDepthStencilAttachment(nullptr);
 	subpasses.push_back(subpass);
+}
 
-	vk::SubpassDependency dependency;
-	dependency.setSrcSubpass(
-			VK_SUBPASS_EXTERNAL);
-	dependency.setDstSubpass(
-			0);
-	dependency.setSrcAccessMask(
-			vk::AccessFlagBits::eShaderRead);
-	dependency.setDstAccessMask(
-			vk::AccessFlagBits::eColorAttachmentWrite);
-	dependency.setSrcStageMask(
-			vk::PipelineStageFlagBits::eFragmentShader);
-	dependency.setDstStageMask(
-			vk::PipelineStageFlagBits::eColorAttachmentOutput);
-	subpassDependencies.push_back(dependency);
-
+void RenderPass::create()
+{
+	//if any of the sizes are 0, then the corresponding data
+	//is undefined. but since the counts are 0, this should
+	//be ok
 	vk::RenderPassCreateInfo createInfo;
 	createInfo.setAttachmentCount(attachments.size());
 	createInfo.setPAttachments(attachments.data());
+	assert(subpasses.size() != 0 && "Must be at least one subpass");
 	createInfo.setSubpassCount(subpasses.size());
 	createInfo.setPSubpasses(subpasses.data());
 	createInfo.setDependencyCount(subpassDependencies.size());
@@ -169,9 +195,20 @@ RenderPass::~RenderPass()
 RenderPass::RenderPass(RenderPass&& other) :
 	device{other.device},
 	id{other.id},
-	handle{other.handle}
+	name{other.name},
+	handle{other.handle},
+	attachments{std::move(other.attachments)},
+	colorAttachments{std::move(other.colorAttachments)},
+	references{std::move(other.references)},
+	subpasses{std::move(other.subpasses)},
+	subpassDependencies{std::move(other.subpassDependencies)}
 {
 	other.handle = nullptr;
+	other.attachments.clear();
+	other.colorAttachments.clear();
+	other.references.clear();
+	other.subpasses.clear();
+	other.subpassDependencies.clear();
 }
 
 bool RenderPass::operator<(const RenderPass& rhs)
@@ -190,13 +227,62 @@ uint32_t RenderPass::getId() const
 	return id;
 }
 
-RenderTarget::RenderTarget(std::unique_ptr<mm::Image> swapimage)
+RenderTarget::RenderTarget(
+		const vk::Device& device,
+		const vk::Extent2D extent) :
+	device{device},
+	extent{extent}
 {
+	vk::Extent3D ex = {extent.width, extent.height, 1};
+	auto image = std::make_unique<mm::Image>(
+			device, 
+			ex,
+			vk::Format::eB8G8R8A8Unorm,
+			vk::ImageUsageFlagBits::eColorAttachment | 
+			vk::ImageUsageFlagBits::eSampled,
+			vk::ImageLayout::eColorAttachmentOptimal);
+	images.emplace_back(std::move(image));
+}
+
+RenderTarget::RenderTarget(const vk::Device& device, std::unique_ptr<mm::Image> swapimage) :
+	device{device}
+{
+	extent = swapimage->getExtent2D();
 	images.push_back(std::move(swapimage));
 }
 
 RenderTarget::~RenderTarget()
 {
+	for (auto item : frameBuffers) 
+	{
+		device.destroyFramebuffer(item.second);	
+	}
+}
+
+vk::Framebuffer& RenderTarget::requestFrameBuffer(const RenderPass& renderPass)
+{
+	if (frameBuffers.find(renderPass.getId()) == frameBuffers.end())
+	{
+		return createFramebuffer(renderPass);
+	}
+	else
+		return frameBuffers.at(renderPass.getId());
+}
+
+vk::Framebuffer& RenderTarget::createFramebuffer(const RenderPass& renderPass)
+{
+	std::array<vk::ImageView, 1> attachments;
+	attachments[0] = images[0]->getView();
+
+	vk::FramebufferCreateInfo ci;
+	ci.setWidth(extent.width);
+	ci.setHeight(extent.height);
+	ci.setAttachmentCount(attachments.size());
+	ci.setPAttachments(attachments.data());
+	ci.setLayers(1);
+	ci.setRenderPass(renderPass.getHandle());
+	frameBuffers.emplace(renderPass.getId(), device.createFramebuffer(ci));
+	return frameBuffers.at(renderPass.getId());
 }
 
 RenderFrame::RenderFrame(
@@ -226,10 +312,6 @@ RenderFrame::~RenderFrame()
 		device.destroyFence(fence);
 	if (descriptorPool)
 		device.destroyDescriptorPool(descriptorPool);
-	for (auto item : frameBuffers) 
-	{
-		device.destroyFramebuffer(item.second);	
-	}
 }
 
 RenderFrame::RenderFrame(RenderFrame&& other) :
@@ -243,14 +325,12 @@ RenderFrame::RenderFrame(RenderFrame&& other) :
 	width{other.width},
 	height{other.height},
 	renderBuffer{other.renderBuffer},
-	frameBuffers{std::move(other.frameBuffers)},
 	swapchainRenderTarget{std::move(other.swapchainRenderTarget)},
 	descriptorBuffer{std::move(other.descriptorBuffer)}
 {
 	other.semaphore = nullptr;
 	other.fence = nullptr;
 	other.descriptorPool = nullptr;
-	other.frameBuffers.clear();
 }
 
 void RenderFrame::createDescriptorBuffer(bool map)
@@ -271,31 +351,9 @@ mm::Buffer& RenderFrame::getDescriptorBuffer()
 	return *descriptorBuffer;
 }
 
-vk::Framebuffer& RenderFrame::createFramebuffer(
-		const RenderPass& renderPass)
-{
-	std::array<vk::ImageView, 1> attachments;
-	attachments[0] = swapchainRenderTarget->images[0]->getView();
-
-	vk::FramebufferCreateInfo ci;
-	ci.setWidth(width);
-	ci.setHeight(height);
-	ci.setAttachmentCount(attachments.size());
-	ci.setPAttachments(attachments.data());
-	ci.setLayers(1);
-	ci.setRenderPass(renderPass.getHandle());
-	frameBuffers.emplace(renderPass.getId(), device.createFramebuffer(ci));
-	return frameBuffers.at(renderPass.getId());
-}
-
 vk::Framebuffer& RenderFrame::requestFrameBuffer(const RenderPass& renderPass)
 {
-	if (frameBuffers.find(renderPass.getId()) == frameBuffers.end())
-	{
-		return createFramebuffer(renderPass);
-	}
-	else
-		return frameBuffers.at(renderPass.getId());
+	return swapchainRenderTarget->requestFrameBuffer(renderPass);
 }
 
 CommandBuffer& RenderFrame::getRenderBuffer()
@@ -586,7 +644,7 @@ Renderer::Renderer(Context& context, XWindow& window) :
 				swapchain->getExtent3D(), 
 				swapchain->getFormat(), 
 				swapchain->getUsageFlags());
-		auto renderTarget{std::make_unique<RenderTarget>(std::move(image))};
+		auto renderTarget{std::make_unique<RenderTarget>(device, std::move(image))};
 		auto renderFrame{RenderFrame(context, std::move(renderTarget),
 				swapchain->getExtent2D().width, swapchain->getExtent2D().height)};
 		frames.emplace_back(std::move(renderFrame));
@@ -716,7 +774,15 @@ void Renderer::bindToDescription(Description& description)
 
 void Renderer::createRenderPass(std::string name, vk::Format colorFormat)
 {
-	renderPasses.emplace(name, RenderPass(device, colorFormat, renderPassCount));
+	auto renderPass{RenderPass(device, name, renderPassCount)};
+	renderPass.createColorAttachment(
+			colorFormat, 
+			vk::ImageLayout::eUndefined,
+			vk::ImageLayout::ePresentSrcKHR);
+	renderPass.createSubpass();
+	renderPass.createBasicSubpassDependency();
+	renderPass.create();
+	renderPasses.emplace(name, std::move(renderPass));
 	renderPassCount++;
 }
 

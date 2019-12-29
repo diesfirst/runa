@@ -101,9 +101,60 @@ uint32_t Buffer::findMemoryType(
 	throw std::runtime_error("Failed to find suitable memory");
 }
 
-Image::Image(const vk::Device& device) :
-	device(device)
+Image::Image(
+		const vk::Device& device,
+		const vk::Extent3D extent,
+		const vk::Format format,
+		const vk::ImageUsageFlags usageFlags,
+		const vk::ImageLayout initialLayout) :
+	device(device),
+	extent{extent},
+	format{format},
+	usageFlags{usageFlags}
 {
+	vk::ImageCreateInfo createInfo;
+	createInfo.setImageType(vk::ImageType::e2D);
+	createInfo.setExtent(extent);
+	createInfo.setMipLevels(1);
+	createInfo.setArrayLayers(1);
+	createInfo.setFormat(vk::Format::eR8G8B8A8Unorm);
+	createInfo.setTiling(vk::ImageTiling::eOptimal);
+	createInfo.setInitialLayout(initialLayout);
+	createInfo.setUsage(usageFlags);
+	createInfo.setSamples(vk::SampleCountFlagBits::e1);
+	createInfo.setSharingMode(vk::SharingMode::eExclusive);
+	handle = device.createImage(createInfo);
+
+	auto imgMemReq = device.getImageMemoryRequirements(handle); 
+
+	vk::MemoryAllocateInfo memAllocInfo;
+	memAllocInfo.setAllocationSize(imgMemReq.size);
+	memAllocInfo.setMemoryTypeIndex(7); //device local
+
+	memory  = device.allocateMemory(memAllocInfo);
+
+	device.bindImageMemory(handle, memory, 0);
+
+	vk::ComponentMapping components;
+	components.setA(vk::ComponentSwizzle::eIdentity);
+	components.setB(vk::ComponentSwizzle::eIdentity);
+	components.setG(vk::ComponentSwizzle::eIdentity);
+	components.setR(vk::ComponentSwizzle::eIdentity);
+
+	vk::ImageSubresourceRange subResRange;
+	subResRange.setAspectMask(vk::ImageAspectFlagBits::eColor);
+	subResRange.setLayerCount(1);
+	subResRange.setLevelCount(1);
+	subResRange.setBaseMipLevel(0);
+	subResRange.setBaseArrayLayer(0);
+	
+	vk::ImageViewCreateInfo viewInfo;
+	viewInfo.setImage(this->handle);
+	viewInfo.setFormat(format);
+	viewInfo.setViewType(vk::ImageViewType::e2D);
+	viewInfo.setComponents(components);
+	viewInfo.setSubresourceRange(subResRange);
+	view = device.createImageView(viewInfo);
 }
 
 Image::Image(	
@@ -155,6 +206,33 @@ Image::~Image()
 	if (view)
 		device.destroyImageView(view);
 }
+
+vk::Extent2D Image::getExtent2D() const 
+{
+	return vk::Extent2D{extent.width, extent.height};
+}
+
+//Image::Image(Image&& other) :
+//	device{other.device},
+//	handle{std::move(other.handle)},
+//	view{std::move(other.view)},
+//	memory{std::move(other.memory)},
+//	deviceSize{std::move(other.deviceSize)},
+//	extent{std::move(other.extent)},
+//	layout{other.layout},
+//	usageFlags{other.usageFlags},
+//	format{other.format},
+//	pHostMemory{other.pHostMemory},
+//	isMapped{other.isMapped},
+//	selfManaged{other.selfManaged}
+//{
+//	other.isMapped = false;
+//	other.selfManaged = false;
+//	other.view = nullptr;
+//	other.pHostMemory = nullptr;
+//	other.handle = nullptr;
+//	other.memory = nullptr;
+//}
 
 vk::ImageView& Image::getView()
 {

@@ -43,7 +43,12 @@ class Image
 {
 friend class MemoryManager;
 public:
-	Image(const vk::Device& device);
+	Image(
+			const vk::Device& device,
+			const vk::Extent3D,
+			const vk::Format,
+			const vk::ImageUsageFlags,
+			const vk::ImageLayout);
 	Image(
 			const vk::Device& device, 
 			const vk::Image, 
@@ -51,6 +56,12 @@ public:
 			const vk::Format, 
 			const vk::ImageUsageFlags);
 	~Image();
+	Image(const Image&) = delete;
+	Image& operator=(Image&) = delete;
+	Image& operator=(Image&&) = delete;
+	Image(Image&&) = delete;
+
+	vk::Extent2D getExtent2D() const;
 	vk::ImageView& getView();
 private:
 	vk::Image handle;

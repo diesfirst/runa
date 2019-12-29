@@ -63,7 +63,7 @@ public:
 class RenderPass
 {
 public:
-	RenderPass(const vk::Device&, const vk::Format, uint32_t);
+	RenderPass(const vk::Device&, const std::string name, uint32_t);
 	virtual ~RenderPass();
 	RenderPass(const RenderPass&) = delete;
 	RenderPass& operator=(RenderPass&) = delete;
@@ -72,23 +72,45 @@ public:
 	bool operator<(const RenderPass& rhs);
 	const vk::RenderPass& getHandle() const;
 	uint32_t getId() const;
+	void createColorAttachment(
+			const vk::Format,
+			vk::ImageLayout init,
+			vk::ImageLayout fin);
+	void createBasicSubpassDependency();
+	void createSubpass();
+	void create();
 private:
 	const vk::Device& device;
+	const std::string name;
 	vk::RenderPass handle;
+	std::vector<vk::AttachmentDescription> attachments;
+	std::vector<vk::AttachmentDescription> colorAttachments;
+	std::vector<vk::AttachmentReference> references;
+	std::vector<vk::SubpassDescription> subpasses;
+	std::vector<vk::SubpassDependency> subpassDependencies;
+
 	const uint32_t id;
 };
 
 class RenderTarget
 {
 public:
-	RenderTarget(std::unique_ptr<mm::Image>);
+	RenderTarget(
+			const vk::Device& device,
+			const vk::Extent2D extent);
+	RenderTarget(const vk::Device&, std::unique_ptr<mm::Image>);
 	RenderTarget(const RenderTarget&) = delete;
 	RenderTarget& operator=(RenderTarget &&other) = default;
 	RenderTarget& operator=(RenderTarget&) = delete;
 	RenderTarget(RenderTarget&& other) = delete;
 	virtual ~RenderTarget();
 	std::vector<std::unique_ptr<mm::Image>> images;
+	vk::Framebuffer& requestFrameBuffer(const RenderPass& renderPass);
 private:
+	const vk::Device& device;
+	vk::Extent2D extent;
+	std::unordered_map<uint32_t, vk::Framebuffer> frameBuffers;
+	vk::Framebuffer& createFramebuffer(const RenderPass& renderPass);
 };
 
 class RenderFrame
@@ -126,10 +148,8 @@ private:
 	vk::Semaphore semaphore;
 	uint32_t width;
 	uint32_t height;
-	std::unordered_map<uint32_t, vk::Framebuffer> frameBuffers;
 
 	void createDescriptorPool();
-	vk::Framebuffer& createFramebuffer(const RenderPass&);
 };
 
 class GraphicsPipeline
