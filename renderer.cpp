@@ -847,7 +847,7 @@ void Renderer::recordRenderCommandsTest()
 		renderArea.setExtent(swapchain->getExtent2D());
 //
 		vk::ClearColorValue clearColor;
-		clearColor.setFloat32({0.4,0.05,0.15,1.0});
+		clearColor.setFloat32({0.,0.,0.,0.});
 //
 		vk::ClearValue clearValue;
 		clearValue.setColor(clearColor);
@@ -869,6 +869,9 @@ void Renderer::recordRenderCommandsTest()
 				{0});
 		commandBuffer.drawVerts(3, 0);
 		commandBuffer.endRenderPass();
+
+		clearColor.setFloat32({.05,.01,.01,1.});
+		clearValue.setColor(clearColor);
 
 		vk::RenderPassBeginInfo bi2;
 		bi2.setFramebuffer(frameBufferSwap);
@@ -913,7 +916,7 @@ void Renderer::recordRenderCommandsSpecific()
 		renderArea.setExtent(swapchain->getExtent2D());
 
 		vk::ClearColorValue clearColor;
-		clearColor.setFloat32({0.4,0.05,0.15,1.0});
+		clearColor.setFloat32({0.,0.,0.,0.});
 
 		vk::ClearValue clearValue;
 		clearValue.setColor(clearColor);
