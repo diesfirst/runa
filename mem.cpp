@@ -117,7 +117,7 @@ Image::Image(
 	createInfo.setExtent(extent);
 	createInfo.setMipLevels(1);
 	createInfo.setArrayLayers(1);
-	createInfo.setFormat(vk::Format::eR8G8B8A8Unorm);
+	createInfo.setFormat(format);
 	createInfo.setTiling(vk::ImageTiling::eOptimal);
 	createInfo.setInitialLayout(initialLayout);
 	createInfo.setUsage(usageFlags);
@@ -155,6 +155,21 @@ Image::Image(
 	viewInfo.setComponents(components);
 	viewInfo.setSubresourceRange(subResRange);
 	view = device.createImageView(viewInfo);
+
+	vk::SamplerCreateInfo samplerInfo;
+	//might want to try nearest at some point
+	samplerInfo.setMagFilter(vk::Filter::eLinear);
+	samplerInfo.setMinFilter(vk::Filter::eLinear);
+	samplerInfo.setMipmapMode(vk::SamplerMipmapMode::eLinear);
+	samplerInfo.setAddressModeU(vk::SamplerAddressMode::eClampToEdge);
+	samplerInfo.setAddressModeV(vk::SamplerAddressMode::eClampToEdge);
+	samplerInfo.setAddressModeW(vk::SamplerAddressMode::eClampToEdge);
+	samplerInfo.setMipLodBias(0.0);
+	samplerInfo.setMaxAnisotropy(1.0);
+	samplerInfo.setMinLod(0.0);
+	samplerInfo.setMaxLod(1.0);
+	samplerInfo.setBorderColor(vk::BorderColor::eFloatOpaqueWhite);
+	sampler = device.createSampler(samplerInfo);
 }
 
 Image::Image(	
@@ -237,6 +252,11 @@ vk::Extent2D Image::getExtent2D() const
 vk::ImageView& Image::getView()
 {
 	return view;
+}
+
+vk::Sampler& Image::getSampler()
+{
+	return sampler;
 }
 
 }

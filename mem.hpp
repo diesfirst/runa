@@ -63,10 +63,12 @@ public:
 
 	vk::Extent2D getExtent2D() const;
 	vk::ImageView& getView();
+	vk::Sampler& getSampler();
 private:
 	vk::Image handle;
 	vk::ImageView view;
 	vk::DeviceMemory memory;
+	vk::Sampler sampler;
 	vk::DeviceSize deviceSize;
 	vk::Extent3D extent;
 	vk::ImageLayout layout;

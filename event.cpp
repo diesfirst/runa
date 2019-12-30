@@ -40,19 +40,21 @@ UserInput EventHandler::handleEvent(xcb_generic_event_t* event)
 		{
 			xcb_motion_notify_event_t* motion =
 				(xcb_motion_notify_event_t*)event;
-			return UserInput{motion->event_x, motion->event_y};
+			return UserInput{motion->event_x, motion->event_y, mButtonDown};
 		}
 		case XCB_BUTTON_PRESS:
 		{
 			mButtonDown = true;
 			xcb_motion_notify_event_t* motion =
 				(xcb_motion_notify_event_t*)event;
-			break;
+			return UserInput{motion->event_x, motion->event_y, mButtonDown};
 		}
 		case XCB_BUTTON_RELEASE:
 		{
 			mButtonDown = false;
-			break;
+			xcb_motion_notify_event_t* motion =
+				(xcb_motion_notify_event_t*)event;
+			return UserInput{motion->event_x, motion->event_y, mButtonDown};
 		}
 		case XCB_KEY_PRESS:
 		{

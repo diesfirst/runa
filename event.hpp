@@ -12,6 +12,7 @@ struct UserInput
 {
 	int16_t mouseX{0};
 	int16_t mouseY{0};
+	bool mButtonDown{false};
 };
 
 class EventHandler

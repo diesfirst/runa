@@ -108,6 +108,36 @@ RenderPass::RenderPass(const vk::Device& device, const std::string name, uint32_
 {
 }
 
+RenderPass::~RenderPass()
+{
+	if (handle)
+		device.destroyRenderPass(handle);
+}
+
+RenderPass::RenderPass(RenderPass&& other) :
+	device{other.device},
+	id{other.id},
+	name{other.name},
+	handle{other.handle},
+	attachments{std::move(other.attachments)},
+	colorAttachments{std::move(other.colorAttachments)},
+	references{std::move(other.references)},
+	subpasses{std::move(other.subpasses)},
+	subpassDependencies{std::move(other.subpassDependencies)}
+{
+	other.handle = nullptr;
+	other.attachments.clear();
+	other.colorAttachments.clear();
+	other.references.clear();
+	other.subpasses.clear();
+	other.subpassDependencies.clear();
+}
+
+bool RenderPass::operator<(const RenderPass& rhs)
+{
+	return handle == rhs.handle;
+}
+
 void RenderPass::createColorAttachment(
 		const vk::Format format,
 		const vk::ImageLayout initialLayout,
@@ -143,6 +173,7 @@ void RenderPass::createBasicSubpassDependency()
 	d0.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite);
 	d0.setSrcStageMask(vk::PipelineStageFlagBits::eBottomOfPipe);
 	d0.setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+	d0.setDependencyFlags(vk::DependencyFlagBits::eByRegion);
 	subpassDependencies.push_back(d0);
 
 	vk::SubpassDependency d1;
@@ -152,7 +183,13 @@ void RenderPass::createBasicSubpassDependency()
 	d1.setDstAccessMask(vk::AccessFlagBits::eMemoryRead);
 	d1.setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
 	d1.setDstStageMask(vk::PipelineStageFlagBits::eBottomOfPipe);
+	d1.setDependencyFlags(vk::DependencyFlagBits::eByRegion);
 	subpassDependencies.push_back(d1);
+}
+
+void RenderPass::addSubpassDependency(vk::SubpassDependency d)
+{
+	subpassDependencies.push_back(d);
 }
 
 void RenderPass::createSubpass()
@@ -184,38 +221,13 @@ void RenderPass::create()
 	createInfo.setDependencyCount(subpassDependencies.size());
 	createInfo.setPDependencies(subpassDependencies.data());
   	handle = device.createRenderPass(createInfo);
+	created = true;
 }
 
-RenderPass::~RenderPass()
+bool RenderPass::isCreated() const
 {
-	if (handle)
-		device.destroyRenderPass(handle);
+	return created;
 }
-
-RenderPass::RenderPass(RenderPass&& other) :
-	device{other.device},
-	id{other.id},
-	name{other.name},
-	handle{other.handle},
-	attachments{std::move(other.attachments)},
-	colorAttachments{std::move(other.colorAttachments)},
-	references{std::move(other.references)},
-	subpasses{std::move(other.subpasses)},
-	subpassDependencies{std::move(other.subpassDependencies)}
-{
-	other.handle = nullptr;
-	other.attachments.clear();
-	other.colorAttachments.clear();
-	other.references.clear();
-	other.subpasses.clear();
-	other.subpassDependencies.clear();
-}
-
-bool RenderPass::operator<(const RenderPass& rhs)
-{
-	return handle == rhs.handle;
-}
-
 
 const vk::RenderPass& RenderPass::getHandle() const
 {
@@ -234,14 +246,16 @@ RenderTarget::RenderTarget(
 	extent{extent}
 {
 	vk::Extent3D ex = {extent.width, extent.height, 1};
+	format = vk::Format::eR8G8B8A8Unorm;
 	auto image = std::make_unique<mm::Image>(
 			device, 
 			ex,
-			vk::Format::eB8G8R8A8Unorm,
+			format,
 			vk::ImageUsageFlagBits::eColorAttachment | 
 			vk::ImageUsageFlagBits::eSampled,
-			vk::ImageLayout::eColorAttachmentOptimal);
+			vk::ImageLayout::eUndefined);
 	images.emplace_back(std::move(image));
+	std::cout << "IMG " << &images.at(0) << std::endl;
 }
 
 RenderTarget::RenderTarget(const vk::Device& device, std::unique_ptr<mm::Image> swapimage) :
@@ -285,6 +299,11 @@ vk::Framebuffer& RenderTarget::createFramebuffer(const RenderPass& renderPass)
 	return frameBuffers.at(renderPass.getId());
 }
 
+vk::Format RenderTarget::getFormat()
+{
+	return format;
+}
+
 RenderFrame::RenderFrame(
 		const Context& context, 
 		std::unique_ptr<RenderTarget>&& renderTarget,
@@ -326,6 +345,7 @@ RenderFrame::RenderFrame(RenderFrame&& other) :
 	height{other.height},
 	renderBuffer{other.renderBuffer},
 	swapchainRenderTarget{std::move(other.swapchainRenderTarget)},
+	offscreenRenderTarget{std::move(other.offscreenRenderTarget)},
 	descriptorBuffer{std::move(other.descriptorBuffer)}
 {
 	other.semaphore = nullptr;
@@ -351,9 +371,14 @@ mm::Buffer& RenderFrame::getDescriptorBuffer()
 	return *descriptorBuffer;
 }
 
-vk::Framebuffer& RenderFrame::requestFrameBuffer(const RenderPass& renderPass)
+vk::Framebuffer& RenderFrame::requestSwapchainFrameBuffer(const RenderPass& renderPass)
 {
 	return swapchainRenderTarget->requestFrameBuffer(renderPass);
+}
+
+vk::Framebuffer& RenderFrame::requestOffscreenFrameBuffer(const RenderPass& renderPass)
+{
+	return offscreenRenderTarget->requestFrameBuffer(renderPass);
 }
 
 CommandBuffer& RenderFrame::getRenderBuffer()
@@ -389,7 +414,8 @@ void RenderFrame::createDescriptorPool()
 	uboSize.setType(vk::DescriptorType::eUniformBuffer);
 	uboSize.setDescriptorCount(1);
 
-	std::array<vk::DescriptorPoolSize, 3> sizes{uboSize, imageSamplerSize, uboDynamicSize};
+	std::array<vk::DescriptorPoolSize, 3> sizes{
+		uboSize, imageSamplerSize, uboDynamicSize};
 
 	vk::DescriptorPoolCreateInfo ci;
 	ci.setMaxSets(1); //currently allow just one descriptor set
@@ -397,6 +423,11 @@ void RenderFrame::createDescriptorPool()
 	ci.setPoolSizeCount(sizes.size());
 
 	descriptorPool = device.createDescriptorPool(ci);
+}
+
+void RenderFrame::addOffscreenRenderTarget(std::unique_ptr<RenderTarget>&& target)
+{
+	offscreenRenderTarget = std::move(target);
 }
 
 void RenderFrame::createDescriptorSet(std::vector<vk::DescriptorSetLayout>& layouts)
@@ -422,7 +453,27 @@ void RenderFrame::createDescriptorSet(std::vector<vk::DescriptorSetLayout>& layo
 	dWrite.setDescriptorCount(1);
 	dWrite.setPTexelBufferView(nullptr);
 
-	device.updateDescriptorSets(dWrite, nullptr);
+	vk::DescriptorImageInfo ii;
+	std::cout << "p1" << std::endl;
+	std::cout << &offscreenRenderTarget->images.at(0) << std::endl;
+	std::cout << "p1.5" << std::endl;
+	ii.setImageView(offscreenRenderTarget->images[0]->getView());
+	std::cout << "p2" << std::endl;
+	ii.setSampler(offscreenRenderTarget->images[0]->getSampler());
+	ii.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+
+	vk::WriteDescriptorSet sWrite;
+	sWrite.setDescriptorType(vk::DescriptorType::eCombinedImageSampler);
+	sWrite.setDstArrayElement(0);
+	sWrite.setDstSet(descriptorSets.at(0));
+	sWrite.setDstBinding(1);
+	sWrite.setPImageInfo(&ii);
+	sWrite.setPBufferInfo(nullptr);
+	sWrite.setDescriptorCount(1);
+
+	std::array<vk::WriteDescriptorSet, 2> writes = {dWrite, sWrite};
+
+	device.updateDescriptorSets(writes, nullptr);
 }
 
 const std::vector<vk::DescriptorSet>& RenderFrame::getDescriptorSets() const
@@ -635,7 +686,8 @@ Renderer::Renderer(Context& context, XWindow& window) :
 	device(context.device),
 	graphicsQueue(context.queue)
 {
-	swapchain = std::make_unique<Swapchain>(context, window, 3); //we hardcode 3 swap images
+	swapchain = std::make_unique<Swapchain>(context, window, 3); 
+	//we hardcode 3 swap images
 	for (auto& imageHandle : swapchain->getImages()) 
 	{
 		auto image = std::make_unique<mm::Image>(
@@ -644,9 +696,19 @@ Renderer::Renderer(Context& context, XWindow& window) :
 				swapchain->getExtent3D(), 
 				swapchain->getFormat(), 
 				swapchain->getUsageFlags());
-		auto renderTarget{std::make_unique<RenderTarget>(device, std::move(image))};
-		auto renderFrame{RenderFrame(context, std::move(renderTarget),
-				swapchain->getExtent2D().width, swapchain->getExtent2D().height)};
+		auto swapRenderTarget{
+			std::make_unique<RenderTarget>(device, std::move(image))};
+		auto renderFrame{RenderFrame(
+				context, 
+				std::move(swapRenderTarget),
+				swapchain->getExtent2D().width, 
+				swapchain->getExtent2D().height)};
+		auto offscreenRenderTarget{
+			std::make_unique<RenderTarget>(
+					device,
+					swapchain->getExtent2D())};
+		std::cout << "IMG a " << &offscreenRenderTarget->images.at(0) << std::endl;
+		renderFrame.addOffscreenRenderTarget(std::move(offscreenRenderTarget));
 		frames.emplace_back(std::move(renderFrame));
 	}
 	//the following code will handle descriptor set creation
@@ -665,7 +727,41 @@ Renderer::Renderer(Context& context, XWindow& window) :
 	//
 	//we'll create renderpass now. 
 	//note: we could have done this at any point
-	createRenderPass("default", swapchain->getFormat());
+	auto& rpSwap = createRenderPass("default");
+	rpSwap.createColorAttachment(
+			swapchain->getFormat(), 
+			vk::ImageLayout::eUndefined,
+			vk::ImageLayout::ePresentSrcKHR);
+	rpSwap.createSubpass();
+	rpSwap.createBasicSubpassDependency();
+	rpSwap.create();
+
+	auto& offScreenPass = createRenderPass("offscreen");
+	offScreenPass.createColorAttachment(
+			vk::Format::eR8G8B8A8Unorm,
+			vk::ImageLayout::eUndefined,
+			vk::ImageLayout::eShaderReadOnlyOptimal);
+	vk::SubpassDependency d0, d1;
+	d0.setSrcSubpass(VK_SUBPASS_EXTERNAL);
+	d0.setDstSubpass(0);
+	d0.setSrcStageMask(vk::PipelineStageFlagBits::eFragmentShader);
+	d0.setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+	d0.setSrcAccessMask(vk::AccessFlagBits::eShaderRead);
+	d0.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite);
+	d0.setDependencyFlags(vk::DependencyFlagBits::eByRegion);
+
+	d1.setSrcSubpass(0);
+	d1.setDstSubpass(VK_SUBPASS_EXTERNAL);
+	d1.setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+	d1.setDstStageMask(vk::PipelineStageFlagBits::eFragmentShader);
+	d1.setSrcAccessMask(vk::AccessFlagBits::eColorAttachmentWrite);
+	d1.setDstAccessMask(vk::AccessFlagBits::eShaderRead);
+	d1.setDependencyFlags(vk::DependencyFlagBits::eByRegion);
+
+	offScreenPass.addSubpassDependency(d0);
+	offScreenPass.addSubpassDependency(d1);
+	offScreenPass.createSubpass();
+	offScreenPass.create();
 }
 
 Renderer::~Renderer()
@@ -695,7 +791,7 @@ void Renderer::recordRenderCommands(const std::string pipelineName, const std::s
 		commandBuffer.begin();
 
 		auto& renderPass = renderPasses.at(renderPassName);
-		auto& frameBuffer = frame.requestFrameBuffer(renderPass);
+		auto& frameBuffer = frame.requestSwapchainFrameBuffer(renderPass);
 
 		//could add the render area and clear color data to the 
 		//RenderFrames, might make sense
@@ -730,6 +826,137 @@ void Renderer::recordRenderCommands(const std::string pipelineName, const std::s
 	}
 }
 
+void Renderer::recordRenderCommandsTest()
+{
+	for (auto& frame : frames) 
+	{
+		auto& commandBuffer = frame.getRenderBuffer();	
+		commandBuffer.begin();
+
+		auto& renderPassOffscreen = renderPasses.at("offscreen");
+		auto& frameBufferOffscreen = frame.requestOffscreenFrameBuffer(
+				renderPassOffscreen);
+		auto& renderPassSwap = renderPasses.at("default");
+		auto& frameBufferSwap = frame.requestSwapchainFrameBuffer(
+				renderPassSwap);
+//
+//		//could add the render area and clear color data to the 
+//		//RenderFrames, might make sense
+		vk::Rect2D renderArea;
+		renderArea.setOffset({0,0});
+		renderArea.setExtent(swapchain->getExtent2D());
+//
+		vk::ClearColorValue clearColor;
+		clearColor.setFloat32({0.4,0.05,0.15,1.0});
+//
+		vk::ClearValue clearValue;
+		clearValue.setColor(clearColor);
+//
+		vk::RenderPassBeginInfo bi;
+		bi.setFramebuffer(frameBufferOffscreen);
+		bi.setRenderPass(renderPassOffscreen.getHandle());
+		bi.setRenderArea(renderArea);
+		bi.setPClearValues(&clearValue);
+		bi.setClearValueCount(1);
+
+		auto& pipelineOffscreen = graphicsPipelines.at("offscreen");
+
+		commandBuffer.beginRenderPass(bi);
+		commandBuffer.bindGraphicsPipeline(pipelineOffscreen.getHandle());
+		commandBuffer.bindDescriptorSets(
+				pipelineOffscreen.getLayout(),
+				frame.getDescriptorSets(),
+				{0});
+		commandBuffer.drawVerts(3, 0);
+		commandBuffer.endRenderPass();
+
+		vk::RenderPassBeginInfo bi2;
+		bi2.setFramebuffer(frameBufferSwap);
+		bi2.setRenderPass(renderPassSwap.getHandle());
+		bi2.setRenderArea(renderArea);
+		bi2.setPClearValues(&clearValue);
+		bi2.setClearValueCount(1);
+
+		auto& pipelineSwap = graphicsPipelines.at("default");
+
+		commandBuffer.beginRenderPass(bi2);
+		commandBuffer.bindGraphicsPipeline(pipelineSwap.getHandle());
+		commandBuffer.bindDescriptorSets(
+				pipelineSwap.getLayout(),
+				frame.getDescriptorSets(),
+				{0});
+		commandBuffer.drawVerts(3, 0);
+		commandBuffer.endRenderPass();
+
+		commandBuffer.end();
+	}
+}
+
+void Renderer::recordRenderCommandsSpecific()
+{
+	for (auto& frame : frames) 
+	{
+		auto& commandBuffer = frame.getRenderBuffer();	
+		commandBuffer.begin();
+
+		auto& renderPassOffscreen = renderPasses.at("offscreen");
+		auto& frameBufferOffscreen = frame.requestOffscreenFrameBuffer(
+				renderPassOffscreen);
+		auto& renderPassSwap = renderPasses.at("default");
+		auto& frameBufferSwap = frame.requestSwapchainFrameBuffer(
+				renderPassSwap);
+
+		//could add the render area and clear color data to the 
+		//RenderFrames, might make sense
+		vk::Rect2D renderArea;
+		renderArea.setOffset({0,0});
+		renderArea.setExtent(swapchain->getExtent2D());
+
+		vk::ClearColorValue clearColor;
+		clearColor.setFloat32({0.4,0.05,0.15,1.0});
+
+		vk::ClearValue clearValue;
+		clearValue.setColor(clearColor);
+
+		vk::RenderPassBeginInfo bi;
+		bi.setFramebuffer(frameBufferOffscreen);
+		bi.setRenderPass(renderPassOffscreen.getHandle());
+		bi.setRenderArea(renderArea);
+		bi.setPClearValues(&clearValue);
+		bi.setClearValueCount(1);
+
+		auto& pipelineOffscreen = graphicsPipelines.at("offscreen");
+
+		commandBuffer.beginRenderPass(bi);
+		commandBuffer.bindGraphicsPipeline(pipelineOffscreen.getHandle());
+		commandBuffer.bindDescriptorSets(
+				pipelineOffscreen.getLayout(),
+				frame.getDescriptorSets(),
+				{0});
+		commandBuffer.drawVerts(3, 0);
+		commandBuffer.endRenderPass();
+
+		vk::RenderPassBeginInfo bi2;
+		bi2.setFramebuffer(frameBufferSwap);
+		bi2.setRenderPass(renderPassSwap.getHandle());
+		bi2.setRenderArea(renderArea);
+		bi2.setPClearValues(&clearValue);
+		bi2.setClearValueCount(1);
+
+		auto& pipelineSwap = graphicsPipelines.at("default");
+
+		commandBuffer.beginRenderPass(bi2);
+		commandBuffer.bindGraphicsPipeline(pipelineSwap.getHandle());
+		commandBuffer.bindDescriptorSets(
+				pipelineSwap.getLayout(),
+				frame.getDescriptorSets(),
+				{0});
+		commandBuffer.drawVerts(3, 0);
+		commandBuffer.endRenderPass();
+
+		commandBuffer.end();
+	}
+}
 void Renderer::render()
 {
 	auto& renderBuffer = beginFrame();
@@ -754,7 +981,8 @@ void Renderer::render()
 
 void Renderer::setFragmentInput(FragmentInput input)
 {
-	fragmentInput = input;
+	if (input.lmbDown)
+		fragmentInput = input;
 }
 
 CommandBuffer& Renderer::beginFrame()
@@ -772,18 +1000,12 @@ void Renderer::bindToDescription(Description& description)
 	descriptionIsBound = true;
 }
 
-void Renderer::createRenderPass(std::string name, vk::Format colorFormat)
+RenderPass& Renderer::createRenderPass(std::string name)
 {
 	auto renderPass{RenderPass(device, name, renderPassCount)};
-	renderPass.createColorAttachment(
-			colorFormat, 
-			vk::ImageLayout::eUndefined,
-			vk::ImageLayout::ePresentSrcKHR);
-	renderPass.createSubpass();
-	renderPass.createBasicSubpassDependency();
-	renderPass.create();
 	renderPasses.emplace(name, std::move(renderPass));
 	renderPassCount++;
+	return renderPasses.at(name);
 }
 
 void Renderer::createGraphicsPipeline(

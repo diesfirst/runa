@@ -76,13 +76,15 @@ public:
 			const vk::Format,
 			vk::ImageLayout init,
 			vk::ImageLayout fin);
+	void addSubpassDependency(vk::SubpassDependency);
 	void createBasicSubpassDependency();
 	void createSubpass();
 	void create();
+	bool isCreated() const;
 private:
 	const vk::Device& device;
 	const std::string name;
-	vk::RenderPass handle;
+	vk::RenderPass handle{nullptr};
 	std::vector<vk::AttachmentDescription> attachments;
 	std::vector<vk::AttachmentDescription> colorAttachments;
 	std::vector<vk::AttachmentReference> references;
@@ -90,6 +92,7 @@ private:
 	std::vector<vk::SubpassDependency> subpassDependencies;
 
 	const uint32_t id;
+	bool created{false};
 };
 
 class RenderTarget
@@ -106,9 +109,11 @@ public:
 	virtual ~RenderTarget();
 	std::vector<std::unique_ptr<mm::Image>> images;
 	vk::Framebuffer& requestFrameBuffer(const RenderPass& renderPass);
+	vk::Format getFormat();
 private:
 	const vk::Device& device;
 	vk::Extent2D extent;
+	vk::Format format;
 	std::unordered_map<uint32_t, vk::Framebuffer> frameBuffers;
 	vk::Framebuffer& createFramebuffer(const RenderPass& renderPass);
 };
@@ -126,6 +131,7 @@ public:
 	RenderFrame(RenderFrame&& other);
 	virtual ~RenderFrame();
 
+	void addOffscreenRenderTarget(std::unique_ptr<RenderTarget>&& renderTarget);
 	void createDescriptorSet(std::vector<vk::DescriptorSetLayout>&);
 	void createDescriptorBuffer(bool map);
 	const std::vector<vk::DescriptorSet>& getDescriptorSets() const;
@@ -133,10 +139,12 @@ public:
 	vk::Semaphore requestSemaphore();
 	CommandBuffer& getRenderBuffer();
 	CommandBuffer& requestCommandBuffer();
-	vk::Framebuffer& requestFrameBuffer(const RenderPass&);
+	vk::Framebuffer& requestSwapchainFrameBuffer(const RenderPass&);
+	vk::Framebuffer& requestOffscreenFrameBuffer(const RenderPass&);
 
 private:
 	std::unique_ptr<RenderTarget> swapchainRenderTarget;
+	std::unique_ptr<RenderTarget> offscreenRenderTarget;
 	const Context& context;
 	const vk::Device& device;
 	CommandPool commandPool;
@@ -201,7 +209,7 @@ class Renderer
 public:
 	Renderer(Context&, XWindow& window);
 	~Renderer();
-	void createRenderPass(std::string name, vk::Format);
+	RenderPass& createRenderPass(std::string name);
 	void createGraphicsPipeline(
 			const std::string name, 
 			const std::string vertShader,
@@ -217,6 +225,8 @@ public:
 	void recordRenderCommands(
 			const std::string pipelineName, 
 			const std::string renderPassName);
+	void recordRenderCommandsTest();
+	void recordRenderCommandsSpecific();
 	void render();
 	const std::string loadShader(const std::string path, const std::string name, ShaderType); 
 
