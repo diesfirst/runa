@@ -222,7 +222,7 @@ Image::~Image()
 		device.destroyImageView(view);
 }
 
-vk::Extent2D Image::getExtent2D() const 
+const vk::Extent2D Image::getExtent2D() const 
 {
 	return vk::Extent2D{extent.width, extent.height};
 }
@@ -249,12 +249,12 @@ vk::Extent2D Image::getExtent2D() const
 //	other.memory = nullptr;
 //}
 
-vk::ImageView& Image::getView()
+const vk::ImageView& Image::getView() const
 {
 	return view;
 }
 
-vk::Sampler& Image::getSampler()
+const vk::Sampler& Image::getSampler() const
 {
 	return sampler;
 }

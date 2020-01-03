@@ -171,7 +171,7 @@ bool CommandBuffer::isRecorded() const
 	return recordingComplete;
 }
 
-void CommandBuffer::bindGraphicsPipeline(vk::Pipeline& pipeline)
+void CommandBuffer::bindGraphicsPipeline(const vk::Pipeline& pipeline)
 {
 	handle.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
 }

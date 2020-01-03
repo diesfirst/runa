@@ -8,15 +8,21 @@
 #include "window.hpp"
 #include "swapchain.hpp"
 #include <unordered_map>
+#include <functional>
 
 enum class ShaderType {vert, frag};
+
+enum class TargetType {offscreen, swapchain};
 
 struct FragmentInput
 {
 	float time{0};
 	float mouseX{0};
 	float mouseY{0};	
-	bool lmbDown{false};
+	int blur{0};
+    float r{1.};
+    float g{1.};
+    float b{1.};
 };
 
 class Shader
@@ -63,7 +69,7 @@ public:
 class RenderPass
 {
 public:
-	RenderPass(const vk::Device&, const std::string name, uint32_t);
+	RenderPass(const vk::Device&, const std::string name, bool isOffscreen, uint32_t id);
 	virtual ~RenderPass();
 	RenderPass(const RenderPass&) = delete;
 	RenderPass& operator=(RenderPass&) = delete;
@@ -75,12 +81,17 @@ public:
 	void createColorAttachment(
 			const vk::Format,
 			vk::ImageLayout init,
-			vk::ImageLayout fin);
+			vk::ImageLayout fin,
+            vk::ClearColorValue,
+            vk::AttachmentLoadOp);
 	void addSubpassDependency(vk::SubpassDependency);
 	void createBasicSubpassDependency();
 	void createSubpass();
 	void create();
 	bool isCreated() const;
+    bool isOffscreen() const;
+    const vk::ClearValue* getClearValue() const;
+
 private:
 	const vk::Device& device;
 	const std::string name;
@@ -90,6 +101,8 @@ private:
 	std::vector<vk::AttachmentReference> references;
 	std::vector<vk::SubpassDescription> subpasses;
 	std::vector<vk::SubpassDependency> subpassDependencies;
+    vk::ClearValue clearValue;
+    const bool offscreen;
 
 	const uint32_t id;
 	bool created{false};
@@ -109,14 +122,88 @@ public:
 	virtual ~RenderTarget();
 	std::vector<std::unique_ptr<mm::Image>> images;
 	vk::Framebuffer& requestFrameBuffer(const RenderPass& renderPass);
-	vk::Format getFormat();
+	vk::Format getFormat() const;
+    vk::Extent2D getExtent() const;
 private:
+    friend class RenderFrame;
 	const vk::Device& device;
 	vk::Extent2D extent;
 	vk::Format format;
 	std::unordered_map<uint32_t, vk::Framebuffer> frameBuffers;
 	vk::Framebuffer& createFramebuffer(const RenderPass& renderPass);
 };
+
+class GraphicsPipeline
+{
+public:
+	GraphicsPipeline(
+            const std::string name,
+			const vk::Device&, 
+			const vk::PipelineLayout&, 
+			const RenderPass&,
+			const uint32_t subpassIndex,
+			const vk::Rect2D, //we could choose to make this dynamic
+			const std::vector<const Shader*>&,
+			const vk::PipelineVertexInputStateCreateInfo&);
+	~GraphicsPipeline();
+	GraphicsPipeline(const GraphicsPipeline&) = delete;
+	GraphicsPipeline& operator=(GraphicsPipeline&) = delete;
+	GraphicsPipeline& operator=(GraphicsPipeline&&) = delete;
+	GraphicsPipeline(GraphicsPipeline&&);
+
+	vk::Viewport createViewport(const vk::Rect2D&);
+	const vk::Pipeline& getHandle() const;
+	const vk::PipelineLayout& getLayout() const;
+	const RenderPass& getRenderPass() const;
+    vk::Rect2D getRenderArea() const;
+
+	static vk::PipelineVertexInputStateCreateInfo createVertexInputState(
+			const std::vector<vk::VertexInputAttributeDescription>&,
+			const std::vector<vk::VertexInputBindingDescription>&);
+
+private:
+    const std::string name;
+	vk::Pipeline handle;
+	const vk::Device& device;
+	const RenderPass& renderPass;
+	vk::PipelineLayout layout;
+    vk::Rect2D renderArea;
+
+	std::vector<vk::PipelineShaderStageCreateInfo> extractShaderStageInfos(
+			const std::vector<const Shader*>& shaders);
+	vk::PipelineViewportStateCreateInfo createViewportState(
+			const vk::Viewport&,
+			const vk::Rect2D&);
+	vk::PipelineMultisampleStateCreateInfo createMultisampleState();
+	vk::PipelineRasterizationStateCreateInfo createRasterizationState();
+	vk::PipelineColorBlendAttachmentState createColorBlendAttachmentState();
+	vk::PipelineColorBlendStateCreateInfo createColorBlendState(
+			std::vector<vk::PipelineColorBlendAttachmentState>&);
+	vk::PipelineDepthStencilStateCreateInfo createDepthStencilState();
+	vk::PipelineInputAssemblyStateCreateInfo createInputAssemblyState();
+};
+
+class Framebuffer
+{
+public:
+    Framebuffer(const vk::Device&, const RenderTarget&, const RenderPass&, const GraphicsPipeline&);
+    virtual ~Framebuffer();
+	Framebuffer(const Framebuffer&) = delete;
+	Framebuffer& operator=(Framebuffer&) = delete;
+	Framebuffer& operator=(Framebuffer&&) = delete;
+	Framebuffer(Framebuffer&&);
+    const RenderPass& getRenderPass() const;
+    const GraphicsPipeline& getPipeline() const;
+    const vk::Framebuffer& getHandle() const;
+private:
+    vk::Framebuffer handle;
+    const RenderTarget& renderTarget;
+    const RenderPass& renderPass;
+    const GraphicsPipeline& pipeline;
+    const vk::Device& device;
+};
+
+
 
 class RenderFrame
 {
@@ -132,15 +219,18 @@ public:
 	virtual ~RenderFrame();
 
 	void addOffscreenRenderTarget(std::unique_ptr<RenderTarget>&& renderTarget);
-	void createDescriptorSet(std::vector<vk::DescriptorSetLayout>&);
+	void createDescriptorSet(std::vector<vk::DescriptorSetLayout>&, const mm::Image&);
 	void createDescriptorBuffer(bool map);
 	const std::vector<vk::DescriptorSet>& getDescriptorSets() const;
 	mm::Buffer& getDescriptorBuffer();
 	vk::Semaphore requestSemaphore();
 	CommandBuffer& getRenderBuffer();
 	CommandBuffer& requestCommandBuffer();
+    void addFramebuffer(const RenderTarget&, const RenderPass&, const GraphicsPipeline&);
+    void addFramebuffer(TargetType, const RenderPass&, const GraphicsPipeline&);
 	vk::Framebuffer& requestSwapchainFrameBuffer(const RenderPass&);
 	vk::Framebuffer& requestOffscreenFrameBuffer(const RenderPass&);
+    std::vector<Framebuffer> framebuffers;
 
 private:
 	std::unique_ptr<RenderTarget> swapchainRenderTarget;
@@ -160,61 +250,21 @@ private:
 	void createDescriptorPool();
 };
 
-class GraphicsPipeline
-{
-public:
-	GraphicsPipeline(
-			const vk::Device&, 
-			const vk::PipelineLayout&, 
-			const vk::RenderPass&,
-			const uint32_t subpassIndex,
-			const vk::Rect2D, //we could choose to make this dynamic
-			const std::vector<const Shader*>&,
-			const vk::PipelineVertexInputStateCreateInfo&);
-	~GraphicsPipeline();
-	GraphicsPipeline(const GraphicsPipeline&) = delete;
-	GraphicsPipeline& operator=(GraphicsPipeline&) = delete;
-	GraphicsPipeline& operator=(GraphicsPipeline&&) = delete;
-	GraphicsPipeline(GraphicsPipeline&&);
-
-	vk::Viewport createViewport(const vk::Rect2D&);
-	vk::Pipeline& getHandle();
-	vk::PipelineLayout& getLayout();
-
-	static vk::PipelineVertexInputStateCreateInfo createVertexInputState(
-			const std::vector<vk::VertexInputAttributeDescription>&,
-			const std::vector<vk::VertexInputBindingDescription>&);
-
-private:
-	vk::Pipeline handle;
-	const vk::Device& device;
-	vk::PipelineLayout layout;
-
-	std::vector<vk::PipelineShaderStageCreateInfo> extractShaderStageInfos(
-			const std::vector<const Shader*>& shaders);
-	vk::PipelineViewportStateCreateInfo createViewportState(
-			const vk::Viewport&,
-			const vk::Rect2D&);
-	vk::PipelineMultisampleStateCreateInfo createMultisampleState();
-	vk::PipelineRasterizationStateCreateInfo createRasterizationState();
-	vk::PipelineColorBlendAttachmentState createColorBlendAttachmentState();
-	vk::PipelineColorBlendStateCreateInfo createColorBlendState(
-			std::vector<vk::PipelineColorBlendAttachmentState>&);
-	vk::PipelineDepthStencilStateCreateInfo createDepthStencilState();
-	vk::PipelineInputAssemblyStateCreateInfo createInputAssemblyState();
-};
-
 class Renderer
 {
 public:
 	Renderer(Context&, XWindow& window);
 	~Renderer();
-	RenderPass& createRenderPass(std::string name);
-	void createGraphicsPipeline(
+	FragShader& loadFragShader(const std::string path, const std::string name);
+    VertShader& loadVertShader(const std::string path, const std::string name);
+	RenderPass& createRenderPass(std::string name, bool isOffscreen);
+    void prepareAsSwapchainPass(RenderPass&);
+    void prepareAsOffscreenPass(RenderPass&);
+	GraphicsPipeline& createGraphicsPipeline(
 			const std::string name, 
-			const std::string vertShader,
-			const std::string fragShader,
-			const std::string renderPassName,
+			const VertShader&,
+			const FragShader&,
+			const RenderPass&,
 			const bool geometric);
 	void bindToDescription(Description& description);
 	void setFragmentInput(FragmentInput input);
@@ -225,10 +275,12 @@ public:
 	void recordRenderCommands(
 			const std::string pipelineName, 
 			const std::string renderPassName);
-	void recordRenderCommandsTest();
-	void recordRenderCommandsSpecific();
+    void recordRenderCommandsTest();
+	void recordRenderCommandsTest2(std::vector<const GraphicsPipeline*>);
+	void recordRenderCommandsTest3();
+    void prepare(const std::string tarotPath);
+    void prepare2(const std::string tarotPath);
 	void render();
-	const std::string loadShader(const std::string path, const std::string name, ShaderType); 
 
 private:
 	const Context& context;
@@ -239,6 +291,7 @@ private:
 	Description* pDescription; //non-owning pointer
 	bool descriptionIsBound;
 	uint32_t renderPassCount{0};
+    std::unique_ptr<RenderTarget> paint;
 
 	FragmentInput fragmentInput;
 

@@ -5,10 +5,13 @@ layout(location = 0) out vec4 outColor;
 
 layout(set = 0, binding = 2) uniform uboBuf 
 { 
-	float frame;
+	float time;
 	float mouseX;
 	float mouseY;
-	bool lmbDown;
+    int blur;
+    float r;
+    float g;
+    float b;
 } ubo;
 
 float PI = 3.14;

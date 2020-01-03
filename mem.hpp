@@ -61,9 +61,9 @@ public:
 	Image& operator=(Image&&) = delete;
 	Image(Image&&) = delete;
 
-	vk::Extent2D getExtent2D() const;
-	vk::ImageView& getView();
-	vk::Sampler& getSampler();
+	const vk::Extent2D getExtent2D() const;
+	const vk::ImageView& getView() const;
+	const vk::Sampler& getSampler() const;
 private:
 	vk::Image handle;
 	vk::ImageView view;

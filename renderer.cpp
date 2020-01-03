@@ -101,10 +101,11 @@ FragShader::FragShader(const vk::Device& device, std::string filepath) :
 	stageInfo.setStage(vk::ShaderStageFlagBits::eFragment);
 }
 
-RenderPass::RenderPass(const vk::Device& device, const std::string name, uint32_t id) :
+RenderPass::RenderPass(const vk::Device& device, const std::string name, bool isOffscreen, uint32_t id) :
 	device{device},
 	id{id},
-	name{name}
+	name{name},
+    offscreen{isOffscreen}
 {
 }
 
@@ -123,7 +124,8 @@ RenderPass::RenderPass(RenderPass&& other) :
 	colorAttachments{std::move(other.colorAttachments)},
 	references{std::move(other.references)},
 	subpasses{std::move(other.subpasses)},
-	subpassDependencies{std::move(other.subpassDependencies)}
+	subpassDependencies{std::move(other.subpassDependencies)},
+    offscreen{other.offscreen}
 {
 	other.handle = nullptr;
 	other.attachments.clear();
@@ -141,14 +143,16 @@ bool RenderPass::operator<(const RenderPass& rhs)
 void RenderPass::createColorAttachment(
 		const vk::Format format,
 		const vk::ImageLayout initialLayout,
-		const vk::ImageLayout finalLayout)
+		const vk::ImageLayout finalLayout,
+        vk::ClearColorValue clearColor,
+        vk::AttachmentLoadOp loadOp)
 {
 	vk::AttachmentDescription attachment;
 	attachment.setFormat(format);
 	attachment.setSamples(vk::SampleCountFlagBits::e1);
 	//Sets what to do with data in the attachment
 	//before rendering
-	attachment.setLoadOp(vk::AttachmentLoadOp::eClear);
+    attachment.setLoadOp(loadOp);
 	attachment.setInitialLayout(initialLayout);
 	//Sets what we do with the data after rendering
 	//We want to show it so we will store it
@@ -162,6 +166,7 @@ void RenderPass::createColorAttachment(
 	colorRef.setAttachment(0); //our first attachment is color
 	colorRef.setLayout(vk::ImageLayout::eColorAttachmentOptimal);
 	references.push_back(colorRef);
+    clearValue.setColor(clearColor);
 }
 
 void RenderPass::createBasicSubpassDependency()
@@ -229,6 +234,16 @@ bool RenderPass::isCreated() const
 	return created;
 }
 
+bool RenderPass::isOffscreen() const
+{
+    return offscreen;
+}
+
+const vk::ClearValue* RenderPass::getClearValue() const
+{
+    return &clearValue;
+}
+
 const vk::RenderPass& RenderPass::getHandle() const
 {
 	return handle;
@@ -293,204 +308,36 @@ vk::Framebuffer& RenderTarget::createFramebuffer(const RenderPass& renderPass)
 	ci.setHeight(extent.height);
 	ci.setAttachmentCount(attachments.size());
 	ci.setPAttachments(attachments.data());
-	ci.setLayers(1);
+	ci.setLayers(1);   
 	ci.setRenderPass(renderPass.getHandle());
 	frameBuffers.emplace(renderPass.getId(), device.createFramebuffer(ci));
 	return frameBuffers.at(renderPass.getId());
 }
 
-vk::Format RenderTarget::getFormat()
+vk::Format RenderTarget::getFormat() const
 {
 	return format;
 }
 
-RenderFrame::RenderFrame(
-		const Context& context, 
-		std::unique_ptr<RenderTarget>&& renderTarget,
-		uint32_t width, uint32_t height) :
-	context(context),
-	device(context.device),
-	swapchainRenderTarget{std::move(renderTarget)},
-	commandPool{CommandPool(device, context.queue, context.getGraphicsQueueFamilyIndex())},
-	width{width},
-	height{height}
+vk::Extent2D RenderTarget::getExtent() const
 {
-	vk::SemaphoreCreateInfo semaInfo;
-	vk::FenceCreateInfo fenceInfo;
-	semaphore = device.createSemaphore(semaInfo);
-	fence = device.createFence(fenceInfo);
-	createDescriptorPool();
-	createDescriptorBuffer(true);
-}
-
-RenderFrame::~RenderFrame()
-{
-	if (semaphore)
-		device.destroySemaphore(semaphore);
-	if (fence)	
-		device.destroyFence(fence);
-	if (descriptorPool)
-		device.destroyDescriptorPool(descriptorPool);
-}
-
-RenderFrame::RenderFrame(RenderFrame&& other) :
-	context(other.context),
-	device(other.device),
-	commandPool(std::move(other.commandPool)),
-	fence(other.fence),
-	semaphore(other.semaphore),
-	descriptorPool(other.descriptorPool),
-	descriptorSets{std::move(other.descriptorSets)},
-	width{other.width},
-	height{other.height},
-	renderBuffer{other.renderBuffer},
-	swapchainRenderTarget{std::move(other.swapchainRenderTarget)},
-	offscreenRenderTarget{std::move(other.offscreenRenderTarget)},
-	descriptorBuffer{std::move(other.descriptorBuffer)}
-{
-	other.semaphore = nullptr;
-	other.fence = nullptr;
-	other.descriptorPool = nullptr;
-}
-
-void RenderFrame::createDescriptorBuffer(bool map)
-{
-	descriptorBuffer = std::make_unique<mm::Buffer>(
-			device, 
-			context.physicalDeviceMemoryProperties, 
-			200, 
-			vk::BufferUsageFlagBits::eUniformBuffer,
-			vk::MemoryPropertyFlagBits::eHostVisible | 
-			vk::MemoryPropertyFlagBits::eHostCoherent);
-	if (map)
-		auto res = *descriptorBuffer->map(); //do not intend to use this yet
-}
-
-mm::Buffer& RenderFrame::getDescriptorBuffer()
-{
-	return *descriptorBuffer;
-}
-
-vk::Framebuffer& RenderFrame::requestSwapchainFrameBuffer(const RenderPass& renderPass)
-{
-	return swapchainRenderTarget->requestFrameBuffer(renderPass);
-}
-
-vk::Framebuffer& RenderFrame::requestOffscreenFrameBuffer(const RenderPass& renderPass)
-{
-	return offscreenRenderTarget->requestFrameBuffer(renderPass);
-}
-
-CommandBuffer& RenderFrame::getRenderBuffer()
-{
-	if (!renderBuffer)
-	{
-		renderBuffer = &requestCommandBuffer();
-		return *renderBuffer;
-	}
-	else
-		return *renderBuffer;
-}
-
-vk::Semaphore RenderFrame::requestSemaphore()
-{
-	return semaphore;
-}
-
-CommandBuffer& RenderFrame::requestCommandBuffer()
-{	
-	return commandPool.requestCommandBuffer();
-}
-
-void RenderFrame::createDescriptorPool()
-{
-	vk::DescriptorPoolSize uboDynamicSize;
-	vk::DescriptorPoolSize imageSamplerSize;
-	vk::DescriptorPoolSize uboSize;
-	uboDynamicSize.setType(vk::DescriptorType::eUniformBufferDynamic);
-	uboDynamicSize.setDescriptorCount(1);
-	imageSamplerSize.setType(vk::DescriptorType::eCombinedImageSampler);
-	imageSamplerSize.setDescriptorCount(1);
-	uboSize.setType(vk::DescriptorType::eUniformBuffer);
-	uboSize.setDescriptorCount(1);
-
-	std::array<vk::DescriptorPoolSize, 3> sizes{
-		uboSize, imageSamplerSize, uboDynamicSize};
-
-	vk::DescriptorPoolCreateInfo ci;
-	ci.setMaxSets(1); //currently allow just one descriptor set
-	ci.setPPoolSizes(sizes.data());
-	ci.setPoolSizeCount(sizes.size());
-
-	descriptorPool = device.createDescriptorPool(ci);
-}
-
-void RenderFrame::addOffscreenRenderTarget(std::unique_ptr<RenderTarget>&& target)
-{
-	offscreenRenderTarget = std::move(target);
-}
-
-void RenderFrame::createDescriptorSet(std::vector<vk::DescriptorSetLayout>& layouts)
-{
-	vk::DescriptorSetAllocateInfo ai;
-	ai.setPSetLayouts(layouts.data());
-	ai.setDescriptorSetCount(layouts.size());
-	ai.setDescriptorPool(descriptorPool);
-	descriptorSets = device.allocateDescriptorSets(ai);
-	
-	vk::DescriptorBufferInfo bi;
-	bi.setRange(sizeof(FragmentInput));
-	bi.setBuffer((*descriptorBuffer).getHandle());
-	bi.setOffset(0);
-
-	vk::WriteDescriptorSet dWrite;
-	dWrite.setDescriptorType(vk::DescriptorType::eUniformBuffer);
-	dWrite.setDstArrayElement(0);
-	dWrite.setDstSet(descriptorSets.at(0));
-	dWrite.setDstBinding(2);
-	dWrite.setPImageInfo(nullptr);
-	dWrite.setPBufferInfo(&bi);
-	dWrite.setDescriptorCount(1);
-	dWrite.setPTexelBufferView(nullptr);
-
-	vk::DescriptorImageInfo ii;
-	std::cout << "p1" << std::endl;
-	std::cout << &offscreenRenderTarget->images.at(0) << std::endl;
-	std::cout << "p1.5" << std::endl;
-	ii.setImageView(offscreenRenderTarget->images[0]->getView());
-	std::cout << "p2" << std::endl;
-	ii.setSampler(offscreenRenderTarget->images[0]->getSampler());
-	ii.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
-
-	vk::WriteDescriptorSet sWrite;
-	sWrite.setDescriptorType(vk::DescriptorType::eCombinedImageSampler);
-	sWrite.setDstArrayElement(0);
-	sWrite.setDstSet(descriptorSets.at(0));
-	sWrite.setDstBinding(1);
-	sWrite.setPImageInfo(&ii);
-	sWrite.setPBufferInfo(nullptr);
-	sWrite.setDescriptorCount(1);
-
-	std::array<vk::WriteDescriptorSet, 2> writes = {dWrite, sWrite};
-
-	device.updateDescriptorSets(writes, nullptr);
-}
-
-const std::vector<vk::DescriptorSet>& RenderFrame::getDescriptorSets() const
-{
-	return descriptorSets;
+    return extent;
 }
 
 GraphicsPipeline::GraphicsPipeline(
+        const std::string name,
 		const vk::Device& device, 
 		const vk::PipelineLayout& layout,
-		const vk::RenderPass& renderPass,
+		const RenderPass& renderPass,
 		const uint32_t subpassIndex,
 		const vk::Rect2D renderArea,
 		const std::vector<const Shader*>& shaders,
 		const vk::PipelineVertexInputStateCreateInfo& vertexInputState) :
+    name{name},
 	device{device},
-	layout{layout}
+	layout{layout},
+	renderPass{renderPass},
+    renderArea{renderArea}
 {
 	vk::Viewport viewport = createViewport(renderArea);
 	vk::Rect2D scissor = renderArea;
@@ -511,7 +358,7 @@ GraphicsPipeline::GraphicsPipeline(
 	ci.setPStages(shaderStageInfos.data());
 	ci.setStageCount(shaders.size());
 	ci.setSubpass(subpassIndex);
-	ci.setRenderPass(renderPass);
+	ci.setRenderPass(renderPass.getHandle());
 	ci.setPDynamicState(nullptr); 
 	//we could use this to specify some pipeline elements
 	//as dynamic. worth looking into.
@@ -535,21 +382,34 @@ GraphicsPipeline::~GraphicsPipeline()
 }
 
 GraphicsPipeline::GraphicsPipeline(GraphicsPipeline&& other) :
+    name{other.name},
 	device{other.device},
 	handle{std::move(other.handle)},
-	layout{std::move(other.layout)}
+	layout{std::move(other.layout)},
+	renderPass{other.renderPass},
+    renderArea{other.renderArea}
 {
 	other.handle = nullptr;
 }
 
-vk::Pipeline& GraphicsPipeline::getHandle()
+const vk::Pipeline& GraphicsPipeline::getHandle() const
 {
 	return handle;
 }
 
-vk::PipelineLayout& GraphicsPipeline::getLayout()
+const vk::PipelineLayout& GraphicsPipeline::getLayout() const
 {
 	return layout;
+}
+
+const RenderPass& GraphicsPipeline::getRenderPass() const
+{
+	return renderPass;
+}
+
+vk::Rect2D GraphicsPipeline::getRenderArea() const
+{
+    return renderArea;
 }
 
 vk::Viewport GraphicsPipeline::createViewport(const vk::Rect2D& renderArea)
@@ -628,13 +488,13 @@ vk::PipelineColorBlendAttachmentState GraphicsPipeline::createColorBlendAttachme
 
 	vk::PipelineColorBlendAttachmentState ci;
 	ci.setBlendEnable(true);
-	ci.setAlphaBlendOp(vk::BlendOp::eAdd);
+    ci.setSrcColorBlendFactor(vk::BlendFactor::eSrcAlpha);
+	ci.setDstColorBlendFactor(vk::BlendFactor::eDstAlpha);
 	ci.setColorBlendOp(vk::BlendOp::eAdd);
-	ci.setColorWriteMask(writeMask);
-	ci.setDstAlphaBlendFactor(vk::BlendFactor::eZero);
-	ci.setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha);
 	ci.setSrcAlphaBlendFactor(vk::BlendFactor::eOne);
-	ci.setSrcColorBlendFactor(vk::BlendFactor::eOne);
+	ci.setDstAlphaBlendFactor(vk::BlendFactor::eOne);
+	ci.setAlphaBlendOp(vk::BlendOp::eAdd);
+	ci.setColorWriteMask(writeMask);
 	return ci;
 }
 
@@ -681,6 +541,267 @@ std::vector<vk::PipelineShaderStageCreateInfo> GraphicsPipeline::extractShaderSt
 	return stageInfos;
 }
 
+Framebuffer::Framebuffer(
+        const vk::Device& device,
+        const RenderTarget& target, 
+        const RenderPass& pass,
+        const GraphicsPipeline& pipe) :
+    renderTarget{target},
+    renderPass{pass},
+    pipeline{pipe},
+    device{device}
+{
+    vk::FramebufferCreateInfo ci;
+    ci.setWidth(target.getExtent().width);
+    ci.setHeight(target.getExtent().height);
+    ci.setAttachmentCount(1);
+    ci.setPAttachments(&target.images[0]->getView());
+    ci.setLayers(1);
+    ci.setRenderPass(pass.getHandle()); //only a template for where this fb can be used
+    handle = device.createFramebuffer(ci);
+}
+
+Framebuffer::~Framebuffer()
+{
+    if (handle)
+        device.destroyFramebuffer(handle);
+}
+
+Framebuffer::Framebuffer(Framebuffer&& other) :
+    renderTarget{other.renderTarget},
+    renderPass{other.renderPass},
+    pipeline{other.pipeline},
+    device{other.device},
+    handle{std::move(other.handle)}
+{
+    other.handle = nullptr;
+}
+
+const RenderPass& Framebuffer::getRenderPass() const
+{
+    return renderPass;
+}
+
+const GraphicsPipeline& Framebuffer::getPipeline() const
+{
+    return pipeline;
+}
+
+const vk::Framebuffer& Framebuffer::getHandle() const
+{
+    return handle;
+}
+
+RenderFrame::RenderFrame(
+		const Context& context, 
+		std::unique_ptr<RenderTarget>&& renderTarget,
+		uint32_t width, uint32_t height) :
+	context(context),
+	device(context.device),
+	swapchainRenderTarget{std::move(renderTarget)},
+	commandPool{CommandPool(device, context.queue, context.getGraphicsQueueFamilyIndex())},
+	width{width},
+	height{height}
+{
+	vk::SemaphoreCreateInfo semaInfo;
+	vk::FenceCreateInfo fenceInfo;
+	semaphore = device.createSemaphore(semaInfo);
+	fence = device.createFence(fenceInfo);
+	createDescriptorPool();
+	createDescriptorBuffer(true);
+}
+
+RenderFrame::~RenderFrame()
+{
+	if (semaphore)
+		device.destroySemaphore(semaphore);
+	if (fence)	
+		device.destroyFence(fence);
+	if (descriptorPool)
+		device.destroyDescriptorPool(descriptorPool);
+}
+
+RenderFrame::RenderFrame(RenderFrame&& other) :
+	context(other.context),
+	device(other.device),
+	commandPool(std::move(other.commandPool)),
+	fence(other.fence),
+	semaphore(other.semaphore),
+	descriptorPool(other.descriptorPool),
+	descriptorSets{std::move(other.descriptorSets)},
+	width{other.width},
+	height{other.height},
+	renderBuffer{other.renderBuffer},
+	swapchainRenderTarget{std::move(other.swapchainRenderTarget)},
+	offscreenRenderTarget{std::move(other.offscreenRenderTarget)},
+	descriptorBuffer{std::move(other.descriptorBuffer)},
+    framebuffers{std::move(other.framebuffers)}
+{
+	other.semaphore = nullptr;
+	other.fence = nullptr;
+	other.descriptorPool = nullptr;
+    other.framebuffers.clear();
+}
+
+void RenderFrame::createDescriptorBuffer(bool map)
+{
+	descriptorBuffer = std::make_unique<mm::Buffer>(
+			device, 
+			context.physicalDeviceMemoryProperties, 
+			200, 
+			vk::BufferUsageFlagBits::eUniformBuffer,
+			vk::MemoryPropertyFlagBits::eHostVisible | 
+			vk::MemoryPropertyFlagBits::eHostCoherent);
+	if (map)
+		auto res = *descriptorBuffer->map(); //do not intend to use this yet
+}
+
+mm::Buffer& RenderFrame::getDescriptorBuffer()
+{
+	return *descriptorBuffer;
+}
+
+void RenderFrame::addFramebuffer(
+        const RenderTarget& target, 
+        const RenderPass& pass, 
+        const GraphicsPipeline& pipe)
+{
+    framebuffers.emplace_back(
+                device,
+                target,
+                pass,
+                pipe);
+}
+
+void RenderFrame::addFramebuffer(
+        TargetType type,
+        const RenderPass& pass, 
+        const GraphicsPipeline& pipe)
+{
+    if (type == TargetType::offscreen)
+        framebuffers.emplace_back(
+                    device,
+                    *offscreenRenderTarget,
+                    pass,
+                    pipe);
+    if (type == TargetType::swapchain)
+        framebuffers.emplace_back(
+                    device,
+                    *swapchainRenderTarget,
+                    pass,
+                    pipe);
+    else
+        throw std::runtime_error("invalid target type");
+}
+
+vk::Framebuffer& RenderFrame::requestSwapchainFrameBuffer(const RenderPass& renderPass)
+{
+	return swapchainRenderTarget->requestFrameBuffer(renderPass);
+}
+
+vk::Framebuffer& RenderFrame::requestOffscreenFrameBuffer(const RenderPass& renderPass)
+{
+	return offscreenRenderTarget->requestFrameBuffer(renderPass);
+}
+
+CommandBuffer& RenderFrame::getRenderBuffer()
+{
+	if (!renderBuffer)
+	{
+		renderBuffer = &requestCommandBuffer();
+		return *renderBuffer;
+	}
+	else
+		return *renderBuffer;
+}
+
+vk::Semaphore RenderFrame::requestSemaphore()
+{
+	return semaphore;
+}
+
+CommandBuffer& RenderFrame::requestCommandBuffer()
+{	
+	return commandPool.requestCommandBuffer();
+}
+
+void RenderFrame::createDescriptorPool()
+{
+	vk::DescriptorPoolSize uboDynamicSize;
+	vk::DescriptorPoolSize imageSamplerSize;
+	vk::DescriptorPoolSize uboSize;
+	uboDynamicSize.setType(vk::DescriptorType::eUniformBufferDynamic);
+	uboDynamicSize.setDescriptorCount(1);
+	imageSamplerSize.setType(vk::DescriptorType::eCombinedImageSampler);
+	imageSamplerSize.setDescriptorCount(1);
+	uboSize.setType(vk::DescriptorType::eUniformBuffer);
+	uboSize.setDescriptorCount(1);
+
+	std::array<vk::DescriptorPoolSize, 3> sizes{
+		uboSize, imageSamplerSize, uboDynamicSize};
+
+	vk::DescriptorPoolCreateInfo ci;
+	ci.setMaxSets(1); //currently allow just one descriptor set
+	ci.setPPoolSizes(sizes.data());
+	ci.setPoolSizeCount(sizes.size());
+
+	descriptorPool = device.createDescriptorPool(ci);
+}
+
+void RenderFrame::addOffscreenRenderTarget(std::unique_ptr<RenderTarget>&& target)
+{
+	offscreenRenderTarget = std::move(target);
+}
+
+void RenderFrame::createDescriptorSet(
+        std::vector<vk::DescriptorSetLayout>& layouts,
+        const mm::Image& image)
+{
+	vk::DescriptorSetAllocateInfo ai;
+	ai.setPSetLayouts(layouts.data());
+	ai.setDescriptorSetCount(layouts.size());
+	ai.setDescriptorPool(descriptorPool);
+	descriptorSets = device.allocateDescriptorSets(ai);
+	
+	vk::DescriptorBufferInfo bi;
+	bi.setRange(sizeof(FragmentInput));
+	bi.setBuffer((*descriptorBuffer).getHandle());
+	bi.setOffset(0);
+
+	vk::WriteDescriptorSet dWrite;
+	dWrite.setDescriptorType(vk::DescriptorType::eUniformBuffer);
+	dWrite.setDstArrayElement(0);
+	dWrite.setDstSet(descriptorSets.at(0));
+	dWrite.setDstBinding(2);
+	dWrite.setPImageInfo(nullptr);
+	dWrite.setPBufferInfo(&bi);
+	dWrite.setDescriptorCount(1);
+	dWrite.setPTexelBufferView(nullptr);
+
+	vk::DescriptorImageInfo ii;
+	ii.setImageView(image.getView());
+	ii.setSampler(image.getSampler());
+	ii.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+
+	vk::WriteDescriptorSet sWrite;
+	sWrite.setDescriptorType(vk::DescriptorType::eCombinedImageSampler);
+	sWrite.setDstArrayElement(0);
+	sWrite.setDstSet(descriptorSets.at(0));
+	sWrite.setDstBinding(1);
+	sWrite.setPImageInfo(&ii);
+	sWrite.setPBufferInfo(nullptr);
+	sWrite.setDescriptorCount(1);
+
+	std::array<vk::WriteDescriptorSet, 2> writes = {dWrite, sWrite};
+
+	device.updateDescriptorSets(writes, nullptr);
+}
+
+const std::vector<vk::DescriptorSet>& RenderFrame::getDescriptorSets() const
+{
+	return descriptorSets;
+}
+
 Renderer::Renderer(Context& context, XWindow& window) :
 	context(context),
 	device(context.device),
@@ -711,36 +832,61 @@ Renderer::Renderer(Context& context, XWindow& window) :
 		renderFrame.addOffscreenRenderTarget(std::move(offscreenRenderTarget));
 		frames.emplace_back(std::move(renderFrame));
 	}
-	//the following code will handle descriptor set creation
-	//while we don't need descriptor sets to create a Pipeline
-	//we do need to make the Pipeline aware of their layouts 
-	//if we do intend to use them
-	//----------------------------
-	createDefaultDescriptorSetLayout("default");
-	//we can now create the desriptorsets for the render frames 
-	//additionally we can create our pipeline layouts
-	createPipelineLayout("default", {"default"});
 
-	//note: this could have been done as soon as we had the layout
-	createDescriptorSets(frames, {"default"});
-	//----------------------------
-	//
-	//we'll create renderpass now. 
-	//note: we could have done this at any point
-	auto& rpSwap = createRenderPass("default");
+}
+
+Renderer::~Renderer()
+{
+	for (auto item: descriptorSetLayouts)
+	{
+		device.destroyDescriptorSetLayout(item.second);
+	}
+
+	for (auto item : pipelineLayouts) 
+	{
+		device.destroyPipelineLayout(item.second);
+	}
+	
+	device.waitIdle();
+	frames.clear();
+
+	descriptorSetLayouts.clear();
+	pipelineLayouts.clear();
+}
+
+RenderPass& Renderer::createRenderPass(std::string name, bool offscreen)
+{
+	auto renderPass{RenderPass(device, name, offscreen, renderPassCount)};
+	renderPasses.emplace(name, std::move(renderPass));
+	renderPassCount++;
+	return renderPasses.at(name);
+}
+
+void Renderer::prepareAsSwapchainPass(RenderPass& rpSwap)
+{
+    vk::ClearColorValue cv;
+    cv.setFloat32({.0,.0,.0,0.});
 	rpSwap.createColorAttachment(
 			swapchain->getFormat(), 
 			vk::ImageLayout::eUndefined,
-			vk::ImageLayout::ePresentSrcKHR);
+			vk::ImageLayout::ePresentSrcKHR,
+            cv,
+            vk::AttachmentLoadOp::eClear);
 	rpSwap.createSubpass();
 	rpSwap.createBasicSubpassDependency();
 	rpSwap.create();
+}
 
-	auto& offScreenPass = createRenderPass("offscreen");
+void Renderer::prepareAsOffscreenPass(RenderPass& offScreenPass)
+{
+    vk::ClearColorValue cv;
+    cv.setFloat32({.0,.0,.0,0.});
 	offScreenPass.createColorAttachment(
 			vk::Format::eR8G8B8A8Unorm,
 			vk::ImageLayout::eUndefined,
-			vk::ImageLayout::eShaderReadOnlyOptimal);
+			vk::ImageLayout::eShaderReadOnlyOptimal,
+            cv,
+            vk::AttachmentLoadOp::eLoad);
 	vk::SubpassDependency d0, d1;
 	d0.setSrcSubpass(VK_SUBPASS_EXTERNAL);
 	d0.setDstSubpass(0);
@@ -764,23 +910,75 @@ Renderer::Renderer(Context& context, XWindow& window) :
 	offScreenPass.create();
 }
 
-Renderer::~Renderer()
+GraphicsPipeline& Renderer::createGraphicsPipeline(
+		const std::string name, 
+		const VertShader& vertShader,
+		const FragShader& fragShader,
+		const RenderPass& renderPass,
+		const bool geometric)
 {
-	for (auto item: descriptorSetLayouts)
+	vk::Rect2D renderArea;
+	renderArea.setOffset({0,0});
+	renderArea.setExtent({
+			swapchain->getExtent3D().width, 
+			swapchain->getExtent3D().height});
+
+	std::vector<const Shader*> shaderPointers = {&vertShader, &fragShader};
+
+	vk::PipelineLayout layout = pipelineLayouts.at("default");
+
+    vk::PipelineVertexInputStateCreateInfo vertexState;
+	if (geometric)
 	{
-		device.destroyDescriptorSetLayout(item.second);
+		assert(descriptionIsBound);
+
+		auto attributeDescriptions = pDescription->getAttributeDescriptions();
+		auto vertexBindingDescriptions = pDescription->getBindingDescriptions();
+		vertexState = GraphicsPipeline::createVertexInputState(
+				attributeDescriptions, vertexBindingDescriptions);
 	}
 
-	for (auto item : pipelineLayouts) 
+	else 
 	{
-		device.destroyPipelineLayout(item.second);
+		vertexState.setPVertexBindingDescriptions(nullptr);
+		vertexState.setPVertexAttributeDescriptions(nullptr);
+		vertexState.setVertexBindingDescriptionCount(0);
+		vertexState.setVertexAttributeDescriptionCount(0);
 	}
-	
-	device.waitIdle();
-	frames.clear();
 
-	descriptorSetLayouts.clear();
-	pipelineLayouts.clear();
+	graphicsPipelines.emplace(name, GraphicsPipeline(
+                name,
+				device,
+				layout,
+				renderPass,
+				0,
+				renderArea,
+				shaderPointers,
+				vertexState));
+    return graphicsPipelines.at(name);
+}
+
+VertShader& Renderer::loadVertShader(
+        const std::string path, const std::string name)
+{
+    vertexShaders.emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple(name),
+            std::forward_as_tuple(device, path));
+    return vertexShaders.at(name);
+}
+
+FragShader& Renderer::loadFragShader(
+		const std::string path, const std::string name)
+{
+    fragmentShaders.emplace(
+            std::piecewise_construct, 
+            std::forward_as_tuple(name), 
+            std::forward_as_tuple(device, path));
+    fragmentShaders.at(name).setWindowResolution(
+            swapchain->getExtent2D().width,
+            swapchain->getExtent2D().height);
+    return fragmentShaders.at(name);
 }
 
 void Renderer::recordRenderCommands(const std::string pipelineName, const std::string renderPassName)
@@ -895,63 +1093,67 @@ void Renderer::recordRenderCommandsTest()
 	}
 }
 
-void Renderer::recordRenderCommandsSpecific()
+void Renderer::recordRenderCommandsTest2(std::vector<const GraphicsPipeline*> pipelines)
 {
 	for (auto& frame : frames) 
 	{
 		auto& commandBuffer = frame.getRenderBuffer();	
 		commandBuffer.begin();
 
-		auto& renderPassOffscreen = renderPasses.at("offscreen");
-		auto& frameBufferOffscreen = frame.requestOffscreenFrameBuffer(
-				renderPassOffscreen);
-		auto& renderPassSwap = renderPasses.at("default");
-		auto& frameBufferSwap = frame.requestSwapchainFrameBuffer(
-				renderPassSwap);
-
-		//could add the render area and clear color data to the 
-		//RenderFrames, might make sense
-		vk::Rect2D renderArea;
-		renderArea.setOffset({0,0});
-		renderArea.setExtent(swapchain->getExtent2D());
-
+//		//could add the render area and clear color data to the 
+//		//RenderFrames, might make sense
+//
+        //Begin render pass 1
+        //===================
 		vk::ClearColorValue clearColor;
 		clearColor.setFloat32({0.,0.,0.,0.});
-
+//
 		vk::ClearValue clearValue;
 		clearValue.setColor(clearColor);
+//
+		auto pipelineOffscreen = pipelines[0];
+
+		auto& frameBufferOffscreen = frame.requestOffscreenFrameBuffer(
+				pipelineOffscreen->getRenderPass());
 
 		vk::RenderPassBeginInfo bi;
 		bi.setFramebuffer(frameBufferOffscreen);
-		bi.setRenderPass(renderPassOffscreen.getHandle());
-		bi.setRenderArea(renderArea);
+		bi.setRenderPass(pipelineOffscreen->getRenderPass().getHandle());
+		bi.setRenderArea(pipelineOffscreen->getRenderArea());
 		bi.setPClearValues(&clearValue);
 		bi.setClearValueCount(1);
 
-		auto& pipelineOffscreen = graphicsPipelines.at("offscreen");
 
 		commandBuffer.beginRenderPass(bi);
-		commandBuffer.bindGraphicsPipeline(pipelineOffscreen.getHandle());
+		commandBuffer.bindGraphicsPipeline(pipelineOffscreen->getHandle());
 		commandBuffer.bindDescriptorSets(
-				pipelineOffscreen.getLayout(),
+				pipelineOffscreen->getLayout(),
 				frame.getDescriptorSets(),
 				{0});
 		commandBuffer.drawVerts(3, 0);
 		commandBuffer.endRenderPass();
 
+        //Begin render pass 2
+        //===================
+		clearColor.setFloat32({.05,.01,.01,1.});
+		clearValue.setColor(clearColor);
+
+        auto pipelineSwap = pipelines[1];
+
+		auto& frameBufferSwap = frame.requestSwapchainFrameBuffer(
+				pipelineSwap->getRenderPass());
+
 		vk::RenderPassBeginInfo bi2;
 		bi2.setFramebuffer(frameBufferSwap);
-		bi2.setRenderPass(renderPassSwap.getHandle());
-		bi2.setRenderArea(renderArea);
+		bi2.setRenderPass(pipelineSwap->getRenderPass().getHandle());
+		bi2.setRenderArea(pipelineSwap->getRenderArea());
 		bi2.setPClearValues(&clearValue);
 		bi2.setClearValueCount(1);
 
-		auto& pipelineSwap = graphicsPipelines.at("default");
-
 		commandBuffer.beginRenderPass(bi2);
-		commandBuffer.bindGraphicsPipeline(pipelineSwap.getHandle());
+		commandBuffer.bindGraphicsPipeline(pipelineSwap->getHandle());
 		commandBuffer.bindDescriptorSets(
-				pipelineSwap.getLayout(),
+				pipelineSwap->getLayout(),
 				frame.getDescriptorSets(),
 				{0});
 		commandBuffer.drawVerts(3, 0);
@@ -960,6 +1162,137 @@ void Renderer::recordRenderCommandsSpecific()
 		commandBuffer.end();
 	}
 }
+
+void Renderer::recordRenderCommandsTest3()
+{
+	for (auto& frame : frames) 
+	{
+		auto& commandBuffer = frame.getRenderBuffer();	
+		commandBuffer.begin();
+
+        for (auto& framebuffer : frame.framebuffers) 
+        {
+            auto& renderPass = framebuffer.getRenderPass();
+            auto& pipeline = framebuffer.getPipeline();
+
+            vk::RenderPassBeginInfo bi;
+            bi.setFramebuffer(framebuffer.getHandle());
+            bi.setRenderArea(pipeline.getRenderArea());
+            bi.setRenderPass(renderPass.getHandle());
+            bi.setPClearValues(renderPass.getClearValue());
+            bi.setClearValueCount(1);
+
+            commandBuffer.beginRenderPass(bi);
+            commandBuffer.bindGraphicsPipeline(pipeline.getHandle());
+            commandBuffer.bindDescriptorSets(
+                    pipeline.getLayout(),
+                    frame.getDescriptorSets(),
+                    {0});
+            commandBuffer.drawVerts(3, 0);
+            commandBuffer.endRenderPass();
+
+        }
+
+		commandBuffer.end();
+	}
+}
+
+void Renderer::prepare(const std::string path)
+{
+
+    //create paint render target
+    paint = std::make_unique<RenderTarget>(device, swapchain->getExtent2D());
+
+	//the following code will handle descriptor set creation
+	//while we don't need descriptor sets to create a Pipeline
+	//we do need to make the Pipeline aware of their layouts 
+	//if we do intend to use them
+	//----------------------------
+	createDefaultDescriptorSetLayout("default");
+	//we can now create the desriptorsets for the render frames 
+	//additionally we can create our pipeline layouts
+	createPipelineLayout("default", {"default"});
+
+	//note: this could have been done as soon as we had the layout
+	createDescriptorSets(frames, {"default"});
+	//----------------------------
+	//
+	//we'll create renderpass now. 
+	//note: we could have done this at any point
+    
+    //load shaders
+	auto& quadShader = loadVertShader("shaders/tarot/fullscreen_tri.spv", "vert1");
+	auto& tarotShader = loadFragShader(path, "frag1");
+	auto& blurShader = loadFragShader("shaders/radialBlur.spv", "osFrag");
+
+    //create render passes
+    auto& offScreenPass = createRenderPass("offscreen", true);
+    prepareAsOffscreenPass(offScreenPass); //can make this a static function of RenderPass
+    auto& swapchainPass = createRenderPass("swapchain", false); 
+    prepareAsSwapchainPass(swapchainPass); //can make this a static function of RenderPass
+    
+    //create pipelines
+	auto& offscreenPipe = createGraphicsPipeline(
+            "offscreen", quadShader, tarotShader, offScreenPass, false);
+	auto& swapchainPipe = createGraphicsPipeline(
+            "default", quadShader, blurShader, swapchainPass, false);
+    
+    //create framebuffers
+    for (auto& frame : frames) 
+    {
+        frame.addFramebuffer(*paint, offScreenPass, offscreenPipe);
+        frame.addFramebuffer(TargetType::swapchain, swapchainPass, swapchainPipe);
+    }
+}
+
+void Renderer::prepare2(const std::string path)
+{
+
+    //create paint render target
+    paint = std::make_unique<RenderTarget>(device, swapchain->getExtent2D());
+
+	//the following code will handle descriptor set creation
+	//while we don't need descriptor sets to create a Pipeline
+	//we do need to make the Pipeline aware of their layouts 
+	//if we do intend to use them
+	//----------------------------
+	createDefaultDescriptorSetLayout("default");
+	//we can now create the desriptorsets for the render frames 
+	//additionally we can create our pipeline layouts
+	createPipelineLayout("default", {"default"});
+
+	//note: this could have been done as soon as we had the layout
+	createDescriptorSets(frames, {"default"});
+	//----------------------------
+	//
+	//we'll create renderpass now. 
+	//note: we could have done this at any point
+    
+    //load shaders
+	auto& quadShader = loadVertShader("shaders/tarot/fullscreen_tri.spv", "vert1");
+	auto& tarotShader = loadFragShader(path, "frag1");
+    auto& passShader = loadFragShader("shaders/passthrough.spv", "pass");
+
+    //create render passes
+    auto& offScreenPass = createRenderPass("offscreen", true);
+    prepareAsOffscreenPass(offScreenPass); //can make this a static function of RenderPass
+    auto& swapchainPass = createRenderPass("swapchain", false); 
+    prepareAsSwapchainPass(swapchainPass); //can make this a static function of RenderPass
+    
+    //create pipelines
+	auto& offscreenPipe = createGraphicsPipeline(
+            "offscreen", quadShader, tarotShader, offScreenPass, false);
+	auto& swapchainPipe = createGraphicsPipeline(
+            "default", quadShader, passShader, swapchainPass, false);
+    
+    //create framebuffers
+    for (auto& frame : frames) 
+    {
+        frame.addFramebuffer(*paint, offScreenPass, offscreenPipe);
+        frame.addFramebuffer(TargetType::swapchain, swapchainPass, swapchainPipe);
+    }
+}
+
 void Renderer::render()
 {
 	auto& renderBuffer = beginFrame();
@@ -984,8 +1317,7 @@ void Renderer::render()
 
 void Renderer::setFragmentInput(FragmentInput input)
 {
-	if (input.lmbDown)
-		fragmentInput = input;
+    fragmentInput = input;
 }
 
 CommandBuffer& Renderer::beginFrame()
@@ -1001,69 +1333,6 @@ void Renderer::bindToDescription(Description& description)
 {
 	pDescription = &description;
 	descriptionIsBound = true;
-}
-
-RenderPass& Renderer::createRenderPass(std::string name)
-{
-	auto renderPass{RenderPass(device, name, renderPassCount)};
-	renderPasses.emplace(name, std::move(renderPass));
-	renderPassCount++;
-	return renderPasses.at(name);
-}
-
-void Renderer::createGraphicsPipeline(
-		const std::string name, 
-		const std::string vertShader,
-		const std::string fragShader, 
-		const std::string renderPassName,
-		const bool geometric)
-{
-	vk::Rect2D renderArea;
-	renderArea.setOffset({0,0});
-	renderArea.setExtent({
-			swapchain->getExtent3D().width, 
-			swapchain->getExtent3D().height});
-
-	std::vector<const Shader*> shaderPointers; 
-	const Shader* vert = &vertexShaders.at(vertShader);
-	const Shader* frag = &fragmentShaders.at(fragShader);
-	shaderPointers.push_back(vert);
-	shaderPointers.push_back(frag);
-
-	auto& f = fragmentShaders.at(fragShader);
-
-	vk::PipelineLayout layout = pipelineLayouts.at("default");
-	vk::PipelineVertexInputStateCreateInfo vertexState;
-
-	auto& renderPass = renderPasses.at(renderPassName);
-
-	if (geometric)
-	{
-		assert(descriptionIsBound);
-
-		auto attributeDescriptions = pDescription->getAttributeDescriptions();
-		auto vertexBindingDescriptions = pDescription->getBindingDescriptions();
-		vertexState = GraphicsPipeline::createVertexInputState(
-				attributeDescriptions,
-				vertexBindingDescriptions);
-	}
-
-	else 
-	{
-		vertexState.setPVertexBindingDescriptions(nullptr);
-		vertexState.setPVertexAttributeDescriptions(nullptr);
-		vertexState.setVertexBindingDescriptionCount(0);
-		vertexState.setVertexAttributeDescriptionCount(0);
-	}
-
-	graphicsPipelines.emplace(name, GraphicsPipeline(
-				device,
-				layout,
-				renderPass.getHandle(),
-				0,
-				renderArea,
-				shaderPointers,
-				vertexState));
 }
 
 void Renderer::createDefaultDescriptorSetLayout(const std::string name)
@@ -1134,7 +1403,7 @@ void Renderer::createDescriptorSets(
 		{
 			layouts.push_back(descriptorSetLayouts.at(layoutName));
 		}
-		frame.createDescriptorSet(layouts);
+		frame.createDescriptorSet(layouts, *paint->images[0]);
 	}
 }
 
@@ -1145,23 +1414,3 @@ void Renderer::updateDescriptor(uint32_t frameIndex, const FragmentInput& value)
 	memcpy(pHostMemory, &value, sizeof(FragmentInput));
 }
 
-const std::string Renderer::loadShader(
-		const std::string path, const std::string name, ShaderType type)
-{
-	if (type == ShaderType::vert)
-		vertexShaders.emplace(
-				std::piecewise_construct,
-				std::forward_as_tuple(name),
-				std::forward_as_tuple(device, path));
-	if (type == ShaderType::frag)
-	{
-		fragmentShaders.emplace(
-				std::piecewise_construct, 
-				std::forward_as_tuple(name), 
-				std::forward_as_tuple(device, path));
-		fragmentShaders.at(name).setWindowResolution(
-				swapchain->getExtent2D().width,
-				swapchain->getExtent2D().height);
-	}
-	return name;
-}

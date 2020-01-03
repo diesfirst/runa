@@ -40,21 +40,27 @@ UserInput EventHandler::handleEvent(xcb_generic_event_t* event)
 		{
 			xcb_motion_notify_event_t* motion =
 				(xcb_motion_notify_event_t*)event;
-			return UserInput{motion->event_x, motion->event_y, mButtonDown};
+			mouseX = motion->event_x;
+            mouseY = motion->event_y;
+            break;
 		}
 		case XCB_BUTTON_PRESS:
 		{
 			mButtonDown = true;
 			xcb_motion_notify_event_t* motion =
 				(xcb_motion_notify_event_t*)event;
-			return UserInput{motion->event_x, motion->event_y, mButtonDown};
+			mouseX = motion->event_x;
+            mouseY = motion->event_y;
+            break;
 		}
 		case XCB_BUTTON_RELEASE:
 		{
 			mButtonDown = false;
 			xcb_motion_notify_event_t* motion =
 				(xcb_motion_notify_event_t*)event;
-			return UserInput{motion->event_x, motion->event_y, mButtonDown};
+			mouseX = motion->event_x;
+            mouseY = motion->event_y;
+            break;
 		}
 		case XCB_KEY_PRESS:
 		{
@@ -66,22 +72,32 @@ UserInput EventHandler::handleEvent(xcb_generic_event_t* event)
 			if (key == NULL)
 			{
 				std::cout << "Keysym not defined" << std::endl;
-				break;
+                break;
 			}
 			if (strcmp(key, "s") == 0)
 			{
 				std::cout << "Save key pressed" << std::endl;
-				break;
+                break;
 			}
 			if (strcmp(key, "b") == 0) 
 			{
-				float radius;
-				std::cout << "Enter a new size for brush." << std::endl;
-				break;
+				std::cout << "Enter a blur radius." << std::endl;
+                std::cin >> blur;
+                break;
 			}
-			break;
+			if (strcmp(key, "c") == 0) 
+			{
+				std::cout << "Enter a color." << std::endl;
+                std::cout << "R: " << std::endl;
+                std::cin >> r;
+                std::cout << "G: " << std::endl;
+                std::cin >> g;
+                std::cout << "B: " << std::endl;
+                std::cin >> b;
+                break;
+			}
 		}
 	}
 	free(event);
-	return UserInput();
+	return UserInput({mouseX, mouseY, mButtonDown, blur, r, g, b});
 }

@@ -46,7 +46,7 @@ public:
 	
 	void begin();
 	void beginRenderPass(vk::RenderPassBeginInfo&);
-	void bindGraphicsPipeline(vk::Pipeline& pipeline);
+	void bindGraphicsPipeline(const vk::Pipeline& pipeline);
 	void bindDescriptorSets(
 		const vk::PipelineLayout& layout, 
 		const std::vector<vk::DescriptorSet>& sets, 

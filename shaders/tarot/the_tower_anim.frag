@@ -9,7 +9,7 @@ void main()
 	vec2 st = getCoords();
 
 	float rect = rectSDF(st, vec2(.5, 1.));
-	float diag = (st.x + st.y) * .5 + ubo.frame / 100. - .5;
+	float diag = (st.x + st.y) * .5 + ubo.time / 100. - .5;
 	color += flip(
 			fill(rect, .6), 
 			stroke(diag, .5, .01));

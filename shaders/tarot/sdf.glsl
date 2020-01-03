@@ -3,6 +3,11 @@ float circleSDF(vec2 st)
 	return length(st - .5) * 2.;
 }
 
+float circleNormSDF(vec2 st)
+{
+    return length(st);
+}
+
 float rectSDF(vec2 st, vec2 s)
 {
 	st = st * 2. - 1.;

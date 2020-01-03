@@ -13,6 +13,10 @@ struct UserInput
 	int16_t mouseX{0};
 	int16_t mouseY{0};
 	bool mButtonDown{false};
+    int16_t blur{0};
+    float r{1.};
+    float g{1.};
+    float b{1.};
 };
 
 class EventHandler
@@ -33,7 +37,13 @@ public:
 
 private:
 	const XWindow& window;
+    int16_t mouseX{0};
+    int16_t mouseY{0};
 	bool mButtonDown = false;
+    int16_t blur{0};
+    float r{1.};
+    float g{1.};
+    float b{1.};
 	Display* display = XOpenDisplay(NULL);
 	xcb_generic_event_t* curEvent{nullptr};
 };
