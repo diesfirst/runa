@@ -490,10 +490,10 @@ vk::PipelineColorBlendAttachmentState GraphicsPipeline::createColorBlendAttachme
 	ci.setBlendEnable(true);
     ci.setSrcColorBlendFactor(vk::BlendFactor::eSrcAlpha);
 	ci.setDstColorBlendFactor(vk::BlendFactor::eDstAlpha);
-	ci.setColorBlendOp(vk::BlendOp::eAdd);
+	ci.setColorBlendOp(vk::BlendOp::eSrcOverEXT);
 	ci.setSrcAlphaBlendFactor(vk::BlendFactor::eOne);
 	ci.setDstAlphaBlendFactor(vk::BlendFactor::eOne);
-	ci.setAlphaBlendOp(vk::BlendOp::eAdd);
+	ci.setAlphaBlendOp(vk::BlendOp::eSrcOverEXT);
 	ci.setColorWriteMask(writeMask);
 	return ci;
 }

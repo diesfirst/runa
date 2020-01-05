@@ -5,6 +5,7 @@
 #include <ctime>
 #include <vulkan/vulkan.hpp>
 #include <iostream>
+#include <chrono>
 
 class Swapchain;
 class Context;
@@ -33,20 +34,21 @@ public:
 	void start();
 	void end(const std::string& funcName = "Non-specified");
 private:
-	std::clock_t startTime, endTime;
+    std::chrono::time_point<std::chrono::high_resolution_clock> startTime, endTime;
 };
 
 void Timer::start()
 {
-	startTime = std::clock();
+	startTime = std::chrono::high_resolution_clock::now();
 }
 
 void Timer::end(const std::string& funcName)
 {
-	endTime = std::clock();
+	endTime = std::chrono::high_resolution_clock::now();
+    auto elapsedTime = std::chrono::duration_cast<std::chrono::duration<double>>(endTime - startTime).count();
 	std::cout 
 		<< funcName << " completed in: " << std::endl
-		<< (endTime - startTime) / (double) CLOCKS_PER_SEC 
+		<< elapsedTime
 		<< " s" << std::endl;
 }
 

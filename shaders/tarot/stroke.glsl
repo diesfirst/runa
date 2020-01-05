@@ -1,3 +1,5 @@
+const float delta = .01;
+
 float stroke(float x, float s, float w)
 {
 	float d = step(s, x + w * .5) - step(s, x - w * .5);
@@ -12,4 +14,15 @@ float fill(float x, float size)
 float flip(float v, float pct)
 {
 	return mix(v, 1. - v, pct);
+}
+
+float fill_aa(float x, float size)
+{
+    return 1. - smoothstep(size - delta, size, x);
+}
+
+float stroke_aa(float x, float s, float w)
+{
+    float d = smoothstep(s - delta, s, x + w * .5) - smoothstep(s - delta, s, x - w * .5);
+    return clamp(d, 0., 1.);
 }

@@ -15,7 +15,7 @@ void program1(const std::string card_name)
 	const std::string path{"shaders/tarot/" + card_name + ".spv"};
 
 	Context context;
-	XWindow window(1500, 900);
+	XWindow window(666, 999);
 	window.open();
 	EventHandler eventHander(window);
 
@@ -44,7 +44,7 @@ void program1(const std::string card_name)
                     input.b});
             myTimer.start();
             renderer.render();
-            myTimer.end("Render");
+            myTimer.end("Render submission");
         }
 	}
 
