@@ -3,3 +3,8 @@
 *.swo
 out/*
 app
+build/
+lib/*
+test/*
+bin/*
+
