@@ -31,8 +31,7 @@ void main()
     {
         vec4 newColor = texture(samplerColor[i], st); 
         float complement = 1.0 - newColor.a;
-        color.rgb = newColor.rgb * newColor.a + color.rgb * color.a * complement;
-        color.a = newColor.a + color.a * complement;
+        color = newColor + color * complement;
     }
 
 	outColor = color;

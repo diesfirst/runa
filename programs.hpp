@@ -451,11 +451,16 @@ void program3(const std::string card_name)
         auto& input = eventHander.fetchUserInput(true);
         if (input.cmdId != cmdIdCache) //changing layers
         {
-            auto& cache = inputCache.at(cmdIdCache); 
-            cache = input;
-            input.r = cache.r;
-            input.g = cache.g;
-            input.b = cache.b;
+            //write to the cache on the last layer
+            auto& cacheLeaving = inputCache.at(cmdIdCache); 
+            cacheLeaving = input;
+
+            //read from the cache of the layer we're entering
+            auto& cacheEntering = inputCache.at(input.cmdId);
+            input.r = cacheEntering.r;
+            input.g = cacheEntering.g;
+            input.b = cacheEntering.b;
+
             auto t1 = std::chrono::high_resolution_clock::now();
             auto elapsedTime = std::chrono::duration_cast<std::chrono::duration<float>>(t1 - t0).count();
             renderer.setFragmentInput(0, {
