@@ -3,7 +3,7 @@ layout (constant_id = 1) const float HEIGHT = 100;
 
 layout(location = 0) out vec4 outColor;
 
-layout(set = 0, binding = 2) uniform uboBuf 
+layout(set = 0, binding = 0) uniform uboBuf 
 { 
 	float time;
 	float mouseX;

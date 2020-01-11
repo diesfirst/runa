@@ -21,18 +21,13 @@ EventHandler::~EventHandler()
 {
 }
 
-void EventHandler::setState(EventState eventState)
-{
-	state = eventState;
-}
-
-UserInput EventHandler::fetchUserInput(bool block)
+UserInput& EventHandler::fetchUserInput(bool block)
 {
 	auto event = window.waitForEvent();
 	return handleEvent(event);
 }
 
-UserInput EventHandler::handleEvent(xcb_generic_event_t* event)
+UserInput& EventHandler::handleEvent(xcb_generic_event_t* event)
 {	
 	switch (event->response_type & ~0x80)
 	{
@@ -40,26 +35,26 @@ UserInput EventHandler::handleEvent(xcb_generic_event_t* event)
 		{
 			xcb_motion_notify_event_t* motion =
 				(xcb_motion_notify_event_t*)event;
-			mouseX = motion->event_x;
-            mouseY = motion->event_y;
+			state.mouseX = motion->event_x;
+            state.mouseY = motion->event_y;
             break;
 		}
 		case XCB_BUTTON_PRESS:
 		{
-			mButtonDown = true;
+			state.mButtonDown = true;
 			xcb_motion_notify_event_t* motion =
 				(xcb_motion_notify_event_t*)event;
-			mouseX = motion->event_x;
-            mouseY = motion->event_y;
+			state.mouseX = motion->event_x;
+            state.mouseY = motion->event_y;
             break;
 		}
 		case XCB_BUTTON_RELEASE:
 		{
-			mButtonDown = false;
+			state.mButtonDown = false;
 			xcb_motion_notify_event_t* motion =
 				(xcb_motion_notify_event_t*)event;
-			mouseX = motion->event_x;
-            mouseY = motion->event_y;
+			state.mouseX = motion->event_x;
+            state.mouseY = motion->event_y;
             break;
 		}
 		case XCB_KEY_PRESS:
@@ -82,22 +77,51 @@ UserInput EventHandler::handleEvent(xcb_generic_event_t* event)
 			if (strcmp(key, "b") == 0) 
 			{
 				std::cout << "Enter a blur radius." << std::endl;
-                std::cin >> blur;
+                std::cin >> state.blur;
                 break;
 			}
 			if (strcmp(key, "c") == 0) 
 			{
 				std::cout << "Enter a color." << std::endl;
                 std::cout << "R: " << std::endl;
-                std::cin >> r;
+                std::cin >> state.r;
                 std::cout << "G: " << std::endl;
-                std::cin >> g;
+                std::cin >> state.g;
                 std::cout << "B: " << std::endl;
-                std::cin >> b;
+                std::cin >> state.b;
                 break;
 			}
+			if (strcmp(key, "n") == 0) 
+            {
+                std::cout << "Select command id" << std::endl;
+                std::cin >> state.cmdId;
+            }
+			if (strcmp(key, "space") == 0) 
+            {
+                state.cmdId = (state.cmdId == 0);
+            }
+			if (strcmp(key, "1") == 0) 
+            {
+                state.cmdId = 0;
+            }
+			if (strcmp(key, "2") == 0) 
+            {
+                state.cmdId = 1;
+            }
+			if (strcmp(key, "3") == 0) 
+            {
+                state.cmdId = 2;
+            }
+			if (strcmp(key, "4") == 0) 
+            {
+                state.cmdId = 3;
+            }
+            else
+            {
+                std::cout << key << std::endl;
+            }
 		}
 	}
 	free(event);
-	return UserInput({mouseX, mouseY, mButtonDown, blur, r, g, b});
+	return state;
 }

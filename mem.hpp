@@ -5,15 +5,25 @@
 
 namespace mm
 {
+class Buffer;
+
+struct BufferBlock
+{
+    uint32_t offset{0};
+    uint32_t size{0};
+    bool isMapped{false};
+    bool isValid{true};
+	void* pHostMemory{nullptr};
+};
 
 class Buffer
 {
 friend class MemoryManager;
 public:
-	Buffer(const vk::Device& device);
 	Buffer(
 			const vk::Device&,
-			vk::PhysicalDeviceMemoryProperties,
+            const vk::PhysicalDeviceProperties&,
+			const vk::PhysicalDeviceMemoryProperties&,
 			uint32_t size,
 			vk::BufferUsageFlags,
 			vk::MemoryPropertyFlags);
@@ -22,19 +32,24 @@ public:
 	Buffer& operator=(Buffer&) = delete;
 	Buffer& operator=(Buffer&&) = delete;
 	Buffer(Buffer&&) = delete;
+
 	vk::Buffer& getHandle();
-	uint8_t* getPHostMem();
-	uint8_t* map();
+    BufferBlock* requestBlock(uint32_t size);
+    void map();
+	void map(BufferBlock&);
 	void unmap();
+    std::vector<std::unique_ptr<BufferBlock>> bufferBlocks;
 
 private:
 	const vk::Device& device;
+    const vk::PhysicalDeviceProperties& devProps;
+    const vk::PhysicalDeviceMemoryProperties& memProps;
 	vk::DeviceMemory memory;
 	vk::Buffer handle;
-	void* pHostMemory{nullptr};
 	unsigned long size;
-	bool isMapped = false;
-	vk::PhysicalDeviceMemoryProperties memoryProperties;
+    bool isMapped{false};
+    void* pHostMemory{nullptr};
+    uint32_t curBlockOffset{0};
 
 	uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags);
 };

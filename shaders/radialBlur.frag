@@ -1,19 +1,24 @@
 #version 460
+#extension GL_EXT_nonuniform_qualifier : enable
 
 layout (constant_id = 0) const float WIDTH = 400;
 layout (constant_id = 1) const float HEIGHT = 100;
 
 layout (location = 0) out vec4 outColor;
 
-layout(set = 0, binding = 2) uniform uboBuf 
+layout(set = 0, binding = 0) uniform uboBuf 
 { 
 	float frame;
 	float mouseX;
 	float mouseY;
     int blur;
+    float r;
+    float g;
+    float b;
+    int layerId;
 } ubo;
 
-layout (binding = 1) uniform sampler2D samplerColor;
+layout (binding = 1) uniform sampler2D samplerColor[];
 
 vec2 resolution = vec2(WIDTH, HEIGHT);
 
@@ -23,7 +28,7 @@ void main()
     int blur_size = ubo.blur; //must always be odd
     if (blur_size < 3)
     {
-        outColor = texture(samplerColor, gl_FragCoord.xy / resolution);
+        outColor = texture(samplerColor[ubo.layerId], gl_FragCoord.xy / resolution);
         return;
     }
     if (blur_size % 2 == 0)
@@ -42,7 +47,7 @@ void main()
 		{
 			vec2 shift = vec2(i,j);
 			curSt = (center + shift) / resolution; 
-			color += texture(samplerColor, curSt) / scale;
+			color += texture(samplerColor[ubo.layerId], curSt) / scale;
 		}
 	}
 

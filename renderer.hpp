@@ -23,6 +23,7 @@ struct FragmentInput
     float r{1.};
     float g{1.};
     float b{1.};
+    int layerId{0};
 };
 
 class Shader
@@ -108,29 +109,29 @@ private:
 	bool created{false};
 };
 
-class RenderTarget
+class Attachment
 {
 public:
-	RenderTarget(
+	Attachment(
 			const vk::Device& device,
 			const vk::Extent2D extent);
-	RenderTarget(const vk::Device&, std::unique_ptr<mm::Image>);
-	RenderTarget(const RenderTarget&) = delete;
-	RenderTarget& operator=(RenderTarget &&other) = default;
-	RenderTarget& operator=(RenderTarget&) = delete;
-	RenderTarget(RenderTarget&& other) = delete;
-	virtual ~RenderTarget();
-	std::vector<std::unique_ptr<mm::Image>> images;
+	Attachment(const vk::Device&, std::unique_ptr<mm::Image>);
+	Attachment(const Attachment&) = delete;
+	Attachment& operator=(Attachment &&other) = default;
+	Attachment& operator=(Attachment&) = delete;
+	Attachment(Attachment&& other) = delete;
+	virtual ~Attachment();
 	vk::Framebuffer& requestFrameBuffer(const RenderPass& renderPass);
 	vk::Format getFormat() const;
     vk::Extent2D getExtent() const;
+    const mm::Image& getImage(uint32_t index) const;
+
 private:
     friend class RenderFrame;
 	const vk::Device& device;
+	std::vector<std::unique_ptr<mm::Image>> images;
 	vk::Extent2D extent;
 	vk::Format format;
-	std::unordered_map<uint32_t, vk::Framebuffer> frameBuffers;
-	vk::Framebuffer& createFramebuffer(const RenderPass& renderPass);
 };
 
 class GraphicsPipeline
@@ -186,7 +187,7 @@ private:
 class Framebuffer
 {
 public:
-    Framebuffer(const vk::Device&, const RenderTarget&, const RenderPass&, const GraphicsPipeline&);
+    Framebuffer(const vk::Device&, const Attachment&, const RenderPass&, const GraphicsPipeline&);
     virtual ~Framebuffer();
 	Framebuffer(const Framebuffer&) = delete;
 	Framebuffer& operator=(Framebuffer&) = delete;
@@ -197,7 +198,7 @@ public:
     const vk::Framebuffer& getHandle() const;
 private:
     vk::Framebuffer handle;
-    const RenderTarget& renderTarget;
+    const Attachment& renderTarget;
     const RenderPass& renderPass;
     const GraphicsPipeline& pipeline;
     const vk::Device& device;
@@ -210,7 +211,7 @@ class RenderFrame
 public:
 	RenderFrame(
 			const Context&, 
-			std::unique_ptr<RenderTarget>&& renderTarget, 
+			std::unique_ptr<Attachment>&& renderTarget, 
 			uint32_t width, uint32_t height);
 	RenderFrame(const RenderFrame&) = delete;
 	RenderFrame& operator=(RenderFrame&) = delete;
@@ -218,30 +219,31 @@ public:
 	RenderFrame(RenderFrame&& other);
 	virtual ~RenderFrame();
 
-	void addOffscreenRenderTarget(std::unique_ptr<RenderTarget>&& renderTarget);
-	void createDescriptorSet(std::vector<vk::DescriptorSetLayout>&, const mm::Image&);
-	void createDescriptorBuffer(bool map);
+	void addOffscreenAttachment(std::unique_ptr<Attachment>&& renderTarget);
+	void createDescriptorSets(const std::vector<vk::DescriptorSetLayout>&);
 	const std::vector<vk::DescriptorSet>& getDescriptorSets() const;
-	mm::Buffer& getDescriptorBuffer();
 	vk::Semaphore requestSemaphore();
-	CommandBuffer& getRenderBuffer();
-	CommandBuffer& requestCommandBuffer();
-    void addFramebuffer(const RenderTarget&, const RenderPass&, const GraphicsPipeline&);
+	CommandBuffer& requestRenderBuffer(uint32_t bufferId); //will reset if exists
+    CommandBuffer& getRenderBuffer(uint32_t bufferId);  //will fetch existing
+    void addFramebuffer(const Attachment&, const RenderPass&, const GraphicsPipeline&);
     void addFramebuffer(TargetType, const RenderPass&, const GraphicsPipeline&);
+    void clearFramebuffers();
 	vk::Framebuffer& requestSwapchainFrameBuffer(const RenderPass&);
 	vk::Framebuffer& requestOffscreenFrameBuffer(const RenderPass&);
     std::vector<Framebuffer> framebuffers;
+    mm::BufferBlock* bufferBlock;
 
 private:
-	std::unique_ptr<RenderTarget> swapchainRenderTarget;
-	std::unique_ptr<RenderTarget> offscreenRenderTarget;
+	std::unique_ptr<Attachment> swapchainAttachment;
+	std::unique_ptr<Attachment> offscreenAttachment;
 	const Context& context;
 	const vk::Device& device;
 	CommandPool commandPool;
-	CommandBuffer* renderBuffer{nullptr};
+    std::vector<CommandBuffer*> commandBuffers;
+//	CommandBuffer* renderBuffer{nullptr};
 	vk::DescriptorPool descriptorPool;
-	std::unique_ptr<mm::Buffer> descriptorBuffer;
 	std::vector<vk::DescriptorSet> descriptorSets;
+    void updateDescriptorSet(uint32_t setId, const std::vector<vk::WriteDescriptorSet>);
 	vk::Fence fence;
 	vk::Semaphore semaphore;
 	uint32_t width;
@@ -255,32 +257,46 @@ class Renderer
 public:
 	Renderer(Context&, XWindow& window);
 	~Renderer();
+	Renderer(const Renderer&) = delete;
+	Renderer& operator=(Renderer&) = delete;
+	Renderer& operator=(Renderer&&) = delete;
+	Renderer(Renderer&&) = delete;
 	FragShader& loadFragShader(const std::string path, const std::string name);
     VertShader& loadVertShader(const std::string path, const std::string name);
 	RenderPass& createRenderPass(std::string name, bool isOffscreen);
+    const std::string createDescriptorSetLayout(
+            const std::string name, 
+            const std::vector<vk::DescriptorSetLayoutBinding>);
+    const std::string createPipelineLayout(
+            const std::string name, 
+            const std::vector<std::string> setLayouts);
+    void createFrameDescriptorSets(const std::vector<std::string>setLayoutNames);
+    void createOwnDescriptorSets(const std::vector<std::string>setLayoutNames);
+    void initFrameUBOs(uint32_t binding);
+    void updateFrameSamplers(const vk::ImageView*, const vk::Sampler*, uint32_t binding);
+    void updateFrameSamplers(const std::vector<const mm::Image*>, uint32_t binding);
     void prepareAsSwapchainPass(RenderPass&);
     void prepareAsOffscreenPass(RenderPass&);
+    Attachment& createAttachment(const std::string name, const vk::Extent2D);
 	GraphicsPipeline& createGraphicsPipeline(
 			const std::string name, 
+            const std::string pipelineLayout,
 			const VertShader&,
 			const FragShader&,
 			const RenderPass&,
 			const bool geometric);
 	void bindToDescription(Description& description);
-	void setFragmentInput(FragmentInput input);
+	void setFragmentInput(uint32_t index, FragmentInput input);
 	//in the future we should disect this function
 	//to allow for the renderpasses and 
 	//pipeline bindings to happen seperately,
 	//having only 1 pipeline per commandbuffer is doomed
-	void recordRenderCommands(
-			const std::string pipelineName, 
-			const std::string renderPassName);
-    void recordRenderCommandsTest();
-	void recordRenderCommandsTest2(std::vector<const GraphicsPipeline*>);
-	void recordRenderCommandsTest3();
+	void recordRenderCommands(uint32_t bufferId, std::vector<uint32_t> renderPassIds);
     void prepare(const std::string tarotPath);
-    void prepare2(const std::string tarotPath);
-	void render();
+    void addFramebuffer(const Attachment&, const RenderPass&, const GraphicsPipeline&);
+    void addFramebuffer(TargetType, const RenderPass&, const GraphicsPipeline&);
+    void clearFramebuffers();
+	void render(uint32_t cmdId);
 
 private:
 	const Context& context;
@@ -291,9 +307,16 @@ private:
 	Description* pDescription; //non-owning pointer
 	bool descriptionIsBound;
 	uint32_t renderPassCount{0};
-    std::unique_ptr<RenderTarget> paint;
+    std::unordered_map<std::string, std::unique_ptr<Attachment>> attachments;
+    Attachment* activeTarget;
+    std::vector<FragmentInput> fragUBOs;
 
-	FragmentInput fragmentInput;
+    //descriptor stuff
+	vk::DescriptorPool descriptorPool;
+	std::unique_ptr<mm::Buffer> descriptorBuffer;
+	std::vector<vk::DescriptorSet> descriptorSets;
+    void updateFramesDescriptorSet(uint32_t setId, const std::vector<vk::WriteDescriptorSet>);
+    void updateOwnDescriptorSet(uint32_t setId, const std::vector<vk::WriteDescriptorSet>);
 
 	vk::Semaphore imageAcquiredSemaphore;
 
@@ -307,17 +330,12 @@ private:
 	std::unordered_map<std::string, GraphicsPipeline> graphicsPipelines;
 	std::unordered_map<std::string, RenderPass> renderPasses;
 	void createDefaultDescriptorSetLayout(const std::string name);
-	void createPipelineLayout(
-			const std::string name, 
-			const std::vector<std::string> descriptorSetLayoutNames);
 
-	CommandBuffer& beginFrame();
+	CommandBuffer& beginFrame(uint32_t cmdId);
 
-	void updateDescriptor(uint32_t frame, const FragmentInput& value);
-
-	void createDescriptorSets(
-			std::vector<RenderFrame>&, 
-			const std::vector<std::string> setLayoutNames);
+    void createDescriptorPool();
+	void updateFrameDescriptorBuffer(uint32_t frame, const FragmentInput& value);
+    void createDescriptorBuffer(uint32_t size);
 };
 
 #endif /* RENDERER_H */

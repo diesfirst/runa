@@ -17,6 +17,7 @@ struct UserInput
     float r{1.};
     float g{1.};
     float b{1.};
+    uint32_t cmdId;
 };
 
 class EventHandler
@@ -27,13 +28,13 @@ public:
 	
 	void setState(EventState);
 
-	UserInput fetchUserInput(bool block);
-	UserInput handleEvent(xcb_generic_event_t* event);
+	UserInput& fetchUserInput(bool block);
+	UserInput& handleEvent(xcb_generic_event_t* event);
 	void handlePainterEvent(xcb_generic_event_t* event);
 	void handleSculptEvent(xcb_generic_event_t* event);
 	void handleViewerEvent(xcb_generic_event_t* event);
 
-	EventState state = EventState::paint;
+    UserInput state;
 
 private:
 	const XWindow& window;
@@ -44,6 +45,7 @@ private:
     float r{1.};
     float g{1.};
     float b{1.};
+    uint32_t cmdId{0};
 	Display* display = XOpenDisplay(NULL);
 	xcb_generic_event_t* curEvent{nullptr};
 };

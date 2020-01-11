@@ -166,6 +166,11 @@ void CommandBuffer::waitForFence() const
 	device.waitForFences(1, &fence, true, UINT64_MAX);
 }
 
+void CommandBuffer::reset()
+{
+    handle.reset({});
+}
+
 bool CommandBuffer::isRecorded() const
 {
 	return recordingComplete;

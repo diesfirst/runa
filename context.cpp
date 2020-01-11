@@ -82,7 +82,6 @@ void Context::createInstance()
 
 	instance = vk::createInstance(instanceInfo);
 }
-////0x559a5e312af0
 
 
 void Context::checkInstanceExtensionProperties()
@@ -98,6 +97,7 @@ void Context::createPhysicalDevice()
 	physicalDeviceFeatures = physicalDevice.getFeatures();
 	physicalDeviceFeatures.setFillModeNonSolid(true);
 	physicalDeviceFeatures.setSampleRateShading(true);
+    physicalDeviceFeatures.setShaderSampledImageArrayDynamicIndexing(true);
 	queueFamilies = physicalDevice.getQueueFamilyProperties();
 	deviceExtensionProperties = physicalDevice.enumerateDeviceExtensionProperties();
 }

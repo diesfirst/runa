@@ -5,17 +5,16 @@
 namespace mm
 {
 
-Buffer::Buffer(const vk::Device& device) :
-	device(device)
-{
-}
-
-Buffer::Buffer(const vk::Device& device,
-		vk::PhysicalDeviceMemoryProperties memProps,
+Buffer::Buffer(
+        const vk::Device& device,
+        const vk::PhysicalDeviceProperties& props,
+		const vk::PhysicalDeviceMemoryProperties& memProps,
 		uint32_t size, 
 		vk::BufferUsageFlags usage,
 		vk::MemoryPropertyFlags typeFlags) :
-	device(device),
+	device{device},
+    devProps{props},
+    memProps{memProps},
 	size{size}
 {
 	std::cout << "Creating buffer!" << std::endl;
@@ -59,27 +58,62 @@ vk::Buffer& Buffer::getHandle()
 	return handle;
 }
 
-uint8_t* Buffer::getPHostMem()
+BufferBlock* Buffer::requestBlock(uint32_t blockSize)
 {
-	assert(isMapped && "Memory not mapped");
-	return static_cast<uint8_t*>(pHostMemory);
+    uint32_t allocSize{0};
+    uint32_t minAlignment = devProps.limits.minUniformBufferOffsetAlignment;
+    if (blockSize % minAlignment == 0) //is aligned
+        allocSize = blockSize;
+    else 
+    {
+        uint32_t alignmentsThatFitInSize = blockSize / minAlignment; 
+        allocSize = alignmentsThatFitInSize + minAlignment;
+    }
+    assert(allocSize < size && "No room for new block");
+    auto block = std::make_unique<BufferBlock>();
+    block->offset = curBlockOffset;
+    block->size = blockSize;
+    bufferBlocks.push_back(std::move(block));
+    std::cout << "Block made" <<
+       "curBlockOffset: " << curBlockOffset <<
+       "blockSize: " << blockSize << std::endl;
+    curBlockOffset += allocSize;
+    return bufferBlocks.back().get();
 }
 
-uint8_t* Buffer::map()
+void Buffer::map()
 {
 	assert(!isMapped);
-	void* res = device.mapMemory(memory, 0, size);
+	pHostMemory = device.mapMemory(memory, 0, VK_WHOLE_SIZE);
+	assert(pHostMemory != (void*)VK_ERROR_MEMORY_MAP_FAILED);
+    isMapped = true;
+
+    for (auto& block : bufferBlocks) 
+    {
+        block->pHostMemory = static_cast<uint8_t*>(pHostMemory) + block->offset;
+        block->isMapped = true;
+        std::cout << "Block hostmem: " << block->pHostMemory << std::endl;
+        std::cout << "===!+!+!+!+!+!+!+!+!+!+!+!++!+!+!+!+++===" << std::endl;
+    }
+}
+
+void Buffer::map(BufferBlock& block)
+{
+	assert(!isMapped);
+	void* res = device.mapMemory(memory, block.offset, block.size);
 	assert(res != (void*)VK_ERROR_MEMORY_MAP_FAILED);
-	pHostMemory = res;
-	isMapped = true;
-	return static_cast<uint8_t*>(pHostMemory);
+	block.pHostMemory = res;
+    isMapped = true;
 }
 
 void Buffer::unmap()
 {
 	assert(isMapped);
 	device.unmapMemory(memory);
-	pHostMemory = nullptr;
+    for (auto& block : bufferBlocks) 
+    {
+        block->pHostMemory = nullptr;
+    }
 	isMapped = false;
 }
 
@@ -87,11 +121,11 @@ uint32_t Buffer::findMemoryType(
 		uint32_t typeFilter, 
 		vk::MemoryPropertyFlags properties)
 {
-	for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) 
+	for (uint32_t i = 0; i < memProps.memoryTypeCount; i++) 
 	{
 		if (
 			(typeFilter & (1 << i)) && 
-			(memoryProperties.memoryTypes[i].propertyFlags & properties) == properties
+			(memProps.memoryTypes[i].propertyFlags & properties) == properties
 			) 
 		{
 		return i;
@@ -220,6 +254,8 @@ Image::~Image()
 	}
 	if (view)
 		device.destroyImageView(view);
+    if (sampler)
+        device.destroySampler(sampler);
 }
 
 const vk::Extent2D Image::getExtent2D() const 

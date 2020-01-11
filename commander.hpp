@@ -57,6 +57,7 @@ public:
 	vk::Semaphore submit(vk::Semaphore& waitSemaphore, vk::PipelineStageFlags);
 	bool isRecorded() const;
 	void waitForFence() const;
+    void reset();
 private:
 	CommandPool& pool;
 	const vk::Device& device;
