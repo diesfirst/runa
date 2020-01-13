@@ -36,3 +36,5 @@ Interesting idea for multithreading command buffer generation:
 Also, look into the VK_EXT_conditional_rendering extention. https://www.saschawillems.de/blog/2018/09/05/vulkan-conditional-rendering/
 
 Good recommendations page https://developer.samsung.com/game/usage
+
+Have brush change size by rotating it around a point. Clock wise rotations = bigger, counter clock wise = smaller

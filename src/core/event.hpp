@@ -17,6 +17,8 @@ struct UserInput
     float r{1.};
     float g{1.};
     float b{1.};
+    float a{1.};
+    float brushSize{1.};
     uint32_t cmdId;
 };
 
@@ -38,14 +40,6 @@ public:
 
 private:
 	const XWindow& window;
-    int16_t mouseX{0};
-    int16_t mouseY{0};
-	bool mButtonDown = false;
-    int16_t blur{0};
-    float r{1.};
-    float g{1.};
-    float b{1.};
-    uint32_t cmdId{0};
 	Display* display = XOpenDisplay(NULL);
 	xcb_generic_event_t* curEvent{nullptr};
 };

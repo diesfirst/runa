@@ -23,7 +23,17 @@ struct FragmentInput
     float r{1.};
     float g{1.};
     float b{1.};
+    float a{1.};
+    float brushSize{1.};
     int layerId{0};
+};
+
+struct SpecData
+{
+    float windowWidth{256};
+    float windowHeight{256};
+    int integer0{0};
+    int integer1{0};
 };
 
 class Shader
@@ -38,12 +48,13 @@ public:
 	const vk::PipelineShaderStageCreateInfo& getStageInfo() const;
 	void setWindowResolution(const uint32_t w, const uint32_t h);
 
+    SpecData specData;
+
 protected:
 	Shader(const vk::Device&, std::string filepath);
 	vk::PipelineShaderStageCreateInfo stageInfo;
 	std::vector<vk::SpecializationMapEntry> mapEntries;
 	vk::SpecializationInfo specInfo;
-	std::vector<float> specializationFloats;
 
 private:
 	const vk::Device& device;

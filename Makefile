@@ -15,8 +15,8 @@ TEST = test
 _OBJS = main.o context.o swapchain.o window.o renderer.o mem.o commander.o description.o event.o
 OBJS = $(patsubst %, $(BUILD)/%, $(_OBJS))
 
-$(BIN)/%: $(BUILD)/%.o $(LIB)/libruna.a
-	$(CC) $^ -o $@ $(LINK) ; ctags -R .
+%: $(BUILD)/%.o $(LIB)/libruna.a
+	$(CC) $^ -o $(BIN)/$@ $(LINK) ; ctags -R .
 
 $(TEST)/%: $(BUILD)/%.o $(LIB)/libruna.a
 	$(CC) $^ -o $@ $(LINK) ; ctags -R .

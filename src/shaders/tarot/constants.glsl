@@ -12,6 +12,8 @@ layout(set = 0, binding = 0) uniform uboBuf
     float r;
     float g;
     float b;
+    float a;
+    float brushSize;
 } ubo;
 
 float PI = 3.14;

@@ -76,8 +76,8 @@ UserInput& EventHandler::handleEvent(xcb_generic_event_t* event)
 			}
 			if (strcmp(key, "b") == 0) 
 			{
-				std::cout << "Enter a blur radius." << std::endl;
-                std::cin >> state.blur;
+				std::cout << "Enter a brush size." << std::endl;
+                std::cin >> state.brushSize;
                 break;
 			}
 			if (strcmp(key, "c") == 0) 
@@ -89,6 +89,12 @@ UserInput& EventHandler::handleEvent(xcb_generic_event_t* event)
                 std::cin >> state.g;
                 std::cout << "B: " << std::endl;
                 std::cin >> state.b;
+                break;
+			}
+			if (strcmp(key, "a") == 0) 
+			{
+				std::cout << "Enter an alpha value." << std::endl;
+                std::cin >> state.a;
                 break;
 			}
 			if (strcmp(key, "n") == 0) 
@@ -115,6 +121,18 @@ UserInput& EventHandler::handleEvent(xcb_generic_event_t* event)
 			if (strcmp(key, "4") == 0) 
             {
                 state.cmdId = 3;
+            }
+			if (strcmp(key, "5") == 0) 
+            {
+                state.cmdId = 4;
+            }
+			if (strcmp(key, "6") == 0) 
+            {
+                state.cmdId = 5;
+            }
+			if (strcmp(key, "7") == 0) 
+            {
+                state.cmdId = 6;
             }
             else
             {

@@ -12,6 +12,31 @@ Shader::Shader(const vk::Device& device, std::string filepath) :
 	createModule();
 	stageInfo.setPName("main");
 	stageInfo.setModule(module);
+
+	mapEntries.resize(4);
+	mapEntries[0].setSize(sizeof(float));
+	mapEntries[0].setOffset(0 * sizeof(float));
+	mapEntries[0].setConstantID(0);
+
+	mapEntries[1].setSize(sizeof(float));
+	mapEntries[1].setOffset(1 * sizeof(float));
+	mapEntries[1].setConstantID(1);
+
+	mapEntries[2].setSize(sizeof(int));
+	mapEntries[2].setOffset(2 * sizeof(int));
+	mapEntries[2].setConstantID(2);
+
+	mapEntries[3].setSize(sizeof(int));
+	mapEntries[3].setOffset(3 * sizeof(int));
+	mapEntries[3].setConstantID(3);
+
+	specInfo.setPMapEntries(mapEntries.data());
+	specInfo.setMapEntryCount(mapEntries.size());
+	specInfo.setPData(&specData);
+	specInfo.setDataSize(sizeof(SpecData));
+
+	stageInfo.setPSpecializationInfo(&specInfo);
+
 	std::cout << "Shader constructed" << std::endl;
 }
 
@@ -68,24 +93,8 @@ void Shader::createModule()
 
 void Shader::setWindowResolution(const uint32_t w, const uint32_t h)
 {
-	mapEntries.resize(2);
-	mapEntries[0].setSize(sizeof(float));
-	mapEntries[0].setOffset(0 * sizeof(float));
-	mapEntries[0].setConstantID(0);
-	mapEntries[1].setSize(sizeof(float));
-	mapEntries[1].setOffset(1 * sizeof(float));
-	mapEntries[1].setConstantID(1);
-
-	specializationFloats.resize(2);
-	specializationFloats[0] = w;
-	specializationFloats[1] = h;
-
-	specInfo.setPMapEntries(mapEntries.data());
-	specInfo.setMapEntryCount(2);
-	specInfo.setPData(specializationFloats.data());
-	specInfo.setDataSize(sizeof(float) * specializationFloats.size());
-
-	stageInfo.setPSpecializationInfo(&specInfo);
+    specData.windowWidth = w;
+    specData.windowHeight = h;
 }
 
 VertShader::VertShader(const vk::Device& device, std::string filepath) :
@@ -1022,9 +1031,6 @@ FragShader& Renderer::loadFragShader(
             std::piecewise_construct, 
             std::forward_as_tuple(name), 
             std::forward_as_tuple(device, path));
-    fragmentShaders.at(name).setWindowResolution(
-            swapchain->getExtent2D().width,
-            swapchain->getExtent2D().height);
     return fragmentShaders.at(name);
 }
 
@@ -1250,7 +1256,6 @@ void Renderer::updateFrameDescriptorBuffer(uint32_t frameIndex, const FragmentIn
 	auto block = descriptorBuffer->bufferBlocks[frameIndex].get();
     assert(block->isMapped && "Block not mapped!");
 	auto pHostMemory = block->pHostMemory;
-    std::cout << "pHostMemory before copy " << pHostMemory << std::endl;
 	memcpy(pHostMemory, &value, sizeof(FragmentInput));
 }
 
