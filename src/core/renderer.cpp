@@ -314,29 +314,66 @@ GraphicsPipeline::GraphicsPipeline(
 		const RenderPass& renderPass,
 		const uint32_t subpassIndex,
 		const vk::Rect2D renderArea,
-		const std::vector<const Shader*>& shaders,
-		const vk::PipelineVertexInputStateCreateInfo& vertexInputState) :
+		const std::vector<const Shader*> shaders,
+		const vk::PipelineVertexInputStateCreateInfo vertexInputState) :
     name{name},
 	device{device},
 	layout{layout},
 	renderPass{renderPass},
-    renderArea{renderArea}
+    renderArea{renderArea},
+    shaders{shaders},
+    subpassIndex{subpassIndex},
+    vertexInputState{vertexInputState},
+    scissor{renderArea}
 {
-	vk::Viewport viewport = createViewport(renderArea);
-	vk::Rect2D scissor = renderArea;
-
+	viewport = createViewport(renderArea);
 	auto attachmentState0 = createColorBlendAttachmentState();
-	std::vector<vk::PipelineColorBlendAttachmentState> attachmentStates{attachmentState0};
+	attachmentStates.push_back(attachmentState0);
 
-	auto shaderStageInfos = extractShaderStageInfos(shaders);
-	auto viewportState = createViewportState(viewport, scissor);
-	auto multisampleState = createMultisampleState();
-	auto rasterizationState = createRasterizationState();
-	auto colorBlendState = createColorBlendState(attachmentStates);
-	auto depthStencilState = createDepthStencilState(); //not ready yet
-	auto inputAssemblySate = createInputAssemblyState();
+    //none of these hold pointers so they can be created here (before any move constructors)
+    rasterizationState = createRasterizationState();
+    inputAssemblySate = createInputAssemblyState();
+    depthStencilState = createDepthStencilState(); //not ready yet
+    multisampleState = createMultisampleState();
+}
 
-	vk::GraphicsPipelineCreateInfo ci;
+GraphicsPipeline::~GraphicsPipeline()
+{
+	if (handle)
+		device.destroyPipeline(handle);
+}
+
+GraphicsPipeline::GraphicsPipeline(GraphicsPipeline&& other) :
+    name{other.name},
+	device{other.device},
+	handle{std::move(other.handle)},
+	layout{std::move(other.layout)},
+	renderPass{other.renderPass},
+    renderArea{other.renderArea},
+    shaderStageInfos{std::move(other.shaderStageInfos)},
+    viewportState{other.viewportState},
+    multisampleState{other.multisampleState},
+    rasterizationState{other.rasterizationState},
+    colorBlendState{other.colorBlendState},
+    depthStencilState{other.depthStencilState},
+    inputAssemblySate{other.inputAssemblySate},
+    shaders{other.shaders},
+    attachmentStates{other.attachmentStates},
+    viewport{other.viewport},
+    scissor{other.scissor},
+    vertexInputState{other.vertexInputState},
+    created{other.created}
+{
+	other.handle = nullptr;
+}
+
+void GraphicsPipeline::create()
+{
+    viewportState = createViewportState();
+    shaderStageInfos = extractShaderStageInfos();
+    colorBlendState = createColorBlendState();
+
+    vk::GraphicsPipelineCreateInfo ci;
 	ci.setLayout(layout);
 	ci.setPStages(shaderStageInfos.data());
 	ci.setStageCount(shaders.size());
@@ -355,24 +392,8 @@ GraphicsPipeline::GraphicsPipeline(
 	ci.setPVertexInputState(&vertexInputState);
 	ci.setPDepthStencilState(nullptr); //null for now
 	ci.setPInputAssemblyState(&inputAssemblySate);
-	handle = device.createGraphicsPipeline({}, ci);
-}
-
-GraphicsPipeline::~GraphicsPipeline()
-{
-	if (handle)
-		device.destroyPipeline(handle);
-}
-
-GraphicsPipeline::GraphicsPipeline(GraphicsPipeline&& other) :
-    name{other.name},
-	device{other.device},
-	handle{std::move(other.handle)},
-	layout{std::move(other.layout)},
-	renderPass{other.renderPass},
-    renderArea{other.renderArea}
-{
-	other.handle = nullptr;
+    handle = device.createGraphicsPipeline({}, ci);
+    created = true;
 }
 
 const vk::Pipeline& GraphicsPipeline::getHandle() const
@@ -395,6 +416,11 @@ vk::Rect2D GraphicsPipeline::getRenderArea() const
     return renderArea;
 }
 
+bool GraphicsPipeline::isCreated() const
+{
+    return created;
+}
+
 vk::Viewport GraphicsPipeline::createViewport(const vk::Rect2D& renderArea)
 {
 	vk::Viewport viewport;
@@ -407,9 +433,7 @@ vk::Viewport GraphicsPipeline::createViewport(const vk::Rect2D& renderArea)
 	return viewport;
 }
 
-vk::PipelineViewportStateCreateInfo GraphicsPipeline::createViewportState(
-		const vk::Viewport& viewport,
-		const vk::Rect2D& scissor)
+vk::PipelineViewportStateCreateInfo GraphicsPipeline::createViewportState()
 {
 	vk::PipelineViewportStateCreateInfo ci;
 	ci.setPScissors(&scissor);
@@ -449,8 +473,7 @@ vk::PipelineRasterizationStateCreateInfo GraphicsPipeline::createRasterizationSt
 	return ci;
 }
 
-vk::PipelineColorBlendStateCreateInfo GraphicsPipeline::createColorBlendState(
-		std::vector<vk::PipelineColorBlendAttachmentState>& attachmentStates)
+vk::PipelineColorBlendStateCreateInfo GraphicsPipeline::createColorBlendState()
 {
 	vk::PipelineColorBlendStateCreateInfo ci;
 	ci.setLogicOpEnable(false);
@@ -458,6 +481,8 @@ vk::PipelineColorBlendStateCreateInfo GraphicsPipeline::createColorBlendState(
 	ci.setAttachmentCount(attachmentStates.size());
 	ci.setLogicOp(vk::LogicOp::eCopy);
 	ci.setBlendConstants({0,0,0,0});
+
+    vk::PipelineColorBlendAdvancedStateCreateInfoEXT advancedInfo; //can mess with this
 	return ci;
 }
 
@@ -512,14 +537,13 @@ vk::PipelineInputAssemblyStateCreateInfo GraphicsPipeline::createInputAssemblySt
 	return ci;
 }
 
-std::vector<vk::PipelineShaderStageCreateInfo> GraphicsPipeline::extractShaderStageInfos(
-		const std::vector<const Shader*>& shaders)
+std::vector<vk::PipelineShaderStageCreateInfo> GraphicsPipeline::extractShaderStageInfos()
 {
 	std::vector<vk::PipelineShaderStageCreateInfo> stageInfos;
 	stageInfos.resize(shaders.size());
 	for (int i = 0; i < shaders.size(); i++) 
 	{
-		stageInfos[i] = shaders[i]->getStageInfo();
+		stageInfos.at(i) = shaders.at(i)->getStageInfo();
 	}
 	return stageInfos;
 }
@@ -634,6 +658,7 @@ void RenderFrame::addFramebuffer(
         const RenderPass& pass, 
         const GraphicsPipeline& pipe)
 {
+    assert(pipe.isCreated() && "Pipeline not created!");
     framebuffers.emplace_back(
                 device,
                 target,
@@ -972,6 +997,8 @@ GraphicsPipeline& Renderer::createGraphicsPipeline(
 		const RenderPass& renderPass,
 		const bool geometric)
 {
+    assert(graphicsPipelines.find(name) == graphicsPipelines.end() && "Duplicate name for graphics pipeline");
+
 	vk::Rect2D renderArea;
 	renderArea.setOffset({0,0});
 	renderArea.setExtent({
@@ -1017,6 +1044,7 @@ GraphicsPipeline& Renderer::createGraphicsPipeline(
 VertShader& Renderer::loadVertShader(
         const std::string path, const std::string name)
 {
+    assert(vertexShaders.find(name) == vertexShaders.end() && "Shader name is not unique");
     vertexShaders.emplace(
             std::piecewise_construct,
             std::forward_as_tuple(name),
@@ -1027,6 +1055,7 @@ VertShader& Renderer::loadVertShader(
 FragShader& Renderer::loadFragShader(
 		const std::string path, const std::string name)
 {
+    assert(fragmentShaders.find(name) == fragmentShaders.end() && "Shader name is not unique");
     fragmentShaders.emplace(
             std::piecewise_construct, 
             std::forward_as_tuple(name), 
@@ -1153,12 +1182,13 @@ void Renderer::clearFramebuffers()
 //    }
 //}
 
-void Renderer::render(uint32_t cmdId)
+void Renderer::render(uint32_t cmdId, bool updateUbo)
 {
 	auto& renderBuffer = beginFrame(cmdId);
 	assert(renderBuffer.isRecorded() && "Render buffer is not recorded");
 
-	updateFrameDescriptorBuffer(activeFrameIndex, fragUBOs[0]);
+    if (updateUbo)
+	    updateFrameDescriptorBuffer(activeFrameIndex, fragUBOs[0]);
 
 	renderBuffer.waitForFence();
 	auto submissionCompleteSemaphore = renderBuffer.submit(

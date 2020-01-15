@@ -64,14 +64,22 @@ int main(int argc, char *argv[])
 
     //frag shaders
     auto& tarotShader = renderer.loadFragShader(shaderDir + "spot.spv", "frag1");
-    auto& compShader = renderer.loadFragShader(shaderDir + "composite.spv", "comp");
-    auto& fgBgShader = renderer.loadFragShader(shaderDir + "comp_fg_bg.spv", "osFrag");
+    auto& fgShader = renderer.loadFragShader(shaderDir + "composite.spv", "fg");
+    auto& bgShader = renderer.loadFragShader(shaderDir + "composite.spv", "bg");
+    auto& swapShader = renderer.loadFragShader(shaderDir + "composite.spv", "swap");
     tarotShader.setWindowResolution(WIDTH, HEIGHT);
-    compShader.setWindowResolution(WIDTH, HEIGHT);
-    compShader.specData.integer0 = 4; //array limit
-    fgBgShader.setWindowResolution(WIDTH, HEIGHT);
-    fgBgShader.specData.integer0 = 4; //background
-    fgBgShader.specData.integer1 = 5; //foreground
+    fgShader.setWindowResolution(WIDTH, HEIGHT);
+    fgShader.specData.integer0 = 0; //array limit
+    fgShader.specData.integer1 = 2; //array limit
+    bgShader.setWindowResolution(WIDTH, HEIGHT);
+    bgShader.specData.integer0 = 4; //
+    bgShader.specData.integer1 = 4; //should simply copy the result of the fg shader to the bg
+    swapShader.setWindowResolution(WIDTH, HEIGHT); 
+    swapShader.specData.integer0 = 3; 
+    swapShader.specData.integer1 = 4; 
+    
+    //we should actually not be doing this. the attachment size make sense for a spec constant
+    //but the array indices would be better handled by push constants
 
     //create render passes
     auto& offScreenLoadPass = renderer.createRenderPass("offscreen", true);
@@ -114,10 +122,23 @@ int main(int argc, char *argv[])
     //create pipelines
     auto& offscreenPipe = renderer.createGraphicsPipeline(
             "offscreen", paintPLayout, quadShader, tarotShader, offScreenLoadPass, false);
+    auto& offscreenPipeErase = renderer.createGraphicsPipeline(
+            "offscreenErase", paintPLayout, quadShader, tarotShader, offScreenLoadPass, false);
     auto& foregroundPipe = renderer.createGraphicsPipeline(
-            "offscreenClear", paintPLayout, quadShader, compShader, offscreenClearPass, false);
+            "foreground", paintPLayout, quadShader, fgShader, offscreenClearPass, false);
+    auto& backgroundPipe = renderer.createGraphicsPipeline(
+            "background", paintPLayout, quadShader, bgShader, offScreenLoadPass, false);
     auto& swapchainPipe = renderer.createGraphicsPipeline(
-            "default", paintPLayout, quadShader, fgBgShader, swapchainPass, false);
+            "swap", paintPLayout, quadShader, swapShader, swapchainPass, false);
+
+    offscreenPipeErase.attachmentStates.at(0).setColorBlendOp(vk::BlendOp::eMinusClampedEXT);
+    offscreenPipeErase.attachmentStates.at(0).setAlphaBlendOp(vk::BlendOp::eMinusClampedEXT);
+
+    offscreenPipe.create();
+    offscreenPipeErase.create();
+    foregroundPipe.create();
+    backgroundPipe.create();
+    swapchainPipe.create();
 
     //add the framebuffers
     renderer.addFramebuffer(paint0, offScreenLoadPass, offscreenPipe);
@@ -127,24 +148,33 @@ int main(int argc, char *argv[])
     renderer.addFramebuffer(paint1, offscreenClearPass, offscreenPipe);
     renderer.addFramebuffer(paint2, offscreenClearPass, offscreenPipe);
     renderer.addFramebuffer(foreground, offscreenClearPass, foregroundPipe);
+    renderer.addFramebuffer(background, offScreenLoadPass, backgroundPipe);
     renderer.addFramebuffer(TargetType::swapchain, swapchainPass, swapchainPipe);
+    renderer.addFramebuffer(paint0, offScreenLoadPass, offscreenPipeErase);
+    renderer.addFramebuffer(paint1, offScreenLoadPass, offscreenPipeErase);
+    renderer.addFramebuffer(paint2, offScreenLoadPass, offscreenPipeErase);
 
-    renderer.recordRenderCommands(0, {0, 6, 7});
-    renderer.recordRenderCommands(1, {1, 6, 7}); //(commandBuffer id, {fbids})
-    renderer.recordRenderCommands(2, {2, 6, 7}); //(commandBuffer id, {fbids})
-    renderer.recordRenderCommands(3, {3, 6, 7}); //(commandBuffer id, {fbids})
-    renderer.recordRenderCommands(4, {4, 6, 7}); //(commandBuffer id, {fbids})
-    renderer.recordRenderCommands(5, {5, 6, 7}); //(commandBuffer id, {fbids})
+    renderer.recordRenderCommands(0, {0, 6, 8});
+    renderer.recordRenderCommands(1, {1, 6, 8}); //(commandBuffer id, {fbids})
+    renderer.recordRenderCommands(2, {2, 6, 8}); //(commandBuffer id, {fbids})
+    renderer.recordRenderCommands(3, {3, 6, 8}); //(commandBuffer id, {fbids})
+    renderer.recordRenderCommands(4, {4, 6, 8}); //(commandBuffer id, {fbids})
+    renderer.recordRenderCommands(5, {5, 6, 8}); //(commandBuffer id, {fbids})
+    renderer.recordRenderCommands(6, {7, 8}); //copy to background whatever is in the foreground
+    renderer.recordRenderCommands(7, {9, 6, 8});
+    renderer.recordRenderCommands(8, {10, 6, 8});
+    renderer.recordRenderCommands(9, {11, 6, 8});
     
 
     //single renderes to get the attachements in the right format
-    renderer.render(0);
-    renderer.render(1); 
-    renderer.render(2);
-    renderer.render(3);
+    renderer.render(0, true);
+    renderer.render(1, true); 
+    renderer.render(2, true);
+    renderer.render(3, true);
+    renderer.render(6, true);
 
     uint32_t cmdIdCache{0};
-    std::array<UserInput, 7> inputCache;
+    std::array<UserInput, 10> inputCache;
 
     auto t0 = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < N_FRAMES; i++) 
@@ -177,9 +207,7 @@ int main(int argc, char *argv[])
                     input.a,
                     input.brushSize,
                     (int)input.cmdId});
-            myTimer.start();
             renderer.render(input.cmdId);
-            myTimer.end("Render submission");
             cmdIdCache = input.cmdId;
         }
         if (input.mButtonDown)
@@ -197,9 +225,7 @@ int main(int argc, char *argv[])
                     input.a,
                     input.brushSize,
                     (int)input.cmdId});
-            myTimer.start();
             renderer.render(input.cmdId);
-            myTimer.end("Render submission");
         }
     }
 

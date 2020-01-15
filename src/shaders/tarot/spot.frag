@@ -9,6 +9,7 @@ void main()
 	vec2 st = getCoords();
     vec2 mCoords = getMouseCoords();
     color += fill_aa(circleNormSDF(st - mCoords), ubo.brushSize * .01);
-    color *= vec4(ubo.r, ubo.g, ubo.b, ubo.a);
+    color.rgb *= vec3(ubo.r, ubo.g, ubo.b);
+    color *= ubo.a; //premultiplying
 	outColor = color;
 }

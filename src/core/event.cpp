@@ -134,6 +134,18 @@ UserInput& EventHandler::handleEvent(xcb_generic_event_t* event)
             {
                 state.cmdId = 6;
             }
+			if (strcmp(key, "8") == 0) 
+            {
+                state.cmdId = 7;
+            }
+			if (strcmp(key, "9") == 0) 
+            {
+                state.cmdId = 8;
+            }
+			if (strcmp(key, "0") == 0) 
+            {
+                state.cmdId = 9;
+            }
             else
             {
                 std::cout << key << std::endl;

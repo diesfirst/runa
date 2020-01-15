@@ -123,6 +123,22 @@ void Context::createDevice()
 	deviceInfo.ppEnabledExtensionNames = extensions.data();
 	deviceInfo.setPEnabledFeatures(&physicalDeviceFeatures);
 
+    vk::PhysicalDeviceDescriptorIndexingFeaturesEXT indexingFeatures;
+//    vk::PhysicalDeviceFeatures2 features2;
+//    features2.setPNext(&indexingFeatures);
+//    physicalDevice.getPFeatures2(features2);
+//
+//    if (indexingFeatures.descriptorBindingPartiallyBound && 
+//            indexingFeatures.runtimeDescriptorArray)
+//    {
+//        std::cout << "Runtime descriptor array is supported" << std::endl;
+//    }
+//
+    indexingFeatures.setRuntimeDescriptorArray(true);
+    indexingFeatures.setDescriptorBindingPartiallyBound(true);
+
+    deviceInfo.setPNext(&indexingFeatures);
+
 	device = physicalDevice.createDevice(deviceInfo);
 }
 
