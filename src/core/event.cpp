@@ -2,6 +2,7 @@
 #include <X11/XKBlib.h>
 #include <string>
 #include <iostream>
+#include <bitset>
 
 typedef void (EventHandler::*pEventFunc)(xcb_generic_event_t* event);
 
@@ -23,8 +24,19 @@ EventHandler::~EventHandler()
 
 UserInput& EventHandler::fetchUserInput(bool block)
 {
-	auto event = window.waitForEvent();
-	return handleEvent(event);
+    if (block)
+    {
+        auto event = window.waitForEvent();
+        handleEvent(event); //modify the state
+        return state;
+    }
+    else
+    {
+        auto event = window.pollEvents();
+        if(event)
+            handleEvent(event);
+        return state;
+    }
 }
 
 UserInput& EventHandler::handleEvent(xcb_generic_event_t* event)
@@ -41,20 +53,51 @@ UserInput& EventHandler::handleEvent(xcb_generic_event_t* event)
 		}
 		case XCB_BUTTON_PRESS:
 		{
-			state.mButtonDown = true;
-			xcb_motion_notify_event_t* motion =
-				(xcb_motion_notify_event_t*)event;
-			state.mouseX = motion->event_x;
-            state.mouseY = motion->event_y;
+            xcb_button_press_event_t* press = 
+                (xcb_button_press_event_t*)event;
+            std::cout << std::bitset<8>(press->detail) << std::endl;
+            switch (press->detail)
+            {
+                case 0x01:
+                {
+                    state.lmButtonDown = true;
+                    break;
+                }
+                case 0x02:
+                {
+                    state.mmButtonDown = true;
+                    break;
+                }
+                case 0x03:
+                {
+                    state.rmButtonDown = true;
+                    break;
+                }
+            }
             break;
 		}
 		case XCB_BUTTON_RELEASE:
 		{
-			state.mButtonDown = false;
-			xcb_motion_notify_event_t* motion =
-				(xcb_motion_notify_event_t*)event;
-			state.mouseX = motion->event_x;
-            state.mouseY = motion->event_y;
+            xcb_button_press_event_t* press = 
+                (xcb_button_press_event_t*)event;
+            switch (press->detail)
+            {
+                case 0x01:
+                {
+                    state.lmButtonDown = false;
+                    break;
+                }
+                case 0x02:
+                {
+                    state.mmButtonDown = false;
+                    break;
+                }
+                case 0x03:
+                {
+                    state.rmButtonDown = false;
+                    break;
+                }
+            }
             break;
 		}
 		case XCB_KEY_PRESS:

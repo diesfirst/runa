@@ -12,7 +12,9 @@ struct UserInput
 {
 	int16_t mouseX{0};
 	int16_t mouseY{0};
-	bool mButtonDown{false};
+	bool lmButtonDown{false};
+    bool mmButtonDown{false};
+    bool rmButtonDown{false};
     int16_t blur{0};
     float r{1.};
     float g{1.};

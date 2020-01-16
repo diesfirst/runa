@@ -14,26 +14,18 @@ enum class ShaderType {vert, frag};
 
 enum class TargetType {offscreen, swapchain};
 
-struct FragmentInput
-{
-	float time{0};
-	float mouseX{0};
-	float mouseY{0};	
-	int blur{0};
-    float r{1.};
-    float g{1.};
-    float b{1.};
-    float a{1.};
-    float brushSize{1.};
-    int layerId{0};
-};
-
 struct SpecData
 {
     float windowWidth{256};
     float windowHeight{256};
     int integer0{0};
     int integer1{0};
+};
+
+struct Ubo
+{
+    void* data;
+    uint32_t size;
 };
 
 class Shader
@@ -295,7 +287,7 @@ public:
             const std::vector<std::string> setLayouts);
     void createFrameDescriptorSets(const std::vector<std::string>setLayoutNames);
     void createOwnDescriptorSets(const std::vector<std::string>setLayoutNames);
-    void initFrameUBOs(uint32_t binding);
+    void initFrameUBOs(size_t size, uint32_t binding);
     void updateFrameSamplers(const vk::ImageView*, const vk::Sampler*, uint32_t binding);
     void updateFrameSamplers(const std::vector<const mm::Image*>, uint32_t binding);
     void prepareAsSwapchainPass(RenderPass&);
@@ -307,9 +299,10 @@ public:
 			const VertShader&,
 			const FragShader&,
 			const RenderPass&,
+            const vk::Rect2D renderArea,
 			const bool geometric);
 	void bindToDescription(Description& description);
-	void setFragmentInput(uint32_t index, FragmentInput input);
+	void bindUboData(void* dataPointer, uint32_t size, uint32_t index);
 	//in the future we should disect this function
 	//to allow for the renderpasses and 
 	//pipeline bindings to happen seperately,
@@ -332,7 +325,7 @@ private:
 	uint32_t renderPassCount{0};
     std::unordered_map<std::string, std::unique_ptr<Attachment>> attachments;
     Attachment* activeTarget;
-    std::vector<FragmentInput> fragUBOs;
+    std::vector<Ubo> ubos;
 
     //descriptor stuff
 	vk::DescriptorPool descriptorPool;
@@ -357,7 +350,7 @@ private:
 	CommandBuffer& beginFrame(uint32_t cmdId);
 
     void createDescriptorPool();
-	void updateFrameDescriptorBuffer(uint32_t frame, const FragmentInput& value);
+	void updateFrameDescriptorBuffer(uint32_t frame, uint32_t uboIndex);
     void createDescriptorBuffer(uint32_t size);
 };
 

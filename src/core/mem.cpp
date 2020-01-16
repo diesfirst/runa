@@ -195,9 +195,9 @@ Image::Image(
 	samplerInfo.setMagFilter(vk::Filter::eLinear);
 	samplerInfo.setMinFilter(vk::Filter::eLinear);
 	samplerInfo.setMipmapMode(vk::SamplerMipmapMode::eLinear);
-	samplerInfo.setAddressModeU(vk::SamplerAddressMode::eClampToEdge);
-	samplerInfo.setAddressModeV(vk::SamplerAddressMode::eClampToEdge);
-	samplerInfo.setAddressModeW(vk::SamplerAddressMode::eClampToEdge);
+	samplerInfo.setAddressModeU(vk::SamplerAddressMode::eClampToBorder);
+	samplerInfo.setAddressModeV(vk::SamplerAddressMode::eClampToBorder);
+	samplerInfo.setAddressModeW(vk::SamplerAddressMode::eClampToBorder);
 	samplerInfo.setMipLodBias(0.0);
 	samplerInfo.setMaxAnisotropy(1.0);
 	samplerInfo.setMinLod(0.0);

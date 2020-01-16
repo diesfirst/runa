@@ -16,6 +16,8 @@ public:
 
 	std::vector<int> size;
 	
+	xcb_generic_event_t* pollEvents() const;
+
 	xcb_generic_event_t* waitForEvent() const;
 
 	xcb_connection_t* connection;
@@ -41,8 +43,6 @@ private:
 	void createWindow(const int width, const int height);
 
 	void setEvents();
-
-	void pollEvents();
 
 	void sendNotifications();
 	

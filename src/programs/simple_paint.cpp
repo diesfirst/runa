@@ -14,6 +14,20 @@ constexpr uint32_t HEIGHT = 888;
 constexpr char SHADER_DIR[] = "build/shaders/";
 Timer myTimer;
 
+struct FragmentInput
+{
+	float time{0};
+	float mouseX{0};
+	float mouseY{0};	
+	int blur{0};
+    float r{1.};
+    float g{1.};
+    float b{1.};
+    float a{1.};
+    float brushSize{1.};
+    int layerId{0};
+};
+
 int main(int argc, char *argv[])
 {
     const std::string shaderDir{SHADER_DIR};
@@ -55,10 +69,7 @@ int main(int argc, char *argv[])
             &paint2.getImage(0), 
             &background.getImage(0),
             &foreground.getImage(0)};
-
-    renderer.initFrameUBOs(0); //should be a vector
-    renderer.updateFrameSamplers(sampledImages, 1); //image vector, binding number
-
+    
     //vert shaders
     auto& quadShader = renderer.loadVertShader(shaderDir + "fullscreen_tri.spv", "vert1");
 
@@ -153,6 +164,12 @@ int main(int argc, char *argv[])
     renderer.addFramebuffer(paint0, offScreenLoadPass, offscreenPipeErase);
     renderer.addFramebuffer(paint1, offScreenLoadPass, offscreenPipeErase);
     renderer.addFramebuffer(paint2, offScreenLoadPass, offscreenPipeErase);
+   
+    
+    //ubo stuff must update the sets before recording the command buffers
+
+    renderer.initFrameUBOs(sizeof(FragmentInput), 0); //should be a vector
+    renderer.updateFrameSamplers(sampledImages, 1); //image vector, binding number
 
     renderer.recordRenderCommands(0, {0, 6, 8});
     renderer.recordRenderCommands(1, {1, 6, 8}); //(commandBuffer id, {fbids})
@@ -165,16 +182,18 @@ int main(int argc, char *argv[])
     renderer.recordRenderCommands(8, {10, 6, 8});
     renderer.recordRenderCommands(9, {11, 6, 8});
     
-
-    //single renderes to get the attachements in the right format
-    renderer.render(0, true);
-    renderer.render(1, true); 
-    renderer.render(2, true);
-    renderer.render(3, true);
-    renderer.render(6, true);
-
     uint32_t cmdIdCache{0};
     std::array<UserInput, 10> inputCache;
+
+    //single renderes to get the attachements in the right format
+    renderer.render(0, false);
+    renderer.render(1, false); 
+    renderer.render(2, false);
+    renderer.render(3, false);
+    renderer.render(6, false);
+
+    FragmentInput fragInput;
+    renderer.bindUboData(static_cast<void*>(&fragInput), sizeof(FragmentInput), 0);
 
     auto t0 = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < N_FRAMES; i++) 
@@ -196,7 +215,7 @@ int main(int argc, char *argv[])
 
             auto t1 = std::chrono::high_resolution_clock::now();
             auto elapsedTime = std::chrono::duration_cast<std::chrono::duration<float>>(t1 - t0).count();
-            renderer.setFragmentInput(0, {
+            fragInput = {
                     elapsedTime,
                     (float)0,
                     (float)0, 
@@ -206,15 +225,15 @@ int main(int argc, char *argv[])
                     input.b,
                     input.a,
                     input.brushSize,
-                    (int)input.cmdId});
-            renderer.render(input.cmdId);
+                    (int)input.cmdId};
+            renderer.render(input.cmdId, true);
             cmdIdCache = input.cmdId;
         }
         if (input.mButtonDown)
         {
             auto t1 = std::chrono::high_resolution_clock::now();
             auto elapsedTime = std::chrono::duration_cast<std::chrono::duration<float>>(t1 - t0).count();
-            renderer.setFragmentInput(0, {
+            fragInput = {
                     elapsedTime,
                     (float)input.mouseX,
                     (float)input.mouseY, 
@@ -224,8 +243,8 @@ int main(int argc, char *argv[])
                     input.b,
                     input.a,
                     input.brushSize,
-                    (int)input.cmdId});
-            renderer.render(input.cmdId);
+                    (int)input.cmdId};
+            renderer.render(input.cmdId, true);
         }
     }
 

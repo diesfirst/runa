@@ -5,10 +5,9 @@ layout(location = 0) out vec4 outColor;
 
 layout(set = 0, binding = 0) uniform uboBuf 
 { 
-	float time;
+    float time;
 	float mouseX;
 	float mouseY;
-    int blur;
     float r;
     float g;
     float b;

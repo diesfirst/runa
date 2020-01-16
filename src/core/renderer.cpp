@@ -4,7 +4,6 @@
 #include <iostream>
 #include <fstream>
 
-
 Shader::Shader(const vk::Device& device, std::string filepath) :
 	device{device}
 {
@@ -792,7 +791,6 @@ Renderer::Renderer(Context& context, XWindow& window) :
 	}
     createDescriptorPool();
     createDescriptorBuffer(2000); //arbitrary for now
-    fragUBOs.resize(1);
 }
 
 Renderer::~Renderer()
@@ -860,11 +858,11 @@ void Renderer::createOwnDescriptorSets(const std::vector<std::string>setLayoutNa
 	descriptorSets = device.allocateDescriptorSets(ai);
 }
 
-void Renderer::initFrameUBOs(uint32_t binding)
+void Renderer::initFrameUBOs(size_t size, uint32_t binding)
 {
     for (auto& frame : frames) 
     {
-        auto block = descriptorBuffer->requestBlock(sizeof(FragmentInput));
+        auto block = descriptorBuffer->requestBlock(size);
         vk::DescriptorBufferInfo bi;
         bi.setRange(block->size);
         bi.setOffset(block->offset);
@@ -880,6 +878,7 @@ void Renderer::initFrameUBOs(uint32_t binding)
         frame.bufferBlock = block;
     }
     descriptorBuffer->map();
+    ubos.resize(1);
 }
 
 void Renderer::updateFrameSamplers(const vk::ImageView* view, const vk::Sampler* sampler, uint32_t binding)
@@ -995,15 +994,10 @@ GraphicsPipeline& Renderer::createGraphicsPipeline(
 		const VertShader& vertShader,
 		const FragShader& fragShader,
 		const RenderPass& renderPass,
+        const vk::Rect2D renderArea,
 		const bool geometric)
 {
     assert(graphicsPipelines.find(name) == graphicsPipelines.end() && "Duplicate name for graphics pipeline");
-
-	vk::Rect2D renderArea;
-	renderArea.setOffset({0,0});
-	renderArea.setExtent({
-			swapchain->getExtent3D().width, 
-			swapchain->getExtent3D().height});
 
 	std::vector<const Shader*> shaderPointers = {&vertShader, &fragShader};
 
@@ -1188,7 +1182,7 @@ void Renderer::render(uint32_t cmdId, bool updateUbo)
 	assert(renderBuffer.isRecorded() && "Render buffer is not recorded");
 
     if (updateUbo)
-	    updateFrameDescriptorBuffer(activeFrameIndex, fragUBOs[0]);
+	    updateFrameDescriptorBuffer(activeFrameIndex, 0);
 
 	renderBuffer.waitForFence();
 	auto submissionCompleteSemaphore = renderBuffer.submit(
@@ -1205,9 +1199,10 @@ void Renderer::render(uint32_t cmdId, bool updateUbo)
 	context.queue.presentKHR(pi);
 }
 
-void Renderer::setFragmentInput(uint32_t index, FragmentInput input)
+void Renderer::bindUboData(void* dataPointer, uint32_t size, uint32_t index)
 {
-    fragUBOs.at(index) = input;
+    ubos.at(index).data = dataPointer;
+    ubos.at(index).size = size;
 }
 
 CommandBuffer& Renderer::beginFrame(uint32_t cmdId)
@@ -1281,12 +1276,12 @@ const std::string Renderer::createPipelineLayout(const std::string name, const s
     return name;
 }
 
-void Renderer::updateFrameDescriptorBuffer(uint32_t frameIndex, const FragmentInput& value)
+void Renderer::updateFrameDescriptorBuffer(uint32_t frameIndex, uint32_t uboIndex)
 {
 	auto block = descriptorBuffer->bufferBlocks[frameIndex].get();
     assert(block->isMapped && "Block not mapped!");
 	auto pHostMemory = block->pHostMemory;
-	memcpy(pHostMemory, &value, sizeof(FragmentInput));
+	memcpy(pHostMemory, ubos.at(uboIndex).data, ubos.at(uboIndex).size);
 }
 
 void Renderer::createDescriptorPool()

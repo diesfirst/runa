@@ -70,13 +70,9 @@ void XWindow::setClass()
 		appClass.c_str());
 }
 
-void XWindow::pollEvents()
+xcb_generic_event_t* XWindow::pollEvents() const
 {
-	xcb_generic_event_t* event;
-	while ((event = xcb_poll_for_event(connection)))
-	{
-		//stuff
-	}
+	return xcb_poll_for_event(connection);
 }
 
 xcb_generic_event_t* XWindow::waitForEvent() const
