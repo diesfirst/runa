@@ -3,9 +3,19 @@
 #include <array>
 #include "window.hpp"
 
-enum class EventState : size_t
+enum class MouseButton : uint8_t
 {
-	paint, sculpt, viewer, numStates
+    Left = 1,
+    Middle = 2,
+    Right = 3,
+};
+
+enum class EventType : uint8_t
+{
+    Press = 1,
+    Release = 2,
+    Motion = 3,
+    Keypress = 4
 };
 
 struct UserInput
@@ -22,6 +32,8 @@ struct UserInput
     float a{1.};
     float brushSize{1.};
     uint32_t cmdId;
+    MouseButton mouseButton;
+    EventType eventType;
 };
 
 class EventHandler
@@ -29,8 +41,6 @@ class EventHandler
 public:
 	EventHandler(const XWindow&);
 	~EventHandler();
-	
-	void setState(EventState);
 
 	UserInput& fetchUserInput(bool block);
 	UserInput& handleEvent(xcb_generic_event_t* event);

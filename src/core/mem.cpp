@@ -192,8 +192,8 @@ Image::Image(
 
 	vk::SamplerCreateInfo samplerInfo;
 	//might want to try nearest at some point
-	samplerInfo.setMagFilter(vk::Filter::eLinear);
-	samplerInfo.setMinFilter(vk::Filter::eLinear);
+	samplerInfo.setMagFilter(vk::Filter::eNearest);
+	samplerInfo.setMinFilter(vk::Filter::eNearest);
 	samplerInfo.setMipmapMode(vk::SamplerMipmapMode::eLinear);
 	samplerInfo.setAddressModeU(vk::SamplerAddressMode::eClampToBorder);
 	samplerInfo.setAddressModeV(vk::SamplerAddressMode::eClampToBorder);

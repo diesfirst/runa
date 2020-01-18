@@ -49,26 +49,27 @@ UserInput& EventHandler::handleEvent(xcb_generic_event_t* event)
 				(xcb_motion_notify_event_t*)event;
 			state.mouseX = motion->event_x;
             state.mouseY = motion->event_y;
+            state.eventType = EventType::Motion;
             break;
 		}
 		case XCB_BUTTON_PRESS:
 		{
             xcb_button_press_event_t* press = 
                 (xcb_button_press_event_t*)event;
-            std::cout << std::bitset<8>(press->detail) << std::endl;
-            switch (press->detail)
+            state.eventType = EventType::Press;
+            switch (static_cast<MouseButton>(press->detail))
             {
-                case 0x01:
+                case MouseButton::Left:
                 {
                     state.lmButtonDown = true;
                     break;
                 }
-                case 0x02:
+                case MouseButton::Middle:
                 {
                     state.mmButtonDown = true;
                     break;
                 }
-                case 0x03:
+                case MouseButton::Right:
                 {
                     state.rmButtonDown = true;
                     break;
@@ -80,6 +81,7 @@ UserInput& EventHandler::handleEvent(xcb_generic_event_t* event)
 		{
             xcb_button_press_event_t* press = 
                 (xcb_button_press_event_t*)event;
+            state.eventType = EventType::Release;
             switch (press->detail)
             {
                 case 0x01:
@@ -107,6 +109,7 @@ UserInput& EventHandler::handleEvent(xcb_generic_event_t* event)
 			xcb_keycode_t keycode = keyPress->detail;
 			KeySym keysym = XkbKeycodeToKeysym(display, keycode, 0, 0);
 			char* key = XKeysymToString(keysym);
+            state.eventType = EventType::Keypress;
 			if (key == NULL)
 			{
 				std::cout << "Keysym not defined" << std::endl;

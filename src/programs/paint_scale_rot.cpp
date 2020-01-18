@@ -6,10 +6,11 @@
 #include "../core/util.hpp"
 #include <unistd.h>
 #include "../core/event.hpp"
+#include <glm/gtx/matrix_transform_2d.hpp>
 
 constexpr uint32_t N_FRAMES = 10000000;
-constexpr uint32_t WIDTH = 666;
-constexpr uint32_t HEIGHT = 888;
+constexpr uint32_t WIDTH = 1000;
+constexpr uint32_t HEIGHT = 1000;
 constexpr uint32_t C_WIDTH = 4000;
 constexpr uint32_t C_HEIGHT = 4000;
 
@@ -28,8 +29,9 @@ struct FragmentInput
     float brushSize{1.};
     float sx{1.};
     float sy{1.};
-    float tx{1.};
-    float ty{1.};
+    float tx{0.};
+    float ty{0.};
+    float scale{1.};
 };
 
 int main(int argc, char *argv[])
@@ -123,9 +125,13 @@ int main(int argc, char *argv[])
     fragInput.sx = cMapX;
     fragInput.sy = cMapY;
 
-    float scaleCache;
-    float txCache;
-    float tyCache;
+    float scale{1};
+    float scaleCache{0};
+    float txCache{0};
+    float tyCache{0};
+    float scaleMouseXCache{0};
+    float transMouseXCache{0};
+    float transMouseYCache{0};
 
     for (int i = 0; i < N_FRAMES; i++) 
     {
@@ -134,25 +140,45 @@ int main(int argc, char *argv[])
         {
             float mx = (float)input.mouseX / (float)C_WIDTH;
             float my = (float)input.mouseY / (float)C_HEIGHT; 
-            fragInput.mouseX = mx;
-            fragInput.mouseY = my;
+            fragInput.mouseX = mx * scale - txCache;
+            fragInput.mouseY = my * scale - tyCache;
             fragInput.r = input.r;
             fragInput.g = input.g;
             fragInput.b = input.b;
             fragInput.a = input.a;
             fragInput.brushSize = input.brushSize;
-            std::cout << "mx " << mx << std::endl;
-            std::cout << "my " << my << std::endl;
             myTimer.start();
             renderer.render(input.cmdId, true);
             myTimer.end("Render");
         }
         if (input.rmButtonDown)
         {
-            float scale = (float)input.mouseX / (float)WIDTH + scaleCache;
+            if (input.eventType == EventType::Press)
+            {
+                scaleMouseXCache = (float)input.mouseX / (float)WIDTH;
+            }
+            scale = (float)input.mouseX / (float)WIDTH - scaleMouseXCache + scaleCache;
             fragInput.sx = cMapX * scale;
             fragInput.sy = cMapY * scale;
+            fragInput.scale = scale;
             renderer.render(input.cmdId, true);
+        }
+        if (input.mmButtonDown)
+        {
+            if (input.eventType == EventType::Press)
+            {
+                transMouseXCache = (float)input.mouseX / (float)WIDTH;
+                transMouseYCache = (float)input.mouseY / (float)WIDTH;
+            }
+            fragInput.tx = (float)input.mouseX / (float)WIDTH - transMouseXCache + txCache;
+            fragInput.ty = (float)input.mouseY / (float)WIDTH - transMouseYCache + tyCache;
+            renderer.render(input.cmdId, true);
+        }
+        if (input.eventType == EventType::Release)
+        {
+            scaleCache = scale;
+            txCache = fragInput.tx;
+            tyCache = fragInput.ty;
         }
     }
 

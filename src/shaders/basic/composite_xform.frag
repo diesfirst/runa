@@ -24,6 +24,7 @@ layout(set = 0, binding = 0) uniform uboBuf
     float sy;
     float tx;
     float ty;
+    float scale;
 } ubo;
 
 
@@ -32,7 +33,10 @@ vec2 resolution = vec2(WIDTH, HEIGHT);
 void main()
 {
     vec2 st = gl_FragCoord.xy / resolution;
+    st -= vec2(.5, .5);
     st *= vec2(ubo.sx, ubo.sy);
+    st += vec2(.5, .5);
+    st -= vec2(ubo.tx, ubo.ty);
 	vec4 color = vec4(0.);
 
     for (int i = START_INDEX; i <= END_INDEX; i++)
