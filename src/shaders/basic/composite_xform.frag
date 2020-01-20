@@ -20,11 +20,7 @@ layout(set = 0, binding = 0) uniform uboBuf
     float b;
     float a;
     float brushSize;
-    float sx;
-    float sy;
-    float tx;
-    float ty;
-    float scale;
+    mat4 xform;
 } ubo;
 
 
@@ -32,16 +28,13 @@ vec2 resolution = vec2(WIDTH, HEIGHT);
 
 void main()
 {
-    vec2 st = gl_FragCoord.xy / resolution;
-    st -= vec2(.5, .5);
-    st *= vec2(ubo.sx, ubo.sy);
-    st += vec2(.5, .5);
-    st -= vec2(ubo.tx, ubo.ty);
+    vec4 st = vec4(gl_FragCoord.xy / resolution, 1., 1.);
+    st = ubo.xform * st;
 	vec4 color = vec4(0.);
 
     for (int i = START_INDEX; i <= END_INDEX; i++)
     {
-        vec4 newColor = texture(samplerColor[i], st); 
+        vec4 newColor = texture(samplerColor[i], st.xy); 
         float complement = 1.0 - newColor.a;
         color = newColor + color * complement;
     }

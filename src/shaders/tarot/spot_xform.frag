@@ -18,10 +18,7 @@ layout(set = 0, binding = 0) uniform uboBuf
     float b;
     float a;
     float brushSize;
-    float sx;
-    float sy;
-    float tx;
-    float ty;
+    mat4 xform;
 } ubo;
 
 layout(location = 0) out vec4 outColor;

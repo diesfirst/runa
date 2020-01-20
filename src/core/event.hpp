@@ -10,12 +10,24 @@ enum class MouseButton : uint8_t
     Right = 3,
 };
 
+enum class Key : uint8_t
+{
+    R = 27,
+    Shift_L = 50,
+    C = 54,
+    B = 56,
+    Alt = 64
+};
+
 enum class EventType : uint8_t
 {
-    Press = 1,
-    Release = 2,
-    Motion = 3,
-    Keypress = 4
+    MousePress = 4,
+    MouseRelease = 5,
+    Motion = 6,
+    Keypress = 2,
+    Keyrelease = 3,
+    LeaveWindow = 8,
+    EnterWindow = 7
 };
 
 struct UserInput
@@ -33,6 +45,7 @@ struct UserInput
     float brushSize{1.};
     uint32_t cmdId;
     MouseButton mouseButton;
+    Key key;
     EventType eventType;
 };
 

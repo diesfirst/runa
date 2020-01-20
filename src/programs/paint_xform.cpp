@@ -10,10 +10,11 @@
 #include <glm/gtx/matrix_transform_2d.hpp>
 
 constexpr uint32_t N_FRAMES = 10000000;
-constexpr uint32_t WIDTH = 1000;
+constexpr uint32_t WIDTH = 1400;
 constexpr uint32_t HEIGHT = 1000;
-constexpr uint32_t C_WIDTH = 4000;
-constexpr uint32_t C_HEIGHT = 4000;
+constexpr uint32_t C_WIDTH = 8000;
+constexpr uint32_t C_HEIGHT = 8000;
+constexpr double PI = 3.14159265358979323846;
 
 constexpr char SHADER_DIR[] = "build/shaders/";
 Timer myTimer;
@@ -28,7 +29,19 @@ struct FragmentInput
     float b{1.};
     float a{1.};
     float brushSize{1.};
-    glm::mat4 xform;
+    glm::mat4 xform{1.};
+};
+
+enum class PressAction : uint8_t 
+{
+    Rotate = static_cast<uint8_t>(Key::Alt),
+    Color = static_cast<uint8_t>(Key::C),
+    BrushSize = static_cast<uint8_t>(Key::B)
+};
+
+enum class ReleaseAction : uint8_t 
+{
+    Rotate = static_cast<uint8_t>(Key::Alt)
 };
 
 int main(int argc, char *argv[])
@@ -110,74 +123,152 @@ int main(int argc, char *argv[])
     uint32_t cmdIdCache{0};
     std::array<UserInput, 10> inputCache;
 
-    //single renderes to get the attachements in the right format
-//    renderer.render(0, false);
-
     FragmentInput fragInput;
     renderer.bindUboData(static_cast<void*>(&fragInput), sizeof(FragmentInput), 0);
 
     float cMapX = float(WIDTH)/float(C_WIDTH);
     float cMapY = float(HEIGHT)/float(C_HEIGHT);
 
-    fragInput.sx = cMapX;
-    fragInput.sy = cMapY;
+    fragInput.xform = glm::scale(glm::mat4(1.), glm::vec3(cMapX, cMapY, 1.0));
 
+    glm::mat4 toCanvasSpace = glm::scale(glm::mat4(1.), glm::vec3(cMapX, cMapY, 1.0)); 
+    glm::mat4 scaleMatrix{1.};
+    glm::mat4 transMatrix{1.};
+    glm::mat4 pivotMatrix = glm::translate(glm::mat4(1.), glm::vec3{-0.5 * cMapX, -0.5 * cMapY, 0.0});
+    glm::mat4 rotationMatrix{1.};
+    fragInput.xform = toCanvasSpace;
+
+    glm::mat4 transCache{1.};
+    glm::mat4 rotCache{1.};
+    glm::mat4 scaleCache{1.};
+    bool rotateDown{false};
     float scale{1};
-    float scaleCache{0};
     float txCache{0};
     float tyCache{0};
     float scaleMouseXCache{0};
-    float transMouseXCache{0};
-    float transMouseYCache{0};
+    float angle{0};
+    float angleInitCache{0};
+    float angleCache{0};
+    glm::vec4 mPos{0};
+    glm::vec4 mPosCache{0};
+    glm::vec4 transMouseCache{0};
+    glm::vec2 translation = glm::vec2(0, 0);
 
     for (int i = 0; i < N_FRAMES; i++) 
     {
         auto& input = eventHander.fetchUserInput(true);
         if (input.lmButtonDown)
         {
-            float mx = (float)input.mouseX / (float)C_WIDTH;
-            float my = (float)input.mouseY / (float)C_HEIGHT; 
-            fragInput.mouseX = (mx - txCache * WIDTH / C_WIDTH) * scale;
-            fragInput.mouseY = (my - tyCache * HEIGHT / C_HEIGHT) * scale;
-            fragInput.r = input.r;
-            fragInput.g = input.g;
-            fragInput.b = input.b;
-            fragInput.a = input.a;
-            fragInput.brushSize = input.brushSize;
+            glm::vec4 mPos = glm::vec4{
+                input.mouseX / float(WIDTH), input.mouseY / float(HEIGHT), 1., 1.};
+            mPos = fragInput.xform * mPos;
+            fragInput.mouseX = mPos.x;
+            fragInput.mouseY = mPos.y;
             myTimer.start();
             renderer.render(input.cmdId, true);
             myTimer.end("Render");
-            std::cout << "txCache" << txCache << std::endl;
-            std::cout << "tyCache" << tyCache << std::endl;
         }
         if (input.rmButtonDown)
         {
-            if (input.eventType == EventType::Press)
+            if (input.eventType == EventType::MousePress)
             {
                 scaleMouseXCache = (float)input.mouseX / (float)WIDTH;
             }
-            scale = (float)input.mouseX / (float)WIDTH - scaleMouseXCache + scaleCache;
-            fragInput.sx = cMapX * scale;
-            fragInput.sy = cMapY * scale;
-            fragInput.scale = scale;
+            scale = (float)input.mouseX / (float)WIDTH - scaleMouseXCache + 1.;
+            scaleMatrix = glm::scale(glm::mat4(1.), glm::vec3(scale, scale, 1.));
+            rotationMatrix = rotCache * transMatrix * scaleMatrix * glm::inverse(transMatrix);
+            fragInput.xform = 
+                glm::inverse(pivotMatrix) *
+                rotationMatrix * 
+                transMatrix * 
+                pivotMatrix * 
+                toCanvasSpace;
             renderer.render(input.cmdId, true);
         }
         if (input.mmButtonDown)
         {
-            if (input.eventType == EventType::Press)
+            mPos = glm::vec4{
+                input.mouseX / float(WIDTH), input.mouseY / float(HEIGHT), 0., 1.};
+            mPos = toCanvasSpace * mPos;
+            if (input.eventType == EventType::MousePress)
             {
-                transMouseXCache = (float)input.mouseX / (float)WIDTH;
-                transMouseYCache = (float)input.mouseY / (float)WIDTH;
+                transMouseCache = mPos;
             }
-            fragInput.tx = (float)input.mouseX / (float)WIDTH - transMouseXCache + txCache;
-            fragInput.ty = (float)input.mouseY / (float)WIDTH - transMouseYCache + tyCache;
+            mPos = mPos - transMouseCache;
+            mPos *= -1;
+            transMatrix = 
+                glm::translate(glm::mat4(1.), glm::vec3(mPos.x, mPos.y, 0.)) * 
+                transCache;
+            fragInput.xform = 
+                glm::inverse(pivotMatrix) * 
+                rotationMatrix * 
+                transMatrix * 
+                pivotMatrix * 
+                toCanvasSpace;
             renderer.render(input.cmdId, true);
         }
-        if (input.eventType == EventType::Release)
+        if (rotateDown)
         {
-            scaleCache = scale;
-            txCache = fragInput.tx;
-            tyCache = fragInput.ty;
+            angle = input.mouseX / float(WIDTH) - angleInitCache;
+            std::cout << "angle " << angle << std::endl;
+            rotationMatrix = rotCache * transMatrix * glm::rotate(glm::mat4(1.), angle, {0, 0, 1.}) * glm::inverse(transMatrix);
+            fragInput.xform = 
+                glm::inverse(pivotMatrix) * 
+                rotationMatrix * 
+                transMatrix * 
+                pivotMatrix * 
+                toCanvasSpace;
+            renderer.render(input.cmdId, true);
+        }
+        if (input.eventType == EventType::Keypress)
+        {
+            switch (static_cast<PressAction>(input.key))
+            {
+                case PressAction::Rotate:
+                    {
+                        std::cout << "Entering rotation" << std::endl;
+                        rotateDown = true;
+                        angleInitCache = input.mouseX / float(WIDTH);
+                        break;
+                    }
+                case PressAction::Color:
+                    {
+                        std::cout << "Choose color" << std::endl;
+                        break;
+                    }
+                case PressAction::BrushSize:
+                    {
+                        std::cout << "Choose brush size" << std::endl;
+                        std::cin >> fragInput.brushSize;
+                        break;
+                    }
+            }
+        }
+        if (input.eventType == EventType::Keyrelease)
+        {
+            switch (static_cast<ReleaseAction>(input.key))
+            {
+                case ReleaseAction::Rotate:
+                    {
+                        std::cout << "Leaving rotation" << std::endl;
+                        rotateDown = false;
+                        angleCache = angle;
+                        rotCache = rotationMatrix;
+                        break;
+                    }
+            }
+        }
+        if (input.eventType == EventType::MouseRelease)
+        {
+            scaleCache = scaleMatrix;
+            mPosCache = mPos;
+            transCache = transMatrix;
+            rotCache = rotationMatrix;
+        }
+        if (input.eventType == EventType::LeaveWindow)
+        {
+            rotateDown = false;
+            angleCache = angle;
         }
     }
 

@@ -62,12 +62,13 @@ BufferBlock* Buffer::requestBlock(uint32_t blockSize)
 {
     uint32_t allocSize{0};
     uint32_t minAlignment = devProps.limits.minUniformBufferOffsetAlignment;
+    std::cout << "min alignment " << minAlignment << std::endl;
     if (blockSize % minAlignment == 0) //is aligned
         allocSize = blockSize;
     else 
     {
-        uint32_t alignmentsThatFitInSize = blockSize / minAlignment; 
-        allocSize = alignmentsThatFitInSize + minAlignment;
+        uint32_t nAlignmentsThatContainSize = (blockSize / minAlignment) + 1; 
+        allocSize = nAlignmentsThatContainSize * minAlignment;
     }
     assert(allocSize < size && "No room for new block");
     auto block = std::make_unique<BufferBlock>();

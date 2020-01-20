@@ -41,22 +41,21 @@ UserInput& EventHandler::fetchUserInput(bool block)
 
 UserInput& EventHandler::handleEvent(xcb_generic_event_t* event)
 {	
-	switch (event->response_type & ~0x80)
+    state.eventType = static_cast<EventType>(event->response_type);
+	switch (state.eventType)
 	{
-		case XCB_MOTION_NOTIFY: 
+        case EventType::Motion: 
 		{
 			xcb_motion_notify_event_t* motion =
 				(xcb_motion_notify_event_t*)event;
 			state.mouseX = motion->event_x;
             state.mouseY = motion->event_y;
-            state.eventType = EventType::Motion;
             break;
 		}
-		case XCB_BUTTON_PRESS:
+        case EventType::MousePress:
 		{
             xcb_button_press_event_t* press = 
                 (xcb_button_press_event_t*)event;
-            state.eventType = EventType::Press;
             switch (static_cast<MouseButton>(press->detail))
             {
                 case MouseButton::Left:
@@ -77,24 +76,23 @@ UserInput& EventHandler::handleEvent(xcb_generic_event_t* event)
             }
             break;
 		}
-		case XCB_BUTTON_RELEASE:
+        case EventType::MouseRelease:
 		{
             xcb_button_press_event_t* press = 
                 (xcb_button_press_event_t*)event;
-            state.eventType = EventType::Release;
-            switch (press->detail)
+            switch (static_cast<MouseButton>(press->detail))
             {
-                case 0x01:
+                case MouseButton::Left:
                 {
                     state.lmButtonDown = false;
                     break;
                 }
-                case 0x02:
+                case MouseButton::Middle:
                 {
                     state.mmButtonDown = false;
                     break;
                 }
-                case 0x03:
+                case MouseButton::Right:
                 {
                     state.rmButtonDown = false;
                     break;
@@ -102,101 +100,29 @@ UserInput& EventHandler::handleEvent(xcb_generic_event_t* event)
             }
             break;
 		}
-		case XCB_KEY_PRESS:
+        case EventType::Keypress:
 		{
 			xcb_key_press_event_t* keyPress =
 				(xcb_key_press_event_t*)event;
-			xcb_keycode_t keycode = keyPress->detail;
-			KeySym keysym = XkbKeycodeToKeysym(display, keycode, 0, 0);
-			char* key = XKeysymToString(keysym);
-            state.eventType = EventType::Keypress;
-			if (key == NULL)
-			{
-				std::cout << "Keysym not defined" << std::endl;
-                break;
-			}
-			if (strcmp(key, "s") == 0)
-			{
-				std::cout << "Save key pressed" << std::endl;
-                break;
-			}
-			if (strcmp(key, "b") == 0) 
-			{
-				std::cout << "Enter a brush size." << std::endl;
-                std::cin >> state.brushSize;
-                break;
-			}
-			if (strcmp(key, "c") == 0) 
-			{
-				std::cout << "Enter a color." << std::endl;
-                std::cout << "R: " << std::endl;
-                std::cin >> state.r;
-                std::cout << "G: " << std::endl;
-                std::cin >> state.g;
-                std::cout << "B: " << std::endl;
-                std::cin >> state.b;
-                break;
-			}
-			if (strcmp(key, "a") == 0) 
-			{
-				std::cout << "Enter an alpha value." << std::endl;
-                std::cin >> state.a;
-                break;
-			}
-			if (strcmp(key, "n") == 0) 
-            {
-                std::cout << "Select command id" << std::endl;
-                std::cin >> state.cmdId;
-            }
-			if (strcmp(key, "space") == 0) 
-            {
-                state.cmdId = (state.cmdId == 0);
-            }
-			if (strcmp(key, "1") == 0) 
-            {
-                state.cmdId = 0;
-            }
-			if (strcmp(key, "2") == 0) 
-            {
-                state.cmdId = 1;
-            }
-			if (strcmp(key, "3") == 0) 
-            {
-                state.cmdId = 2;
-            }
-			if (strcmp(key, "4") == 0) 
-            {
-                state.cmdId = 3;
-            }
-			if (strcmp(key, "5") == 0) 
-            {
-                state.cmdId = 4;
-            }
-			if (strcmp(key, "6") == 0) 
-            {
-                state.cmdId = 5;
-            }
-			if (strcmp(key, "7") == 0) 
-            {
-                state.cmdId = 6;
-            }
-			if (strcmp(key, "8") == 0) 
-            {
-                state.cmdId = 7;
-            }
-			if (strcmp(key, "9") == 0) 
-            {
-                state.cmdId = 8;
-            }
-			if (strcmp(key, "0") == 0) 
-            {
-                state.cmdId = 9;
-            }
-            else
-            {
-                std::cout << key << std::endl;
-            }
+            std::cout << "Key: " << uint32_t(keyPress->detail) << std::endl;
+            state.key = static_cast<Key>(keyPress->detail);
+            break;
 		}
+        case EventType::Keyrelease:
+        {
+            xcb_button_release_event_t* keyRelease = 
+                (xcb_button_release_event_t*)event;
+            state.key = static_cast<Key>(keyRelease->detail);
+            break;
+        }
+        case EventType::EnterWindow:
+        {
+            break;
+        }
+        case EventType::LeaveWindow:
+        {
+            break;
+        }
 	}
 	free(event);
 	return state;
