@@ -11,9 +11,11 @@ struct BufferBlock
 {
     uint32_t offset{0};
     uint32_t size{0};
+    uint32_t allocSize{0};
+    uint32_t index{0};
+	void* pHostMemory{nullptr};
     bool isMapped{false};
     bool isValid{true};
-	void* pHostMemory{nullptr};
 };
 
 class Buffer
@@ -35,8 +37,8 @@ public:
 
 	vk::Buffer& getHandle();
     BufferBlock* requestBlock(uint32_t size);
+    void popBackBlock();
     void map();
-	void map(BufferBlock&);
 	void unmap();
     std::vector<std::unique_ptr<BufferBlock>> bufferBlocks;
 
@@ -79,6 +81,7 @@ public:
 	const vk::Extent2D getExtent2D() const;
 	const vk::ImageView& getView() const;
 	const vk::Sampler& getSampler() const;
+    vk::Image& getImage();
 private:
 	vk::Image handle;
 	vk::ImageView view;

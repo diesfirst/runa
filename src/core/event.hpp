@@ -16,7 +16,9 @@ enum class Key : uint8_t
     Shift_L = 50,
     C = 54,
     B = 56,
-    Alt = 64
+    Alt = 64,
+    Esc = 9,
+    S = 39
 };
 
 enum class EventType : uint8_t

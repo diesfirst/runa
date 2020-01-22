@@ -123,6 +123,9 @@ void Context::createDevice()
 	deviceInfo.ppEnabledExtensionNames = extensions.data();
 	deviceInfo.setPEnabledFeatures(&physicalDeviceFeatures);
 
+    auto formatProps = physicalDevice.getFormatProperties(vk::Format::eR8G8B8A8Unorm);
+    std::cout << "formatProps " << vk::to_string(formatProps.linearTilingFeatures) << std::endl;
+
     vk::PhysicalDeviceDescriptorIndexingFeaturesEXT indexingFeatures;
 //    vk::PhysicalDeviceFeatures2 features2;
 //    features2.setPNext(&indexingFeatures);

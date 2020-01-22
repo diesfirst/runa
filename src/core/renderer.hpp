@@ -73,7 +73,7 @@ public:
 class RenderPass
 {
 public:
-	RenderPass(const vk::Device&, const std::string name, bool isOffscreen, uint32_t id);
+	RenderPass(const vk::Device&, const std::string name);
 	virtual ~RenderPass();
 	RenderPass(const RenderPass&) = delete;
 	RenderPass& operator=(RenderPass&) = delete;
@@ -106,9 +106,7 @@ private:
 	std::vector<vk::SubpassDescription> subpasses;
 	std::vector<vk::SubpassDependency> subpassDependencies;
     vk::ClearValue clearValue;
-    const bool offscreen;
 
-	const uint32_t id;
 	bool created{false};
 };
 
@@ -127,7 +125,7 @@ public:
 	vk::Framebuffer& requestFrameBuffer(const RenderPass& renderPass);
 	vk::Format getFormat() const;
     vk::Extent2D getExtent() const;
-    const mm::Image& getImage(uint32_t index) const;
+    mm::Image& getImage(uint32_t index);
 
 private:
     friend class RenderFrame;
@@ -202,7 +200,7 @@ private:
 class Framebuffer
 {
 public:
-    Framebuffer(const vk::Device&, const Attachment&, const RenderPass&, const GraphicsPipeline&);
+    Framebuffer(const vk::Device&, Attachment&, const RenderPass&, const GraphicsPipeline&);
     virtual ~Framebuffer();
 	Framebuffer(const Framebuffer&) = delete;
 	Framebuffer& operator=(Framebuffer&) = delete;
@@ -234,23 +232,22 @@ public:
 	RenderFrame(RenderFrame&& other);
 	virtual ~RenderFrame();
 
+    Attachment& getSwapAttachment();
 	void addOffscreenAttachment(std::unique_ptr<Attachment>&& renderTarget);
 	void createDescriptorSets(const std::vector<vk::DescriptorSetLayout>&);
 	const std::vector<vk::DescriptorSet>& getDescriptorSets() const;
 	vk::Semaphore requestSemaphore();
 	CommandBuffer& requestRenderBuffer(uint32_t bufferId); //will reset if exists
     CommandBuffer& getRenderBuffer(uint32_t bufferId);  //will fetch existing
-    void addFramebuffer(const Attachment&, const RenderPass&, const GraphicsPipeline&);
+    void addFramebuffer(Attachment&, const RenderPass&, const GraphicsPipeline&);
     void addFramebuffer(TargetType, const RenderPass&, const GraphicsPipeline&);
     void clearFramebuffers();
-	vk::Framebuffer& requestSwapchainFrameBuffer(const RenderPass&);
-	vk::Framebuffer& requestOffscreenFrameBuffer(const RenderPass&);
     std::vector<Framebuffer> framebuffers;
     mm::BufferBlock* bufferBlock;
+    
 
 private:
 	std::unique_ptr<Attachment> swapchainAttachment;
-	std::unique_ptr<Attachment> offscreenAttachment;
 	const Context& context;
 	const vk::Device& device;
 	CommandPool commandPool;
@@ -278,7 +275,7 @@ public:
 	Renderer(Renderer&&) = delete;
 	FragShader& loadFragShader(const std::string path, const std::string name);
     VertShader& loadVertShader(const std::string path, const std::string name);
-	RenderPass& createRenderPass(std::string name, bool isOffscreen);
+	RenderPass& createRenderPass(std::string name);
     const std::string createDescriptorSetLayout(
             const std::string name, 
             const std::vector<vk::DescriptorSetLayoutBinding>);
@@ -309,10 +306,14 @@ public:
 	//having only 1 pipeline per commandbuffer is doomed
 	void recordRenderCommands(uint32_t bufferId, std::vector<uint32_t> renderPassIds);
     void prepare(const std::string tarotPath);
-    void addFramebuffer(const Attachment&, const RenderPass&, const GraphicsPipeline&);
+    void addFramebuffer(Attachment&, const RenderPass&, const GraphicsPipeline&);
     void addFramebuffer(TargetType, const RenderPass&, const GraphicsPipeline&);
     void clearFramebuffers();
 	void render(uint32_t cmdId, bool updateUbo);
+    void popBufferBlock();
+
+    mm::BufferBlock* copySwapToHost(const vk::Rect2D region);
+    mm::BufferBlock* copyAttachmentToHost(const std::string, const vk::Rect2D region);
 
 private:
 	const Context& context;
@@ -326,6 +327,8 @@ private:
     std::unordered_map<std::string, std::unique_ptr<Attachment>> attachments;
     Attachment* activeTarget;
     std::vector<Ubo> ubos;
+    CommandPool commandPool;
+
 
     //descriptor stuff
 	vk::DescriptorPool descriptorPool;
@@ -340,7 +343,6 @@ private:
 
 	std::unordered_map<std::string, VertShader> vertexShaders;
 	std::unordered_map<std::string, FragShader> fragmentShaders;
-
 	std::unordered_map<std::string, vk::DescriptorSetLayout> descriptorSetLayouts;
 	std::unordered_map<std::string, vk::PipelineLayout> pipelineLayouts;
 	std::unordered_map<std::string, GraphicsPipeline> graphicsPipelines;

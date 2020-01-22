@@ -12,7 +12,7 @@ BUILD = build
 CORE = src/core
 PROG = src/programs
 TEST = test
-_OBJS = main.o context.o swapchain.o window.o renderer.o mem.o commander.o description.o event.o
+_OBJS = context.o swapchain.o window.o renderer.o mem.o commander.o description.o event.o
 OBJS = $(patsubst %, $(BUILD)/%, $(_OBJS))
 
 paint_xform: $(BUILD)/paint_xform.o $(LIB)/libruna.a

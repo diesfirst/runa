@@ -52,9 +52,15 @@ public:
 		const std::vector<vk::DescriptorSet>& sets, 
 		const std::vector<uint32_t>& offsets);
 	void drawVerts(uint32_t vertCount, uint32_t firstVertex);
+    void insertImageMemoryBarrier(
+            vk::PipelineStageFlags srcStageMask,
+            vk::PipelineStageFlags dstStageMask,
+            vk::ImageMemoryBarrier imb);
+    void copyImageToBuffer(vk::Image&, vk::Buffer&, vk::BufferImageCopy);
 	void endRenderPass();
 	void end();
 	vk::Semaphore submit(vk::Semaphore& waitSemaphore, vk::PipelineStageFlags);
+    void submit();
 	bool isRecorded() const;
 	void waitForFence() const;
     void reset();

@@ -134,6 +134,27 @@ void CommandBuffer::drawVerts(uint32_t vertCount, uint32_t firstVertex)
 	handle.draw(vertCount, 1, firstVertex, 0);
 }
 
+void CommandBuffer::insertImageMemoryBarrier(
+            vk::PipelineStageFlags srcStageMask,
+            vk::PipelineStageFlags dstStageMask,
+            vk::ImageMemoryBarrier imb)
+{
+    handle.pipelineBarrier(
+            srcStageMask, dstStageMask, 
+            {},
+            nullptr,
+            nullptr,
+            imb);
+}
+
+void CommandBuffer::copyImageToBuffer(
+        vk::Image& image, vk::Buffer& buffer, vk::BufferImageCopy region)
+{
+    handle.copyImageToBuffer(
+            image, vk::ImageLayout::eTransferSrcOptimal, buffer, region);
+}
+
+
 void CommandBuffer::endRenderPass()
 {
 	handle.endRenderPass();
@@ -159,6 +180,21 @@ vk::Semaphore CommandBuffer::submit(vk::Semaphore& waitSemaphore, vk::PipelineSt
 	device.resetFences(1, &fence);
 	queue.submit(si, fence);
 	return signalSemaphore;
+}
+
+void CommandBuffer::submit()
+{
+	vk::SubmitInfo si;
+	si.setPCommandBuffers(&handle);
+	si.setPWaitSemaphores(nullptr);
+	si.setPSignalSemaphores(nullptr);
+	si.setCommandBufferCount(1);
+	si.setWaitSemaphoreCount(0);
+	si.setSignalSemaphoreCount(0);
+	si.setPWaitDstStageMask(nullptr);
+
+	device.resetFences(1, &fence);
+	queue.submit(si, fence);
 }
 
 void CommandBuffer::waitForFence() const

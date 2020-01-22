@@ -108,11 +108,9 @@ FragShader::FragShader(const vk::Device& device, std::string filepath) :
 	stageInfo.setStage(vk::ShaderStageFlagBits::eFragment);
 }
 
-RenderPass::RenderPass(const vk::Device& device, const std::string name, bool isOffscreen, uint32_t id) :
+RenderPass::RenderPass(const vk::Device& device, const std::string name) :
 	device{device},
-	id{id},
-	name{name},
-    offscreen{isOffscreen}
+	name{name}
 {
 }
 
@@ -124,15 +122,13 @@ RenderPass::~RenderPass()
 
 RenderPass::RenderPass(RenderPass&& other) :
 	device{other.device},
-	id{other.id},
 	name{other.name},
 	handle{other.handle},
 	attachments{std::move(other.attachments)},
 	colorAttachments{std::move(other.colorAttachments)},
 	references{std::move(other.references)},
 	subpasses{std::move(other.subpasses)},
-	subpassDependencies{std::move(other.subpassDependencies)},
-    offscreen{other.offscreen}
+	subpassDependencies{std::move(other.subpassDependencies)}
 {
 	other.handle = nullptr;
 	other.attachments.clear();
@@ -241,11 +237,6 @@ bool RenderPass::isCreated() const
 	return created;
 }
 
-bool RenderPass::isOffscreen() const
-{
-    return offscreen;
-}
-
 const vk::ClearValue* RenderPass::getClearValue() const
 {
     return &clearValue;
@@ -254,11 +245,6 @@ const vk::ClearValue* RenderPass::getClearValue() const
 const vk::RenderPass& RenderPass::getHandle() const
 {
 	return handle;
-}
-
-uint32_t RenderPass::getId() const
-{
-	return id;
 }
 
 Attachment::Attachment(
@@ -301,7 +287,7 @@ vk::Extent2D Attachment::getExtent() const
     return extent;
 }
 
-const mm::Image& Attachment::getImage(uint32_t index) const
+mm::Image& Attachment::getImage(uint32_t index)
 {
     return *images.at(index);
 }
@@ -549,7 +535,7 @@ std::vector<vk::PipelineShaderStageCreateInfo> GraphicsPipeline::extractShaderSt
 
 Framebuffer::Framebuffer(
         const vk::Device& device,
-        const Attachment& target, 
+        Attachment& target, 
         const RenderPass& pass,
         const GraphicsPipeline& pipe) :
     renderTarget{target},
@@ -642,7 +628,6 @@ RenderFrame::RenderFrame(RenderFrame&& other) :
 	height{other.height},
 	commandBuffers{std::move(other.commandBuffers)},
 	swapchainAttachment{std::move(other.swapchainAttachment)},
-	offscreenAttachment{std::move(other.offscreenAttachment)},
     framebuffers{std::move(other.framebuffers)},
     bufferBlock{other.bufferBlock}
 {
@@ -653,7 +638,7 @@ RenderFrame::RenderFrame(RenderFrame&& other) :
 }
 
 void RenderFrame::addFramebuffer(
-        const Attachment& target, 
+        Attachment& target, 
         const RenderPass& pass, 
         const GraphicsPipeline& pipe)
 {
@@ -670,12 +655,6 @@ void RenderFrame::addFramebuffer(
         const RenderPass& pass, 
         const GraphicsPipeline& pipe)
 {
-    if (type == TargetType::offscreen)
-        framebuffers.emplace_back(
-                    device,
-                    *offscreenAttachment,
-                    pass,
-                    pipe);
     if (type == TargetType::swapchain)
         framebuffers.emplace_back(
                     device,
@@ -740,9 +719,9 @@ void RenderFrame::createDescriptorPool()
 	descriptorPool = device.createDescriptorPool(ci);
 }
 
-void RenderFrame::addOffscreenAttachment(std::unique_ptr<Attachment>&& target)
+Attachment& RenderFrame::getSwapAttachment()
 {
-	offscreenAttachment = std::move(target);
+    return *swapchainAttachment;
 }
 
 void RenderFrame::createDescriptorSets(
@@ -761,9 +740,14 @@ const std::vector<vk::DescriptorSet>& RenderFrame::getDescriptorSets() const
 }
 
 Renderer::Renderer(Context& context, XWindow& window) :
-	context(context),
-	device(context.device),
-	graphicsQueue(context.queue)
+	context{context},
+	device{context.device},
+	graphicsQueue{context.queue},
+    commandPool{
+        device, 
+        graphicsQueue, 
+        context.getGraphicsQueueFamilyIndex(), 
+        vk::CommandPoolCreateFlagBits::eTransient}
 {
 	swapchain = std::make_unique<Swapchain>(context, window, 3); 
 	//we hardcode 3 swap images
@@ -782,15 +766,11 @@ Renderer::Renderer(Context& context, XWindow& window) :
 				std::move(swapAttachment),
 				swapchain->getExtent2D().width, 
 				swapchain->getExtent2D().height)};
-		auto offscreenAttachment{
-			std::make_unique<Attachment>(
-					device,
-					swapchain->getExtent2D())};
-		renderFrame.addOffscreenAttachment(std::move(offscreenAttachment));
 		frames.emplace_back(std::move(renderFrame));
 	}
     createDescriptorPool();
-    createDescriptorBuffer(2000); //arbitrary for now
+    createDescriptorBuffer(10000000); //arbitrary for now
+    descriptorBuffer->map();
 }
 
 Renderer::~Renderer()
@@ -813,9 +793,9 @@ Renderer::~Renderer()
 	pipelineLayouts.clear();
 }
 
-RenderPass& Renderer::createRenderPass(std::string name, bool offscreen)
+RenderPass& Renderer::createRenderPass(std::string name)
 {
-	auto renderPass{RenderPass(device, name, offscreen, renderPassCount)};
+	auto renderPass{RenderPass(device, name)};
 	renderPasses.emplace(name, std::move(renderPass));
 	renderPassCount++;
 	return renderPasses.at(name);
@@ -877,7 +857,6 @@ void Renderer::initFrameUBOs(size_t size, uint32_t binding)
         device.updateDescriptorSets(bw, nullptr);
         frame.bufferBlock = block;
     }
-    descriptorBuffer->map();
     ubos.resize(1);
 }
 
@@ -1092,7 +1071,7 @@ void Renderer::recordRenderCommands(uint32_t id, std::vector<uint32_t> fbIds)
 }
 
 void Renderer::addFramebuffer(
-        const Attachment& attachment, 
+        Attachment& attachment, 
         const RenderPass& rpass, 
         const GraphicsPipeline& pipe)
 {
@@ -1120,61 +1099,6 @@ void Renderer::clearFramebuffers()
         frame.clearFramebuffers();
     }
 }
-
-//void Renderer::prepare(const std::string path)
-//{
-//
-//    //create paint render target
-//    auto target0 = std::make_unique<Attachment>(device, swapchain->getExtent2D());
-//    layers.insert({"target0", std::move(target0)});
-//    activeTarget = layers.at("target0").get();
-//
-//	//the following code will handle descriptor set creation
-//	//while we don't need descriptor sets to create a Pipeline
-//	//we do need to make the Pipeline aware of their layouts 
-//	//if we do intend to use them
-//	//----------------------------
-//	createDefaultDescriptorSetLayout("default");
-//	//we can now create the desriptorsets for the render frames 
-//	//additionally we can create our pipeline layouts
-//	createPipelineLayout("default", {"default"});
-//
-//	//note: this could have been done as soon as we had the layout
-//	createDescriptorSets(frames, {"default"});
-//	//----------------------------
-//	//
-//	//we'll create renderpass now. 
-//	//note: we could have done this at any point
-//    
-//    for (auto& frame : frames) 
-//    {
-//        
-//    }
-//
-//    //load shaders
-//	auto& quadShader = loadVertShader("shaders/tarot/fullscreen_tri.spv", "vert1");
-//	auto& tarotShader = loadFragShader(path, "frag1");
-//	auto& blurShader = loadFragShader("shaders/radialBlur.spv", "osFrag");
-//
-//    //create render passes
-//    auto& offScreenPass = createRenderPass("offscreen", true);
-//    prepareAsOffscreenPass(offScreenPass); //can make this a static function of RenderPass
-//    auto& swapchainPass = createRenderPass("swapchain", false); 
-//    prepareAsSwapchainPass(swapchainPass); //can make this a static function of RenderPass
-//    
-//    //create pipelines
-//	auto& offscreenPipe = createGraphicsPipeline(
-//            "offscreen", quadShader, tarotShader, offScreenPass, false);
-//	auto& swapchainPipe = createGraphicsPipeline(
-//            "default", quadShader, blurShader, swapchainPass, false);
-//    
-//    //create framebuffers
-//    for (auto& frame : frames) 
-//    {
-//        frame.addFramebuffer(*activeTarget, offScreenPass, offscreenPipe);
-//        frame.addFramebuffer(TargetType::swapchain, swapchainPass, swapchainPipe);
-//    }
-//}
 
 void Renderer::render(uint32_t cmdId, bool updateUbo)
 {
@@ -1309,7 +1233,116 @@ void Renderer::createDescriptorBuffer(uint32_t size)
             context.physicalDeviceProperties,
 			context.physicalDeviceMemoryProperties, 
 			size, 
-			vk::BufferUsageFlagBits::eUniformBuffer,
+			vk::BufferUsageFlagBits::eUniformBuffer |
+            vk::BufferUsageFlagBits::eTransferDst,
 			vk::MemoryPropertyFlagBits::eHostVisible | 
 			vk::MemoryPropertyFlagBits::eHostCoherent);
 }
+
+void Renderer::popBufferBlock()
+{
+    descriptorBuffer->popBackBlock();
+}
+
+mm::BufferBlock* Renderer::copySwapToHost(const vk::Rect2D region)
+{
+    auto block = descriptorBuffer->requestBlock(
+            region.extent.width * region.extent.height * 4);
+
+    auto& commandBuffer = commandPool.requestCommandBuffer();
+
+    vk::ImageSubresourceRange isr;
+    isr.setAspectMask(vk::ImageAspectFlagBits::eColor);
+    isr.setLayerCount(1);
+    isr.setLevelCount(1);
+    isr.setBaseMipLevel(0);
+    isr.setBaseArrayLayer(0);
+
+    auto& swapAttachment = frames.at(activeFrameIndex).getSwapAttachment();
+    auto& image = swapAttachment.getImage(0).getImage();
+    vk::ImageMemoryBarrier imb;
+    imb.setImage(image);
+    imb.setOldLayout(vk::ImageLayout::ePresentSrcKHR);
+    imb.setNewLayout(vk::ImageLayout::eTransferSrcOptimal);
+    imb.setSrcAccessMask(vk::AccessFlagBits::eMemoryRead);
+    imb.setDstAccessMask(vk::AccessFlagBits::eTransferRead);
+    imb.setSubresourceRange(isr);
+
+    commandBuffer.begin();
+    commandBuffer.insertImageMemoryBarrier(
+            vk::PipelineStageFlagBits::eTransfer,
+            vk::PipelineStageFlagBits::eTransfer,
+            imb);
+
+    vk::BufferImageCopy copyRegion;
+    copyRegion.setImageExtent({region.extent.width, region.extent.height, 1});
+    copyRegion.setImageOffset({region.offset.x, region.offset.y, 0});
+    copyRegion.setBufferOffset(block->offset);
+    copyRegion.setImageSubresource({vk::ImageAspectFlagBits::eColor, 0, 0, 1});
+    copyRegion.setBufferRowLength(0);
+    copyRegion.setBufferImageHeight(0);
+
+    commandBuffer.copyImageToBuffer(image, descriptorBuffer->getHandle(), copyRegion);
+
+    commandBuffer.end(); //renderpass should take care of converting the swap image layout back for us
+
+    commandBuffer.submit();
+
+    commandBuffer.waitForFence();
+
+    commandPool.resetPool();
+    return block;
+}
+
+mm::BufferBlock* Renderer::copyAttachmentToHost(
+        const std::string name, const vk::Rect2D region)
+{
+    auto block = descriptorBuffer->requestBlock(
+            region.extent.width * region.extent.height * 4);
+
+    auto& commandBuffer = commandPool.requestCommandBuffer();
+
+    vk::ImageSubresourceRange isr;
+    isr.setAspectMask(vk::ImageAspectFlagBits::eColor);
+    isr.setLayerCount(1);
+    isr.setLevelCount(1);
+    isr.setBaseMipLevel(0);
+    isr.setBaseArrayLayer(0);
+
+    auto& attachment = attachments.at(name);
+    auto& image = attachment->getImage(0).getImage();
+    vk::ImageMemoryBarrier imb;
+    imb.setImage(image);
+    imb.setOldLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+    imb.setNewLayout(vk::ImageLayout::eTransferSrcOptimal);
+    imb.setSrcAccessMask(vk::AccessFlagBits::eMemoryRead);
+    imb.setDstAccessMask(vk::AccessFlagBits::eTransferRead);
+    imb.setSubresourceRange(isr);
+
+    commandBuffer.begin();
+    commandBuffer.insertImageMemoryBarrier(
+            vk::PipelineStageFlagBits::eTransfer,
+            vk::PipelineStageFlagBits::eTransfer,
+            imb);
+
+    vk::BufferImageCopy copyRegion;
+    copyRegion.setImageExtent({region.extent.width, region.extent.height, 1});
+    copyRegion.setImageOffset({region.offset.x, region.offset.y, 0});
+    copyRegion.setBufferOffset(block->offset);
+    copyRegion.setImageSubresource({vk::ImageAspectFlagBits::eColor, 0, 0, 1});
+    copyRegion.setBufferRowLength(0);
+    copyRegion.setBufferImageHeight(0);
+
+    commandBuffer.copyImageToBuffer(image, descriptorBuffer->getHandle(), copyRegion);
+
+    commandBuffer.end(); //renderpass should take care of converting the swap image layout back for us
+
+    commandBuffer.submit();
+
+    commandBuffer.waitForFence();
+
+    commandPool.resetPool();
+    return block;
+}
+
+

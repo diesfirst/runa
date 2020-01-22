@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include "../core/event.hpp"
 #include <glm/gtx/matrix_transform_2d.hpp>
+#include "../thirdparty/lodepng.cpp"
 
 constexpr uint32_t N_FRAMES = 10000000;
 constexpr uint32_t WIDTH = 1400;
@@ -36,7 +37,9 @@ enum class PressAction : uint8_t
 {
     Rotate = static_cast<uint8_t>(Key::Alt),
     Color = static_cast<uint8_t>(Key::C),
-    BrushSize = static_cast<uint8_t>(Key::B)
+    BrushSize = static_cast<uint8_t>(Key::B),
+    Exit = static_cast<uint8_t>(Key::Esc),
+    Save = static_cast<uint8_t>(Key::S)
 };
 
 enum class ReleaseAction : uint8_t 
@@ -84,8 +87,10 @@ int main(int argc, char *argv[])
     //frag shaders
     auto& tarotShader = renderer.loadFragShader(shaderDir + "spot_xform.spv", "frag1");
     auto& swapShader = renderer.loadFragShader(shaderDir + "composite_xform.spv", "swap");
+    auto& paletteShader = renderer.loadFragShader(shaderDir + "uv_00.spv", "uv00");
     tarotShader.setWindowResolution(C_WIDTH, C_HEIGHT);
     swapShader.setWindowResolution(WIDTH, HEIGHT); 
+    paletteShader.setWindowResolution(WIDTH, HEIGHT);
     swapShader.specData.integer0 = 0; 
     swapShader.specData.integer1 = 0; 
     
@@ -93,9 +98,11 @@ int main(int argc, char *argv[])
     //but the array indices would be better handled by push constants
 
     //create render passes
-    auto& offScreenLoadPass = renderer.createRenderPass("offscreen", true);
+    auto& offScreenLoadPass = renderer.createRenderPass("offscreen");
     renderer.prepareAsOffscreenPass(offScreenLoadPass); //can make this a static function of RenderPass
-    auto& swapchainPass = renderer.createRenderPass("swapchain", false); 
+    auto& palettePass = renderer.createRenderPass("palette");
+    renderer.prepareAsOffscreenPass(palettePass);
+    auto& swapchainPass = renderer.createRenderPass("swapchain");
     renderer.prepareAsSwapchainPass(swapchainPass); //can make this a static function of RenderPass
     
     //create pipelines
@@ -119,6 +126,9 @@ int main(int argc, char *argv[])
     renderer.addFramebuffer(TargetType::swapchain, swapchainPass, swapchainPipe);
 
     renderer.recordRenderCommands(0, {0, 1});
+    renderer.recordRenderCommands(1, {1});
+
+    const int swapOnlyCmd = 1;
     
     uint32_t cmdIdCache{0};
     std::array<UserInput, 10> inputCache;
@@ -147,7 +157,6 @@ int main(int argc, char *argv[])
     float mouseYCache{0};
     float angle{0};
     float angleInitCache{0};
-    float angleCache{0};
     glm::vec4 mPos{0};
     glm::vec4 transMouseCache{0};
 
@@ -184,7 +193,7 @@ int main(int argc, char *argv[])
                 transMatrix * 
                 pivotMatrix * 
                 toCanvasSpace;
-            renderer.render(input.cmdId, true);
+            renderer.render(swapOnlyCmd, true);
         }
         if (input.mmButtonDown)
         {
@@ -206,7 +215,7 @@ int main(int argc, char *argv[])
                 transMatrix * 
                 pivotMatrix * 
                 toCanvasSpace;
-            renderer.render(input.cmdId, true);
+            renderer.render(swapOnlyCmd, true);
         }
         if (rotateDown)
         {
@@ -220,7 +229,7 @@ int main(int argc, char *argv[])
                 transMatrix * 
                 pivotMatrix * 
                 toCanvasSpace;
-            renderer.render(input.cmdId, true);
+            renderer.render(swapOnlyCmd, true);
         }
         if (input.eventType == EventType::Keypress)
         {
@@ -236,7 +245,22 @@ int main(int argc, char *argv[])
                     }
                 case PressAction::Color:
                     {
-                        std::cout << "Choose color" << std::endl;
+                        std::cout << "Loading color from pixel under cursor" << std::endl;
+                        vk::Rect2D region;
+                        region.offset.x = input.mouseX;
+                        region.offset.y = input.mouseY;
+                        region.extent.setWidth(1);
+                        region.extent.setHeight(1);
+                        auto block = renderer.copySwapToHost(region);
+                        uint8_t* ptr = static_cast<uint8_t*>(block->pHostMemory);
+                        std::cout << "R: " << static_cast<uint16_t>(*ptr) << std::endl;
+                        fragInput.r = float(*ptr++) / 255.;
+                        std::cout << "G: " << static_cast<uint16_t>(*ptr) << std::endl;
+                        fragInput.g = float(*ptr++) / 255.;
+                        std::cout << "B: " << static_cast<uint16_t>(*ptr) << std::endl;
+                        fragInput.b = float(*ptr++) / 255.;
+                        renderer.popBufferBlock();
+                        renderer.render(swapOnlyCmd, true);
                         break;
                     }
                 case PressAction::BrushSize:
@@ -244,6 +268,31 @@ int main(int argc, char *argv[])
                         std::cout << "Choose brush size" << std::endl;
                         std::cin >> fragInput.brushSize;
                         break;
+                    }
+                case PressAction::Exit:
+                    {
+                        std::cout << "Closing application" << std::endl;
+                        return 0;
+                    }
+                case PressAction::Save:
+                    {
+                        std::cout << "Copying to buffer" << std::endl;
+                        vk::Rect2D region;
+                        region.offset.x = 0;
+                        region.offset.y = 0;
+                        region.extent.setWidth(C_WIDTH);
+                        region.extent.setHeight(C_HEIGHT);
+                        auto block = renderer.copyAttachmentToHost("paint0", region);
+                        uint8_t* ptr = static_cast<uint8_t*>(block->pHostMemory);
+                        std::cout << "Printing block values" << std::endl;
+                        for (int i = 0; i < block->size / 4; i++) 
+                        {
+                            std::cout << "R: " << static_cast<uint16_t>(*ptr) << std::endl;   
+                            ptr += 4;
+                        }
+                        std::cout << "success" << std::endl;
+                        renderer.render(swapOnlyCmd, true);
+                        renderer.popBufferBlock();
                     }
             }
         }
@@ -255,7 +304,6 @@ int main(int argc, char *argv[])
                     {
                         std::cout << "Leaving rotation" << std::endl;
                         rotateDown = false;
-                        angleCache = angle;
                         scaleRotCache = scaleRotMatrix;
                         break;
                     }
@@ -269,10 +317,8 @@ int main(int argc, char *argv[])
         if (input.eventType == EventType::LeaveWindow)
         {
             rotateDown = false;
-            angleCache = angle;
         }
     }
 
-    sleep(4);
 }
 

@@ -74,12 +74,28 @@ BufferBlock* Buffer::requestBlock(uint32_t blockSize)
     auto block = std::make_unique<BufferBlock>();
     block->offset = curBlockOffset;
     block->size = blockSize;
+    block->allocSize = allocSize;
+    block->index = bufferBlocks.size();
+    if (isMapped)
+    {
+        block->pHostMemory = static_cast<uint8_t*>(pHostMemory) + block->offset;
+        block->isMapped = true;
+        std::cout << "Block hostmem: " << block->pHostMemory << std::endl;
+        std::cout << "===!+!+!+!+!+!+!+!+!+!+!+!++!+!+!+!+++===" << std::endl;
+    }
     bufferBlocks.push_back(std::move(block));
-    std::cout << "Block made" <<
-       "curBlockOffset: " << curBlockOffset <<
-       "blockSize: " << blockSize << std::endl;
+    std::cout << " Block made" <<
+       " curBlockOffset: " << curBlockOffset <<
+       " blockSize: " << blockSize << std::endl;
     curBlockOffset += allocSize;
     return bufferBlocks.back().get();
+}
+
+void Buffer::popBackBlock()
+{
+    curBlockOffset -= bufferBlocks.back()->allocSize;
+    bufferBlocks.pop_back();
+    std::cout << "Block popped. " << bufferBlocks.size() << " remain." << std::endl;
 }
 
 void Buffer::map()
@@ -88,23 +104,14 @@ void Buffer::map()
 	pHostMemory = device.mapMemory(memory, 0, VK_WHOLE_SIZE);
 	assert(pHostMemory != (void*)VK_ERROR_MEMORY_MAP_FAILED);
     isMapped = true;
-
-    for (auto& block : bufferBlocks) 
-    {
-        block->pHostMemory = static_cast<uint8_t*>(pHostMemory) + block->offset;
-        block->isMapped = true;
-        std::cout << "Block hostmem: " << block->pHostMemory << std::endl;
-        std::cout << "===!+!+!+!+!+!+!+!+!+!+!+!++!+!+!+!+++===" << std::endl;
-    }
-}
-
-void Buffer::map(BufferBlock& block)
-{
-	assert(!isMapped);
-	void* res = device.mapMemory(memory, block.offset, block.size);
-	assert(res != (void*)VK_ERROR_MEMORY_MAP_FAILED);
-	block.pHostMemory = res;
-    isMapped = true;
+//
+//    for (auto& block : bufferBlocks) 
+//    {
+//        block->pHostMemory = static_cast<uint8_t*>(pHostMemory) + block->offset;
+//        block->isMapped = true;
+//        std::cout << "Block hostmem: " << block->pHostMemory << std::endl;
+//        std::cout << "===!+!+!+!+!+!+!+!+!+!+!+!++!+!+!+!+++===" << std::endl;
+//    }
 }
 
 void Buffer::unmap()
@@ -264,28 +271,6 @@ const vk::Extent2D Image::getExtent2D() const
 	return vk::Extent2D{extent.width, extent.height};
 }
 
-//Image::Image(Image&& other) :
-//	device{other.device},
-//	handle{std::move(other.handle)},
-//	view{std::move(other.view)},
-//	memory{std::move(other.memory)},
-//	deviceSize{std::move(other.deviceSize)},
-//	extent{std::move(other.extent)},
-//	layout{other.layout},
-//	usageFlags{other.usageFlags},
-//	format{other.format},
-//	pHostMemory{other.pHostMemory},
-//	isMapped{other.isMapped},
-//	selfManaged{other.selfManaged}
-//{
-//	other.isMapped = false;
-//	other.selfManaged = false;
-//	other.view = nullptr;
-//	other.pHostMemory = nullptr;
-//	other.handle = nullptr;
-//	other.memory = nullptr;
-//}
-
 const vk::ImageView& Image::getView() const
 {
 	return view;
@@ -294,6 +279,11 @@ const vk::ImageView& Image::getView() const
 const vk::Sampler& Image::getSampler() const
 {
 	return sampler;
+}
+
+vk::Image& Image::getImage()
+{
+    return handle;
 }
 
 }
