@@ -115,7 +115,8 @@ class Attachment
 public:
 	Attachment(
 			const vk::Device& device,
-			const vk::Extent2D extent);
+			const vk::Extent2D extent,
+            const vk::ImageUsageFlags);
 	Attachment(const vk::Device&, std::unique_ptr<mm::Image>);
 	Attachment(const Attachment&) = delete;
 	Attachment& operator=(Attachment &&other) = default;
@@ -288,8 +289,9 @@ public:
     void updateFrameSamplers(const vk::ImageView*, const vk::Sampler*, uint32_t binding);
     void updateFrameSamplers(const std::vector<const mm::Image*>, uint32_t binding);
     void prepareAsSwapchainPass(RenderPass&);
-    void prepareAsOffscreenPass(RenderPass&);
-    Attachment& createAttachment(const std::string name, const vk::Extent2D);
+    void prepareAsOffscreenPass(RenderPass&, vk::AttachmentLoadOp);
+    Attachment& createAttachment(
+            const std::string name, const vk::Extent2D, const vk::ImageUsageFlags);
 	GraphicsPipeline& createGraphicsPipeline(
 			const std::string name, 
             const std::string pipelineLayout,

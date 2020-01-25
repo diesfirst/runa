@@ -249,7 +249,8 @@ const vk::RenderPass& RenderPass::getHandle() const
 
 Attachment::Attachment(
 		const vk::Device& device,
-		const vk::Extent2D extent) :
+		const vk::Extent2D extent,
+        const vk::ImageUsageFlags usageFlags) :
 	device{device},
 	extent{extent}
 {
@@ -259,8 +260,7 @@ Attachment::Attachment(
 			device, 
 			ex,
 			format,
-			vk::ImageUsageFlagBits::eColorAttachment | 
-			vk::ImageUsageFlagBits::eSampled,
+            usageFlags,
 			vk::ImageLayout::eUndefined);
 	images.emplace_back(std::move(image));
 	std::cout << "IMG " << &images.at(0) << std::endl;
@@ -769,7 +769,7 @@ Renderer::Renderer(Context& context, XWindow& window) :
 		frames.emplace_back(std::move(renderFrame));
 	}
     createDescriptorPool();
-    createDescriptorBuffer(10000000); //arbitrary for now
+    createDescriptorBuffer(100000000); //arbitrary for now. 100MB
     descriptorBuffer->map();
 }
 
@@ -927,7 +927,8 @@ void Renderer::prepareAsSwapchainPass(RenderPass& rpSwap)
 	rpSwap.create();
 }
 
-void Renderer::prepareAsOffscreenPass(RenderPass& offScreenPass)
+void Renderer::prepareAsOffscreenPass(
+        RenderPass& offScreenPass, vk::AttachmentLoadOp loadOp)
 {
     vk::ClearColorValue cv;
     cv.setFloat32({.0,.0,.0,0.});
@@ -936,7 +937,7 @@ void Renderer::prepareAsOffscreenPass(RenderPass& offScreenPass)
 			vk::ImageLayout::eUndefined,
 			vk::ImageLayout::eShaderReadOnlyOptimal,
             cv,
-            vk::AttachmentLoadOp::eLoad);
+            loadOp);
 	vk::SubpassDependency d0, d1;
 	d0.setSrcSubpass(VK_SUBPASS_EXTERNAL);
 	d0.setDstSubpass(0);
@@ -960,9 +961,11 @@ void Renderer::prepareAsOffscreenPass(RenderPass& offScreenPass)
 	offScreenPass.create();
 }
 
-Attachment& Renderer::createAttachment(const std::string name, const vk::Extent2D extent)
+Attachment& Renderer::createAttachment(
+        const std::string name, const vk::Extent2D extent,
+        const vk::ImageUsageFlags usageFlags)
 {
-    auto attachment = std::make_unique<Attachment>(device, extent);
+    auto attachment = std::make_unique<Attachment>(device, extent, usageFlags);
     attachments.emplace(name, std::move(attachment));
     return *attachments.at(name);
 }

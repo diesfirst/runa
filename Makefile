@@ -11,11 +11,12 @@ BIN = bin
 BUILD = build
 CORE = src/core
 PROG = src/programs
+THIRD = src/thirdparty
 TEST = test
-_OBJS = context.o swapchain.o window.o renderer.o mem.o commander.o description.o event.o
+_OBJS = lodepng.o context.o swapchain.o window.o renderer.o mem.o commander.o description.o event.o
 OBJS = $(patsubst %, $(BUILD)/%, $(_OBJS))
 
-paint_xform: $(BUILD)/paint_xform.o $(LIB)/libruna.a
+paint_canvas: $(BUILD)/paint_canvas.o $(LIB)/libruna.a
 	$(CC) $^ -o $(BIN)/$@ $(LINK) ; ctags -R .
 
 %: $(BUILD)/%.o $(LIB)/libruna.a
@@ -73,6 +74,9 @@ $(BUILD)/main.o : $(PROG)/main.cpp $(PROG)/programs.hpp
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 $(BUILD)/%.o : $(PROG)/%.cpp
+	$(CC) -c $(CFLAGS) -o $@ $<
+
+$(BUILD)/lodepng.o : $(THIRD)/lodepng.cpp $(THIRD)/lodepng.h
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 $(LIB)/libruna.a : $(OBJS)

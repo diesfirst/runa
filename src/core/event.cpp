@@ -60,17 +60,17 @@ UserInput& EventHandler::handleEvent(xcb_generic_event_t* event)
             {
                 case MouseButton::Left:
                 {
-                    state.lmButtonDown = true;
+                    state.mouseButton = MouseButton::Left;
                     break;
                 }
                 case MouseButton::Middle:
                 {
-                    state.mmButtonDown = true;
+                    state.mouseButton = MouseButton::Middle;
                     break;
                 }
                 case MouseButton::Right:
                 {
-                    state.rmButtonDown = true;
+                    state.mouseButton = MouseButton::Right;
                     break;
                 }
             }
@@ -84,17 +84,17 @@ UserInput& EventHandler::handleEvent(xcb_generic_event_t* event)
             {
                 case MouseButton::Left:
                 {
-                    state.lmButtonDown = false;
+                    state.mouseButton = MouseButton::Left;
                     break;
                 }
                 case MouseButton::Middle:
                 {
-                    state.mmButtonDown = false;
+                    state.mouseButton = MouseButton::Middle;
                     break;
                 }
                 case MouseButton::Right:
                 {
-                    state.rmButtonDown = false;
+                    state.mouseButton = MouseButton::Right;
                     break;
                 }
             }
@@ -113,6 +113,7 @@ UserInput& EventHandler::handleEvent(xcb_generic_event_t* event)
             xcb_button_release_event_t* keyRelease = 
                 (xcb_button_release_event_t*)event;
             state.key = static_cast<Key>(keyRelease->detail);
+            std::cout << "Key released: " << uint16_t(keyRelease->detail) << std::endl;
             break;
         }
         case EventType::EnterWindow:

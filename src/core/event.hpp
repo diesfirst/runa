@@ -18,7 +18,9 @@ enum class Key : uint8_t
     B = 56,
     Alt = 64,
     Esc = 9,
-    S = 39
+    S = 39,
+    A = 38,
+    P = 33
 };
 
 enum class EventType : uint8_t
