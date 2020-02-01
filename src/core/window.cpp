@@ -1,6 +1,6 @@
 #include "window.hpp"
 
-XWindow::XWindow(int width, int height)
+XWindow::XWindow(uint16_t width, uint16_t height)
 {
 	connection = xcb_connect(NULL,NULL);
 	screen = xcb_setup_roots_iterator(

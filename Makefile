@@ -1,9 +1,9 @@
 CC = g++
-INCDIRS = -Iinclude/thirdparty
+INCDIRS = -I/home/michaelb/Dev/runa/include/thirdparty
 WFLAGS = -std=c++17 -Wall -W -Wno-parentheses -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-uninitialized -Wno-unused-parameter -Wno-unused-local-typedefs
-CFLAGS = -std=c++17 -g $(WFLAGS) $(INCDIRS)
-LDFLAGS = -lruna -lpthread -lxcb -lvulkan -lX11 
-LIB = lib
+CFLAGS = -std=c++17 -g $(WFLAGS) $(INCDIRS) -fPIC
+LDFLAGS = -lruna -lpthread -lxcb -lvulkan -lX11 -lreadline
+LIB = /home/michaelb/Dev/runa/lib
 LDIRS = -L$(LIB)/loader -L$(LIB)
 LINK = $(LDIRS) $(LDFLAGS)
 SPV = build/shaders
@@ -16,7 +16,7 @@ TEST = test
 _OBJS = lodepng.o context.o swapchain.o window.o renderer.o mem.o commander.o description.o event.o
 OBJS = $(patsubst %, $(BUILD)/%, $(_OBJS))
 
-paint_canvas: $(BUILD)/paint_canvas.o $(LIB)/libruna.a
+paint_runtime: $(BUILD)/paint_runtime.o $(LIB)/libruna.a
 	$(CC) $^ -o $(BIN)/$@ $(LINK) ; ctags -R .
 
 %: $(BUILD)/%.o $(LIB)/libruna.a
@@ -85,7 +85,7 @@ $(LIB)/libruna.a : $(OBJS)
 .PHONY: clean shaders
 
 clean:
-	rm -f *.o .*.swp app
+	rm -f $(BUILD)/*.o 
 
 shaders: 
 	python3 tools/compileShaders.py

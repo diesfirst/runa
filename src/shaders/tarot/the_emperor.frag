@@ -12,5 +12,5 @@ void main()
 	color += stroke(sdf, .5, .125);
 	color += fill(sdf, .1);
 
-	outColor = vec4(color, 1.);
+	outColor = vec4(color, 0.);
 }

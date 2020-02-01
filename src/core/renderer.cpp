@@ -533,7 +533,7 @@ std::vector<vk::PipelineShaderStageCreateInfo> GraphicsPipeline::extractShaderSt
 	return stageInfos;
 }
 
-Framebuffer::Framebuffer(
+RenderPassInstance::RenderPassInstance(
         const vk::Device& device,
         Attachment& target, 
         const RenderPass& pass,
@@ -550,38 +550,38 @@ Framebuffer::Framebuffer(
     ci.setPAttachments(&target.getImage(0).getView());
     ci.setLayers(1);
     ci.setRenderPass(pass.getHandle()); //only a template for where this fb can be used
-    handle = device.createFramebuffer(ci);
+    framebuffer = device.createFramebuffer(ci);
 }
 
-Framebuffer::~Framebuffer()
+RenderPassInstance::~RenderPassInstance()
 {
-    if (handle)
-        device.destroyFramebuffer(handle);
+    if (framebuffer)
+        device.destroyFramebuffer(framebuffer);
 }
 
-Framebuffer::Framebuffer(Framebuffer&& other) :
+RenderPassInstance::RenderPassInstance(RenderPassInstance&& other) :
     renderTarget{other.renderTarget},
     renderPass{other.renderPass},
     pipeline{other.pipeline},
     device{other.device},
-    handle{std::move(other.handle)}
+    framebuffer{std::move(other.framebuffer)}
 {
-    other.handle = nullptr;
+    other.framebuffer = nullptr;
 }
 
-const RenderPass& Framebuffer::getRenderPass() const
+const RenderPass& RenderPassInstance::getRenderPass() const
 {
     return renderPass;
 }
 
-const GraphicsPipeline& Framebuffer::getPipeline() const
+const GraphicsPipeline& RenderPassInstance::getPipeline() const
 {
     return pipeline;
 }
 
-const vk::Framebuffer& Framebuffer::getHandle() const
+const vk::Framebuffer& RenderPassInstance::getFramebuffer() const
 {
-    return handle;
+    return framebuffer;
 }
 
 RenderFrame::RenderFrame(
@@ -628,46 +628,43 @@ RenderFrame::RenderFrame(RenderFrame&& other) :
 	height{other.height},
 	commandBuffers{std::move(other.commandBuffers)},
 	swapchainAttachment{std::move(other.swapchainAttachment)},
-    framebuffers{std::move(other.framebuffers)},
+    renderPassInstances{std::move(other.renderPassInstances)},
     bufferBlock{other.bufferBlock}
 {
 	other.semaphore = nullptr;
 	other.fence = nullptr;
 	other.descriptorPool = nullptr;
-    other.framebuffers.clear();
+    other.renderPassInstances.clear();
 }
 
-void RenderFrame::addFramebuffer(
+void RenderFrame::addRenderPassInstance(
         Attachment& target, 
         const RenderPass& pass, 
         const GraphicsPipeline& pipe)
 {
     assert(pipe.isCreated() && "Pipeline not created!");
-    framebuffers.emplace_back(
+    renderPassInstances.emplace_back(
                 device,
                 target,
                 pass,
                 pipe);
 }
 
-void RenderFrame::addFramebuffer(
-        TargetType type,
+void RenderFrame::addRenderPassInstance(
         const RenderPass& pass, 
         const GraphicsPipeline& pipe)
 {
-    if (type == TargetType::swapchain)
-        framebuffers.emplace_back(
-                    device,
-                    *swapchainAttachment,
-                    pass,
-                    pipe);
-    else
-        throw std::runtime_error("invalid target type");
+    assert(pipe.isCreated() && "Pipeline not created!");
+    renderPassInstances.emplace_back(
+                device,
+                *swapchainAttachment,
+                pass,
+                pipe);
 }
 
-void RenderFrame::clearFramebuffers()
+void RenderFrame::clearRenderPassInstances()
 {
-    framebuffers.clear();
+    renderPassInstances.clear();
 }
 
 CommandBuffer& RenderFrame::requestRenderBuffer(uint32_t bufferId)
@@ -739,7 +736,7 @@ const std::vector<vk::DescriptorSet>& RenderFrame::getDescriptorSets() const
 	return descriptorSets;
 }
 
-Renderer::Renderer(Context& context, XWindow& window) :
+Renderer::Renderer(Context& context) :
 	context{context},
 	device{context.device},
 	graphicsQueue{context.queue},
@@ -749,25 +746,6 @@ Renderer::Renderer(Context& context, XWindow& window) :
         context.getGraphicsQueueFamilyIndex(), 
         vk::CommandPoolCreateFlagBits::eTransient}
 {
-	swapchain = std::make_unique<Swapchain>(context, window, 3); 
-	//we hardcode 3 swap images
-	for (auto& imageHandle : swapchain->getImages()) 
-	{
-		auto image = std::make_unique<mm::Image>(
-				device, 
-				imageHandle, 
-				swapchain->getExtent3D(), 
-				swapchain->getFormat(), 
-				swapchain->getUsageFlags());
-		auto swapAttachment{
-			std::make_unique<Attachment>(device, std::move(image))};
-		auto renderFrame{RenderFrame(
-				context, 
-				std::move(swapAttachment),
-				swapchain->getExtent2D().width, 
-				swapchain->getExtent2D().height)};
-		frames.emplace_back(std::move(renderFrame));
-	}
     createDescriptorPool();
     createDescriptorBuffer(100000000); //arbitrary for now. 100MB
     descriptorBuffer->map();
@@ -793,10 +771,34 @@ Renderer::~Renderer()
 	pipelineLayouts.clear();
 }
 
+void Renderer::prepareRenderFrames(XWindow& window)
+{
+	swapchain = std::make_unique<Swapchain>(context, window, 3); 
+	//we hardcode 3 swap images
+	for (auto& imageHandle : swapchain->getImages()) 
+	{
+		auto image = std::make_unique<mm::Image>(
+				device, 
+				imageHandle, 
+				swapchain->getExtent3D(), 
+				swapchain->getFormat(), 
+				swapchain->getUsageFlags());
+		auto swapAttachment{
+			std::make_unique<Attachment>(device, std::move(image))};
+		auto renderFrame{RenderFrame(
+				context, 
+				std::move(swapAttachment),
+				swapchain->getExtent2D().width, 
+				swapchain->getExtent2D().height)};
+		frames.emplace_back(std::move(renderFrame));
+	}
+}
+
 RenderPass& Renderer::createRenderPass(std::string name)
 {
 	auto renderPass{RenderPass(device, name)};
 	renderPasses.emplace(name, std::move(renderPass));
+    std::cout << "made a renderpass" << std::endl;
 	renderPassCount++;
 	return renderPasses.at(name);
 }
@@ -889,7 +891,7 @@ void Renderer::updateFrameSamplers(const vk::ImageView* view, const vk::Sampler*
     }
 }
 
-void Renderer::updateFrameSamplers(const std::vector<const mm::Image*> images, uint32_t binding)
+void Renderer::updateFrameSamplers(const std::vector<const mm::Image*>& images, uint32_t binding)
 {
     for (auto& frame : frames) 
     {
@@ -910,8 +912,10 @@ void Renderer::updateFrameSamplers(const std::vector<const mm::Image*> images, u
         iw.setPImageInfo(imageInfos.data());
         iw.setDescriptorCount(imageInfos.size());
         device.updateDescriptorSets(iw, nullptr);
+        std::cout << "Updated descrtiptor sets" << std::endl;
     }
 }
+
 void Renderer::prepareAsSwapchainPass(RenderPass& rpSwap)
 {
     vk::ClearColorValue cv;
@@ -973,15 +977,16 @@ Attachment& Renderer::createAttachment(
 GraphicsPipeline& Renderer::createGraphicsPipeline(
 		const std::string name, 
         const std::string pipelineLayout,
-		const VertShader& vertShader,
-		const FragShader& fragShader,
-		const RenderPass& renderPass,
+		const std::string vertShader,
+		const std::string fragShader,
+		const std::string renderPass,
         const vk::Rect2D renderArea,
 		const bool geometric)
 {
     assert(graphicsPipelines.find(name) == graphicsPipelines.end() && "Duplicate name for graphics pipeline");
 
-	std::vector<const Shader*> shaderPointers = {&vertShader, &fragShader};
+	std::vector<const Shader*> shaderPointers = 
+        {&vertexShaders.at(vertShader), &fragShaderAt(fragShader)};
 
 	vk::PipelineLayout layout = pipelineLayouts.at(pipelineLayout);
 
@@ -1008,7 +1013,7 @@ GraphicsPipeline& Renderer::createGraphicsPipeline(
                 name,
 				device,
 				layout,
-				renderPass,
+				renderPasses.at(renderPass),
 				0,
 				renderArea,
 				shaderPointers,
@@ -1048,12 +1053,13 @@ void Renderer::recordRenderCommands(uint32_t id, std::vector<uint32_t> fbIds)
 
         for (auto fbId : fbIds)
         {
-            auto& framebuffer = frame.framebuffers[fbId];
-            auto& renderPass = framebuffer.getRenderPass();
-            auto& pipeline = framebuffer.getPipeline();
+            auto& renderPassInstance = frame.renderPassInstances[fbId];
+            auto& renderPass = renderPassInstance.getRenderPass();
+            auto& pipeline = renderPassInstance.getPipeline();
+            auto& framebuffer = renderPassInstance.getFramebuffer();
 
             vk::RenderPassBeginInfo bi;
-            bi.setFramebuffer(framebuffer.getHandle());
+            bi.setFramebuffer(framebuffer);
             bi.setRenderArea(pipeline.getRenderArea());
             bi.setRenderPass(renderPass.getHandle());
             bi.setPClearValues(renderPass.getClearValue());
@@ -1073,33 +1079,30 @@ void Renderer::recordRenderCommands(uint32_t id, std::vector<uint32_t> fbIds)
 	}
 }
 
-void Renderer::addFramebuffer(
-        Attachment& attachment, 
-        const RenderPass& rpass, 
-        const GraphicsPipeline& pipe)
+void Renderer::addRenderPassInstance(
+        std::string attachmentName,
+        std::string renderPassName,
+        std::string pipeline)
 {
+    auto& rpass = renderPasses.at(renderPassName);
+    auto& pipe = graphicsPipelines.at(pipeline);
     for (auto& frame : frames) 
     {
-        frame.addFramebuffer(attachment, rpass, pipe);
+        if (attachmentName.compare("swap") == 0)
+            frame.addRenderPassInstance(rpass, pipe);
+        else 
+        {
+            auto& attachment = *attachments.at(attachmentName);
+            frame.addRenderPassInstance(attachment, rpass, pipe);
+        }
     }
 }
 
-void Renderer::addFramebuffer(
-        const TargetType type,
-        const RenderPass& rpass, 
-        const GraphicsPipeline& pipe)
+void Renderer::clearRenderPassInstances()
 {
     for (auto& frame : frames) 
     {
-        frame.addFramebuffer(type, rpass, pipe);
-    }
-}
-
-void Renderer::clearFramebuffers()
-{
-    for (auto& frame : frames) 
-    {
-        frame.clearFramebuffers();
+        frame.clearRenderPassInstances();
     }
 }
 
@@ -1245,6 +1248,56 @@ void Renderer::createDescriptorBuffer(uint32_t size)
 void Renderer::popBufferBlock()
 {
     descriptorBuffer->popBackBlock();
+}
+
+void Renderer::listAttachments() const
+{
+    std::cout << "Attachments: " << std::endl;
+    for (const auto& item : attachments) 
+    {
+        std::cout << item.first << std::endl;
+    }
+}
+
+void Renderer::listVertShaders() const
+{
+    std::cout << "Vertex shaders: " << std::endl;
+    for (const auto& item : vertexShaders) 
+    {
+        std::cout << item.first << std::endl;    
+    }
+}
+
+void Renderer::listFragShaders() const
+{
+    std::cout << "Fragment Shaders: " << std::endl;
+    for (const auto& item : fragmentShaders) 
+    {
+        std::cout << item.first << std::endl;    
+    }
+}
+
+void Renderer::listPipelineLayouts() const
+{
+    std::cout << "Pipeline layouts: " << std::endl;
+    for (const auto& item : pipelineLayouts)
+    {
+        std::cout << item.first << std::endl;
+    }
+}
+
+void Renderer::listRenderPasses() const
+{
+    std::cout << "RenderPasses: " << std::endl;
+    for (const auto& item : renderPasses)
+    {
+        std::cout << item.first << std::endl;
+    }
+}
+
+FragShader& Renderer::fragShaderAt(const std::string name)
+{
+    return fragmentShaders.at(name);
 }
 
 mm::BufferBlock* Renderer::copySwapToHost(const vk::Rect2D region)

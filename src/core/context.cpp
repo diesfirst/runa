@@ -23,7 +23,7 @@ Context::~Context()
 {
 	std::cout << "context destructor called" << std::endl;
 	device.destroy();
-	destroyDebugMessenger();
+	if (enableValidation) destroyDebugMessenger();
 	instance.destroy();
 }
 
@@ -68,8 +68,11 @@ void Context::createInstance()
 	extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 	extensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
 	std::vector<const char*> layers;
-	layers.push_back("VK_LAYER_KHRONOS_validation");
-	layers.push_back("VK_LAYER_LUNARG_standard_validation");
+    if (enableValidation)
+    {
+        layers.push_back("VK_LAYER_KHRONOS_validation");
+        layers.push_back("VK_LAYER_LUNARG_standard_validation");
+    }
 //	layers.push_back("VK_LAYER_LUNARG_api_dump");
 
 	checkLayers(layers);

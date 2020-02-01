@@ -12,5 +12,5 @@ vec2 resolution = vec2(WIDTH, HEIGHT);
 void main()
 {
 	vec2 st = gl_FragCoord.xy / resolution;
-	outColor = texture(samplerColor[4], st);
+	outColor = texture(samplerColor[0], st);
 }

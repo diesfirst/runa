@@ -12,5 +12,5 @@ void main()
 	vec2 offset = vec2(.1, .05);
 	color -= fill(circleSDF(st - offset), .5);
 
-	outColor = vec4(color, 1.);
+	outColor = vec4(color, 0.);
 }

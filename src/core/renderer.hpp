@@ -198,27 +198,25 @@ private:
 	vk::PipelineInputAssemblyStateCreateInfo createInputAssemblyState();
 };
 
-class Framebuffer
+class RenderPassInstance
 {
 public:
-    Framebuffer(const vk::Device&, Attachment&, const RenderPass&, const GraphicsPipeline&);
-    virtual ~Framebuffer();
-	Framebuffer(const Framebuffer&) = delete;
-	Framebuffer& operator=(Framebuffer&) = delete;
-	Framebuffer& operator=(Framebuffer&&) = delete;
-	Framebuffer(Framebuffer&&);
+    RenderPassInstance(const vk::Device&, Attachment&, const RenderPass&, const GraphicsPipeline&);
+    virtual ~RenderPassInstance();
+	RenderPassInstance(const RenderPassInstance&) = delete;
+	RenderPassInstance& operator=(RenderPassInstance&) = delete;
+	RenderPassInstance& operator=(RenderPassInstance&&) = delete;
+	RenderPassInstance(RenderPassInstance&&);
     const RenderPass& getRenderPass() const;
     const GraphicsPipeline& getPipeline() const;
-    const vk::Framebuffer& getHandle() const;
+    const vk::Framebuffer& getFramebuffer() const;
 private:
-    vk::Framebuffer handle;
+    vk::Framebuffer framebuffer;
     const Attachment& renderTarget;
     const RenderPass& renderPass;
     const GraphicsPipeline& pipeline;
     const vk::Device& device;
 };
-
-
 
 class RenderFrame
 {
@@ -240,10 +238,10 @@ public:
 	vk::Semaphore requestSemaphore();
 	CommandBuffer& requestRenderBuffer(uint32_t bufferId); //will reset if exists
     CommandBuffer& getRenderBuffer(uint32_t bufferId);  //will fetch existing
-    void addFramebuffer(Attachment&, const RenderPass&, const GraphicsPipeline&);
-    void addFramebuffer(TargetType, const RenderPass&, const GraphicsPipeline&);
-    void clearFramebuffers();
-    std::vector<Framebuffer> framebuffers;
+    void addRenderPassInstance(Attachment&, const RenderPass&, const GraphicsPipeline&);
+    void addRenderPassInstance(const RenderPass&, const GraphicsPipeline&);
+    void clearRenderPassInstances();
+    std::vector<RenderPassInstance> renderPassInstances;
     mm::BufferBlock* bufferBlock;
     
 
@@ -268,7 +266,7 @@ private:
 class Renderer
 {
 public:
-	Renderer(Context&, XWindow& window);
+	Renderer(Context&);
 	~Renderer();
 	Renderer(const Renderer&) = delete;
 	Renderer& operator=(Renderer&) = delete;
@@ -283,11 +281,12 @@ public:
     const std::string createPipelineLayout(
             const std::string name, 
             const std::vector<std::string> setLayouts);
+    void prepareRenderFrames(XWindow& window);
     void createFrameDescriptorSets(const std::vector<std::string>setLayoutNames);
     void createOwnDescriptorSets(const std::vector<std::string>setLayoutNames);
     void initFrameUBOs(size_t size, uint32_t binding);
     void updateFrameSamplers(const vk::ImageView*, const vk::Sampler*, uint32_t binding);
-    void updateFrameSamplers(const std::vector<const mm::Image*>, uint32_t binding);
+    void updateFrameSamplers(const std::vector<const mm::Image*>&, uint32_t binding);
     void prepareAsSwapchainPass(RenderPass&);
     void prepareAsOffscreenPass(RenderPass&, vk::AttachmentLoadOp);
     Attachment& createAttachment(
@@ -295,9 +294,9 @@ public:
 	GraphicsPipeline& createGraphicsPipeline(
 			const std::string name, 
             const std::string pipelineLayout,
-			const VertShader&,
-			const FragShader&,
-			const RenderPass&,
+			const std::string vertshader,
+			const std::string fragshader,
+			const std::string renderpass,
             const vk::Rect2D renderArea,
 			const bool geometric);
 	void bindToDescription(Description& description);
@@ -308,11 +307,20 @@ public:
 	//having only 1 pipeline per commandbuffer is doomed
 	void recordRenderCommands(uint32_t bufferId, std::vector<uint32_t> renderPassIds);
     void prepare(const std::string tarotPath);
-    void addFramebuffer(Attachment&, const RenderPass&, const GraphicsPipeline&);
-    void addFramebuffer(TargetType, const RenderPass&, const GraphicsPipeline&);
-    void clearFramebuffers();
+    void addRenderPassInstance(
+            const std::string attachment, const std::string renderpass,
+            const std::string pipeline);
+    void clearRenderPassInstances();
 	void render(uint32_t cmdId, bool updateUbo);
     void popBufferBlock();
+    void listAttachments() const;
+    void listVertShaders() const;
+    void listFragShaders() const;
+    void listPipelineLayouts() const;
+    void listRenderPasses() const;
+    FragShader& fragShaderAt(const std::string);
+    VertShader& vertShaderAt(const std::string);
+    RenderPass& renderPassAt(const std::string);
 
     mm::BufferBlock* copySwapToHost(const vk::Rect2D region);
     mm::BufferBlock* copyAttachmentToHost(const std::string, const vk::Rect2D region);

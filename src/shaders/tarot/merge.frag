@@ -13,6 +13,7 @@ void main()
 	float right = circleSDF(st - phase);
 
 	color += flip(stroke(left, .5, .05), fill(right, .525));
+    color *= vec3(0.8, .1, .9);
 
-	outColor = vec4(color, 1.);
+	outColor = vec4(color, 0.);
 }

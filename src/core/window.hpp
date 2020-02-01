@@ -10,7 +10,7 @@
 class XWindow
 {
 public:
-	XWindow (int width, int height);
+	XWindow (uint16_t width, uint16_t height);
 
 	void open();
 
