@@ -12,7 +12,11 @@ class XWindow
 public:
 	XWindow (uint16_t width, uint16_t height);
 
+    ~XWindow();
+
 	void open();
+
+    void close();
 
 	std::vector<int> size;
 	
@@ -24,12 +28,6 @@ public:
 
 	xcb_window_t window;
 
-	int16_t mouseX = 0;
-	int16_t mouseY = 0;
-	bool mButtonDown = false;
-
-	void printMousePosition() const;
-
 private:
 	xcb_screen_t* screen;
 	uint32_t values[2];
@@ -38,14 +36,13 @@ private:
 	xcb_atom_t wmProtocols;
 	xcb_atom_t wmDeleteWin;
 	std::string appName = "aurora";
-	std::string appClass = "floating";
+    std::string appClass = "floating";
+    bool created{false};
 
 	void createWindow(const int width, const int height);
 
 	void setEvents();
 
-	void sendNotifications();
-	
 	void setName();
 
 	void setClass();

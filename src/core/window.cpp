@@ -1,15 +1,24 @@
 #include "window.hpp"
 
-XWindow::XWindow(uint16_t width, uint16_t height)
+XWindow::XWindow(uint16_t width, uint16_t height) :
+	connection{xcb_connect(NULL,NULL)},
+    window{xcb_generate_id(connection)}
 {
-	connection = xcb_connect(NULL,NULL);
 	screen = xcb_setup_roots_iterator(
 			xcb_get_setup(connection)).data;
-	window = xcb_generate_id(connection);
 	setEvents();
 	createWindow(width, height);
 	setName();
 	setClass();
+}
+
+XWindow::~XWindow()
+{
+    if (created)
+    {
+        xcb_destroy_window(connection, window);
+        xcb_disconnect(connection);
+    }
 }
 
 void XWindow::createWindow(const int width, const int height)
@@ -17,7 +26,6 @@ void XWindow::createWindow(const int width, const int height)
 	//create window
 	size.push_back(width);
 	size.push_back(height);
-	std::cout << "set size"  << std::endl;
 	xcb_create_window(
 			connection,
 			XCB_COPY_FROM_PARENT,
@@ -29,6 +37,7 @@ void XWindow::createWindow(const int width, const int height)
 			XCB_WINDOW_CLASS_INPUT_OUTPUT,
 			screen->root_visual,
 			mask, values);
+    created = true;
 }
 
 void XWindow::setEvents()
@@ -81,33 +90,9 @@ xcb_generic_event_t* XWindow::waitForEvent() const
 	return xcb_wait_for_event(connection);
 }
 
-void XWindow::printMousePosition() const
-{
-	std::cout << "Mouse X: " << mouseX << std::endl;
-	std::cout << "Mouse Y: " << mouseY << std::endl;
-}
-
 void XWindow::open()
 {
-	sendNotifications();
 	xcb_map_window(connection, window);
 	xcb_flush(connection);
-}
-
-void XWindow::sendNotifications() 
-{
-	xcb_intern_atom_cookie_t wmDeleteCookie = xcb_intern_atom(
-			connection, 0, strlen("WM_DELETE_WINDOW"), "WM_DELETE_WINDOW");
-	xcb_intern_atom_cookie_t wmProtocolsCookie =
-	    xcb_intern_atom(connection, 0, strlen("WM_PROTOCOLS"), "WM_PROTOCOLS");
-	xcb_intern_atom_reply_t *wmDeleteReply =
-	    xcb_intern_atom_reply(connection, wmDeleteCookie, NULL);
-	xcb_intern_atom_reply_t *wmProtocolsReply =
-	    xcb_intern_atom_reply(connection, wmProtocolsCookie, NULL);
-	wmDeleteWin = wmDeleteReply->atom;
-	wmProtocols = wmProtocolsReply->atom;
-
-	xcb_change_property(connection, XCB_PROP_MODE_REPLACE, window,
-			    wmProtocolsReply->atom, 4, 32, 1, &wmDeleteReply->atom);
 }
 

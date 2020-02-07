@@ -11,8 +11,6 @@
 #include "../thirdparty/lodepng.h"
 #include <map>
 #include <sstream>
-#include <readline/readline.h>
-#include <readline/history.h>
 #include <fstream>
 #include <algorithm>
 #include <cctype>
@@ -27,6 +25,7 @@ constexpr uint32_t C_HEIGHT = 4096;
 
 constexpr char SHADER_DIR[] = "build/shaders/";
 Timer myTimer;
+
 
 struct RenderPassInstanceInfo
 {
@@ -268,43 +267,6 @@ std::vector<Command> commands =
 };
 
 
-char* completion_generator(const char* text, int state)
-{
-    static std::vector<std::string> matches;
-    static size_t match_index = 0;
-
-    if (state == 0)
-    {
-        matches.clear();
-        match_index = 0;
-    
-        std::string textstr(text);
-        for (auto cmd : commands)
-        {
-            std::string word(cmd.name);
-            if (word.size() >= textstr.size() && word.compare(0, textstr.size(), textstr) == 0)
-            {
-                matches.push_back(word);
-            }
-        }
-    }
-    
-    if (match_index >= matches.size())
-    {
-        return nullptr;
-    }
-    else
-    {
-        return strdup(matches[match_index++].c_str());
-    }
-}
-
-char** completer(const char* text, int start, int end)
-{
-    rl_attempted_completion_over = 1;
-
-    return rl_completion_matches(text, completion_generator);
-}
 
 Runtime::Runtime(uint16_t w, uint16_t h) :
     context{},
@@ -320,43 +282,6 @@ Runtime::Runtime(uint16_t w, uint16_t h) :
 
 Runtime::~Runtime()
 {
-}
-
-std::string Runtime::fetchInput()
-{
-    std::string input;
-    if (std::getline(infile, input))
-    {
-        return input;
-    }
-    rl_attempted_completion_function = completer;
-
-    char* buf = readline(">> ");
-
-    if (buf && *buf) //dont add empty lines to history
-        add_history(buf);
-
-    input = std::string(buf);
-    if (parsedQuit(input))
-        return "";
-
-    if (input == "save")
-    {
-        std::cout << "Enter save file name." << std::endl;
-        std::string savefilename;
-        std::cin >> savefilename;
-        std::ofstream savefile(savefilename);
-        std::ifstream curOut("log");
-        savefile << curOut.rdbuf();
-        return "";
-    }
-    outfile << input;
-    outfile << std::endl;
-
-    free(buf);
-    std::cout << "Input check " << input << std::endl;
-
-    return input;
 }
 
 void Runtime::listCommands()
@@ -645,15 +570,9 @@ rtFunc Runtime::findCommand(const std::string input) const
 
 void Runtime::run(const char* loadFile)
 {
-    outfile.open("log", std::ofstream::out | std::ofstream::trunc);
-    if (loadFile)
-    {
-        std::cout << "Loading cached state" << std::endl;
-        infile.open(loadFile);
-    }
     while (1)
     {
-        FETCHINPUT(); //creates an input variable for us
+        eventHandler.fetchEvent(
         input.erase(std::remove(input.begin(), input.end(), ' '), input.end());
         rtFunc cmd = findCommand(input);
         if (cmd == nullptr)

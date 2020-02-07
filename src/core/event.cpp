@@ -3,6 +3,8 @@
 #include <string>
 #include <iostream>
 #include <bitset>
+#include <readline/readline.h>
+#include <readline/history.h>
 
 typedef void (EventHandler::*pEventFunc)(xcb_generic_event_t* event);
 
@@ -20,111 +22,160 @@ EventHandler::EventHandler(const XWindow& window):
 
 EventHandler::~EventHandler()
 {
+    keepWindowThread = false;
+    keepCommandThread = false;
 }
 
-UserInput& EventHandler::fetchUserInput(bool block)
+std::vector<std::string> EventHandler::vocabulary = {"null"};
+
+char* EventHandler::completion_generator(const char* text, int state)
 {
-    if (block)
+    static std::vector<std::string> matches;
+    static size_t match_index = 0;
+
+    if (state == 0)
     {
-        auto event = window.waitForEvent();
-        handleEvent(event); //modify the state
-        return state;
+        matches.clear();
+        match_index = 0;
+    
+        std::string textstr(text);
+        for (auto word : vocabulary)
+        {
+            if (word.size() >= textstr.size() && word.compare(0, textstr.size(), textstr) == 0)
+            {
+                matches.push_back(word);
+            }
+        }
+    }
+    
+    if (match_index >= matches.size())
+    {
+        return nullptr;
     }
     else
     {
-        auto event = window.pollEvents();
-        if(event)
-            handleEvent(event);
-        return state;
+        return strdup(matches[match_index++].c_str());
     }
 }
 
-UserInput& EventHandler::handleEvent(xcb_generic_event_t* event)
+char** EventHandler::completer(const char* text, int start, int end)
+{
+    rl_attempted_completion_over = 1;
+
+    return rl_completion_matches(text, EventHandler::completion_generator);
+}
+
+void EventHandler::setVocabulary(std::vector<std::string> vocab)
+{
+    vocabulary = vocab;
+}
+
+void EventHandler::fetchCommandLineInput()
+{
+    rl_attempted_completion_function = completer;
+
+    CommandLineInput input;
+
+    char* buf = readline(">> ");
+
+    if (buf && *buf) //dont add empty lines to history
+        add_history(buf);
+
+    input = std::string(buf);
+
+    free(buf);
+
+    if (input == "quit")
+    {
+        keepCommandThread = false;   
+    }
+
+    auto event = std::make_unique<CommandLineEvent>(input);
+    eventQueue.emplace(std::move(event));
+}
+
+void EventHandler::fetchWindowInput()
 {	
-    state.eventType = static_cast<EventType>(event->response_type);
-	switch (state.eventType)
+    auto* event = window.waitForEvent();
+    std::unique_ptr<Event> curEvent;
+	switch (static_cast<WindowEventType>(event->response_type))
 	{
-        case EventType::Motion: 
+        case WindowEventType::Motion: 
 		{
 			xcb_motion_notify_event_t* motion =
 				(xcb_motion_notify_event_t*)event;
-			state.mouseX = motion->event_x;
-            state.mouseY = motion->event_y;
+            curEvent = std::make_unique<MouseMotionEvent>(motion->event_x, motion->event_y);
             break;
 		}
-        case EventType::MousePress:
+        case WindowEventType::MousePress:
 		{
             xcb_button_press_event_t* press = 
                 (xcb_button_press_event_t*)event;
-            switch (static_cast<MouseButton>(press->detail))
-            {
-                case MouseButton::Left:
-                {
-                    state.mouseButton = MouseButton::Left;
-                    break;
-                }
-                case MouseButton::Middle:
-                {
-                    state.mouseButton = MouseButton::Middle;
-                    break;
-                }
-                case MouseButton::Right:
-                {
-                    state.mouseButton = MouseButton::Right;
-                    break;
-                }
-            }
+            curEvent = std::make_unique<MousePressEvent>(static_cast<MouseButton>(press->detail));
             break;
 		}
-        case EventType::MouseRelease:
+        case WindowEventType::MouseRelease:
 		{
             xcb_button_press_event_t* press = 
                 (xcb_button_press_event_t*)event;
-            switch (static_cast<MouseButton>(press->detail))
-            {
-                case MouseButton::Left:
-                {
-                    state.mouseButton = MouseButton::Left;
-                    break;
-                }
-                case MouseButton::Middle:
-                {
-                    state.mouseButton = MouseButton::Middle;
-                    break;
-                }
-                case MouseButton::Right:
-                {
-                    state.mouseButton = MouseButton::Right;
-                    break;
-                }
-            }
+            curEvent = std::make_unique<MouseReleaseEvent>(static_cast<MouseButton>(press->detail));
             break;
 		}
-        case EventType::Keypress:
+        case WindowEventType::Keypress:
 		{
 			xcb_key_press_event_t* keyPress =
 				(xcb_key_press_event_t*)event;
-            std::cout << "Key: " << uint32_t(keyPress->detail) << std::endl;
-            state.key = static_cast<Key>(keyPress->detail);
+            //will cause this to be the last iteration of the window loop
+            if (static_cast<Key>(keyPress->detail) == Key::Esc)
+                keepWindowThread = false;
+            curEvent = std::make_unique<KeyPressEvent>(static_cast<Key>(keyPress->detail));
             break;
 		}
-        case EventType::Keyrelease:
+        case WindowEventType::Keyrelease:
         {
             xcb_button_release_event_t* keyRelease = 
                 (xcb_button_release_event_t*)event;
-            state.key = static_cast<Key>(keyRelease->detail);
-            std::cout << "Key released: " << uint16_t(keyRelease->detail) << std::endl;
+            curEvent = std::make_unique<KeyReleaseEvent>(static_cast<Key>(keyRelease->detail));
             break;
         }
-        case EventType::EnterWindow:
+        case WindowEventType::EnterWindow:
         {
+            std::cout << "Entered window!" << std::endl;
             break;
         }
-        case EventType::LeaveWindow:
+        case WindowEventType::LeaveWindow:
         {
+            std::cout << "Left window!" << std::endl;
             break;
         }
 	}
 	free(event);
-	return state;
+    eventQueue.emplace(std::move(curEvent));
+}
+
+void EventHandler::runCommandLineLoop()
+{
+    while (keepCommandThread)
+    {
+        fetchCommandLineInput();
+    }
+    std::cout << "Commandline thread exitted." << std::endl;
+}
+
+void EventHandler::runWindowInputLoop()
+{
+    while(keepWindowThread)
+    {
+        fetchWindowInput();
+    }
+    std::cout << "Window thread exitted." << std::endl;
+}
+
+
+void EventHandler::pollEvents()
+{
+    std::thread t0(&EventHandler::runCommandLineLoop, this);
+    std::thread t1(&EventHandler::runWindowInputLoop, this);
+    t0.detach();
+    t1.detach();
 }
