@@ -14,8 +14,8 @@
 class Context
 {
 public:
-	Context ();
-	virtual ~Context ();
+	Context();
+	~Context();
 	void deviceReport();
 	vk::Device getDevice();
 	uint32_t pickQueueFamilyIndex(vk::SurfaceKHR surface) const;
@@ -25,7 +25,6 @@ public:
 	bool enableValidation = true;
 	uint32_t getGraphicsQueueFamilyIndex() const;
 	void setQueue();
-	void printInstanceExtensionProperties();
 	void printDeviceMemoryHeapInfo();
 
 	void printDeviceMemoryTypeInfo();
@@ -49,13 +48,10 @@ public:
 
 private:
 	vk::PhysicalDeviceFeatures physicalDeviceFeatures;
-	std::vector<vk::ExtensionProperties> instanceExtensionProperties;
 	std::vector<vk::QueueFamilyProperties> queueFamilies;
 	std::vector<vk::ExtensionProperties> deviceExtensionProperties;
 	VkDebugUtilsMessengerEXT debugMessenger;
 	vk::DispatchLoaderDynamic dispatcher;
-
-	void createContext();
 
 	void setupDebugMessenger2();
 
@@ -64,8 +60,6 @@ private:
 	void destroyContext();
 
 	void createCommander();
-
-	void checkInstanceExtensionProperties();
 
 	void createInstance();
 

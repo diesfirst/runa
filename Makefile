@@ -1,10 +1,10 @@
 CC = g++
-INCDIRS = -I/home/michaelb/Dev/runa/include/thirdparty
+INCDIRS = -I/usr/include -I/home/michaelb/Dev/runa/include/thirdparty
 WFLAGS = -std=c++17 -Wall -W -Wno-parentheses -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-uninitialized -Wno-unused-parameter -Wno-unused-local-typedefs
-CFLAGS = -std=c++17 -g $(WFLAGS) $(INCDIRS) -fPIC
-LDFLAGS = -lruna -lpthread -lxcb -lvulkan -lX11 -lreadline
+CFLAGS = -std=c++17 -g -v $(WFLAGS) $(INCDIRS) -fPIC
+LDFLAGS = -lpthread -lxcb -lvulkan -lX11 -lreadline -ldl
 LIB = /home/michaelb/Dev/runa/lib
-LDIRS = -L$(LIB)/loader -L$(LIB)
+LDIRS = -L$(LIB) #-L$(LIB)/loader 
 LINK = $(LDIRS) $(LDFLAGS)
 SPV = build/shaders
 BIN = bin
@@ -13,10 +13,10 @@ CORE = src/core
 PROG = src/programs
 THIRD = src/thirdparty
 TEST = test
-_OBJS = lodepng.o context.o swapchain.o window.o renderer.o mem.o commander.o description.o event.o
+_OBJS = lodepng.o context.o swapchain.o window.o renderer.o mem.o commander.o description.o event.o commandstate.o
 OBJS = $(patsubst %, $(BUILD)/%, $(_OBJS))
 
-paint_runtime: $(BUILD)/paint_runtime.o $(LIB)/libruna.a
+main: $(BUILD)/main.o $(OBJS) #$(LIB)/libruna.a
 	$(CC) $^ -o $(BIN)/$@ $(LINK) ; ctags -R .
 
 %: $(BUILD)/%.o $(LIB)/libruna.a
@@ -70,7 +70,7 @@ $(BUILD)/description.o : $(CORE)/description.cpp $(CORE)/description.hpp $(CORE)
 $(BUILD)/renderer.o : $(CORE)/renderer.cpp $(CORE)/renderer.hpp $(CORE)/context.hpp $(CORE)/commander.hpp $(CORE)/mem.hpp $(CORE)/util.hpp $(CORE)/swapchain.hpp $(CORE)/window.hpp
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-$(BUILD)/main.o : $(PROG)/main.cpp $(PROG)/programs.hpp 
+$(BUILD)/commandstate.o : $(CORE)/commandstate.cpp $(CORE)/commandstate.hpp $(CORE)/util.hpp $(CORE)/event.hpp $(CORE)/renderer.hpp
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 $(BUILD)/%.o : $(PROG)/%.cpp

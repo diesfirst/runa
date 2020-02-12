@@ -15,8 +15,11 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 
 Context::Context()
 {
-	createContext();
-	deviceReport();
+	createInstance();
+	if (enableValidation) setupDebugMessenger2();
+	createPhysicalDevice();
+	createDevice();
+	setQueue();
 }
 
 Context::~Context()
@@ -46,32 +49,17 @@ vk::Device Context::getDevice()
 
 //private
 
-void Context::createContext()
-{
-	checkInstanceExtensionProperties();
-	printInstanceExtensionProperties();
-	createInstance();
-	if (enableValidation) setupDebugMessenger2();
-	createPhysicalDevice();
-	createDevice();
-	setQueue();
-}
-
-void Context::destroyContext()
-{
-}
-
 void Context::createInstance()
 {
 	std::vector<const char*> extensions;
 	extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 	extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 	extensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
+
 	std::vector<const char*> layers;
     if (enableValidation)
     {
         layers.push_back("VK_LAYER_KHRONOS_validation");
-        layers.push_back("VK_LAYER_LUNARG_standard_validation");
     }
 //	layers.push_back("VK_LAYER_LUNARG_api_dump");
 
@@ -84,12 +72,6 @@ void Context::createInstance()
 	instanceInfo.ppEnabledLayerNames = layers.data();
 
 	instance = vk::createInstance(instanceInfo);
-}
-
-
-void Context::checkInstanceExtensionProperties()
-{
-	instanceExtensionProperties = vk::enumerateInstanceExtensionProperties();
 }
 
 void Context::createPhysicalDevice()
@@ -146,20 +128,14 @@ void Context::createDevice()
     deviceInfo.setPNext(&indexingFeatures);
 
 	device = physicalDevice.createDevice(deviceInfo);
+    assert(device && "Device failed to be created");
+    std::cout << "Device created at: " << device << std::endl;
 }
 
 void Context::setQueue()
 {
 	//this should be based on the surface requirements, but 0 works
 	queue = device.getQueue(0, 0);
-}
-
-void Context::printInstanceExtensionProperties()
-{
-	std::cout << "---Instance Extension Properties---" << std::endl;
-	for (const auto n : instanceExtensionProperties) {
-		std::cout << "Instance extension name: " << n.extensionName << std::endl;
-	}
 }
 
 void Context::printDeviceMemoryHeapInfo()
@@ -292,6 +268,7 @@ void Context::setupDebugMessenger2()
 		VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
 		VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT |
 		VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
+    dbCreateInfo.flags = 0;
 	dbCreateInfo.pfnUserCallback = debugCallback;
 	auto func = (PFN_vkCreateDebugUtilsMessengerEXT) instance.getProcAddr("vkCreateDebugUtilsMessengerEXT");
 	assert(func != nullptr);

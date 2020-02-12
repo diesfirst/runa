@@ -59,6 +59,10 @@ class Event
 public:
     virtual EventCategory getCategory() const = 0;
     virtual std::string getName() const = 0;
+    inline void setHandled() {handled = true;}
+    inline bool isHandled() const {return handled;}
+private:
+    bool handled{false};
 };
 
 class CommandLineEvent : public Event
