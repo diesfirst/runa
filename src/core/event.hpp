@@ -5,6 +5,7 @@
 #include <memory>
 #include <thread>
 #include <queue>
+#include <fstream>
 
 enum class MouseButton : uint8_t
 {
@@ -61,7 +62,7 @@ public:
     virtual std::string getName() const = 0;
     inline void setHandled() {handled = true;}
     inline bool isHandled() const {return handled;}
-private:
+protected:
     bool handled{false};
 };
 
@@ -72,8 +73,22 @@ public:
     inline EventCategory getCategory() const override {return EventCategory::CommandLine;}
     inline std::string getName() const override {return "CommandLine";};
     inline CommandLineInput getInput() const {return input;}
+    inline void serialize(std::ofstream& os) {
+        size_t inputSize = input.size();
+        os.write((char*)&inputSize, sizeof(size_t));
+        os.write((char*)input.data(), input.size());
+        os.write((char*)&handled, sizeof(bool));
+    }
+    inline void unserialize(std::ifstream& is) {
+        size_t inputSize;
+        is.read((char*)&inputSize, sizeof(size_t));
+        char cstr[inputSize];
+        is.read(cstr, inputSize);
+        input.assign(cstr);
+        is.read((char*)&handled, sizeof(bool));
+    }
 private:
-    const CommandLineInput input;
+    CommandLineInput input;
 };
 
 class WindowEvent : public Event

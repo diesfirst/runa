@@ -94,5 +94,6 @@ void XWindow::open()
 {
 	xcb_map_window(connection, window);
 	xcb_flush(connection);
+    opened = true;
 }
 

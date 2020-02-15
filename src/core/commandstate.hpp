@@ -2,67 +2,46 @@
 #include "../core/renderer.hpp"
 #include <stack>
 
-class ReportStuff;
 class Application;
-class LoadShaderState;
+class AddAttachment;
+class StackHolder;
 
-namespace Command
-{
-    class Command;
-    class AddAttachment;
-    class LoadShaders;
-};
+#define STATE_BASE(name) \
+    Command::Command* handleEvent(Event* event, Stack<State*>*) override;\
+    void onEnter(Application* app) override;\
+    inline const char* getName() const override {return name;}
 
-namespace State
-{
+#define CMD_BASE(name) \
+    void execute(Application*) override;\
+    inline const char* getName() const override {return name;}
 
-class State
-{
-public:
-    virtual Command::Command* handleEvent(Application*, Event* event) const = 0;
-    virtual void onEnter(Application*) const = 0;
-};
-
-class Director: public State
+//TODO: implement an iterator for this so we don't need
+//to have the friend class
+template <class T>
+class Stack
 {
 public:
-    inline Director(std::vector<Command::Command*> cmds) : cmds{cmds} {}
-    Command::Command* handleEvent(Application* app, Event* event) const override;
-    void onEnter(Application* app) const override;
+    friend class Application;
+    inline void push(T const item) {items.push_back(item);}
+    inline void pop() {items.pop_back();}
+    inline T top() const {return items.back();}
+    inline bool empty() const {return items.empty();}
 private:
-    std::vector<Command::Command*> cmds;
+    std::vector<T> items;
 };
 
-class LoadShaders: public State
+
+struct FragmentInput
 {
-public:
-    inline LoadShaders(Command::LoadShaders* cmd) : cmd{cmd} {}
-    Command::Command* handleEvent(Application* app, Event* event) const override;
-    void onEnter(Application* app) const override;
-private:
-    Command::LoadShaders* const cmd;
-};
-
-class AddAttachment: public State
-{
-public:
-    inline AddAttachment(Command::AddAttachment* cmd) : cmd{cmd} {}
-    Command::Command* handleEvent(Application* app, Event* event) const override;
-    void onEnter(Application* app) const override;
-private:
-    Command::AddAttachment* const cmd;
-};
-
-class Paint : public State
-{
-public:
-    inline Paint(std::vector<Command::Command*> cmds) : cmds{cmds} {}
-    Command::Command* handleEvent(Application* app, Event* event) const override;
-    void onEnter(Application* app) const override;
-private:
-    std::vector<Command::Command*> cmds;
-};
-
+    float time;
+	float mouseX{0};
+	float mouseY{0};	
+    float r{1.};
+    float g{1.};
+    float b{1.};
+    float a{1.};
+    float brushSize{1.};
+    glm::mat4 xform{1.};
 };
 
 namespace Command
@@ -71,85 +50,154 @@ namespace Command
 class Command
 {
 public:
-    friend Application;
-    virtual State::State* execute(Application*) = 0;
+    virtual void execute(Application*) = 0;
     virtual const char* getName() const = 0;
 };
 
-class LoadShaders: public Command
+class LoadFragShaders: public Command
 {
 public:
-    friend class State::LoadShaders;
-    inline LoadShaders() : nState{this} {}
-    inline const char* getName() const override {return "loadShaders";}
-    State::State* execute(Application*) override;
-    inline uint8_t getStage() const {return stage;}
-private:
-    uint8_t stage = 0;
-    State::LoadShaders nState;
-    //args
+    inline const char* getName() const override {return "loadFragShaders";}
+    void execute(Application*) override;
     bool isFrag{true};
     std::vector<std::string> shaderNames;
+private:
 };
 
 class AddAttachment: public Command
 {
 public:
-    friend class State::AddAttachment;
-    inline AddAttachment() : nState{this} {}
     inline const char* getName() const override {return "addAttachment";}
-    State::State* execute(Application*) override;
+    void execute(Application*) override;
     void loadArgs(std::string attachmentName, bool isSampled, bool isTransferSrc);
-private:
-    bool pending{false};
-    State::AddAttachment nState;
-    //args
     std::string attachmentName;
-    bool isSampled;   
-    bool isTransferSrc;
+    bool isSampled{false};   
+    bool isTransferSrc{false};
+private:
 };
 
 class OpenWindow : public Command
 {
 public:
-    inline const char* getName() const override {return "openWindow";}
-    State::State* execute(Application*) override;
+    CMD_BASE("openWindow")
 };
 
 class Stamp : public Command
 {
 public:
     inline const char* getName() const override {return "stamp";}
-    inline State::State* execute(Application*) override {return nullptr;}
+    inline void execute(Application*) override {}
     void loadArgs(const uint16_t x,const uint16_t y);
 private:
-    bool active{false};
-    uint16_t x, y;
+    uint16_t x{0}, y{0};
 };
 
 class EnterPaint : public Command
 {
 public:
-    inline EnterPaint(State::Paint* state) : state{state} {}
     inline const char* getName() const override {return "enterPaint";}
-    State::State* execute(Application*) override;
-private:
-    State::Paint* state;
+    void execute(Application*) override {};
 };
 
-};
-
-//TODO: implement an iterator for this so we don't need
-//to have the friend class
-class StateStack
+class SetOffscreenDim : public Command
 {
 public:
-    friend class Application;
-    inline void push(State::State* state) {states.push_back(state);}
-    inline void pop() {states.pop_back();}
-    inline State::State* top() const {return states.back();}
+    CMD_BASE("setOffscreenDim")
+    uint16_t w{0}, h{0};
+};
+
+class CreatePipelineLayout : public Command
+{
+public:
+    CreatePipelineLayout();
+    CMD_BASE("createPipelineLayout")
+    std::string layoutname{"foo"};
+    std::vector<vk::DescriptorSetLayoutBinding> bindings;
 private:
-    std::vector<State::State*> states;
+};
+
+class PrepareRenderFrames : public Command
+{
+public:
+    CMD_BASE("prepareRenderFrames")
+    XWindow* window{nullptr};
+private:
+};
+
+};
+
+namespace State
+{
+
+class State
+{
+public:
+    virtual Command::Command* handleEvent(Event* event, Stack<State*>*) = 0;
+    virtual void onEnter(Application*) = 0;
+    virtual const char* getName() const = 0;
+};
+
+class Director: public State
+{
+public:
+    inline Director(std::vector<State*> states, std::vector<Command::Command*> cmds) : states{states}, cmds{cmds} {}
+    STATE_BASE("director")
+private:
+    std::vector<Command::Command*> cmds;
+    std::vector<State*> states;
+};
+
+class LoadFragShaders: public State
+{
+public:
+    inline LoadFragShaders(Command::LoadFragShaders* cmd) : cmd{cmd} {}
+    STATE_BASE("loadFragShaders")
+private:
+    Command::LoadFragShaders* const cmd{nullptr};
+    uint8_t stage{0};
+};
+
+class AddAttachment: public State
+{
+public:
+    inline AddAttachment(Command::AddAttachment* cmd) : cmd{cmd} {}
+    STATE_BASE("addAttachment")
+private:
+    Command::AddAttachment* const cmd{nullptr};
+};
+
+class Paint : public State
+{
+public:
+    inline Paint(std::vector<Command::Command*> cmds) : cmds{cmds} {}
+    STATE_BASE("paint")
+private:
+    std::vector<Command::Command*> cmds;
+};
+
+class SetOffscreenDim : public State
+{
+public:
+    inline SetOffscreenDim(Command::SetOffscreenDim* cmd) : cmd{cmd} {}
+    STATE_BASE("setOffscreenDim")
+private:
+    Command::SetOffscreenDim* cmd{nullptr};
+};
+
+class InitRenderer : public State
+{
+public:
+    inline InitRenderer(XWindow& the_window) : window{the_window} {}
+    STATE_BASE("initRenderer")
+private:
+    Command::PrepareRenderFrames prepRFrames;
+    Command::CreatePipelineLayout createPipelineLayout;
+    Command::LoadFragShaders loadShaders;
+    std::vector<Command::Command*> cmds{&createPipelineLayout, &prepRFrames, &loadShaders};
+    XWindow& window;
+    bool preparedFrames{false};
+};
+
 };
 
 class Application
@@ -159,6 +207,15 @@ public:
     void setVocabulary(std::vector<std::string>);
     void run();
     void popState();
+    void pushState(State::State* const);
+    void pushCmd(Command::Command* const);
+    void prepareRenderFrames();
+    void createPipelineLayout();
+    void loadDefaultShaders();
+    void createDefaultRenderPasses();
+    void initUBO();
+
+    void readEvents(std::ifstream&);
 
     Context context;
     XWindow window;
@@ -167,15 +224,22 @@ public:
     vk::Extent2D offscreenDim;
 
 private:
-    StateStack stateStack;
-    std::stack<Command::Command*> cmdStack;
+    Stack<State::State*> stateStack;
+    Stack<Command::Command*> cmdStack;
+    Stack<State::State*> stateEdits;
+    FragmentInput fragInput;
 
     State::Director dirState;
     State::Paint paintState;
+    State::AddAttachment aaState;
+    State::LoadFragShaders lsState;
+    State::SetOffscreenDim sodimState;
+    State::InitRenderer initRen{window};
 
     Command::AddAttachment aaCmd;
-    Command::LoadShaders lsCmd;
+    Command::LoadFragShaders lsCmd;
     Command::OpenWindow ow;
     Command::Stamp stampCmd;
     Command::EnterPaint epCmd;
+    Command::SetOffscreenDim sodimCmd;
 };

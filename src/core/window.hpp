@@ -18,6 +18,8 @@ public:
 
     void close();
 
+    bool isOpen() {return opened;}
+
 	std::vector<int> size;
 	
 	xcb_generic_event_t* pollEvents() const;
@@ -38,6 +40,7 @@ private:
 	std::string appName = "aurora";
     std::string appClass = "floating";
     bool created{false};
+    bool opened{false};
 
 	void createWindow(const int width, const int height);
 
