@@ -3,6 +3,7 @@
 #include <sstream>
 #include <filesystem>
 #include <fstream>
+#include <algorithm>
 
 #define SET_VOCAB()\
         std::vector<std::string> vocab;\
@@ -11,9 +12,10 @@
         std::cout << std::endl;\
         app->setVocabulary(vocab)\
     
-constexpr const char* SHADER_DIR = "/home/michaelb/Dev/runa/build/shaders/";
+constexpr const char* SHADER_DIR = "/home/michaelb/Dev/sword/build/shaders/";
 
-Command::Command* State::Director::handleEvent(Event* event, Stack<State*>* stateEdits)
+
+void State::Director::handleEvent(Event* event, StateStack* stateEdits, CommandStack* cmdStack)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
@@ -21,39 +23,35 @@ Command::Command* State::Director::handleEvent(Event* event, Stack<State*>* stat
         std::stringstream instream{input};
         std::string filtered;
         instream >> filtered;
-        for (auto state : states)
-            if (state->getName() == filtered)
-            {
-                event->setHandled();
-                stateEdits->push(state);
-                return nullptr;
-            }
-        for (auto cmd : cmds) 
-            if (cmd->getName() == filtered)
-            {
-                event->setHandled();
-                return cmd;
-            }
+        pushStateFn(filtered, addAttachState, stateEdits);
+        pushStateFn(filtered, loadShaders, stateEdits);
+        pushStateFn(filtered, initRenState, stateEdits);
+        if (filtered == owPool.getName())
+        {
+            auto cmd = owPool.request();
+            cmdStack->push(std::move(cmd));
+        };
+        event->isHandled();
     }
-    return nullptr;
 }
 
-Command::Command* State::AddAttachment::handleEvent(Event* event, Stack<State*>* stateEdits)
+void State::AddAttachment::handleEvent(Event* event, StateStack* stateEdits, CommandStack* cmdStack)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
         std::cout << "AddAttachment pushed" << std::endl;
         auto input = static_cast<CommandLineEvent*>(event)->getInput();
         std::stringstream instream{input};
-        instream >> cmd->attachmentName >> cmd->isSampled >> cmd->isTransferSrc;
+        std::string attachmentName; bool isSampled; bool isTransferSrc;
+        instream >> attachmentName >> isSampled >> isTransferSrc;
+        auto cmd = addAttPool.request(attachmentName, isSampled, isTransferSrc);
         stateEdits->push(nullptr);
+        cmdStack->push(std::move(cmd));
         event->setHandled();
-        return cmd;
     }
-    return nullptr;
 }
 
-Command::Command* State::LoadFragShaders::handleEvent(Event* event, Stack<State*>* stateEdits)
+void State::LoadShaders::handleEvent(Event* event, StateStack* stateEdits, CommandStack* cmdStack)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
@@ -61,87 +59,78 @@ Command::Command* State::LoadFragShaders::handleEvent(Event* event, Stack<State*
         std::vector<std::string> shaders;
         std::string input;
         while (instream >> input)
-            shaders.push_back(input);
-        cmd->shaderNames = shaders;
-        stateEdits->push(nullptr);
-        event->setHandled();
-        return cmd;
-    }
-    return nullptr;
-}
-
-Command::Command* State::Paint::handleEvent(Event* event, Stack<State*>* stateEdits)
-{
-    if (event->getCategory() == EventCategory::Window)
-    {
-        auto e = static_cast<WindowEvent*>(event);
-        if (e->getType() == WindowEventType::Motion)
         {
-            auto me = static_cast<MouseMotionEvent*>(e);
-            std::cout << me->getX() << std::endl;
-            std::cout << me->getY() << std::endl;
+            auto cmd = loadFragPool.request(input);
+            cmdStack->push(std::move(cmd));
         }
-    }
-    return nullptr;
-}
-
-Command::Command* State::SetOffscreenDim::handleEvent(Event* event, Stack<State*>* stateEdits)
-{
-    if (event->getCategory() == EventCategory::CommandLine)
-    {
-        std::stringstream instream{static_cast<CommandLineEvent*>(event)->getInput()};
-        instream >> cmd->w >> cmd->h;
         stateEdits->push(nullptr);
         event->setHandled();
-        return cmd;
     }
-    return nullptr;
 }
 
-Command::Command* State::InitRenderer::handleEvent(Event* event, Stack<State*>* stateEdits)
+void State::InitRenderer::handleEvent(Event* event, StateStack* stateEdits, CommandStack* cmdStack)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
         std::stringstream instream{static_cast<CommandLineEvent*>(event)->getInput()};
         std::string input; instream >> input;
-        if (input == prepRFrames.getName())
+        auto prepframes = [&]() mutable 
         {
             if (preparedFrames)
-            {
                 std::cout << "Frames prepared already" << std::endl;
-                return nullptr;
-            }
             else if (window.isOpen())
             {
-                prepRFrames.window = &window;
-                stateEdits->push(nullptr);
-                event->setHandled();
+                auto cmd = prfPool.request(&window);
+                cmdStack->push(std::move(cmd));
                 preparedFrames = true;
-                return &prepRFrames;
             }
             else
-            {
                 std::cout << "window must be open" << std::endl;
-                stateEdits->push(nullptr);
-                return nullptr;
+        };
+        auto createlayout = [&]() mutable 
+        {
+            if (createdLayout)
+                std::cout << "Already created layout" << std::endl;
+            else
+            {
+                auto cmd = cplPool.request();
+                cmdStack->push(std::move(cmd));
+                createdLayout = true;
             }
+        };
+        if (input == prfPool.getName())
+        {
+            prepframes();
+            event->setHandled();
+            stateEdits->push(nullptr);
+        }
+        else if (input == cplPool.getName())
+        {
+            stateEdits->push(nullptr);
+            event->setHandled();
+            createlayout();
+        }
+        else if (input == "all")
+        {
+            prepframes();
+            createlayout();
+            stateEdits->push(nullptr);
+            event->setHandled();
         }
     }
-    return nullptr;
+}
+
+void State::Paint::handleEvent(Event* event, StateStack* stateEdits, CommandStack* cmdStack)
+{
+    std::cout << "oooh" << std::endl;
 }
 
 void State::Director::onEnter(Application* app) 
 {
-    std::vector<std::string> vocab;
-    for (auto cmd : cmds)
-        vocab.push_back(cmd->getName());
-    for (auto st : states)
-        vocab.push_back(st->getName());
-    std::cout << std::endl;
     app->setVocabulary(vocab);
 }
 
-void State::LoadFragShaders::onEnter(Application* app) 
+void State::LoadShaders::onEnter(Application* app) 
 {
     std::vector<std::string> vocab;
     auto dir = std::filesystem::directory_iterator(SHADER_DIR);
@@ -165,22 +154,7 @@ void State::Paint::onEnter(Application* app)
 
 void State::InitRenderer::onEnter(Application* app)
 {
-    std::vector<std::string> vocab;
-    for (auto cmd : cmds)
-        vocab.push_back(cmd->getName());
-    std::cout << std::endl;
     app->setVocabulary(vocab);
-}
-
-void State::SetOffscreenDim::onEnter(Application* app)
-{
-}
-
-void Command::AddAttachment::loadArgs(std::string attachmentName, bool isSampled, bool isTransferSrc)
-{
-    attachmentName = attachmentName;
-    isSampled = isSampled;
-    isTransferSrc = isTransferSrc;
 }
 
 void Command::AddAttachment::execute(Application* app)
@@ -194,24 +168,19 @@ void Command::AddAttachment::execute(Application* app)
                 attachmentName, app->offscreenDim, usage);
 }
 
-void Command::LoadFragShaders::execute(Application* app)
+void Command::LoadFragShader::execute(Application* app)
 {
-    for (auto& shaderName : shaderNames) 
-    {
-        auto& shader = app->renderer.loadFragShader(SHADER_DIR + shaderName, shaderName);
-        shader.setWindowResolution(app->offscreenDim.width, app->offscreenDim.height);
-    }
+    app->renderer.loadFragShader(SHADER_DIR + shaderName, shaderName);
+}
+
+void Command::LoadVertShader::execute(Application* app)
+{
+    app->renderer.loadVertShader(SHADER_DIR + shaderName, shaderName);
 }
 
 void Command::OpenWindow::execute(Application* app)
 {
     app->window.open();
-}
-
-void Command::SetOffscreenDim::execute(Application* app)
-{
-    app->offscreenDim.setWidth(w);
-    app->offscreenDim.setHeight(h);
 }
 
 void Command::PrepareRenderFrames::execute(Application* app)
@@ -242,16 +211,15 @@ Command::CreatePipelineLayout::CreatePipelineLayout()
     bindings[1].setStageFlags(vk::ShaderStageFlagBits::eFragment);
 }
 
-Application::Application(uint16_t w, uint16_t h) :
+Application::Application(uint16_t w, uint16_t h, bool rec, bool rea) :
     window{w, h},
     ev{window},
     renderer{context},
-    lsState{&lsCmd},
-    aaState{&aaCmd},
-    sodimState{&sodimCmd},
-    dirState{{&initRen, &aaState, &lsState, &paintState, &sodimState}, {&ow}},
-    paintState{{&stampCmd}},
-    offscreenDim{{w, h}}
+    offscreenDim{{w, h}},
+    swapDim{{w, h}},
+    recordevents{rec},
+    readevents{rea},
+    dirState{window}
 {
     stateStack.push(&dirState);
 }
@@ -262,15 +230,10 @@ void Application::popState()
     stateStack.top()->onEnter(this);
 }
 
-void Application::pushState(State::State* const state)
+void Application::pushState(State::State* state)
 {
-    stateStack.push(state);
+    stateStack.push(std::move(state));
     state->onEnter(this);
-}
-
-void Application::pushCmd(Command::Command* const cmd)
-{
-    cmdStack.push(cmd);
 }
 
 void Application::setVocabulary(std::vector<std::string> vocab)
@@ -314,11 +277,14 @@ void Application::initUBO()
     renderer.bindUboData(static_cast<void*>(&fragInput), sizeof(FragmentInput), 0);
 }
 
+
+constexpr const char* eventlog = "eventlog";
+
 void recordEvent(Event* event, std::ofstream& os)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
-        os.open("eventrecord", std::ios::out | std::ios::binary | std::ios::app);
+        os.open(eventlog, std::ios::out | std::ios::binary | std::ios::app);
         auto ce = static_cast<CommandLineEvent*>(event);
         ce->serialize(os);
         os.close();
@@ -327,7 +293,7 @@ void recordEvent(Event* event, std::ofstream& os)
 
 void Application::readEvents(std::ifstream& is)
 {
-    is.open("eventrecord", std::ios::binary);
+    is.open(eventlog, std::ios::binary);
     bool reading{true};
     while (is.peek() != EOF)
     {
@@ -338,9 +304,6 @@ void Application::readEvents(std::ifstream& is)
     is.close();
 }
 
-constexpr int record{0};
-constexpr int readin{0};
-
 void Application::run()
 {
     stateStack.top()->onEnter(this);
@@ -348,22 +311,19 @@ void Application::run()
     std::ofstream os;
     std::ifstream is;
     
-    if (readin) readEvents(is);
+    if (readevents) readEvents(is);
+    if (recordevents) std::remove(eventlog);
 
     while (1)
     {
         while (!ev.eventQueue.empty())
         {
             auto event = ev.eventQueue.front().get();
-            if (record) recordEvent(event, os);
+            if (recordevents) recordEvent(event, os);
             if (event)
-                for (auto state : stateStack.items) 
+                for (auto state : stateStack) 
                     if (!event->isHandled())
-                    {
-                        auto cmd = state->handleEvent(event, &stateEdits);
-                        if (cmd)
-                            pushCmd(cmd);
-                    }
+                        state->handleEvent(event, &stateEdits, &cmdStack);
             for (auto state : stateEdits.items) 
             {
                 if (state)
@@ -376,11 +336,16 @@ void Application::run()
         }
         if (!cmdStack.empty())
         {
-            for (auto cmd : cmdStack.items)
+            for (auto& cmd : cmdStack.items)
             {
-                cmd->execute(this);
-                sleep(1);
-                std::cout << "Command run" << std::endl;
+                if (cmd)
+                {
+                    cmd->execute(this);
+                    sleep(1);
+                    std::cout << "Command run" << std::endl;
+                }
+                else
+                    std::cout << "Recieved null cmd" << std::endl;
             }
             cmdStack.items.clear();
         }

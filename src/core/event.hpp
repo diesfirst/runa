@@ -84,7 +84,7 @@ public:
         is.read((char*)&inputSize, sizeof(size_t));
         char cstr[inputSize];
         is.read(cstr, inputSize);
-        input.assign(cstr);
+        input.assign(cstr, inputSize);
         is.read((char*)&handled, sizeof(bool));
     }
 private:

@@ -1,9 +1,9 @@
 CC = g++
-INCDIRS = -I/usr/include -I/home/michaelb/Dev/runa/include/thirdparty
+INCDIRS = -I/usr/include -I/home/michaelb/Dev/sword/include/thirdparty
 WFLAGS = -std=c++17 -Wall -W -Wno-parentheses -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-uninitialized -Wno-unused-parameter -Wno-unused-local-typedefs
-CFLAGS = -std=c++17 -g -v $(WFLAGS) $(INCDIRS) -fPIC
+CFLAGS = -std=c++17 -g $(WFLAGS) $(INCDIRS) -fPIC
 LDFLAGS = -lpthread -lxcb -lvulkan -lX11 -lreadline -ldl
-LIB = /home/michaelb/Dev/runa/lib
+LIB = /home/michaelb/Dev/sword/lib
 LDIRS = -L$(LIB) #-L$(LIB)/loader 
 LINK = $(LDIRS) $(LDFLAGS)
 SPV = build/shaders
@@ -16,13 +16,13 @@ TEST = test
 _OBJS = lodepng.o context.o swapchain.o window.o renderer.o mem.o commander.o description.o event.o commandstate.o
 OBJS = $(patsubst %, $(BUILD)/%, $(_OBJS))
 
-main: $(BUILD)/main.o $(OBJS) #$(LIB)/libruna.a
+main: $(BUILD)/main.o $(OBJS) #$(LIB)/libsword.a
 	$(CC) $^ -o $(BIN)/$@ $(LINK) ; ctags -R .
 
-%: $(BUILD)/%.o $(LIB)/libruna.a
+%: $(BUILD)/%.o $(LIB)/libsword.a
 	$(CC) $^ -o $(BIN)/$@ $(LINK) ; ctags -R .
 
-$(TEST)/%: $(BUILD)/%.o $(LIB)/libruna.a
+$(TEST)/%: $(BUILD)/%.o $(LIB)/libsword.a
 	$(CC) $^ -o $@ $(LINK) ; ctags -R .
 
 $(TEST)/test : $(BUILD)/main.o
@@ -79,13 +79,13 @@ $(BUILD)/%.o : $(PROG)/%.cpp
 $(BUILD)/lodepng.o : $(THIRD)/lodepng.cpp $(THIRD)/lodepng.h
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-$(LIB)/libruna.a : $(OBJS)
+$(LIB)/libsword.a : $(OBJS)
 	ar rcs $@ $(OBJS)
 
 .PHONY: clean shaders
 
 clean:
-	rm -f $(BUILD)/*.o 
+	rm -f $(BUILD)/*.o ; rm -f $(LIB)/*.a
 
 shaders: 
 	python3 tools/compileShaders.py
