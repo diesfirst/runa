@@ -14,147 +14,553 @@
     
 constexpr const char* SHADER_DIR = "/home/michaelb/Dev/sword/build/shaders/";
 
-
-void State::Director::handleEvent(Event* event, StateStack* stateEdits, CommandStack* cmdStack)
+void State::Director::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
         auto input = static_cast<CommandLineEvent*>(event)->getInput();
         std::stringstream instream{input};
-        std::string filtered;
-        instream >> filtered;
-        pushStateFn(filtered, addAttachState, stateEdits);
-        pushStateFn(filtered, loadShaders, stateEdits);
-        pushStateFn(filtered, initRenState, stateEdits);
-        if (filtered == owPool.getName())
+        instream >> input;
+        auto iter = opMap.find(input);
+        Option option;
+        if (iter != opMap.end())
+                option = iter->second;
+        else 
+            option = Option::null;
+        switch (option)
         {
-            auto cmd = owPool.request();
-            cmdStack->push(std::move(cmd));
-        };
+            case Option::initRenState:
+                {
+                    stateEdits->push(&initRenState);
+                    break;
+                }
+            case Option::null:
+                {
+                    break;
+                }
+
+        }
         event->isHandled();
     }
 }
 
-void State::AddAttachment::handleEvent(Event* event, StateStack* stateEdits, CommandStack* cmdStack)
+void State::AddAttachment::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
-        std::cout << "AddAttachment pushed" << std::endl;
         auto input = static_cast<CommandLineEvent*>(event)->getInput();
         std::stringstream instream{input};
-        std::string attachmentName; bool isSampled; bool isTransferSrc;
-        instream >> attachmentName >> isSampled >> isTransferSrc;
-        auto cmd = addAttPool.request(attachmentName, isSampled, isTransferSrc);
-        stateEdits->push(nullptr);
-        cmdStack->push(std::move(cmd));
+        switch (mode)
+        {
+            case Option::null:
+                {
+                    instream >> input;
+                    auto iter = vocab.find(input);
+                    Option option;
+                    if (iter != vocab.end())
+                            option = iter->second;
+                    else 
+                        option = Option::null;
+                    switch (option)
+                    {
+                        case Option::setdimensions:
+                            {
+                                std::cout << "Enter a width and height" << std::endl;
+                                mode = Option::setdimensions;
+                                break;
+                            }
+                        case Option::fulldescription:
+                            {
+                                std::cout << "Enter a name, a width, a height, is sampled, is transfer src" << std::endl;
+                                mode = Option::fulldescription;
+                                break;
+                            }
+                        case Option::addsamplesources:
+                            {
+                                std::cout << "enter names for attachments that will be sampled from" << std::endl;
+                                mode = Option::addsamplesources;
+                                break;
+                            }
+                        case Option::null:
+                            {
+                                stateEdits->push(nullptr);
+                                break;
+                            }
+                    }
+                    break;
+                }
+            case Option::setdimensions:
+                {
+                    instream >> width >> height;
+                    mode = Option::null;
+                    break;
+                };
+            case Option::addsamplesources:
+                {
+                    while (instream >> input)
+                    {
+                        auto cmd = addAttPool.request(input, width, height, true, false);
+                        cmdStack->push(std::move(cmd));
+                    }
+                    mode = Option::null;
+                    stateEdits->push(nullptr);
+                    break;
+                }
+            case Option::fulldescription:
+                {
+                    std::string name; int w; int h; bool sample; bool transfersrc;
+                    instream >> name >> w >> h >> sample >> transfersrc;
+                    auto cmd = addAttPool.request(name, w, h, sample, transfersrc);
+                    cmdStack->push(std::move(cmd));
+                    mode = Option::null;
+                    stateEdits->push(nullptr);
+                    break;
+                }
+        }
         event->setHandled();
     }
 }
 
-void State::LoadShaders::handleEvent(Event* event, StateStack* stateEdits, CommandStack* cmdStack)
+void State::ShaderManager::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
-        std::stringstream instream{static_cast<CommandLineEvent*>(event)->getInput()};
-        std::vector<std::string> shaders;
-        std::string input;
-        while (instream >> input)
+        auto input = static_cast<CommandLineEvent*>(event)->getInput();
+        std::stringstream instream{input};
+        switch (mode)
         {
-            auto cmd = loadFragPool.request(input);
-            cmdStack->push(std::move(cmd));
+            case Option::null:
+                {
+                    instream >> input;
+                    auto iter = opMap.find(input);
+                    Option option;
+                    if (iter != opMap.end())
+                            option = iter->second;
+                    else 
+                        option = Option::null;
+                    switch (option)
+                    {
+                        case Option::null:
+                            {
+                                stateEdits->push(nullptr);
+                                break;
+                            }
+                        case Option::loadFragShaders:
+                            {
+                                mode = Option::loadFragShaders;
+                                std::cout << "Choose which frag shaders to load." << std::endl;
+                                stateEdits->push(this);
+                                break;
+                            }
+                        case Option::loadVertShaders:
+                            {
+                                mode = Option::loadVertShaders;
+                                std::cout << "Choose which vert shaders to load." << std::endl;
+                                stateEdits->push(this);
+                                break;
+                            }
+                        case Option::shaderReport:
+                            {
+                                for (const auto& item : shaderReports) 
+                                    std::invoke(item.second);
+                                break;
+                            }
+                        case Option::setSpecFloats:
+                            {
+                                mode = Option::setSpecFloats;
+                                std::cout << "Enter two floats, v or f, and the names of the shaders to set" << std::endl;
+                                stateEdits->push(this);
+                                break;
+                            }
+                        case Option::setSpecInts:
+                            {
+                                mode = Option::setSpecInts;
+                                std::cout << "Enter two ints, v or f, and the names of the shaders to set" << std::endl;
+                                stateEdits->push(this);
+                                break;
+                            }
+                    }
+                    break;
+                }
+            case Option::loadFragShaders:
+                {
+                    while (instream >> input)
+                    {
+                        auto cmd = loadFragPool.request(input);
+                        cmdStack->push(std::move(cmd));
+                        shaderReports.try_emplace(input, input, "Fragment", 0, 0, 0, 0);
+                        shaderNames.push_back(input);
+                    }
+                    mode = Option::null;
+                    stateEdits->push(nullptr);
+                    break;
+                }
+            case Option::loadVertShaders:
+                {
+                    while (instream >> input)
+                    {
+                        auto cmd = loadVertPool.request(input);
+                        cmdStack->push(std::move(cmd));
+                        shaderReports.try_emplace(input, input, "Vertex", 0, 0, 0, 0);
+                        shaderNames.push_back(input);
+                    }
+                    mode = Option::null;
+                    stateEdits->push(nullptr);
+                    break;
+                }
+            case Option::shaderReport:
+                {
+                    std::cout << "Should not get here" << std::endl;
+                    break;
+                }
+            case Option::setSpecFloats:
+                {
+                    int first; int second; std::string type;
+                    instream >> first >> second >> type;
+                    assert (type == "f" || type == "v" && "Type specified incorrectly");
+                    while (instream >> input)
+                    {
+                        auto cmd = ssfPool.request(input, type, first, second);
+                        cmdStack->push(std::move(cmd));
+                        auto& report = shaderReports.at(input);
+                        report.specfloat0 = first;
+                        report.specfloat1 = second;
+                    }
+                    mode = Option::null;
+                    stateEdits->push(nullptr);
+                    break;
+                }
+            case Option::setSpecInts:
+                {
+                    std::cout << "todo" << std::endl;
+                    break;
+                }
         }
-        stateEdits->push(nullptr);
         event->setHandled();
+    }
+    if (event->getCategory() == EventCategory::Abort)
+    {
+        mode = Option::null;
+        stateEdits->reload(this);
     }
 }
 
-void State::InitRenderer::handleEvent(Event* event, StateStack* stateEdits, CommandStack* cmdStack)
+void State::InitRenderer::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
         std::stringstream instream{static_cast<CommandLineEvent*>(event)->getInput()};
         std::string input; instream >> input;
-        auto prepframes = [&]() mutable 
+        Option option = opMap.findOption(input);
+        switch(option)
         {
-            if (preparedFrames)
-                std::cout << "Frames prepared already" << std::endl;
-            else if (window.isOpen())
-            {
-                auto cmd = prfPool.request(&window);
-                cmdStack->push(std::move(cmd));
-                preparedFrames = true;
-            }
-            else
-                std::cout << "window must be open" << std::endl;
-        };
-        auto createlayout = [&]() mutable 
-        {
-            if (createdLayout)
-                std::cout << "Already created layout" << std::endl;
-            else
-            {
-                auto cmd = cplPool.request();
-                cmdStack->push(std::move(cmd));
-                createdLayout = true;
-            }
-        };
-        if (input == prfPool.getName())
-        {
-            prepframes();
-            event->setHandled();
-            stateEdits->push(nullptr);
+            case Option::prepRenderFrames:
+                {
+                    auto cmd = prfPool.request(&window);
+                    cmdStack->push(std::move(cmd));
+                    opMap.remove(Option::prepRenderFrames);
+                    stateEdits->reload(this);
+                    break;
+                }
+            case Option::createPipelineLayout:
+                {
+                    auto cmd = cplPool.request();
+                    cmdStack->push(std::move(cmd));
+                    opMap.remove(Option::createPipelineLayout);
+                    opMap.remove(Option::all);
+                    stateEdits->reload(this);
+                    break;
+                }
+            case Option::all:
+                {
+                    auto ow = owPool.request();
+                    cmdStack->push(std::move(ow));
+                    auto pf = prfPool.request(&window);
+                    cmdStack->push(std::move(pf));
+                    auto cl = cplPool.request();
+                    cmdStack->push(std::move(cl));
+                    opMap.remove(Option::all);
+                    opMap.remove(Option::createPipelineLayout);
+                    opMap.remove(Option::openWindow);
+                    opMap.add(Option::rpassManager);
+                    opMap.add(Option::pipelineManager);
+                    stateEdits->reload(this);
+                    break;
+                }
+            case Option::rpassManager:
+                {
+                    stateEdits->push(&rpassManager);
+                    break;
+                }
+            case Option::pipelineManager:
+                {
+                    stateEdits->push(&pipelineManager);
+                    break;
+                }
+            case Option::openWindow:
+                {
+                    auto cmd = owPool.request();
+                    cmdStack->push(std::move(cmd));
+                    opMap.remove(Option::openWindow);
+                    opMap.remove(Option::all);
+                    opMap.add(Option::prepRenderFrames);
+                    break;
+                }
+            case Option::shaderManager:
+                {
+                    stateEdits->push(&shaderManager);
+                    break;
+                }
+            case Option::addattachState:
+                {
+                    stateEdits->push(&addAttachState);
+                    break;
+                }
+            case Option::null:
+                {
+                    stateEdits->push(nullptr);
+                    break;
+                }
         }
-        else if (input == cplPool.getName())
-        {
-            stateEdits->push(nullptr);
-            event->setHandled();
-            createlayout();
-        }
-        else if (input == "all")
-        {
-            prepframes();
-            createlayout();
-            stateEdits->push(nullptr);
-            event->setHandled();
-        }
+        event->setHandled();
     }
 }
 
-void State::Paint::handleEvent(Event* event, StateStack* stateEdits, CommandStack* cmdStack)
+void State::RenderpassManager::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
+{    
+    if (event->getCategory() == EventCategory::CommandLine)
+    {
+        auto input = static_cast<CommandLineEvent*>(event)->getInput();
+        std::stringstream instream{input};
+        switch (mode)
+        {
+            case Option::null:
+                {
+                    instream >> input;
+                    auto iter = opMap.find(input);
+                    Option option;
+                    if (iter != opMap.end())
+                            option = iter->second;
+                    else 
+                        option = Option::null;
+                    switch (option)
+                    {
+                        case Option::createSwapRenderpass:
+                            {
+                                std::cout << "Enter a name for the swapchain render pass" << std::endl;
+                                mode = Option::createSwapRenderpass;
+                                break;
+                            }
+                        case Option::null:
+                            {
+                                stateEdits->push(nullptr);
+                                break;
+                            }
+                    }
+                    break;
+                }
+            case Option::createSwapRenderpass:
+                {
+                    instream >> input;
+                    auto cmd = csrPool.request(input);
+                    cmdStack->push(std::move(cmd));
+                    stateEdits->push(nullptr);
+                    mode = Option::null;
+                    break;
+                }
+        }
+        event->setHandled();
+    }
+}
+
+void State::Paint::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
 {
     std::cout << "oooh" << std::endl;
 }
 
-void State::Director::onEnter(Application* app) 
+void State::PipelineManager::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
 {
-    app->setVocabulary(vocab);
+    if (event->getCategory() == EventCategory::CommandLine)
+    {
+        auto input = static_cast<CommandLineEvent*>(event)->getInput();
+        std::stringstream instream{input};
+        switch (mode)
+        {
+            case Option::null:
+            {
+                instream >> input;
+                auto iter = opMap.find(input);
+                Option option;
+                if (iter != opMap.end())
+                        option = iter->second;
+                else 
+                    option = Option::null;
+                switch (option)
+                {
+                    case Option::createGraphicsPipeline:
+                    {
+                        std::cout << "Enter a name for the pipeline, then provide names for"
+                           " a pipelinelayout, a vertshader, a fragshader, "
+                           " a renderpass, 4 numbers for the render region,"
+                           " and a 1 or a 0 for whether or not this is a 3d or 2d pipeline" << std::endl;
+                        mode = Option::createGraphicsPipeline;
+                        stateEdits->push(this);
+                        break;
+                    }
+                    case Option::report:
+                    {
+                        for (const auto& i : gpReports) 
+                            std::invoke(i.second);
+                        break;
+                    }
+                    case Option::null:
+                    {
+                        stateEdits->push(nullptr);
+                        break;
+                    }
+                }
+                break;
+            }
+            case Option::createGraphicsPipeline:
+            {
+                std::string name{"default"};
+                std::string pipelineLayout{"default"};
+                std::string vertshader{"default"};
+                std::string fragshader{"default"};
+                std::string renderpass{"default"};
+                int a1;
+                int a2;
+                uint32_t a3;
+                uint32_t a4;
+                bool is3d{false};
+                instream >> name >> pipelineLayout >> vertshader >> fragshader >> renderpass >> a1 >> a2 >> a3 >> a4 >> is3d;
+                vk::Rect2D renderArea{{a1, a2}, {a3, a4}};
+                auto cmd = cgpPool.request(name, pipelineLayout, vertshader, fragshader, renderpass, renderArea, is3d);
+                if (cmd) 
+                {
+                    cmdStack->push(std::move(cmd));
+                    gpReports.try_emplace(name, name, pipelineLayout, vertshader, fragshader, renderpass, a1, a2, a3, a4, is3d);
+                }
+                mode = Option::null;
+                stateEdits->push(nullptr);
+                break;
+            }
+            case Option::report:
+            {
+                std::cout << "hmmm" << std::endl;
+                break;
+            }
+        }
+    }
 }
 
-void State::LoadShaders::onEnter(Application* app) 
+void State::Director::onEnter(Application* app) 
 {
-    std::vector<std::string> vocab;
-    auto dir = std::filesystem::directory_iterator(SHADER_DIR);
-    for (const auto& entry : dir) 
+    std::vector<std::string> words;
+    words.reserve(opMap.size());
+    for (auto i : opMap) 
+        words.push_back(i.first);
+    app->setVocabulary(words);
+}
+
+void State::ShaderManager::onEnter(Application* app) 
+{
+    switch (mode)
     {
-        vocab.push_back(entry.path().filename());
+        case Option::null:
+            {
+                std::vector<std::string> words;
+                words.reserve(opMap.size());
+                for (auto i : opMap) 
+                    words.push_back(i.first);
+                app->setVocabulary(words);
+                break;
+            }
+        case Option::loadFragShaders:
+            {
+                std::vector<std::string> vocab;
+                auto dir = std::filesystem::directory_iterator(SHADER_DIR);
+                for (const auto& entry : dir) 
+                {
+                    vocab.push_back(entry.path().filename());
+                }
+                app->setVocabulary(vocab);
+                break;
+            }
+        case Option::loadVertShaders:
+            {
+                std::vector<std::string> vocab;
+                auto dir = std::filesystem::directory_iterator(SHADER_DIR);
+                for (const auto& entry : dir) 
+                {
+                    vocab.push_back(entry.path().filename());
+                }
+                app->setVocabulary(vocab);
+                break;
+            }
+        case Option::shaderReport:
+            break;
+        case Option::setSpecFloats:
+            {
+                app->setVocabulary(shaderNames);
+                break;
+            }
+        case Option::setSpecInts:
+            {
+                app->setVocabulary(shaderNames);
+                break;
+            }
     }
-    app->setVocabulary(vocab);
-    std::cout << "Choose which shaders to load." << std::endl;
 }
 
 void State::AddAttachment::onEnter(Application* app) 
 {
-    //we could set the vocab to nothing if we wanted
-    std::cout << "Enter a name, 1 if it is to be sampled, 1 if it is to be a transfer src." << std::endl;
+    std::vector<std::string> words;
+    words.reserve(vocab.size());
+    for (auto i : vocab) {
+        words.push_back(i.first);
+    }
+    app->setVocabulary(words);
 }
 
 void State::Paint::onEnter(Application* app)
 {
 }
 
+void State::PipelineManager::onEnter(Application* app)
+{
+    std::vector<std::string> words;
+    words.reserve(opMap.size());
+    for (auto i : opMap) 
+        words.push_back(i.first);
+    app->setVocabulary(words);
+}
+
 void State::InitRenderer::onEnter(Application* app)
 {
-    app->setVocabulary(vocab);
+    app->setVocabulary(opMap.getStrings());
+}
+
+void State::RenderpassManager::onEnter(Application* app)
+{
+    switch (mode)
+    {
+        case Option::null:
+            {
+                std::vector<std::string> words;
+                words.reserve(opMap.size());
+                for (auto i : opMap) 
+                    words.push_back(i.first);
+                app->setVocabulary(words);
+                std::cout << "hmm" << std::endl;
+                break;
+            }
+        case Option::createSwapRenderpass:
+            {
+                std::cout << "should not get here" << std::endl;
+                break;
+            }
+    }
 }
 
 void Command::AddAttachment::execute(Application* app)
@@ -164,8 +570,7 @@ void Command::AddAttachment::execute(Application* app)
             usage = usage | vk::ImageUsageFlagBits::eSampled;
         if (isTransferSrc)
             usage = usage | vk::ImageUsageFlagBits::eTransferSrc;
-        app->renderer.createAttachment(
-                attachmentName, app->offscreenDim, usage);
+        app->renderer.createAttachment(attachmentName, dimensions, usage);
 }
 
 void Command::LoadFragShader::execute(Application* app)
@@ -176,6 +581,36 @@ void Command::LoadFragShader::execute(Application* app)
 void Command::LoadVertShader::execute(Application* app)
 {
     app->renderer.loadVertShader(SHADER_DIR + shaderName, shaderName);
+}
+
+void Command::SetSpecFloat::execute(Application* app)
+{
+    if (type == "f")
+    {
+        FragShader& fs = app->renderer.fragShaderAt(shaderName);
+        fs.setWindowResolution(x, y);
+    }
+    if (type == "v")
+    {
+        VertShader& vs = app->renderer.vertShaderAt(shaderName);
+        vs.setWindowResolution(x, y);
+    }
+}
+
+void Command::SetSpecInt::execute(Application* app)
+{
+    if (type == "f")
+    {
+        FragShader& fs = app->renderer.fragShaderAt(shaderName);
+        fs.specData.integer0 = x;
+        fs.specData.integer1 = y;
+    }
+    if (type == "v")
+    {
+        VertShader& vs = app->renderer.vertShaderAt(shaderName);
+        vs.specData.integer0 = x;
+        vs.specData.integer1 = y;
+    }
 }
 
 void Command::OpenWindow::execute(Application* app)
@@ -195,6 +630,21 @@ void Command::CreatePipelineLayout::execute(Application* app)
     app->renderer.createFrameDescriptorSets({paintingLayout}); //order matters for access
     auto paintPLayout = app->renderer.createPipelineLayout(layoutname, {paintingLayout});
     std::cout << "Created Pipeline Layout: " << layoutname << std::endl;
+}
+
+void Command::CreateSwapchainRenderpass::execute(Application* app)
+{
+    auto& rpass = app->renderer.createRenderPass(rpassName);
+    app->renderer.prepareAsSwapchainPass(rpass);
+}
+
+void Command::CreateGraphicsPipeline::execute(Application* app)
+{
+    auto& pipeline = app->renderer.createGraphicsPipeline(
+            name, pipelineLayout,
+            vertshader, fragshader,
+            renderpass, renderArea, is3d);
+    pipeline.create();
 }
 
 Command::CreatePipelineLayout::CreatePipelineLayout()
@@ -277,7 +727,6 @@ void Application::initUBO()
     renderer.bindUboData(static_cast<void*>(&fragInput), sizeof(FragmentInput), 0);
 }
 
-
 constexpr const char* eventlog = "eventlog";
 
 void recordEvent(Event* event, std::ofstream& os)
@@ -319,11 +768,13 @@ void Application::run()
         while (!ev.eventQueue.empty())
         {
             auto event = ev.eventQueue.front().get();
-            if (recordevents) recordEvent(event, os);
             if (event)
+            {
+                if (recordevents) recordEvent(event, os);
                 for (auto state : stateStack) 
                     if (!event->isHandled())
                         state->handleEvent(event, &stateEdits, &cmdStack);
+            }
             for (auto state : stateEdits.items) 
             {
                 if (state)

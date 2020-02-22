@@ -53,6 +53,7 @@ enum class EventCategory : uint8_t
 {
     CommandLine,
     Window,
+    Abort,
 };
 
 class Event
@@ -64,6 +65,13 @@ public:
     inline bool isHandled() const {return handled;}
 protected:
     bool handled{false};
+};
+
+class Abort : public Event
+{
+public:
+   inline EventCategory getCategory() const override {return EventCategory::Abort;} 
+   inline std::string getName() const override {return "Abort";}
 };
 
 class CommandLineEvent : public Event

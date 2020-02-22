@@ -1300,6 +1300,12 @@ FragShader& Renderer::fragShaderAt(const std::string name)
     return fragmentShaders.at(name);
 }
 
+VertShader& Renderer::vertShaderAt(const std::string name)
+{
+    return vertexShaders.at(name);
+}
+
+
 mm::BufferBlock* Renderer::copySwapToHost(const vk::Rect2D region)
 {
     auto block = descriptorBuffer->requestBlock(

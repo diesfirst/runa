@@ -1,6 +1,7 @@
 #include "event.hpp"
 #include <X11/XKBlib.h>
 #include <string>
+#include <sstream>
 #include <iostream>
 #include <bitset>
 #include <readline/readline.h>
@@ -88,6 +89,20 @@ void EventHandler::fetchCommandLineInput()
     if (input == "quit")
     {
         keepCommandThread = false;   
+    }
+
+    std::stringstream ss{input};
+    std::string catcher;
+
+    while (ss >> catcher)
+    {
+        if (catcher == "q")
+        {
+            auto event = std::make_unique<Abort>();
+            eventQueue.emplace(std::move(event));
+            std::cout << "Aborting operation" << std::endl;
+            return;
+        }
     }
 
     auto event = std::make_unique<CommandLineEvent>(input);
