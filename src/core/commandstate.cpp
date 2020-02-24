@@ -223,8 +223,8 @@ void State::ShaderManager::handleEvent(Event* event, EditStack* stateEdits, Comm
                         auto cmd = ssfPool.request(input, type, first, second);
                         cmdStack->push(std::move(cmd));
                         auto& report = shaderReports.at(input);
-                        report.specfloat0 = first;
-                        report.specfloat1 = second;
+                        report.setSpecFloat(0, first);
+                        report.setSpecFloat(1, second);
                     }
                     mode = Option::null;
                     stateEdits->push(nullptr);
@@ -245,80 +245,111 @@ void State::ShaderManager::handleEvent(Event* event, EditStack* stateEdits, Comm
     }
 }
 
-void State::InitRenderer::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
+void State::RendererManager::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
         std::stringstream instream{static_cast<CommandLineEvent*>(event)->getInput()};
-        std::string input; instream >> input;
-        Option option = opMap.findOption(input);
-        switch(option)
+        std::string input; 
+        switch (mode)
         {
-            case Option::prepRenderFrames:
+            case Mode::null:
                 {
-                    auto cmd = prfPool.request(&window);
-                    cmdStack->push(std::move(cmd));
-                    opMap.remove(Option::prepRenderFrames);
-                    stateEdits->reload(this);
+                    instream >> input;
+                    Option option = opMap.findOption(input);
+                    switch(option)
+                    {
+                        case Option::prepRenderFrames:
+                            {
+                                auto cmd = prfPool.request(&window);
+                                cmdStack->push(std::move(cmd));
+                                opMap.remove(Option::prepRenderFrames);
+                                stateEdits->reload(this);
+                                break;
+                            }
+                        case Option::createPipelineLayout:
+                            {
+                                auto cmd = cplPool.request();
+                                cmdStack->push(std::move(cmd));
+                                opMap.remove(Option::createPipelineLayout);
+                                opMap.remove(Option::all);
+                                stateEdits->reload(this);
+                                break;
+                            }
+                        case Option::all:
+                            {
+                                auto ow = owPool.request();
+                                cmdStack->push(std::move(ow));
+                                auto pf = prfPool.request(&window);
+                                cmdStack->push(std::move(pf));
+                                auto cl = cplPool.request();
+                                cmdStack->push(std::move(cl));
+                                opMap.remove(Option::all);
+                                opMap.remove(Option::createPipelineLayout);
+                                opMap.remove(Option::openWindow);
+                                opMap.add(Option::rpassManager);
+                                opMap.add(Option::pipelineManager);
+                                stateEdits->reload(this);
+                                break;
+                            }
+                        case Option::rpassManager:
+                            {
+                                stateEdits->push(&rpassManager);
+                                break;
+                            }
+                        case Option::pipelineManager:
+                            {
+                                stateEdits->push(&pipelineManager);
+                                break;
+                            }
+                        case Option::openWindow:
+                            {
+                                auto cmd = owPool.request();
+                                cmdStack->push(std::move(cmd));
+                                opMap.remove(Option::openWindow);
+                                opMap.remove(Option::all);
+                                opMap.add(Option::prepRenderFrames);
+                                break;
+                            }
+                        case Option::shaderManager:
+                            {
+                                stateEdits->push(&shaderManager);
+                                break;
+                            }
+                        case Option::addattachState:
+                            {
+                                stateEdits->push(&addAttachState);
+                                break;
+                            }
+                        case Option::null:
+                            {
+                                stateEdits->push(nullptr);
+                                break;
+                            }
+                        case Option::printReports:
+                            {
+                                for (const auto& item : reports) 
+                                    std::invoke(*item);   
+                                break;
+                            }
+                        case Option::createRPI:
+                            {
+                                mode = Mode::createRPI;
+                                break;
+                            }
+                    }
                     break;
                 }
-            case Option::createPipelineLayout:
+            case Mode::createRPI:
                 {
-                    auto cmd = cplPool.request();
-                    cmdStack->push(std::move(cmd));
-                    opMap.remove(Option::createPipelineLayout);
-                    opMap.remove(Option::all);
-                    stateEdits->reload(this);
-                    break;
-                }
-            case Option::all:
-                {
-                    auto ow = owPool.request();
-                    cmdStack->push(std::move(ow));
-                    auto pf = prfPool.request(&window);
-                    cmdStack->push(std::move(pf));
-                    auto cl = cplPool.request();
-                    cmdStack->push(std::move(cl));
-                    opMap.remove(Option::all);
-                    opMap.remove(Option::createPipelineLayout);
-                    opMap.remove(Option::openWindow);
-                    opMap.add(Option::rpassManager);
-                    opMap.add(Option::pipelineManager);
-                    stateEdits->reload(this);
-                    break;
-                }
-            case Option::rpassManager:
-                {
-                    stateEdits->push(&rpassManager);
-                    break;
-                }
-            case Option::pipelineManager:
-                {
-                    stateEdits->push(&pipelineManager);
-                    break;
-                }
-            case Option::openWindow:
-                {
-                    auto cmd = owPool.request();
-                    cmdStack->push(std::move(cmd));
-                    opMap.remove(Option::openWindow);
-                    opMap.remove(Option::all);
-                    opMap.add(Option::prepRenderFrames);
-                    break;
-                }
-            case Option::shaderManager:
-                {
-                    stateEdits->push(&shaderManager);
-                    break;
-                }
-            case Option::addattachState:
-                {
-                    stateEdits->push(&addAttachState);
-                    break;
-                }
-            case Option::null:
-                {
-                    stateEdits->push(nullptr);
+                    std::string attachName;
+                    std::string renderpassName;
+                    std::string pipelineName;
+                    instream >> attachName >> renderpassName >> pipelineName;
+                    auto cmd = criPool.request(attachName, renderpassName, pipelineName);
+                    if (cmd)
+                        cmdStack->push(std::move(cmd));
+                    mode = Mode::null;
                     break;
                 }
         }
@@ -337,12 +368,7 @@ void State::RenderpassManager::handleEvent(Event* event, EditStack* stateEdits, 
             case Option::null:
                 {
                     instream >> input;
-                    auto iter = opMap.find(input);
-                    Option option;
-                    if (iter != opMap.end())
-                            option = iter->second;
-                    else 
-                        option = Option::null;
+                    Option option = opMap.findOption(input);
                     switch (option)
                     {
                         case Option::createSwapRenderpass:
@@ -356,6 +382,14 @@ void State::RenderpassManager::handleEvent(Event* event, EditStack* stateEdits, 
                                 stateEdits->push(nullptr);
                                 break;
                             }
+                        case Option::report:
+                            {
+                                for (const auto& report : renderpassReports) 
+                                {
+                                    std::invoke(report);
+                                }
+                                break;
+                            }
                     }
                     break;
                 }
@@ -364,8 +398,14 @@ void State::RenderpassManager::handleEvent(Event* event, EditStack* stateEdits, 
                     instream >> input;
                     auto cmd = csrPool.request(input);
                     cmdStack->push(std::move(cmd));
+                    renderpassReports.emplace_back(input);
                     stateEdits->push(nullptr);
                     mode = Option::null;
+                    break;
+                }
+            case Option::report:
+                {
+                    std::cout << "Should not be here" << std::endl;
                     break;
                 }
         }
@@ -389,12 +429,7 @@ void State::PipelineManager::handleEvent(Event* event, EditStack* stateEdits, Co
             case Option::null:
             {
                 instream >> input;
-                auto iter = opMap.find(input);
-                Option option;
-                if (iter != opMap.end())
-                        option = iter->second;
-                else 
-                    option = Option::null;
+                Option option = opMap.findOption(input);
                 switch (option)
                 {
                     case Option::createGraphicsPipeline:
@@ -529,15 +564,16 @@ void State::Paint::onEnter(Application* app)
 
 void State::PipelineManager::onEnter(Application* app)
 {
-    std::vector<std::string> words;
-    words.reserve(opMap.size());
-    for (auto i : opMap) 
-        words.push_back(i.first);
-    app->setVocabulary(words);
+    app->setVocabulary(opMap.getStrings());
 }
 
-void State::InitRenderer::onEnter(Application* app)
+void State::RendererManager::onEnter(Application* app)
 {
+    reports.clear();
+    auto rpass = rpassManager.getReports();
+    auto gp = pipelineManager.getReports();
+    reports.insert(reports.begin(), rpass.begin(), rpass.end());
+    reports.insert(reports.begin(), gp.begin(), gp.end());
     app->setVocabulary(opMap.getStrings());
 }
 
@@ -547,17 +583,16 @@ void State::RenderpassManager::onEnter(Application* app)
     {
         case Option::null:
             {
-                std::vector<std::string> words;
-                words.reserve(opMap.size());
-                for (auto i : opMap) 
-                    words.push_back(i.first);
-                app->setVocabulary(words);
-                std::cout << "hmm" << std::endl;
+                app->setVocabulary(opMap.getStrings());
                 break;
             }
         case Option::createSwapRenderpass:
             {
                 std::cout << "should not get here" << std::endl;
+                break;
+            }
+        case Option::report:
+            {
                 break;
             }
     }
@@ -645,6 +680,11 @@ void Command::CreateGraphicsPipeline::execute(Application* app)
             vertshader, fragshader,
             renderpass, renderArea, is3d);
     pipeline.create();
+}
+
+void Command::CreateRenderpassInstance::execute(Application* app)
+{
+    app->renderer.addRenderPassInstance(attachment, renderpass, pipeline);
 }
 
 Command::CreatePipelineLayout::CreatePipelineLayout()
@@ -792,7 +832,6 @@ void Application::run()
                 if (cmd)
                 {
                     cmd->execute(this);
-                    sleep(1);
                     std::cout << "Command run" << std::endl;
                 }
                 else

@@ -15,6 +15,7 @@ class AddAttachment;
     void execute(Application*) override;\
     static const char* getName() {return name;}
 
+
 template <typename T>
 class OptionMap
 {
@@ -66,17 +67,27 @@ private:
     std::vector<std::pair<std::string, T>> optionsReserved;
 };
 
-struct ShaderReport
+enum class ReportType : uint8_t
 {
-    const std::string name{"unitilialized"};
-    const char* type{"uninilialized"};
-    int specint0{0};
-    int specint1{0};
-    float specfloat0{0};
-    float specfloat1{0};
-    ShaderReport(std::string n, const char* t, int i0, int i1, float f0, float f1) :
+    Shader,
+    Renderpass,
+    Pipeline
+};
+
+class Report
+{
+public:
+    virtual void operator()() const = 0;
+    virtual const std::string getObjectName() const = 0;
+    virtual ReportType getType() const = 0;
+};
+
+class ShaderReport : public Report
+{
+public:
+    inline ShaderReport(std::string n, const char* t, int i0, int i1, float f0, float f1) :
         name{n}, type{t}, specint0{i0}, specint1{i1}, specfloat0{f0}, specfloat1{f1} {}
-    void operator()() const 
+    inline void operator()() const  override
     {
         std::cout << "================== Shader Report ==================" << std::endl;
         std::cout << "Name:                  " << name << std::endl;
@@ -86,22 +97,27 @@ struct ShaderReport
         std::cout << "Spec Constant Float 0: " << specfloat0 << std::endl;
         std::cout << "Spec Constant Float 1: " << specfloat1 << std::endl;
     }
-    
+    inline const std::string getObjectName() const override {return name;};
+    inline ReportType getType() const override {return ReportType::Shader;}
+    inline void setSpecFloat(int index, float val)
+    {
+        if (index == 0) specfloat0 = val;
+        if (index == 1) specfloat1 = val;
+    }
+
+private:
+    const std::string name{"unitilialized"};
+    const char* type{"uninilialized"};
+    int specint0{0};
+    int specint1{0};
+    float specfloat0{0};
+    float specfloat1{0};
 };
 
-struct GraphicsPipelineReport
+class GraphicsPipelineReport : public Report
 {
-    std::string name{"default"};
-    std::string pipelineLayout{"default"};
-    std::string vertshader{"default"};
-    std::string fragshader{"default"};
-    std::string renderpass{"default"};
-    int regionX;
-    int regionY;
-    uint32_t areaX;
-    uint32_t areaY;
-    bool is3d{false};
-    GraphicsPipelineReport(
+public:
+    inline GraphicsPipelineReport(
             std::string parm1,
             std::string parm2,
             std::string parm3,
@@ -114,7 +130,7 @@ struct GraphicsPipelineReport
             bool is3d) :
         name{parm1}, pipelineLayout{parm2}, vertshader{parm3}, fragshader{parm4},
         renderpass{parm5}, regionX{i1}, regionY{i2}, areaX{ui1}, areaY{ui2}, is3d{is3d} {}
-    void operator()() const
+    inline void operator()() const override
     {
         std::cout << "================== Graphics Pipeline Report ==================" << std::endl;
         std::cout << "Name:            " << name << std::endl;
@@ -126,20 +142,37 @@ struct GraphicsPipelineReport
         std::cout << "Area:           (" << areaX << ", " << areaY << ")" << std::endl;
         std::cout << "Is it 3d?        " << is3d << std::endl;
     }
+    inline const std::string getObjectName() const override {return name;}
+    inline ReportType getType() const override {return ReportType::Pipeline;}
+private:
+    std::string name{"default"};
+    std::string pipelineLayout{"default"};
+    std::string vertshader{"default"};
+    std::string fragshader{"default"};
+    std::string renderpass{"default"};
+    int regionX;
+    int regionY;
+    uint32_t areaX;
+    uint32_t areaY;
+    bool is3d{false};
 };
 
-struct RenderpassReport
+class RenderpassReport : public Report
 {
-    const std::string name{"unitilialized"};
-    RenderpassReport(std::string n) :
+public:
+    inline RenderpassReport(std::string n) :
         name{n} {}
-    void operator()() const 
+    inline void operator()() const override
     {
         std::cout << "================== Shader Report ==================" << std::endl;
         std::cout << "Name:                  " << name << std::endl;
     }
-    
+    inline const std::string getObjectName() const override {return name;}
+    inline ReportType getType() const override {return ReportType::Renderpass;}
+private:
+    const std::string name{"unitilialized"};
 };
+
 
 template <class T>
 class Stack
@@ -338,6 +371,25 @@ private:
     std::string rpassName;
 };
 
+class CreateRenderpassInstance : public Command
+{
+public:
+    CMD_BASE("createRenderpassInstance");
+    inline void set(
+            std::string attachName,
+            std::string renderpassName,
+            std::string pipelineName) 
+    {
+        attachment = attachName;
+        renderpass = renderpassName;
+        pipeline = pipelineName;
+    }
+private:
+    std::string attachment;
+    std::string renderpass;
+    std::string pipeline;
+};
+
 template <typename T>
 class Pool
 {
@@ -406,6 +458,14 @@ class ShaderManager: public State
 {
 public:
     STATE_BASE("shadermanager");
+    std::vector<std::string> getShaderNames() const {return shaderNames;}
+    std::vector<const Report*> getReports() const
+    {
+        std::vector<const Report*> reports;
+        for (const auto& item : shaderReports) 
+            reports.push_back(&item.second);
+        return reports;
+    }
 private:
     Command::Pool<Command::LoadFragShader> loadFragPool{10};
     Command::Pool<Command::LoadVertShader> loadVertPool{10};
@@ -452,60 +512,86 @@ class RenderpassManager: public State
 {
 public:
     STATE_BASE("renderpassManager");
+    std::vector<const Report*> getReports() const 
+    {
+        std::vector<const Report*> reports;
+        for (const auto& item : renderpassReports) 
+            reports.push_back(&item);
+        return reports;
+    }
+
 private:    
     Command::Pool<Command::CreateSwapchainRenderpass> csrPool{1};
-    enum class Option {null, createSwapRenderpass};
-    using OptionMap = std::map<std::string, Option>;
-    OptionMap opMap{
-        {"create_swap_renderpass", Option::createSwapRenderpass}};
-    std::map<std::string, RenderpassReport> shaderReports;
+    enum class Option {null, createSwapRenderpass, report};
+    OptionMap<Option> opMap{
+        {
+        {"create_swap_renderpass", Option::createSwapRenderpass},
+        {"report", Option::report},
+        },{
+        }};
+    std::vector<RenderpassReport> renderpassReports;
     Option mode{Option::null};
 };
 
-class PipelineManager: public State
+class PipelineManager : public State
 {
 public:
     STATE_BASE("pipelineManager");
+    std::vector<const Report*> getReports() const
+    {
+        std::vector<const Report*> reports;
+        for (const auto& item : gpReports) 
+            reports.push_back(&item.second);
+        return reports;
+    }
 private:
     Command::Pool<Command::CreateGraphicsPipeline> cgpPool{10};
     enum class Option : uint8_t {null, createGraphicsPipeline, report};
-    std::map<std::string, Option> opMap{
+    OptionMap<Option> opMap{
+        {
         {"createGraphicsPipeline", Option::createGraphicsPipeline},
-        {"report", Option::report }};
+        {"report", Option::report }
+        },{
+        }};
     Option mode{Option::null};
     std::map<std::string, GraphicsPipelineReport> gpReports;
 };
 
-class InitRenderer : public State
+class RendererManager : public State
 {
 public:
-    inline InitRenderer(XWindow& the_window) : window{the_window} {}
-    STATE_BASE("initRenderer");
+    inline RendererManager(XWindow& the_window) : window{the_window} {}
+    STATE_BASE("rendererManager");
 private:
     Command::Pool<Command::PrepareRenderFrames> prfPool{1};
     Command::Pool<Command::CreatePipelineLayout> cplPool{1};
     Command::Pool<Command::OpenWindow> owPool{1};
+    Command::Pool<Command::CreateRenderpassInstance> criPool{5};
     RenderpassManager rpassManager;
     PipelineManager pipelineManager;
     ShaderManager shaderManager;
     AddAttachment addAttachState;
-    enum class Option {null, shaderManager, openWindow, addattachState, prepRenderFrames, createPipelineLayout, rpassManager, pipelineManager, all};
+    enum class Option : uint8_t {null, printReports, createRPI, shaderManager, openWindow, addattachState, prepRenderFrames, createPipelineLayout, rpassManager, pipelineManager, all};
+    enum class Mode : uint8_t {null, createRPI};
     OptionMap<Option> opMap{
         {
             {"createPipelineLayout", Option::createPipelineLayout},
             {"openWindow", Option::openWindow},
             {"addAttachState", Option::addattachState},
             {"shaderManager", Option::shaderManager},
-            {"all", Option::all}
+            {"all", Option::all},
+            {"printReports", Option::printReports}
         },{
             {"rpassManager", Option::rpassManager},
             {"prepRenderFrames", Option::prepRenderFrames},
-            {"pipelineManager", Option::pipelineManager}
+            {"pipelineManager", Option::pipelineManager},
+            {"createRenderpassInstance", Option::createRPI},
         }};
-          
+    Mode mode{Mode::null};
     XWindow& window;
     bool preparedFrames{false};
     bool createdLayout{false};
+    std::vector<const Report*> reports;
 };
 
 class Director: public State
@@ -519,16 +605,24 @@ public:
             stack->push(&t);
     }
 private:
-    InitRenderer initRenState;
+    RendererManager initRenState;
     enum class Option {null, initRenState};
     using OptionMap = std::map<std::string, Option>;
     OptionMap opMap{
-        {"initRenderer", Option::initRenState}};
+        {"rendererManager", Option::initRenState}};
 };
 
 };
 
 typedef ReverseStack<State::State*> StateStack;
+
+enum class EditType : uint8_t
+{
+    push,
+    remove,
+};
+
+using StateEdit = std::pair<const State::State* const, EditType>;
 
 class EditStack : public ReverseStack<State::State*>
 {
