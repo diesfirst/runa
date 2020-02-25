@@ -12,7 +12,7 @@
         std::cout << std::endl;\
         app->setVocabulary(vocab)\
     
-constexpr const char* SHADER_DIR = "/home/michaelb/Dev/sword/build/shaders/";
+constexpr const char* SHADER_DIR = "/home/michaelb/dev/sword/build/shaders/";
 
 void State::Director::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
 {
@@ -242,6 +242,7 @@ void State::ShaderManager::handleEvent(Event* event, EditStack* stateEdits, Comm
     {
         mode = Option::null;
         stateEdits->reload(this);
+        event->setHandled();
     }
 }
 
@@ -289,6 +290,9 @@ void State::RendererManager::handleEvent(Event* event, EditStack* stateEdits, Co
                                 opMap.remove(Option::openWindow);
                                 opMap.add(Option::rpassManager);
                                 opMap.add(Option::pipelineManager);
+                                opMap.add(Option::createRPI);
+                                opMap.add(Option::render);
+                                opMap.add(Option::recordRenderCmd);
                                 stateEdits->reload(this);
                                 break;
                             }
@@ -335,6 +339,25 @@ void State::RendererManager::handleEvent(Event* event, EditStack* stateEdits, Co
                         case Option::createRPI:
                             {
                                 mode = Mode::createRPI;
+                                std::cout << "Enter an attachment name (or swap), a renderpass name, and a pipeline name" << std::endl;
+                                break;
+                            }
+                        case Option::rpiReport:
+                            {
+                                for (const auto& item : rpiReports) 
+                                    std::invoke(item);
+                                break;
+                            }
+                        case Option::render:
+                            {
+                                std::cout << "Enter a render command index and 0 or 1 based on whether or not to update ubo" << std::endl;
+                                mode = Mode::render;
+                                break;
+                            }
+                        case Option::recordRenderCmd:
+                            {
+                                std::cout << "Enter a command index, and an array of render pass instance indices to use." << std::endl;
+                                mode = Mode::recordRenderCmd;
                                 break;
                             }
                     }
@@ -348,11 +371,46 @@ void State::RendererManager::handleEvent(Event* event, EditStack* stateEdits, Co
                     instream >> attachName >> renderpassName >> pipelineName;
                     auto cmd = criPool.request(attachName, renderpassName, pipelineName);
                     if (cmd)
+                    {
                         cmdStack->push(std::move(cmd));
+                        rpiReports.emplace_back(attachName, renderpassName, pipelineName, rpiReports.size());
+                    }
+                    stateEdits->reload(this);
+                    mode = Mode::null;
+                    break;
+                }
+            case Mode::render:
+                {
+                    int rendercmdIndex;
+                    bool updateUbo;
+                    instream >> rendercmdIndex >> updateUbo;
+                    auto cmd = renderPool.request(rendercmdIndex, updateUbo);
+                    cmdStack->push(std::move(cmd));
+                    mode = Mode::null;
+                    break;
+                }
+            case Mode::recordRenderCmd:
+                {
+                    int cmdIndex;
+                    uint32_t i;
+                    std::vector<uint32_t> rpiIndices;
+                    instream >> cmdIndex;
+                    while (instream >> i)
+                        rpiIndices.push_back(i);
+                    auto cmd = rrcPool.request(cmdIndex, rpiIndices);
+                    cmdStack->push(std::move(cmd));
+                    rcReports.emplace_back(cmdIndex, rpiIndices);
+                    stateEdits->reload(this);
                     mode = Mode::null;
                     break;
                 }
         }
+        event->setHandled();
+    }
+    if (event->getCategory() == EventCategory::Abort)
+    {
+        mode = Mode::null;
+        stateEdits->reload(this);
         event->setHandled();
     }
 }
@@ -365,7 +423,7 @@ void State::RenderpassManager::handleEvent(Event* event, EditStack* stateEdits, 
         std::stringstream instream{input};
         switch (mode)
         {
-            case Option::null:
+            case Mode::null:
                 {
                     instream >> input;
                     Option option = opMap.findOption(input);
@@ -374,7 +432,7 @@ void State::RenderpassManager::handleEvent(Event* event, EditStack* stateEdits, 
                         case Option::createSwapRenderpass:
                             {
                                 std::cout << "Enter a name for the swapchain render pass" << std::endl;
-                                mode = Option::createSwapRenderpass;
+                                mode = Mode::createSwapRenderpass;
                                 break;
                             }
                         case Option::null:
@@ -393,23 +451,23 @@ void State::RenderpassManager::handleEvent(Event* event, EditStack* stateEdits, 
                     }
                     break;
                 }
-            case Option::createSwapRenderpass:
+            case Mode::createSwapRenderpass:
                 {
                     instream >> input;
                     auto cmd = csrPool.request(input);
                     cmdStack->push(std::move(cmd));
                     renderpassReports.emplace_back(input);
                     stateEdits->push(nullptr);
-                    mode = Option::null;
-                    break;
-                }
-            case Option::report:
-                {
-                    std::cout << "Should not be here" << std::endl;
+                    mode = Mode::null;
                     break;
                 }
         }
         event->setHandled();
+    }
+    if (event->getCategory() == EventCategory::Abort)
+    {
+        mode = Mode::null;
+        stateEdits->reload(this);
     }
 }
 
@@ -572,8 +630,18 @@ void State::RendererManager::onEnter(Application* app)
     reports.clear();
     auto rpass = rpassManager.getReports();
     auto gp = pipelineManager.getReports();
+    auto shaders = shaderManager.getReports();
     reports.insert(reports.begin(), rpass.begin(), rpass.end());
     reports.insert(reports.begin(), gp.begin(), gp.end());
+    reports.insert(reports.begin(), shaders.begin(), shaders.end());
+    for (const auto& i : rpiReports) 
+    {
+        reports.push_back(&i);   
+    }
+    for (const auto& i : rcReports) 
+    {
+        reports.push_back(&i);
+    }
     app->setVocabulary(opMap.getStrings());
 }
 
@@ -581,18 +649,14 @@ void State::RenderpassManager::onEnter(Application* app)
 {
     switch (mode)
     {
-        case Option::null:
+        case Mode::null:
             {
                 app->setVocabulary(opMap.getStrings());
                 break;
             }
-        case Option::createSwapRenderpass:
+        case Mode::createSwapRenderpass:
             {
                 std::cout << "should not get here" << std::endl;
-                break;
-            }
-        case Option::report:
-            {
                 break;
             }
     }
@@ -685,6 +749,16 @@ void Command::CreateGraphicsPipeline::execute(Application* app)
 void Command::CreateRenderpassInstance::execute(Application* app)
 {
     app->renderer.addRenderPassInstance(attachment, renderpass, pipeline);
+}
+
+void Command::RecordRenderCommand::execute(Application* app)
+{
+    app->renderer.recordRenderCommands(cmdBufferId, renderpassInstances);
+}
+
+void Command::Render::execute(Application* app)
+{
+    app->renderer.render(renderCommandId, updateUBO);
 }
 
 Command::CreatePipelineLayout::CreatePipelineLayout()

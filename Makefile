@@ -1,9 +1,9 @@
 CC = g++
-INCDIRS = -I/usr/include -I/home/michaelb/Dev/sword/include/thirdparty
+INCDIRS = -I/usr/include -I/home/michaelb/dev/sword/include/thirdparty
 WFLAGS = -std=c++17 -Wall -W -Wno-parentheses -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-uninitialized -Wno-unused-parameter -Wno-unused-local-typedefs
 CFLAGS = -std=c++17 -g $(WFLAGS) $(INCDIRS) -fPIC
 LDFLAGS = -lsword -lpthread -lxcb -lvulkan -lX11 -lreadline -ldl
-LIB = /home/michaelb/Dev/sword/lib
+LIB = /home/michaelb/dev/sword/lib
 LDIRS = -L$(LIB) #-L$(LIB)/loader 
 LINK = $(LDIRS) $(LDFLAGS)
 SPV = build/shaders

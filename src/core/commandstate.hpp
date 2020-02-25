@@ -71,7 +71,9 @@ enum class ReportType : uint8_t
 {
     Shader,
     Renderpass,
-    Pipeline
+    Pipeline,
+    RenderpassInstance,
+    RenderCommand
 };
 
 class Report
@@ -173,6 +175,57 @@ private:
     const std::string name{"unitilialized"};
 };
 
+class RenderpassInstanceReport : public Report
+{
+public:
+    inline RenderpassInstanceReport(
+            std::string attachName,
+            std::string rpassName,
+            std::string pipeName,
+            int id) :
+        attachmentName{attachName},
+        renderpassName{rpassName},
+        pipelineName{pipeName},
+        id{id} {}
+    inline void operator()() const override
+    {
+        std::cout << "============== Renderpass Instance Report =============" << std::endl;
+        std::cout << "Index:           " << id << std::endl;
+        std::cout << "Attachment Name: " << attachmentName << std::endl;
+        std::cout << "Renderpass Name: " << renderpassName << std::endl;
+        std::cout << "Pipeline Name:   " << pipelineName << std::endl;
+    }
+    inline ReportType getType() const override {return ReportType::RenderpassInstance;}
+    inline const std::string getObjectName() const override {return std::to_string(id);}
+private:
+    std::string attachmentName;
+    std::string renderpassName;
+    std::string pipelineName;
+    int id;
+};
+
+class RenderCommandReport : public Report
+{
+public:
+    inline RenderCommandReport(int cmdIndex, std::vector<uint32_t> rpiIndices) :
+        cmdIndex{cmdIndex}, rpiIndices{rpiIndices} {}
+    inline void operator()() const override
+    {
+        std::cout << "============= Render Commmand Report =============" << std::endl;
+        std::cout << "Command Index:        " << cmdIndex << std::endl;
+        std::cout << "Renderpass Instances: ";
+        for (const auto& i : rpiIndices) 
+        {
+            std::cout << i << ", ";
+        }
+        std::cout << std::endl;
+    }
+    inline ReportType getType() const override {return ReportType::RenderCommand;}
+    inline const std::string getObjectName() const override {return std::to_string(cmdIndex);}
+private:
+    int cmdIndex;
+    std::vector<uint32_t> rpiIndices;
+};
 
 template <class T>
 class Stack
@@ -390,6 +443,34 @@ private:
     std::string pipeline;
 };
 
+class RecordRenderCommand : public Command
+{
+public:
+    CMD_BASE("recordRenderCommand");
+    inline void set(int index, std::vector<uint32_t> renderpassInstances)
+    {
+        this->cmdBufferId = index;
+        this->renderpassInstances = renderpassInstances;
+    }
+private:
+    int cmdBufferId;
+    std::vector<uint32_t> renderpassInstances;
+};
+
+class Render : public Command
+{
+public:
+    CMD_BASE("render");
+    inline void set(int renderCommandId, bool updateUBO)
+    {
+        this->renderCommandId = renderCommandId;
+        this->updateUBO = updateUBO;
+    }
+private:
+    int renderCommandId{0};
+    bool updateUBO{false};
+};
+
 template <typename T>
 class Pool
 {
@@ -522,7 +603,8 @@ public:
 
 private:    
     Command::Pool<Command::CreateSwapchainRenderpass> csrPool{1};
-    enum class Option {null, createSwapRenderpass, report};
+    enum class Option : uint8_t {null, createSwapRenderpass, report};
+    enum class Mode : uint8_t {null, createSwapRenderpass};
     OptionMap<Option> opMap{
         {
         {"create_swap_renderpass", Option::createSwapRenderpass},
@@ -530,7 +612,7 @@ private:
         },{
         }};
     std::vector<RenderpassReport> renderpassReports;
-    Option mode{Option::null};
+    Mode mode{Mode::null};
 };
 
 class PipelineManager : public State
@@ -567,12 +649,14 @@ private:
     Command::Pool<Command::CreatePipelineLayout> cplPool{1};
     Command::Pool<Command::OpenWindow> owPool{1};
     Command::Pool<Command::CreateRenderpassInstance> criPool{5};
+    Command::Pool<Command::RecordRenderCommand> rrcPool{5};
+    Command::Pool<Command::Render> renderPool{5};
     RenderpassManager rpassManager;
     PipelineManager pipelineManager;
     ShaderManager shaderManager;
     AddAttachment addAttachState;
-    enum class Option : uint8_t {null, printReports, createRPI, shaderManager, openWindow, addattachState, prepRenderFrames, createPipelineLayout, rpassManager, pipelineManager, all};
-    enum class Mode : uint8_t {null, createRPI};
+    enum class Option : uint8_t {null, render, recordRenderCmd, rpiReport, printReports, createRPI, shaderManager, openWindow, addattachState, prepRenderFrames, createPipelineLayout, rpassManager, pipelineManager, all};
+    enum class Mode : uint8_t {null, createRPI, render, recordRenderCmd};
     OptionMap<Option> opMap{
         {
             {"createPipelineLayout", Option::createPipelineLayout},
@@ -580,18 +664,23 @@ private:
             {"addAttachState", Option::addattachState},
             {"shaderManager", Option::shaderManager},
             {"all", Option::all},
-            {"printReports", Option::printReports}
+            {"printReports", Option::printReports},
+            {"rpiReports", Option::rpiReport}
         },{
             {"rpassManager", Option::rpassManager},
             {"prepRenderFrames", Option::prepRenderFrames},
             {"pipelineManager", Option::pipelineManager},
             {"createRenderpassInstance", Option::createRPI},
+            {"render", Option::render},
+            {"recordRenderCmd", Option::recordRenderCmd}
         }};
     Mode mode{Mode::null};
     XWindow& window;
     bool preparedFrames{false};
     bool createdLayout{false};
     std::vector<const Report*> reports;
+    std::vector<RenderpassInstanceReport> rpiReports;
+    std::vector<RenderCommandReport> rcReports;
 };
 
 class Director: public State
