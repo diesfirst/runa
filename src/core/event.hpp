@@ -54,6 +54,7 @@ enum class EventCategory : uint8_t
     CommandLine,
     Window,
     Abort,
+    Nothing,
 };
 
 class Event
@@ -63,6 +64,19 @@ public:
     virtual std::string getName() const = 0;
     inline void setHandled() {handled = true;}
     inline bool isHandled() const {return handled;}
+    inline static EventCategory unserializeCategory(std::ifstream& is)
+    {
+        EventCategory ec;
+        is.read((char*)&ec, sizeof(uint8_t));
+        if (ec == EventCategory::CommandLine)
+            return EventCategory::CommandLine;
+        else if (ec == EventCategory::Abort)
+            return EventCategory::Abort;
+        else
+        {
+            throw std::runtime_error("Could not unserialize category");
+        }
+    }
 protected:
     bool handled{false};
 };
@@ -72,6 +86,16 @@ class Abort : public Event
 public:
    inline EventCategory getCategory() const override {return EventCategory::Abort;} 
    inline std::string getName() const override {return "Abort";}
+   inline void serialize(std::ofstream& os) 
+   {
+   }
+};
+
+class Nothing : public Event
+{
+public:
+   inline EventCategory getCategory() const override {return EventCategory::Nothing;} 
+   inline std::string getName() const override {return "Nothing";}
 };
 
 class CommandLineEvent : public Event
@@ -177,6 +201,8 @@ enum class InputMode : uint8_t
     Window,
 };
 
+using Vocab = std::vector<std::string>;
+
 //this class is not thread safe at all
 class EventHandler
 {
@@ -185,6 +211,9 @@ public:
 	~EventHandler();
 
     void setVocabulary(std::vector<std::string> vocab);
+    void updateVocab();
+    void addVocab(const Vocab*);
+    void popVocab();
 
 	void fetchWindowInput();
     void fetchCommandLineInput();
@@ -207,7 +236,8 @@ private:
 
 //    static uint8_t wordCount;
 //    static const char** vocabulary;
-    static std::vector<std::string> vocabulary;
+    inline static Vocab vocabulary{};
+    inline static std::vector<const Vocab*> vocabPtrs;
     static char* completion_generator(const char* text, int state);
     static char** completer(const char* text, int start, int end);
     bool keepWindowThread{true};

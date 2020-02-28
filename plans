@@ -38,3 +38,55 @@ Also, look into the VK_EXT_conditional_rendering extention. https://www.saschawi
 Good recommendations page https://developer.samsung.com/game/usage
 
 Have brush change size by rotating it around a point. Clock wise rotations = bigger, counter clock wise = smaller
+
+
+
++ Wed Feb 26 11:12:25 EST 2020
+want to make it so that we can call commands up the state stack
+we will impose some limitations on the stack in accordance with this change
+1)  Each state can have ONLY ONE CHILD on the stack at any given time. 
+    The thought here is to prevent having a logical tree represented as a stack.
+    Right now, only one state is at the forefront of the stack. We allow it to "reload" itself
+    by pushing itself onto the stack. So it must have some idea of what is on the top of the stack when
+    it is in the event handling function. Having ancestors push new states onto the stack via trickle 
+    events would break this technique, and likely lead to general chaos.
+    
+    The way to implement this is give each state that owns other states an "active child"
+    member. When this is not null, we mush disable all the Options on that state that would lead to
+    states getting pushed. One way to do this would be to classify Options by whether or not they can 
+    push states. Options are currently represented as enums. Might create map? Or just a vector of 
+    all the options that lead to states being pushed. 
+
+2)  No more states popping themselves. Infacticide is the way to go. Parents will pop their active children.
+    The reason being that this will allow parents to collect information from their child before deactivating it. 
+    For instance, gathering reports. Reports and other important information can then domino down the 
+    stack as the user aborts out of them. The abortion will be handled by a special Abort event. Either Esc
+    or 'q' would be appropriate. (The trick would be getting readline to act immediately when Esc is entered). 
+    All Modes of states will be responsible for handling Abort events. 
+    If the Mode is null, it will check if the active child is nullptr. If its not, then it must add a pop to the state edits
+    and set its active child to nullptr after doing any report collecting. Also it handles the event.
+    If the child is nullptr, it does nothing (allows the event to pass through it).
+    If the Mode is not null, then it is likely in some pending action stage and must gracefully get out of it.
+    
+Sidenote:
+    I am thinking about replacing the stateEdit stack with a single pointer parameter. I don't think I could have multiple
+    stateEdits with one event anymore. I can't go back to a return value though, because we still need to have a Do Nothing
+    value. A return value would have to interpet a nullptr either as Do Nothing OR Pop the state. Actually, this is the reason
+    for a container. An empty container is the Do Nothing option. Perhaps I can create a class (an edit Capsule) to serve this purpose
+    better since its looking like the stack will always be size 1 at most.
+  
++   Thu Feb 27 14:05:59 EST 2020
+    Considering scrapping infanticed for god killing. This change would mean that only the root layer (Director) can
+    pop the state stack. The advantage being that I can put more layers under the domain of the director, but still
+    push them ontop of intermediate layers. So have director -> rendermanager -> scene description like hierarchies. 
+    Or director -> rendermanager -> paint. It does not make sense to have the render manager have ownership over a 
+    paint layer (state, but leaning towards renaming these guys to layers or modules). 
+    Other states can still push, however. I would still want the shadermanager to be owned by the renderermanager, for instance.
+    Layers other than the director will just not handle abort unless they are in a non-null state. In which case their duty
+    is simply to move back to null and reset their vocab. 
+    This does break the design choice I literally decided on yesterday. But the refresh command has solved some of the
+    reasons for that choice (states no longer need to push and pop themselves to reset). It also means that if I    
+    push a paint layer from director, I may want to push other states that it depends on. Or transfer stuff over.
+    I'm thinking like binding the fragment input held by the paint layer to the renderer. Also, this means that
+    the whole hiding of state-pushing options must be done in the onPush function, not the push itself.
+    

@@ -14,240 +14,264 @@
     
 constexpr const char* SHADER_DIR = "/home/michaelb/dev/sword/build/shaders/";
 
-void State::Director::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
-{
-    if (event->getCategory() == EventCategory::CommandLine)
-    {
-        auto input = static_cast<CommandLineEvent*>(event)->getInput();
-        std::stringstream instream{input};
-        instream >> input;
-        auto iter = opMap.find(input);
-        Option option;
-        if (iter != opMap.end())
-                option = iter->second;
-        else 
-            option = Option::null;
-        switch (option)
-        {
-            case Option::initRenState:
-                {
-                    stateEdits->push(&initRenState);
-                    break;
-                }
-            case Option::null:
-                {
-                    break;
-                }
-
-        }
-        event->isHandled();
-    }
-}
+void State::State::onResume(Application* app) {addDynamicOps(); onResumeExt(app); activeChild = nullptr;}
+void State::State::onPush(Application* app) {removeDynamicOps(); onPushExt(app);}
+void State::State::onExit(Application* app) {onExitExt(app); app->ev.popVocab();}
+void State::State::onEnter(Application* app) {onEnterExt(app); app->ev.addVocab(&vocab);}
+void State::State::refresh(Application* app) {app->ev.updateVocab();}
 
 void State::AddAttachment::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
+        
         auto input = static_cast<CommandLineEvent*>(event)->getInput();
         std::stringstream instream{input};
         switch (mode)
         {
-            case Option::null:
+            case Mode::null:
                 {
                     instream >> input;
-                    auto iter = vocab.find(input);
-                    Option option;
-                    if (iter != vocab.end())
-                            option = iter->second;
-                    else 
-                        option = Option::null;
+                    Option option = opMap.findOption(input);
                     switch (option)
                     {
                         case Option::setdimensions:
                             {
                                 std::cout << "Enter a width and height" << std::endl;
-                                mode = Option::setdimensions;
+                                mode = Mode::setdimensions;
+                                event->setHandled();
                                 break;
                             }
                         case Option::fulldescription:
                             {
                                 std::cout << "Enter a name, a width, a height, is sampled, is transfer src" << std::endl;
-                                mode = Option::fulldescription;
+                                mode = Mode::fulldescription;
+                                event->setHandled();
                                 break;
                             }
                         case Option::addsamplesources:
                             {
                                 std::cout << "enter names for attachments that will be sampled from" << std::endl;
-                                mode = Option::addsamplesources;
-                                break;
-                            }
-                        case Option::null:
-                            {
-                                stateEdits->push(nullptr);
+                                mode = Mode::addsamplesources;
+                                event->setHandled();
                                 break;
                             }
                     }
                     break;
                 }
-            case Option::setdimensions:
+            case Mode::setdimensions:
                 {
                     instream >> width >> height;
-                    mode = Option::null;
+                    mode = Mode::null;
+                    event->setHandled();
                     break;
                 };
-            case Option::addsamplesources:
+            case Mode::addsamplesources:
                 {
                     while (instream >> input)
                     {
                         auto cmd = addAttPool.request(input, width, height, true, false);
                         cmdStack->push(std::move(cmd));
                     }
-                    mode = Option::null;
-                    stateEdits->push(nullptr);
+                    mode = Mode::null;
+                    event->setHandled();
                     break;
                 }
-            case Option::fulldescription:
+            case Mode::fulldescription:
                 {
                     std::string name; int w; int h; bool sample; bool transfersrc;
                     instream >> name >> w >> h >> sample >> transfersrc;
                     auto cmd = addAttPool.request(name, w, h, sample, transfersrc);
                     cmdStack->push(std::move(cmd));
-                    mode = Option::null;
-                    stateEdits->push(nullptr);
+                    mode = Mode::null;
+                    event->setHandled();
                     break;
                 }
         }
-        event->setHandled();
+    }
+    if (event->getCategory() == EventCategory::Abort && mode != Mode::null)
+    {
+        mode = Mode::null;
     }
 }
 
-void State::ShaderManager::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
-{
+void State::RenderpassManager::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
+{    
     if (event->getCategory() == EventCategory::CommandLine)
     {
         auto input = static_cast<CommandLineEvent*>(event)->getInput();
         std::stringstream instream{input};
         switch (mode)
         {
-            case Option::null:
+            case Mode::null:
                 {
                     instream >> input;
-                    auto iter = opMap.find(input);
-                    Option option;
-                    if (iter != opMap.end())
-                            option = iter->second;
-                    else 
-                        option = Option::null;
+                    Option option = opMap.findOption(input);
                     switch (option)
                     {
-                        case Option::null:
+                        case Option::createSwapRenderpass:
                             {
-                                stateEdits->push(nullptr);
+                                std::cout << "Enter a name for the swapchain render pass" << std::endl;
+                                mode = Mode::createSwapRenderpass;
                                 break;
                             }
-                        case Option::loadFragShaders:
+                        case Option::report:
                             {
-                                mode = Option::loadFragShaders;
-                                std::cout << "Choose which frag shaders to load." << std::endl;
-                                stateEdits->push(this);
-                                break;
-                            }
-                        case Option::loadVertShaders:
-                            {
-                                mode = Option::loadVertShaders;
-                                std::cout << "Choose which vert shaders to load." << std::endl;
-                                stateEdits->push(this);
-                                break;
-                            }
-                        case Option::shaderReport:
-                            {
-                                for (const auto& item : shaderReports) 
-                                    std::invoke(item.second);
-                                break;
-                            }
-                        case Option::setSpecFloats:
-                            {
-                                mode = Option::setSpecFloats;
-                                std::cout << "Enter two floats, v or f, and the names of the shaders to set" << std::endl;
-                                stateEdits->push(this);
-                                break;
-                            }
-                        case Option::setSpecInts:
-                            {
-                                mode = Option::setSpecInts;
-                                std::cout << "Enter two ints, v or f, and the names of the shaders to set" << std::endl;
-                                stateEdits->push(this);
+                                for (const auto& report : renderpassReports) 
+                                    std::invoke(report);
                                 break;
                             }
                     }
                     break;
                 }
-            case Option::loadFragShaders:
+            case Mode::createSwapRenderpass:
                 {
-                    while (instream >> input)
-                    {
-                        auto cmd = loadFragPool.request(input);
-                        cmdStack->push(std::move(cmd));
-                        shaderReports.try_emplace(input, input, "Fragment", 0, 0, 0, 0);
-                        shaderNames.push_back(input);
-                    }
-                    mode = Option::null;
-                    stateEdits->push(nullptr);
-                    break;
-                }
-            case Option::loadVertShaders:
-                {
-                    while (instream >> input)
-                    {
-                        auto cmd = loadVertPool.request(input);
-                        cmdStack->push(std::move(cmd));
-                        shaderReports.try_emplace(input, input, "Vertex", 0, 0, 0, 0);
-                        shaderNames.push_back(input);
-                    }
-                    mode = Option::null;
-                    stateEdits->push(nullptr);
-                    break;
-                }
-            case Option::shaderReport:
-                {
-                    std::cout << "Should not get here" << std::endl;
-                    break;
-                }
-            case Option::setSpecFloats:
-                {
-                    int first; int second; std::string type;
-                    instream >> first >> second >> type;
-                    assert (type == "f" || type == "v" && "Type specified incorrectly");
-                    while (instream >> input)
-                    {
-                        auto cmd = ssfPool.request(input, type, first, second);
-                        cmdStack->push(std::move(cmd));
-                        auto& report = shaderReports.at(input);
-                        report.setSpecFloat(0, first);
-                        report.setSpecFloat(1, second);
-                    }
-                    mode = Option::null;
-                    stateEdits->push(nullptr);
-                    break;
-                }
-            case Option::setSpecInts:
-                {
-                    std::cout << "todo" << std::endl;
+                    instream >> input;
+                    auto cmd = csrPool.request(input);
+                    cmdStack->push(std::move(cmd));
+                    renderpassReports.emplace_back(input);
+                    mode = Mode::null;
                     break;
                 }
         }
         event->setHandled();
     }
+    if (event->getCategory() == EventCategory::Abort && mode != Mode::null)
+    {
+        mode = Mode::null;
+    }
+}
+
+void State::Paint::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
+{
+    std::cout << "oooh" << std::endl;
+}
+
+void State::PipelineManager::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
+{
+    if (event->getCategory() == EventCategory::CommandLine)
+    {
+        auto conclude = [&]() mutable
+        {
+            auto refresh = refreshPool.request(this);
+            cmdStack->push(std::move(refresh));
+            event->setHandled();
+        };
+        auto input = static_cast<CommandLineEvent*>(event)->getInput();
+        std::stringstream instream{input};
+        switch (mode)
+        {
+            case Mode::null:
+            {
+                instream >> input;
+                Option option = opMap.findOption(input);
+                switch (option)
+                {
+                    case Option::createGraphicsPipeline:
+                    {
+                        std::cout << "Enter a name for the pipeline, then provide names for"
+                           " a pipelinelayout, a vertshader, a fragshader, "
+                           " a renderpass, 4 numbers for the render region,"
+                           " and a 1 or a 0 for whether or not this is a 3d or 2d pipeline" << std::endl;
+                        mode = Mode::createGraphicsPipeline;
+                        vocab = cgpVocab;
+                        conclude();
+                        break;
+                    }
+                    case Option::report:
+                    {
+                        for (const auto& i : gpReports) 
+                            std::invoke(i.second);
+                        break;
+                    }
+                }
+                break;
+            }
+            case Mode::createGraphicsPipeline:
+            {
+                std::string name{"default"};
+                std::string pipelineLayout{"default"};
+                std::string vertshader{"default"};
+                std::string fragshader{"default"};
+                std::string renderpass{"default"};
+                int a1;
+                int a2;
+                uint32_t a3;
+                uint32_t a4;
+                bool is3d{false};
+                instream >> name >> pipelineLayout >> vertshader >> fragshader >> renderpass >> a1 >> a2 >> a3 >> a4 >> is3d;
+                vk::Rect2D renderArea{{a1, a2}, {a3, a4}};
+                auto cmd = cgpPool.request(name, pipelineLayout, vertshader, fragshader, renderpass, renderArea, is3d);
+                if (cmd) 
+                {
+                    cmdStack->push(std::move(cmd));
+                    gpReports.try_emplace(name, name, pipelineLayout, vertshader, fragshader, renderpass, a1, a2, a3, a4, is3d);
+                }
+                mode = Mode::null;
+                vocab = opMap.getStrings();
+                conclude();
+                break;
+            }
+        }
+    }
+}
+
+void State::Director::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
+{
+    if (event->getCategory() == EventCategory::CommandLine)
+    {
+        std::stringstream instream{static_cast<CommandLineEvent*>(event)->getInput()};
+        std::string input;
+        instream >> input;
+        Option option = opMap.findOption(input);
+        switch (option)
+        {
+            case Option::initRenState:
+                {
+                    pushState(&initRenState, stateEdits);
+                    event->isHandled();
+                    break;
+                }
+            case Option::printStack:
+                {
+                    std::cout << "====== State Stack ======" << std::endl;
+                    stateStack.print();
+                    event->isHandled();
+                    break;
+                }
+            case Option::paint:
+                {
+                    pushState(&paint, stateEdits);
+                    event->isHandled();
+                    break;
+                }
+        }
+    }
     if (event->getCategory() == EventCategory::Abort)
     {
-        mode = Option::null;
-        stateEdits->reload(this);
-        event->setHandled();
+        stateEdits->popState();
     }
+}
+
+void State::Director::onPushExt(Application* app)
+{
+    vocab = opMap.getStrings();
+}
+
+void State::Director::onResumeExt(Application* app)
+{
+    vocab = opMap.getStrings();
 }
 
 void State::RendererManager::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
 {
+    auto conclude = [&]() mutable
+    {
+        vocab = opMap.getStrings();
+        auto refresh = refreshPool.request(this);
+        cmdStack->push(std::move(refresh));
+        event->setHandled();
+    };
     if (event->getCategory() == EventCategory::CommandLine)
     {
         std::stringstream instream{static_cast<CommandLineEvent*>(event)->getInput()};
@@ -265,16 +289,18 @@ void State::RendererManager::handleEvent(Event* event, EditStack* stateEdits, Co
                                 auto cmd = prfPool.request(&window);
                                 cmdStack->push(std::move(cmd));
                                 opMap.remove(Option::prepRenderFrames);
-                                stateEdits->reload(this);
+                                conclude();
                                 break;
                             }
                         case Option::createPipelineLayout:
                             {
                                 auto cmd = cplPool.request();
                                 cmdStack->push(std::move(cmd));
+                                auto rs = refreshPool.request(this);
+                                cmdStack->push(std::move(rs));
                                 opMap.remove(Option::createPipelineLayout);
                                 opMap.remove(Option::all);
-                                stateEdits->reload(this);
+                                conclude();
                                 break;
                             }
                         case Option::all:
@@ -288,76 +314,83 @@ void State::RendererManager::handleEvent(Event* event, EditStack* stateEdits, Co
                                 opMap.remove(Option::all);
                                 opMap.remove(Option::createPipelineLayout);
                                 opMap.remove(Option::openWindow);
-                                opMap.add(Option::rpassManager);
-                                opMap.add(Option::pipelineManager);
-                                opMap.add(Option::createRPI);
-                                opMap.add(Option::render);
-                                opMap.add(Option::recordRenderCmd);
-                                stateEdits->reload(this);
+                                opMap.swapIn(Option::rpassManager);
+                                opMap.swapIn(Option::pipelineManager);
+                                opMap.swapIn(Option::createRPI);
+                                opMap.swapIn(Option::render);
+                                opMap.swapIn(Option::recordRenderCmd);
+                                conclude();
                                 break;
                             }
                         case Option::rpassManager:
                             {
-                                stateEdits->push(&rpassManager);
+                                pushState(&rpassManager, stateEdits);
+                                event->setHandled();
                                 break;
                             }
                         case Option::pipelineManager:
                             {
-                                stateEdits->push(&pipelineManager);
+                                pushState(&pipelineManager, stateEdits);
+                                event->setHandled();
                                 break;
                             }
                         case Option::openWindow:
                             {
                                 auto cmd = owPool.request();
                                 cmdStack->push(std::move(cmd));
+                                auto rs = refreshPool.request(this);
+                                cmdStack->push(std::move(rs));
                                 opMap.remove(Option::openWindow);
                                 opMap.remove(Option::all);
-                                opMap.add(Option::prepRenderFrames);
+                                opMap.swapIn(Option::prepRenderFrames);
+                                conclude();
                                 break;
                             }
                         case Option::shaderManager:
                             {
-                                stateEdits->push(&shaderManager);
+                                pushState(&shaderManager, stateEdits);
+                                event->setHandled();
                                 break;
                             }
                         case Option::addattachState:
                             {
-                                stateEdits->push(&addAttachState);
-                                break;
-                            }
-                        case Option::null:
-                            {
-                                stateEdits->push(nullptr);
+                                pushState(&addAttachState, stateEdits);
+                                event->setHandled();
                                 break;
                             }
                         case Option::printReports:
                             {
                                 for (const auto& item : reports) 
                                     std::invoke(*item);   
+                                event->setHandled();
                                 break;
                             }
                         case Option::createRPI:
                             {
                                 mode = Mode::createRPI;
                                 std::cout << "Enter an attachment name (or swap), a renderpass name, and a pipeline name" << std::endl;
+                                event->setHandled();
                                 break;
                             }
                         case Option::rpiReport:
                             {
                                 for (const auto& item : rpiReports) 
                                     std::invoke(item);
+                                event->setHandled();
                                 break;
                             }
                         case Option::render:
                             {
                                 std::cout << "Enter a render command index and 0 or 1 based on whether or not to update ubo" << std::endl;
                                 mode = Mode::render;
+                                event->setHandled();
                                 break;
                             }
                         case Option::recordRenderCmd:
                             {
                                 std::cout << "Enter a command index, and an array of render pass instance indices to use." << std::endl;
                                 mode = Mode::recordRenderCmd;
+                                event->setHandled();
                                 break;
                             }
                     }
@@ -370,12 +403,9 @@ void State::RendererManager::handleEvent(Event* event, EditStack* stateEdits, Co
                     std::string pipelineName;
                     instream >> attachName >> renderpassName >> pipelineName;
                     auto cmd = criPool.request(attachName, renderpassName, pipelineName);
-                    if (cmd)
-                    {
-                        cmdStack->push(std::move(cmd));
-                        rpiReports.emplace_back(attachName, renderpassName, pipelineName, rpiReports.size());
-                    }
-                    stateEdits->reload(this);
+                    cmdStack->push(std::move(cmd));
+                    const auto& r = rpiReports.emplace_back(attachName, renderpassName, pipelineName, rpiReports.size());
+                    reports.push_back(&r);
                     mode = Mode::null;
                     break;
                 }
@@ -400,23 +430,72 @@ void State::RendererManager::handleEvent(Event* event, EditStack* stateEdits, Co
                     auto cmd = rrcPool.request(cmdIndex, rpiIndices);
                     cmdStack->push(std::move(cmd));
                     rcReports.emplace_back(cmdIndex, rpiIndices);
-                    stateEdits->reload(this);
+                    reports.push_back(&rcReports.back());
                     mode = Mode::null;
                     break;
                 }
         }
-        event->setHandled();
     }
     if (event->getCategory() == EventCategory::Abort)
     {
-        mode = Mode::null;
-        stateEdits->reload(this);
-        event->setHandled();
+        if (mode != Mode::null)
+        {
+            mode = Mode::null;
+            conclude();
+        }
     }
 }
 
-void State::RenderpassManager::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
-{    
+void State::RendererManager::onResumeExt(Application* app)
+{
+    auto collectReport = [this](const auto& t)
+    {
+        if (activeChild == &t)
+        {
+            auto newReports = t.getReports();
+            for (const auto& r : newReports) 
+                reports.push_back(r);   
+        }
+    };
+    collectReport(shaderManager);
+    collectReport(rpassManager);
+    collectReport(pipelineManager);
+}
+
+void State::RendererManager::onPushExt(Application* app)
+{
+    if (activeChild == &pipelineManager)
+    {
+        std::vector<std::string> possibleCPArgs;
+        for (const auto& i : reports) 
+        {
+            auto type = i->getType();
+            if (type  == rpt::ReportType::Renderpass || type == rpt::ReportType::Shader)
+            {
+                auto name = i->getObjectName();   
+                possibleCPArgs.push_back(name);
+            }
+        }
+        pipelineManager.setCGPVocab(possibleCPArgs);
+    }
+}
+
+void State::ShaderManager::setShaderVocab()
+{
+    vocab.clear();
+    auto dir = std::filesystem::directory_iterator(SHADER_DIR);
+    for (const auto& entry : dir) 
+        vocab.push_back(entry.path().filename());
+}
+
+void State::ShaderManager::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
+{
+    auto conclude = [&]() mutable 
+    {
+        auto rs = refreshPool.request(this);
+        cmdStack->push(std::move(rs));
+        event->setHandled();
+    };
     if (event->getCategory() == EventCategory::CommandLine)
     {
         auto input = static_cast<CommandLineEvent*>(event)->getInput();
@@ -429,236 +508,112 @@ void State::RenderpassManager::handleEvent(Event* event, EditStack* stateEdits, 
                     Option option = opMap.findOption(input);
                     switch (option)
                     {
-                        case Option::createSwapRenderpass:
+                        case Option::loadFragShaders:
                             {
-                                std::cout << "Enter a name for the swapchain render pass" << std::endl;
-                                mode = Mode::createSwapRenderpass;
+                                mode = Mode::loadFragShaders;
+                                std::cout << "Choose which frag shaders to load." << std::endl;
+                                setShaderVocab();
+                                conclude();
                                 break;
                             }
-                        case Option::null:
+                        case Option::loadVertShaders:
                             {
-                                stateEdits->push(nullptr);
+                                mode = Mode::loadVertShaders;
+                                std::cout << "Choose which vert shaders to load." << std::endl;
+                                setShaderVocab();
+                                conclude();
                                 break;
                             }
-                        case Option::report:
+                        case Option::shaderReport:
                             {
-                                for (const auto& report : renderpassReports) 
-                                {
-                                    std::invoke(report);
-                                }
+                                for (const auto& item : shaderReports) 
+                                    std::invoke(item.second);
+                                event->setHandled();
+                                break;
+                            }
+                        case Option::setSpecFloats:
+                            {
+                                mode = Mode::setSpecFloats;
+                                std::cout << "Enter two floats, v or f, and the names of the shaders to set" << std::endl;
+                                setShaderVocab();
+                                conclude();
+                                break;
+                            }
+                        case Option::setSpecInts:
+                            {
+                                mode = Mode::setSpecInts;
+                                std::cout << "Enter two ints, v or f, and the names of the shaders to set" << std::endl;
+                                setShaderVocab();
+                                conclude();
                                 break;
                             }
                     }
                     break;
                 }
-            case Mode::createSwapRenderpass:
+            case Mode::loadFragShaders:
                 {
-                    instream >> input;
-                    auto cmd = csrPool.request(input);
-                    cmdStack->push(std::move(cmd));
-                    renderpassReports.emplace_back(input);
-                    stateEdits->push(nullptr);
+                    while (instream >> input)
+                    {
+                        auto cmd = loadFragPool.request(input);
+                        cmdStack->push(std::move(cmd));
+                        shaderReports.try_emplace(input, input, "Fragment", 0, 0, 0, 0);
+                        shaderNames.push_back(input);
+                    }
                     mode = Mode::null;
+                    vocab = opMap.getStrings();
+                    conclude();
+                    break;
+                }
+            case Mode::loadVertShaders:
+                {
+                    while (instream >> input)
+                    {
+                        auto cmd = loadVertPool.request(input);
+                        cmdStack->push(std::move(cmd));
+                        shaderReports.try_emplace(input, input, "Vertex", 0, 0, 0, 0);
+                        shaderNames.push_back(input);
+                    }
+                    mode = Mode::null;
+                    vocab = opMap.getStrings();
+                    conclude();
+                    break;
+                }
+            case Mode::setSpecFloats:
+                {
+                    int first; int second; std::string type;
+                    instream >> first >> second >> type;
+                    assert (type == "f" || type == "v" && "Type specified incorrectly");
+                    while (instream >> input)
+                    {
+                        auto cmd = ssfPool.request(input, type, first, second);
+                        cmdStack->push(std::move(cmd));
+                        auto& report = shaderReports.at(input);
+                        report.setSpecFloat(0, first);
+                        report.setSpecFloat(1, second);
+                    }
+                    mode = Mode::null;
+                    vocab = opMap.getStrings();
+                    conclude();
+                    break;
+                }
+            case Mode::setSpecInts:
+                {
+                    std::cout << "todo" << std::endl;
+                    mode = Mode::null;
+                    vocab = opMap.getStrings();
+                    conclude();
                     break;
                 }
         }
-        event->setHandled();
     }
     if (event->getCategory() == EventCategory::Abort)
     {
-        mode = Mode::null;
-        stateEdits->reload(this);
-    }
-}
-
-void State::Paint::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
-{
-    std::cout << "oooh" << std::endl;
-}
-
-void State::PipelineManager::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
-{
-    if (event->getCategory() == EventCategory::CommandLine)
-    {
-        auto input = static_cast<CommandLineEvent*>(event)->getInput();
-        std::stringstream instream{input};
-        switch (mode)
+        if (mode != Mode::null)
         {
-            case Option::null:
-            {
-                instream >> input;
-                Option option = opMap.findOption(input);
-                switch (option)
-                {
-                    case Option::createGraphicsPipeline:
-                    {
-                        std::cout << "Enter a name for the pipeline, then provide names for"
-                           " a pipelinelayout, a vertshader, a fragshader, "
-                           " a renderpass, 4 numbers for the render region,"
-                           " and a 1 or a 0 for whether or not this is a 3d or 2d pipeline" << std::endl;
-                        mode = Option::createGraphicsPipeline;
-                        stateEdits->push(this);
-                        break;
-                    }
-                    case Option::report:
-                    {
-                        for (const auto& i : gpReports) 
-                            std::invoke(i.second);
-                        break;
-                    }
-                    case Option::null:
-                    {
-                        stateEdits->push(nullptr);
-                        break;
-                    }
-                }
-                break;
-            }
-            case Option::createGraphicsPipeline:
-            {
-                std::string name{"default"};
-                std::string pipelineLayout{"default"};
-                std::string vertshader{"default"};
-                std::string fragshader{"default"};
-                std::string renderpass{"default"};
-                int a1;
-                int a2;
-                uint32_t a3;
-                uint32_t a4;
-                bool is3d{false};
-                instream >> name >> pipelineLayout >> vertshader >> fragshader >> renderpass >> a1 >> a2 >> a3 >> a4 >> is3d;
-                vk::Rect2D renderArea{{a1, a2}, {a3, a4}};
-                auto cmd = cgpPool.request(name, pipelineLayout, vertshader, fragshader, renderpass, renderArea, is3d);
-                if (cmd) 
-                {
-                    cmdStack->push(std::move(cmd));
-                    gpReports.try_emplace(name, name, pipelineLayout, vertshader, fragshader, renderpass, a1, a2, a3, a4, is3d);
-                }
-                mode = Option::null;
-                stateEdits->push(nullptr);
-                break;
-            }
-            case Option::report:
-            {
-                std::cout << "hmmm" << std::endl;
-                break;
-            }
+            mode = Mode::null;
+            vocab = opMap.getStrings();
+            conclude();
         }
-    }
-}
-
-void State::Director::onEnter(Application* app) 
-{
-    std::vector<std::string> words;
-    words.reserve(opMap.size());
-    for (auto i : opMap) 
-        words.push_back(i.first);
-    app->setVocabulary(words);
-}
-
-void State::ShaderManager::onEnter(Application* app) 
-{
-    switch (mode)
-    {
-        case Option::null:
-            {
-                std::vector<std::string> words;
-                words.reserve(opMap.size());
-                for (auto i : opMap) 
-                    words.push_back(i.first);
-                app->setVocabulary(words);
-                break;
-            }
-        case Option::loadFragShaders:
-            {
-                std::vector<std::string> vocab;
-                auto dir = std::filesystem::directory_iterator(SHADER_DIR);
-                for (const auto& entry : dir) 
-                {
-                    vocab.push_back(entry.path().filename());
-                }
-                app->setVocabulary(vocab);
-                break;
-            }
-        case Option::loadVertShaders:
-            {
-                std::vector<std::string> vocab;
-                auto dir = std::filesystem::directory_iterator(SHADER_DIR);
-                for (const auto& entry : dir) 
-                {
-                    vocab.push_back(entry.path().filename());
-                }
-                app->setVocabulary(vocab);
-                break;
-            }
-        case Option::shaderReport:
-            break;
-        case Option::setSpecFloats:
-            {
-                app->setVocabulary(shaderNames);
-                break;
-            }
-        case Option::setSpecInts:
-            {
-                app->setVocabulary(shaderNames);
-                break;
-            }
-    }
-}
-
-void State::AddAttachment::onEnter(Application* app) 
-{
-    std::vector<std::string> words;
-    words.reserve(vocab.size());
-    for (auto i : vocab) {
-        words.push_back(i.first);
-    }
-    app->setVocabulary(words);
-}
-
-void State::Paint::onEnter(Application* app)
-{
-}
-
-void State::PipelineManager::onEnter(Application* app)
-{
-    app->setVocabulary(opMap.getStrings());
-}
-
-void State::RendererManager::onEnter(Application* app)
-{
-    reports.clear();
-    auto rpass = rpassManager.getReports();
-    auto gp = pipelineManager.getReports();
-    auto shaders = shaderManager.getReports();
-    reports.insert(reports.begin(), rpass.begin(), rpass.end());
-    reports.insert(reports.begin(), gp.begin(), gp.end());
-    reports.insert(reports.begin(), shaders.begin(), shaders.end());
-    for (const auto& i : rpiReports) 
-    {
-        reports.push_back(&i);   
-    }
-    for (const auto& i : rcReports) 
-    {
-        reports.push_back(&i);
-    }
-    app->setVocabulary(opMap.getStrings());
-}
-
-void State::RenderpassManager::onEnter(Application* app)
-{
-    switch (mode)
-    {
-        case Mode::null:
-            {
-                app->setVocabulary(opMap.getStrings());
-                break;
-            }
-        case Mode::createSwapRenderpass:
-            {
-                std::cout << "should not get here" << std::endl;
-                break;
-            }
     }
 }
 
@@ -761,6 +716,11 @@ void Command::Render::execute(Application* app)
     app->renderer.render(renderCommandId, updateUBO);
 }
 
+void Command::RefreshState::execute(Application* app)
+{
+    state->refresh(app);
+}
+
 Command::CreatePipelineLayout::CreatePipelineLayout()
 {
     bindings.resize(2);
@@ -783,21 +743,28 @@ Application::Application(uint16_t w, uint16_t h, bool rec, bool rea) :
     swapDim{{w, h}},
     recordevents{rec},
     readevents{rea},
-    dirState{window}
+    dirState{window, stateStack}
 {
     stateStack.push(&dirState);
+    dirState.onEnter(this);
+    ev.updateVocab();
 }
 
 void Application::popState()
 {
+    stateStack.top()->onExit(this);
     stateStack.pop();
-    stateStack.top()->onEnter(this);
+    auto top = stateStack.top();
+    top->onResume(this);
+    ev.updateVocab();
 }
 
 void Application::pushState(State::State* state)
 {
+    stateStack.top()->onPush(this);
     stateStack.push(std::move(state));
     state->onEnter(this);
+    ev.updateVocab();
 }
 
 void Application::setVocabulary(std::vector<std::string> vocab)
@@ -889,14 +856,14 @@ void Application::run()
                     if (!event->isHandled())
                         state->handleEvent(event, &stateEdits, &cmdStack);
             }
-            for (auto state : stateEdits.items) 
+            for (auto state : stateEdits) 
             {
                 if (state)
                     pushState(state);
                 else
                     popState();
             }
-            stateEdits.items.clear();
+            stateEdits.clear();
             ev.eventQueue.pop();
         }
         if (!cmdStack.empty())

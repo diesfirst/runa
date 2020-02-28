@@ -4,6 +4,7 @@
 #include <sstream>
 #include <iostream>
 #include <bitset>
+#include <functional>
 #include <readline/readline.h>
 #include <readline/history.h>
 
@@ -16,9 +17,18 @@ float normCoords(int16_t windowCoord, int16_t extent)
 	return x;
 }
 
+int abortHelper(int count, int key)
+{
+    rl_replace_line("q", 0);
+    rl_done = 1;
+    return 0;
+}
+
 EventHandler::EventHandler(const XWindow& window):
 	window{window}
 {
+    rl_attempted_completion_function = completer;
+    rl_bind_key(27, abortHelper);
 }
 
 EventHandler::~EventHandler()
@@ -26,8 +36,6 @@ EventHandler::~EventHandler()
     keepWindowThread = false;
     keepCommandThread = false;
 }
-
-std::vector<std::string> EventHandler::vocabulary = {"null"};
 
 char* EventHandler::completion_generator(const char* text, int state)
 {
@@ -71,10 +79,26 @@ void EventHandler::setVocabulary(std::vector<std::string> vocab)
     vocabulary = vocab;
 }
 
+void EventHandler::updateVocab()
+{
+    vocabulary.clear();
+    for (const auto& vptr : vocabPtrs) 
+        for (const auto& word : *vptr) 
+            vocabulary.push_back(word);   
+}
+
+void EventHandler::addVocab(const Vocab* vptr)
+{
+    vocabPtrs.push_back(vptr);
+}
+
+void EventHandler::popVocab()
+{
+    vocabPtrs.pop_back();
+}
+
 void EventHandler::fetchCommandLineInput()
 {
-    rl_attempted_completion_function = completer;
-
     CommandLineInput input;
 
     char* buf = readline(">> ");
@@ -89,6 +113,14 @@ void EventHandler::fetchCommandLineInput()
     if (input == "quit")
     {
         keepCommandThread = false;   
+    }
+
+    if (input.empty())
+    {
+        auto event = std::make_unique<Nothing>();
+        eventQueue.emplace(std::move(event));
+        std::cout << "Nothing" << std::endl;
+        return;
     }
 
     std::stringstream ss{input};
