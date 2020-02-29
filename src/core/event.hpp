@@ -67,7 +67,7 @@ public:
     inline static EventCategory unserializeCategory(std::ifstream& is)
     {
         EventCategory ec;
-        is.read((char*)&ec, sizeof(uint8_t));
+        is.read((char*)&ec, sizeof(EventCategory));
         if (ec == EventCategory::CommandLine)
             return EventCategory::CommandLine;
         else if (ec == EventCategory::Abort)
@@ -88,6 +88,8 @@ public:
    inline std::string getName() const override {return "Abort";}
    inline void serialize(std::ofstream& os) 
    {
+       auto cat = getCategory();
+       os.write((char*)&cat, sizeof(EventCategory));
    }
 };
 
@@ -106,6 +108,8 @@ public:
     inline std::string getName() const override {return "CommandLine";};
     inline CommandLineInput getInput() const {return input;}
     inline void serialize(std::ofstream& os) {
+        auto cat = getCategory();
+        os.write((char*)&cat, sizeof(EventCategory));
         size_t inputSize = input.size();
         os.write((char*)&inputSize, sizeof(size_t));
         os.write((char*)input.data(), input.size());

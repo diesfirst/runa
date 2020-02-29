@@ -761,7 +761,7 @@ private:
     Mode mode{Mode::null};
     XWindow& window;
 
-    std::vector<const Report*> reports;
+    std::vector<const > reports;
     std::vector<RenderpassInstanceReport> rpiReports;
     std::vector<RenderCommandReport> rcReports;
 };

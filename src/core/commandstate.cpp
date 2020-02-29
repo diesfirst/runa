@@ -446,6 +446,10 @@ void State::RendererManager::handleEvent(Event* event, EditStack* stateEdits, Co
     }
 }
 
+//TODO: we can't store pointers to vector elements
+//      we should instead change over the report collection
+//      mechanism to store pointers to the vectors of reports
+//      themselves. const pointers.
 void State::RendererManager::onResumeExt(Application* app)
 {
     auto collectReport = [this](const auto& t)
@@ -453,8 +457,23 @@ void State::RendererManager::onResumeExt(Application* app)
         if (activeChild == &t)
         {
             auto newReports = t.getReports();
-            for (const auto& r : newReports) 
-                reports.push_back(r);   
+            for (const auto& nr : newReports) 
+            {
+                std::cout << "nr: " << nr << std::endl;
+                bool alreadyIn{false};
+                for (const auto& r : reports)
+                {
+                    std::cout << "r: " << r << std::endl;
+                    if (r == nr) 
+                    {
+                        std::cout << "report already in" << std::endl;
+                        alreadyIn = true;
+                        break;
+                    }
+                }
+                if (!alreadyIn)
+                    reports.push_back(nr);   
+            }
         }
     };
     collectReport(shaderManager);
@@ -814,8 +833,17 @@ void recordEvent(Event* event, std::ofstream& os)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
+
         os.open(eventlog, std::ios::out | std::ios::binary | std::ios::app);
         auto ce = static_cast<CommandLineEvent*>(event);
+        ce->serialize(os);
+        os.close();
+    }
+    if (event->getCategory() == EventCategory::Abort)
+    {
+
+        os.open(eventlog, std::ios::out | std::ios::binary | std::ios::app);
+        auto ce = static_cast<Abort*>(event);
         ce->serialize(os);
         os.close();
     }
@@ -827,9 +855,20 @@ void Application::readEvents(std::ifstream& is)
     bool reading{true};
     while (is.peek() != EOF)
     {
-        auto cmdevnt = std::make_unique<CommandLineEvent>("foo");
-        cmdevnt->unserialize(is);
-        ev.eventQueue.push(std::move(cmdevnt));
+        EventCategory ec = Event::unserializeCategory(is);
+        if (ec == EventCategory::CommandLine)
+        {
+            auto cmdevnt = std::make_unique<CommandLineEvent>("foo");
+            cmdevnt->unserialize(is);
+            ev.eventQueue.push(std::move(cmdevnt));
+            std::cout << "pushed commandline event" << std::endl;
+        }
+        if (ec == EventCategory::Abort)
+        {
+            auto abrt = std::make_unique<Abort>();
+            ev.eventQueue.push(std::move(abrt));
+            std::cout << "pushed abort event" << std::endl;
+        }
     }
     is.close();
 }
