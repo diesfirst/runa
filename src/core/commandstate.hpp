@@ -667,7 +667,7 @@ public:
     {
         std::vector<const Report*> reports;
         for (const auto& item : renderpassReports) 
-            reports.push_back(&item);
+            reports.push_back(item.get());
         return reports;
     }
 
@@ -681,7 +681,7 @@ private:
         {"report", Option::report},
         },{
         }};
-    std::vector<RenderpassReport> renderpassReports;
+    std::vector<std::unique_ptr<RenderpassReport>> renderpassReports;
     Mode mode{Mode::null};
 };
 
@@ -761,7 +761,7 @@ private:
     Mode mode{Mode::null};
     XWindow& window;
 
-    std::vector<const > reports;
+    std::vector<const Report *> reports;
     std::vector<RenderpassInstanceReport> rpiReports;
     std::vector<RenderCommandReport> rcReports;
 };

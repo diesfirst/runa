@@ -118,7 +118,7 @@ void State::RenderpassManager::handleEvent(Event* event, EditStack* stateEdits, 
                         case Option::report:
                             {
                                 for (const auto& report : renderpassReports) 
-                                    std::invoke(report);
+                                    std::invoke(*report);
                                 break;
                             }
                     }
@@ -129,7 +129,7 @@ void State::RenderpassManager::handleEvent(Event* event, EditStack* stateEdits, 
                     instream >> input;
                     auto cmd = csrPool.request(input);
                     cmdStack->push(std::move(cmd));
-                    renderpassReports.emplace_back(input);
+                    renderpassReports.emplace_back(std::make_unique<RenderpassReport>(input));
                     mode = Mode::null;
                     break;
                 }
@@ -452,33 +452,29 @@ void State::RendererManager::handleEvent(Event* event, EditStack* stateEdits, Co
 //      themselves. const pointers.
 void State::RendererManager::onResumeExt(Application* app)
 {
-    auto collectReport = [this](const auto& t)
+    auto syncReports = [this](const auto& t)
     {
         if (activeChild == &t)
         {
             auto newReports = t.getReports();
             for (const auto& nr : newReports) 
             {
-                std::cout << "nr: " << nr << std::endl;
                 bool alreadyIn{false};
-                for (const auto& r : reports)
-                {
-                    std::cout << "r: " << r << std::endl;
-                    if (r == nr) 
+                for (auto& r : reports)
+                    if (r->getObjectName() == nr->getObjectName()) 
                     {
-                        std::cout << "report already in" << std::endl;
                         alreadyIn = true;
+                        r = nr;
                         break;
                     }
-                }
                 if (!alreadyIn)
                     reports.push_back(nr);   
             }
         }
     };
-    collectReport(shaderManager);
-    collectReport(rpassManager);
-    collectReport(pipelineManager);
+    syncReports(shaderManager);
+    syncReports(rpassManager);
+    syncReports(pipelineManager);
 }
 
 void State::RendererManager::onPushExt(Application* app)
