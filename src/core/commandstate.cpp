@@ -14,6 +14,7 @@
     
 constexpr const char* SHADER_DIR = "/home/michaelb/dev/sword/build/shaders/";
 
+void State::State::pushState(State* state, EditStack* edits) {edits->pushState(state); activeChild = state;} 
 void State::State::onResume(Application* app) {addDynamicOps(); onResumeExt(app); activeChild = nullptr;}
 void State::State::onPush(Application* app) {removeDynamicOps(); onPushExt(app);}
 void State::State::onExit(Application* app) {onExitExt(app); app->ev.popVocab();}
@@ -181,7 +182,7 @@ void State::PipelineManager::handleEvent(Event* event, EditStack* stateEdits, Co
                     case Option::report:
                     {
                         for (const auto& i : gpReports) 
-                            std::invoke(i.second);
+                            std::invoke(*i.second);
                         break;
                     }
                 }
@@ -205,7 +206,7 @@ void State::PipelineManager::handleEvent(Event* event, EditStack* stateEdits, Co
                 if (cmd) 
                 {
                     cmdStack->push(std::move(cmd));
-                    gpReports.try_emplace(name, name, pipelineLayout, vertshader, fragshader, renderpass, a1, a2, a3, a4, is3d);
+                    gpReports.emplace(name, std::make_unique<GraphicsPipelineReport>(name, pipelineLayout, vertshader, fragshader, renderpass, a1, a2, a3, a4, is3d));
                 }
                 mode = Mode::null;
                 vocab = opMap.getStrings();
@@ -369,13 +370,23 @@ void State::RendererManager::handleEvent(Event* event, EditStack* stateEdits, Co
                             {
                                 mode = Mode::createRPI;
                                 std::cout << "Enter an attachment name (or swap), a renderpass name, and a pipeline name" << std::endl;
+                                vocab.clear(); 
+                                vocab.push_back("swap");
+                                for (const auto& i : reports) 
+                                {
+                                    auto type = i->getType();
+                                    if (type == ReportType::Renderpass || type == ReportType::Pipeline)
+                                        vocab.push_back(i->getObjectName());
+                                }
+                                auto cmd = refreshPool.request(this);
+                                cmdStack->push(std::move(cmd));
                                 event->setHandled();
                                 break;
                             }
                         case Option::rpiReport:
                             {
                                 for (const auto& item : rpiReports) 
-                                    std::invoke(item);
+                                    std::invoke(*item);
                                 event->setHandled();
                                 break;
                             }
@@ -398,14 +409,27 @@ void State::RendererManager::handleEvent(Event* event, EditStack* stateEdits, Co
                 }
             case Mode::createRPI:
                 {
+                    auto find = [this](const std::string& s) mutable
+                    {
+                        for (const auto& i : vocab) 
+                            if (s == i)
+                             return true;   
+                        return false;
+                    };
                     std::string attachName;
                     std::string renderpassName;
                     std::string pipelineName;
                     instream >> attachName >> renderpassName >> pipelineName;
+                    if (!find(attachName) || !find(renderpassName) || !find(pipelineName))
+                    {
+                        std::cout << "Bad input" << std::endl;
+                        break;
+                    }
                     auto cmd = criPool.request(attachName, renderpassName, pipelineName);
                     cmdStack->push(std::move(cmd));
-                    const auto& r = rpiReports.emplace_back(attachName, renderpassName, pipelineName, rpiReports.size());
-                    reports.push_back(&r);
+                    auto report = std::make_unique<RenderpassInstanceReport>(attachName, renderpassName, pipelineName, rpiReports.size());
+                    const auto& r = rpiReports.emplace_back(std::move(report));
+                    reports.push_back(r.get());
                     mode = Mode::null;
                     break;
                 }
@@ -429,8 +453,8 @@ void State::RendererManager::handleEvent(Event* event, EditStack* stateEdits, Co
                         rpiIndices.push_back(i);
                     auto cmd = rrcPool.request(cmdIndex, rpiIndices);
                     cmdStack->push(std::move(cmd));
-                    rcReports.emplace_back(cmdIndex, rpiIndices);
-                    reports.push_back(&rcReports.back());
+                    auto& r = rcReports.emplace_back(std::make_unique<RenderCommandReport>(cmdIndex, rpiIndices));
+                    reports.push_back(r.get());
                     mode = Mode::null;
                     break;
                 }
@@ -542,7 +566,7 @@ void State::ShaderManager::handleEvent(Event* event, EditStack* stateEdits, Comm
                         case Option::shaderReport:
                             {
                                 for (const auto& item : shaderReports) 
-                                    std::invoke(item.second);
+                                    std::invoke(*item.second);
                                 event->setHandled();
                                 break;
                             }
@@ -551,6 +575,11 @@ void State::ShaderManager::handleEvent(Event* event, EditStack* stateEdits, Comm
                                 mode = Mode::setSpecFloats;
                                 std::cout << "Enter two floats, v or f, and the names of the shaders to set" << std::endl;
                                 setShaderVocab();
+                                vocab.clear();
+                                for (const auto& i : shaderReports) 
+                                {
+                                    vocab.push_back(i.second->getObjectName());
+                                }
                                 conclude();
                                 break;
                             }
@@ -571,8 +600,7 @@ void State::ShaderManager::handleEvent(Event* event, EditStack* stateEdits, Comm
                     {
                         auto cmd = loadFragPool.request(input);
                         cmdStack->push(std::move(cmd));
-                        shaderReports.try_emplace(input, input, "Fragment", 0, 0, 0, 0);
-                        shaderNames.push_back(input);
+                        shaderReports.emplace(input, std::make_unique<ShaderReport>(input, "Vertex", 0, 0, 0, 0));
                     }
                     mode = Mode::null;
                     vocab = opMap.getStrings();
@@ -585,8 +613,7 @@ void State::ShaderManager::handleEvent(Event* event, EditStack* stateEdits, Comm
                     {
                         auto cmd = loadVertPool.request(input);
                         cmdStack->push(std::move(cmd));
-                        shaderReports.try_emplace(input, input, "Vertex", 0, 0, 0, 0);
-                        shaderNames.push_back(input);
+                        shaderReports.emplace(input, std::make_unique<ShaderReport>(input, "Vertex", 0, 0, 0, 0));
                     }
                     mode = Mode::null;
                     vocab = opMap.getStrings();
@@ -603,8 +630,8 @@ void State::ShaderManager::handleEvent(Event* event, EditStack* stateEdits, Comm
                         auto cmd = ssfPool.request(input, type, first, second);
                         cmdStack->push(std::move(cmd));
                         auto& report = shaderReports.at(input);
-                        report.setSpecFloat(0, first);
-                        report.setSpecFloat(1, second);
+                        report->setSpecFloat(0, first);
+                        report->setSpecFloat(1, second);
                     }
                     mode = Mode::null;
                     vocab = opMap.getStrings();

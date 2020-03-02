@@ -598,12 +598,11 @@ class ShaderManager: public State
 public:
     STATE_BASE("shadermanager");
     ShaderManager() {vocab = opMap.getStrings();}
-    std::vector<std::string> getShaderNames() const {return shaderNames;}
     std::vector<const Report*> getReports() const
     {
         std::vector<const Report*> reports;
         for (const auto& item : shaderReports) 
-            reports.push_back(&item.second);
+            reports.push_back(item.second.get());
         return reports;
     }
 private:
@@ -626,8 +625,7 @@ private:
         }};
 
     Mode mode{Mode::null};
-    std::map<std::string, ShaderReport> shaderReports;
-    std::vector<std::string> shaderNames;
+    std::map<std::string, std::unique_ptr<ShaderReport>> shaderReports;
 };
 
 class AddAttachment: public State
@@ -695,7 +693,7 @@ public:
     {
         std::vector<const Report*> reports;
         for (const auto& item : gpReports) 
-            reports.push_back(&item.second);
+            reports.push_back(item.second.get());
         return reports;
     }
 private:
@@ -710,7 +708,7 @@ private:
         }};
 
     Mode mode{Mode::null};
-    std::map<std::string, GraphicsPipelineReport> gpReports;
+    std::map<std::string, std::unique_ptr<GraphicsPipelineReport>> gpReports;
 
     Vocab cgpVocab{};
 };
@@ -762,8 +760,8 @@ private:
     XWindow& window;
 
     std::vector<const Report *> reports;
-    std::vector<RenderpassInstanceReport> rpiReports;
-    std::vector<RenderCommandReport> rcReports;
+    std::vector<std::unique_ptr<RenderpassInstanceReport>> rpiReports;
+    std::vector<std::unique_ptr<RenderCommandReport>> rcReports;
 };
 
 class Director: public State
@@ -813,8 +811,6 @@ public:
 private:
     inline void popState() {push(nullptr);}
 };
-
-void State::State::pushState(State* state, EditStack* edits) {edits->pushState(state); activeChild = state;} 
 
 class Application
 {
