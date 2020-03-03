@@ -3,14 +3,15 @@
 
 int main(int argc, const char *argv[])
 {
-    bool rec{false}; bool rea{false};
-    if (argc == 3) 
+    std::string logfile;
+    if (argc == 2) 
     {
-        rec = std::atoi(argv[1]);
-        rea = std::atoi(argv[2]);
+        const char* file = argv[1];
+        logfile = file;
     }
-    assert (!(rec && rea) && "only one can be on");
-    Application app{800, 800, rec, rea};
+    else
+        logfile = "eventlog";
+    Application app{800, 800, logfile};
     app.run();
     sleep(1);
     return 0;

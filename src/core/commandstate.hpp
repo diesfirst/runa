@@ -403,6 +403,15 @@ private:
     uint16_t w{0}, h{0};
 };
 
+class CreateDescriptorSetLayout : public Command
+{
+public:
+    CMD_BASE("createDescriptorSetLayout");
+private:
+    std::string name{"default"};
+    std::vector<vk::DescriptorSetLayoutBinding> bindings;
+};
+
 class CreatePipelineLayout : public Command
 {
 public:
@@ -410,7 +419,6 @@ public:
     CMD_BASE("createPipelineLayout")
 private:
     std::string layoutname{"foo"};
-    std::vector<vk::DescriptorSetLayoutBinding> bindings;
 };
 
 class PrepareRenderFrames : public Command
@@ -558,6 +566,21 @@ typedef ForwardStack<std::unique_ptr<Command::Command, std::function<void(Comman
 
 class EditStack;
 
+//TODO: May want to give Director the ability to act even if an
+//      event has been handled. For instance, if we have a 
+//      director -> renderermanager -> painter type stack
+//      we mayy want to allow the renderermanager to push
+//      a state. For instance, it may be useful to modify 
+//      the attachments while the painter is active.
+//      we can do this, but we don't want a 
+//      director -> renderermanager -> painter -> attachmentmanager
+//      stack. So even though the event was handled, we may
+//      allow the director to do a swap on the stack ie swap 
+//      attachmentmanager with painter. so we will have to put the 
+//      if (!eventHandled) check inside the handleEvent() functions
+//      also, we might allow states to handle abortions if they're state
+//      is not null (not sure about this though, the idea is to get out of
+//      pending states)
 namespace State
 {
 
@@ -713,6 +736,24 @@ private:
     Vocab cgpVocab{};
 };
 
+class CreateDescriptorSetLayout : public State
+{
+public:
+    STATE_BASE("createDescriptorSetLayout")
+private:
+    Command::Pool<Command::CreateDescriptorSetLayout> cdslPool{1};
+    std::vector<vk::DescriptorSetLayoutBinding> pendingBindings;
+};
+
+class DescriptorManager : public State
+{
+public:
+    STATE_BASE("descriptorManager");
+private:
+    CreateDescriptorSetLayout cdsl;
+    enum class Option {createDescriptorSetLayout = 1};
+};
+
 class RendererManager : public State
 {
 public:
@@ -815,7 +856,7 @@ private:
 class Application
 {
 public:
-    Application(uint16_t w, uint16_t h, bool recordevents, bool readevents);
+    Application(uint16_t w, uint16_t h, const std::string logfile);
     void setVocabulary(State::Vocab);
     void run();
     void popState();
@@ -826,6 +867,7 @@ public:
     void initUBO();
 
     void readEvents(std::ifstream&);
+    void recordEvent(Event* event, std::ofstream& os);
 
     Context context;
     XWindow window;
@@ -835,8 +877,9 @@ public:
     vk::Extent2D swapDim;;
 
 private:
-    const bool recordevents;
-    const bool readevents;
+    std::string eventlog;
+    bool recordevents{true};
+    bool readevents{false};
     
     StateStack stateStack;
     EditStack stateEdits;
