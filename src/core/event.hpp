@@ -215,7 +215,7 @@ public:
 	~EventHandler();
 
     void setVocabulary(std::vector<std::string> vocab);
-    void updateVocab();
+    static void updateVocab();
     void addVocab(const Vocab*);
     void popVocab();
 

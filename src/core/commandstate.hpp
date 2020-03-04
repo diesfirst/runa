@@ -2,12 +2,13 @@
 #include "../core/renderer.hpp"
 #include <stack>
 #include <map>
+#include <sstream>
 
 class Application;
 class AddAttachment;
 
 #define STATE_BASE(name) \
-    void handleEvent(Event* event, EditStack*, CommandStack*) override;\
+    void handleEvent(Event* event) override;\
     virtual const char* getName() const override {return name;}
 
 #define CMD_BASE(name) \
@@ -19,17 +20,24 @@ class AddAttachment;
 //we will impose some limitations on the stack in accordance with this change
 //1) Each state can have ONLY ONE CHILD on the stack at any given time. 
 //   The thought here is to prevent 
-template <typename T>
+template <typename S, typename T>
 class OptionMap
 {
 public:
-    using Element = std::pair<std::string, T>;
+    using Element = std::pair<S, T>;
     OptionMap(
             std::initializer_list<Element> avail,
             std::initializer_list<Element> reserved) : 
         optionsAvailable(avail),
         optionsReserved(reserved) {}
-    inline T findOption(const std::string& s) const 
+    inline T findOption(CommandLineEvent* event) const
+    {
+        std::string input = static_cast<CommandLineEvent*>(event)->getInput();
+        std::stringstream instream{input};
+        instream >> input;
+        return findOption(input);
+    }
+    inline T findOption(const S& s) const 
     {
         T t;
         for (const auto& item : optionsAvailable) 
@@ -59,7 +67,7 @@ public:
            if (optionsReserved[i].second == t)
                optionsReserved.erase(optionsReserved.begin() + i); 
     }
-    inline std::vector<std::string> getStrings() const
+    inline std::vector<S> getStrings() const
     {
         std::vector<std::string> vec;
         vec.reserve(optionsAvailable.size());
@@ -81,8 +89,8 @@ public:
         }
     }
 private:
-    std::vector<std::pair<std::string, T>> optionsAvailable;
-    std::vector<std::pair<std::string, T>> optionsReserved;
+    std::vector<std::pair<S, T>> optionsAvailable;
+    std::vector<std::pair<S, T>> optionsReserved;
 };
 
 namespace rpt
@@ -415,7 +423,6 @@ private:
 class CreatePipelineLayout : public Command
 {
 public:
-    CreatePipelineLayout();
     CMD_BASE("createPipelineLayout")
 private:
     std::string layoutname{"foo"};
@@ -503,6 +510,13 @@ private:
     std::vector<uint32_t> renderpassInstances;
 };
 
+class UpdateVocab : public Command
+{
+public:
+    CMD_BASE("updatevocab");
+private:
+};
+
 class Render : public Command
 {
 public:
@@ -587,14 +601,34 @@ namespace State
 class State;
 typedef ReverseStack<State*> StateStack;
 
-typedef std::vector<std::string> Vocab;
+class Vocab
+{
+public:
+    Vocab(CommandStack& cmdStack) : cmdStack{cmdStack} {}
+    Vocab& operator=(const std::vector<std::string> strings)
+    {
+        vocab = strings;
+        auto cmd = uvPool.request();
+        cmdStack.push(std::move(cmd));
+        return *this;
+    }
+    const std::vector<std::string>* getValues() const {return &vocab;}
+    inline auto begin() const {return vocab.begin();}
+    inline auto end() const {return vocab.end();}
+
+private:
+    Command::Pool<Command::UpdateVocab> uvPool{1};
+    CommandStack& cmdStack;
+    std::vector<std::string> vocab;
+};
 
 using namespace rpt;
 
 class State
 {
 public:
-    virtual void handleEvent(Event* event, EditStack*, CommandStack*) = 0;
+    State(EditStack& editStack, CommandStack& cmdStack) : stateEdits{editStack}, cmdStack{cmdStack}, vocab{cmdStack} {}
+    virtual void handleEvent(Event* event) = 0;
     void onEnter(Application*);
     void onExit(Application*);
     void onResume(Application* app);
@@ -602,7 +636,7 @@ public:
     virtual void refresh(Application* app);
     virtual const char* getName() const = 0;
 protected:
-    void pushState(State* state, EditStack* edits);
+    void pushState(State* state);
     void popState(EditStack* edits);
     virtual void removeDynamicOps() {}
     virtual void addDynamicOps() { std::cout << "Called Base dynOps" << std::endl;}
@@ -614,13 +648,15 @@ protected:
     inline static Command::Pool<Command::RefreshState> refreshPool{1};
     State* activeChild{nullptr};
     Vocab vocab;
+    EditStack& stateEdits;
+    CommandStack& cmdStack;
 };
 
 class ShaderManager: public State
 {
 public:
     STATE_BASE("shadermanager");
-    ShaderManager() {vocab = opMap.getStrings();}
+    ShaderManager(EditStack& es, CommandStack& cs) : State::State{es, cs} {vocab = opMap.getStrings();}
     std::vector<const Report*> getReports() const
     {
         std::vector<const Report*> reports;
@@ -636,7 +672,7 @@ private:
     Command::Pool<Command::SetSpecInt> ssiPool{10};
     enum class Option {loadFragShaders = 1, loadVertShaders, shaderReport, setSpecInts, setSpecFloats};
     enum class Mode {null, loadFragShaders, loadVertShaders, setSpecInts, setSpecFloats};
-    OptionMap<Option> opMap{
+    OptionMap<std::string, Option> opMap{
         {
             {"loadfragshaders", Option::loadFragShaders},
             {"loadvertshaders", Option::loadVertShaders},
@@ -655,13 +691,13 @@ class AddAttachment: public State
 {
 public:
     STATE_BASE("addAttachment");
-    AddAttachment() {vocab = opMap.getStrings();};
+    AddAttachment(EditStack& es, CommandStack& cs) : State::State{es, cs} {vocab = opMap.getStrings();};
 private:
     Command::Pool<Command::AddAttachment> addAttPool{20};
     int width, height;
     enum class Option : uint8_t {setdimensions = 1, fulldescription, addsamplesources};
     enum class Mode : uint8_t {null, setdimensions, fulldescription, addsamplesources};
-    OptionMap<Option> opMap {
+    OptionMap<std::string, Option> opMap {
         {
             {"setDimensions", Option::setdimensions},
             {"fulldescription", Option::fulldescription},
@@ -676,6 +712,7 @@ class Paint : public State
 {
 public:
     STATE_BASE("paint")
+    Paint(EditStack& es, CommandStack& cs) : State::State{es, cs} {}
 private:
 };
 
@@ -683,7 +720,7 @@ class RenderpassManager: public State
 {
 public:
     STATE_BASE("renderpassManager");
-    RenderpassManager() {vocab = opMap.getStrings();}
+    RenderpassManager(EditStack& es, CommandStack& cs) : State::State{es, cs}  {vocab = opMap.getStrings();}
     std::vector<const Report*> getReports() const 
     {
         std::vector<const Report*> reports;
@@ -696,7 +733,7 @@ private:
     Command::Pool<Command::CreateSwapchainRenderpass> csrPool{1};
     enum class Option : uint8_t {createSwapRenderpass = 1, report};
     enum class Mode : uint8_t {null, createSwapRenderpass};
-    OptionMap<Option> opMap{
+    OptionMap<std::string, Option> opMap{
         {
         {"create_swap_renderpass", Option::createSwapRenderpass},
         {"report", Option::report},
@@ -710,8 +747,8 @@ class PipelineManager : public State
 {
 public:
     STATE_BASE("pipelineManager");
-    PipelineManager() {vocab = opMap.getStrings();}
-    inline void setCGPVocab(Vocab v) { cgpVocab = v;}
+    PipelineManager(EditStack& es, CommandStack& cs) : State::State{es, cs}  {vocab = opMap.getStrings();}
+    inline void setCGPVocab(std::vector<std::string> v) { cgpVocab = v;}
     std::vector<const Report*> getReports() const
     {
         std::vector<const Report*> reports;
@@ -723,7 +760,7 @@ private:
     Command::Pool<Command::CreateGraphicsPipeline> cgpPool{10};
     enum class Option : uint8_t {createGraphicsPipeline = 1, report};
     enum class Mode : uint8_t {null, createGraphicsPipeline};
-    OptionMap<Option> opMap{
+    OptionMap<std::string, Option> opMap{
         {
         {"createGraphicsPipeline", Option::createGraphicsPipeline},
         {"report", Option::report }
@@ -733,31 +770,95 @@ private:
     Mode mode{Mode::null};
     std::map<std::string, std::unique_ptr<GraphicsPipelineReport>> gpReports;
 
-    Vocab cgpVocab{};
+    std::vector<std::string> cgpVocab;
 };
 
 class CreateDescriptorSetLayout : public State
 {
 public:
     STATE_BASE("createDescriptorSetLayout")
+    CreateDescriptorSetLayout(EditStack& es, CommandStack& cs) : State::State{es, cs}  {vocab = opMap.getStrings();}
+    void initial(Event*);
+    void enterBindings(Event*);
+    void createLayout(Event*);
 private:
+    using MemFunc = void (CreateDescriptorSetLayout::*)(Event*);
     Command::Pool<Command::CreateDescriptorSetLayout> cdslPool{1};
     std::vector<vk::DescriptorSetLayoutBinding> pendingBindings;
+    enum class Stage : uint8_t {descriptorTypeEntry, descriptorCountEntry, shaderStageEntry};
+    enum class Option : uint8_t {enterBindings = 1, createDescriptorSetLayout};
+    enum class Mode : uint8_t {null, enterBindings, createLayout};
+    Mode mode{Mode::null};
+    uint8_t curStage{0};
+    uint8_t bindingCount{0};
+    OptionMap<std::string, Option> opMap
+    {
+        {
+            {"enterbindings", Option::enterBindings},
+            {"createdescriptorsetlayout", Option::createDescriptorSetLayout},
+        },{
+        }
+    };
+    OptionMap<std::string, vk::DescriptorType> descTypeMap
+    {
+        {
+            {"uniformbuffer", vk::DescriptorType::eUniformBuffer},
+            {"combinedImageSampler", vk::DescriptorType::eCombinedImageSampler},
+        },{
+        }
+    };
+    OptionMap<std::string, vk::ShaderStageFlagBits> shaderStageMap
+    {
+        {
+            {"fragmentShader", vk::ShaderStageFlagBits::eFragment}
+        },{
+        }
+    };
+    OptionMap<Mode, MemFunc> funcMap{
+        {
+            {Mode::null, &CreateDescriptorSetLayout::initial},
+            {Mode::enterBindings, &CreateDescriptorSetLayout::enterBindings},
+            {Mode::createLayout, &CreateDescriptorSetLayout::createLayout}
+        },{
+        }};
 };
 
 class DescriptorManager : public State
 {
 public:
     STATE_BASE("descriptorManager");
+    DescriptorManager(EditStack& es, CommandStack& cs) : State::State{es, cs}, cdsl{es, cs}  {vocab = opMap.getStrings();}
 private:
+    using MemFunc = void (DescriptorManager::*)(Event*);
+    inline void pushCDSL(Event* event) {pushState(&cdsl);}
     CreateDescriptorSetLayout cdsl;
     enum class Option {createDescriptorSetLayout = 1};
+    OptionMap<std::string, Option> opMap{
+        {
+            {"createdescriptorsetlayout", Option::createDescriptorSetLayout},
+        },{
+        }};
+    OptionMap<Option, MemFunc> funcMap{
+        {
+            {Option::createDescriptorSetLayout, &DescriptorManager::pushCDSL},
+        },{
+        }};
+    static constexpr std::array<Option, 1> dynamicOptions{Option::createDescriptorSetLayout};
+    inline void removeDynamicOps() override { for (const auto& op : dynamicOptions) opMap.swapOut(op); vocab = opMap.getStrings();}
+    inline void addDynamicOps() override { for (const auto& op : dynamicOptions) opMap.swapIn(op); vocab = opMap.getStrings();}
 };
 
 class RendererManager : public State
 {
 public:
-    inline RendererManager(XWindow& the_window) : window{the_window} {vocab = opMap.getStrings();}
+    inline RendererManager(XWindow& the_window, EditStack& es, CommandStack& cs) : 
+        window{the_window}, 
+        State::State{es, cs},
+        rpassManager{es, cs},
+        shaderManager{es, cs},
+        pipelineManager{es, cs},
+        addAttachState{es, cs}
+        {vocab = opMap.getStrings();}
     STATE_BASE("rendererManager");
     void onResumeExt(Application* app) override;
     void onPushExt(Application* app) override;
@@ -775,7 +876,7 @@ private:
 
     enum class Option : uint8_t {render = 1, recordRenderCmd, rpiReport, printReports, createRPI, shaderManager, openWindow, addattachState, prepRenderFrames, createPipelineLayout, rpassManager, pipelineManager, all};
     enum class Mode : uint8_t {null, createRPI, render, recordRenderCmd};
-    OptionMap<Option> opMap{
+    OptionMap<std::string, Option> opMap{
         {
             {"createPipelineLayout", Option::createPipelineLayout},
             {"openWindow", Option::openWindow},
@@ -809,14 +910,19 @@ class Director: public State
 {
 public:
     STATE_BASE("director");
-    Director(XWindow& window, const StateStack& ss) : initRenState{window}, stateStack{ss} {vocab = opMap.getStrings();}
+    Director(XWindow& window, const StateStack& ss, EditStack& es, CommandStack& cs) : 
+        initRenState{window, es, cs}, 
+        stateStack{ss},
+        State::State{es, cs},
+        paint{es, cs}
+    {vocab = opMap.getStrings();}
     void onPushExt(Application*) override;
     void onResumeExt(Application*) override;
 private:
     RendererManager initRenState;
     Paint paint;
     enum class Option : uint8_t {initRenState = 1, paint, printStack};
-    OptionMap<Option> opMap{
+    OptionMap<std::string, Option> opMap{
         {
             {"rendererManager", Option::initRenState},
             {"printStack", Option::printStack},
@@ -857,7 +963,7 @@ class Application
 {
 public:
     Application(uint16_t w, uint16_t h, const std::string logfile);
-    void setVocabulary(State::Vocab);
+    void setVocabulary(State::Vocab vocab);
     void run();
     void popState();
     void pushState(State::State* const);

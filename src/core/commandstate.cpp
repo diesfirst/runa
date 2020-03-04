@@ -16,18 +16,135 @@
 
 constexpr const char* SHADER_DIR = "/home/michaelb/dev/sword/build/shaders/";
 
-void State::State::pushState(State* state, EditStack* edits) {edits->pushState(state); activeChild = state;} 
+void State::State::pushState(State* state) {stateEdits.pushState(state); activeChild = state;} 
 void State::State::onResume(Application* app) {addDynamicOps(); onResumeExt(app); activeChild = nullptr;}
 void State::State::onPush(Application* app) {removeDynamicOps(); onPushExt(app);}
 void State::State::onExit(Application* app) {onExitExt(app); app->ev.popVocab();}
-void State::State::onEnter(Application* app) {onEnterExt(app); app->ev.addVocab(&vocab);}
+void State::State::onEnter(Application* app) {onEnterExt(app); app->ev.addVocab(vocab.getValues());}
 void State::State::refresh(Application* app) {app->ev.updateVocab();}
 
-void State::AddAttachment::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
+void State::DescriptorManager::handleEvent(Event* event)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
-        
+        CommandLineEvent* event = static_cast<CommandLineEvent*>(event);
+        Option option = opMap.findOption(event);
+        if (static_cast<bool>(option))
+        {
+            MemFunc func = funcMap.findOption(option);
+            std::invoke(func, this, event);
+        }
+    }
+}
+
+void State::CreateDescriptorSetLayout::enterBindings(Event* event)
+{
+    auto cmdEvent = static_cast<CommandLineEvent*>(event);
+    switch(static_cast<Stage>(curStage))
+    {
+        case Stage::descriptorTypeEntry:
+        {
+            vk::DescriptorType type = descTypeMap.findOption(cmdEvent);
+            pendingBindings.at(bindingCount).setDescriptorType(type);
+            curStage++;
+            std::cout << "Enter descriptor count" << std::endl;
+            vocab = {};
+            break;
+        }
+        case Stage::descriptorCountEntry:
+        {
+            auto input = cmdEvent->getInput();
+            std::stringstream ss{input};
+            int count;
+            ss >> count;
+            pendingBindings.at(bindingCount).setDescriptorCount(count);
+            curStage++;
+            std::cout << "Enter shader stage" << std::endl;
+            vocab = shaderStageMap.getStrings();
+            break;
+        }
+        case Stage::shaderStageEntry:
+        {
+            vk::ShaderStageFlags flags = shaderStageMap.findOption(cmdEvent);
+            pendingBindings.at(bindingCount).setStageFlags(flags);
+            bindingCount++;
+            mode = Mode::null;
+            vocab = opMap.getStrings();
+            break;
+        }
+    }
+}
+
+void State::CreateDescriptorSetLayout::initial(Event* event)
+{
+    auto cmdEvent = static_cast<CommandLineEvent*>(event);
+    Option option = opMap.findOption(cmdEvent);
+    switch (option)
+    {
+        case Option::enterBindings:
+        {
+            std::cout << "Enter a state type." << std::endl;
+            vocab = descTypeMap.getStrings();
+            pendingBindings.resize(bindingCount + 1);
+            pendingBindings.at(bindingCount).setBinding(bindingCount);
+            curStage = 0;
+            mode = Mode::enterBindings;
+            event->setHandled();
+            break;
+        }
+        case Option::createDescriptorSetLayout:
+        {
+            if (pendingBindings.size() < 1)
+            {
+                std::cout << "Not enough bindings" << std::endl;
+                event->setHandled();
+                break;
+            }
+            std::cout << "Enter a name for the layout" << std::endl;
+            vocab = {};
+            mode = Mode::createLayout;
+            event->setHandled();
+            break;
+        }
+    }
+}
+
+void State::CreateDescriptorSetLayout::createLayout(Event* event)
+{
+    auto cmdEvent = static_cast<CommandLineEvent*>(event);
+    std::stringstream ss{cmdEvent->getInput()};
+    std::string name;
+    ss >> name;
+    auto cmd = cdslPool.request(name, pendingBindings);
+    cmdStack.push(std::move(cmd));
+    pendingBindings.clear();
+    vocab = opMap.getStrings();
+    event->setHandled();
+}
+
+void State::CreateDescriptorSetLayout::handleEvent(Event* event)
+{
+    if (event->getCategory() == EventCategory::CommandLine)
+    {
+        MemFunc func = funcMap.findOption(mode);
+        std::invoke(func, this, event);
+    }
+    if (event->getCategory() == EventCategory::Abort)
+    {
+        if (mode == Mode::enterBindings)
+        {
+            mode = Mode::null;
+            vocab = opMap.getStrings();
+            pendingBindings.pop_back();
+            event->setHandled();
+        }
+    }
+}
+
+void State::AddAttachment::handleEvent(Event* event)
+{
+    if (event->getCategory() == EventCategory::CommandLine)
+    {
         auto input = static_cast<CommandLineEvent*>(event)->getInput();
         std::stringstream instream{input};
         switch (mode)
@@ -74,7 +191,7 @@ void State::AddAttachment::handleEvent(Event* event, EditStack* stateEdits, Comm
                     while (instream >> input)
                     {
                         auto cmd = addAttPool.request(input, width, height, true, false);
-                        cmdStack->push(std::move(cmd));
+                        cmdStack.push(std::move(cmd));
                     }
                     mode = Mode::null;
                     event->setHandled();
@@ -85,7 +202,7 @@ void State::AddAttachment::handleEvent(Event* event, EditStack* stateEdits, Comm
                     std::string name; int w; int h; bool sample; bool transfersrc;
                     instream >> name >> w >> h >> sample >> transfersrc;
                     auto cmd = addAttPool.request(name, w, h, sample, transfersrc);
-                    cmdStack->push(std::move(cmd));
+                    cmdStack.push(std::move(cmd));
                     mode = Mode::null;
                     event->setHandled();
                     break;
@@ -98,7 +215,7 @@ void State::AddAttachment::handleEvent(Event* event, EditStack* stateEdits, Comm
     }
 }
 
-void State::RenderpassManager::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
+void State::RenderpassManager::handleEvent(Event* event)
 {    
     if (event->getCategory() == EventCategory::CommandLine)
     {
@@ -131,7 +248,7 @@ void State::RenderpassManager::handleEvent(Event* event, EditStack* stateEdits, 
                 {
                     instream >> input;
                     auto cmd = csrPool.request(input);
-                    cmdStack->push(std::move(cmd));
+                    cmdStack.push(std::move(cmd));
                     renderpassReports.emplace_back(std::make_unique<RenderpassReport>(input));
                     mode = Mode::null;
                     break;
@@ -145,21 +262,15 @@ void State::RenderpassManager::handleEvent(Event* event, EditStack* stateEdits, 
     }
 }
 
-void State::Paint::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
+void State::Paint::handleEvent(Event* event)
 {
     std::cout << "oooh" << ENDL;
 }
 
-void State::PipelineManager::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
+void State::PipelineManager::handleEvent(Event* event)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
-        auto conclude = [&]() mutable
-        {
-            auto refresh = refreshPool.request(this);
-            cmdStack->push(std::move(refresh));
-            event->setHandled();
-        };
         auto input = static_cast<CommandLineEvent*>(event)->getInput();
         std::stringstream instream{input};
         switch (mode)
@@ -178,7 +289,7 @@ void State::PipelineManager::handleEvent(Event* event, EditStack* stateEdits, Co
                            " and a 1 or a 0 for whether or not this is a 3d or 2d pipeline" << ENDL;
                         mode = Mode::createGraphicsPipeline;
                         vocab = cgpVocab;
-                        conclude();
+                        event->setHandled();
                         break;
                     }
                     case Option::report:
@@ -207,19 +318,19 @@ void State::PipelineManager::handleEvent(Event* event, EditStack* stateEdits, Co
                 auto cmd = cgpPool.request(name, pipelineLayout, vertshader, fragshader, renderpass, renderArea, is3d);
                 if (cmd) 
                 {
-                    cmdStack->push(std::move(cmd));
+                    cmdStack.push(std::move(cmd));
                     gpReports.emplace(name, std::make_unique<GraphicsPipelineReport>(name, pipelineLayout, vertshader, fragshader, renderpass, a1, a2, a3, a4, is3d));
                 }
                 mode = Mode::null;
                 vocab = opMap.getStrings();
-                conclude();
+                event->setHandled();
                 break;
             }
         }
     }
 }
 
-void State::Director::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
+void State::Director::handleEvent(Event* event)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
@@ -231,7 +342,7 @@ void State::Director::handleEvent(Event* event, EditStack* stateEdits, CommandSt
         {
             case Option::initRenState:
                 {
-                    pushState(&initRenState, stateEdits);
+                    pushState(&initRenState);
                     event->isHandled();
                     break;
                 }
@@ -244,7 +355,7 @@ void State::Director::handleEvent(Event* event, EditStack* stateEdits, CommandSt
                 }
             case Option::paint:
                 {
-                    pushState(&paint, stateEdits);
+                    pushState(&paint);
                     event->isHandled();
                     break;
                 }
@@ -252,7 +363,7 @@ void State::Director::handleEvent(Event* event, EditStack* stateEdits, CommandSt
     }
     if (event->getCategory() == EventCategory::Abort)
     {
-        stateEdits->popState();
+        stateEdits.popState();
     }
 }
 
@@ -266,15 +377,8 @@ void State::Director::onResumeExt(Application* app)
     vocab = opMap.getStrings();
 }
 
-void State::RendererManager::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
+void State::RendererManager::handleEvent(Event* event)
 {
-    auto conclude = [&]() mutable
-    {
-        vocab = opMap.getStrings();
-        auto refresh = refreshPool.request(this);
-        cmdStack->push(std::move(refresh));
-        event->setHandled();
-    };
     if (event->getCategory() == EventCategory::CommandLine)
     {
         std::stringstream instream{static_cast<CommandLineEvent*>(event)->getInput()};
@@ -290,30 +394,32 @@ void State::RendererManager::handleEvent(Event* event, EditStack* stateEdits, Co
                         case Option::prepRenderFrames:
                             {
                                 auto cmd = prfPool.request(&window);
-                                cmdStack->push(std::move(cmd));
+                                cmdStack.push(std::move(cmd));
                                 opMap.remove(Option::prepRenderFrames);
-                                conclude();
+                                vocab = opMap.getStrings();
+                                event->setHandled();
                                 break;
                             }
                         case Option::createPipelineLayout:
                             {
                                 auto cmd = cplPool.request();
-                                cmdStack->push(std::move(cmd));
+                                cmdStack.push(std::move(cmd));
                                 auto rs = refreshPool.request(this);
-                                cmdStack->push(std::move(rs));
+                                cmdStack.push(std::move(rs));
                                 opMap.remove(Option::createPipelineLayout);
                                 opMap.remove(Option::all);
-                                conclude();
+                                vocab = opMap.getStrings();
+                                event->setHandled();
                                 break;
                             }
                         case Option::all:
                             {
                                 auto ow = owPool.request();
-                                cmdStack->push(std::move(ow));
+                                cmdStack.push(std::move(ow));
                                 auto pf = prfPool.request(&window);
-                                cmdStack->push(std::move(pf));
+                                cmdStack.push(std::move(pf));
                                 auto cl = cplPool.request();
-                                cmdStack->push(std::move(cl));
+                                cmdStack.push(std::move(cl));
                                 opMap.remove(Option::all);
                                 opMap.remove(Option::createPipelineLayout);
                                 opMap.remove(Option::openWindow);
@@ -322,42 +428,44 @@ void State::RendererManager::handleEvent(Event* event, EditStack* stateEdits, Co
                                 opMap.swapIn(Option::createRPI);
                                 opMap.swapIn(Option::render);
                                 opMap.swapIn(Option::recordRenderCmd);
-                                conclude();
+                                vocab = opMap.getStrings();
+                                event->setHandled();
                                 break;
                             }
                         case Option::rpassManager:
                             {
-                                pushState(&rpassManager, stateEdits);
+                                pushState(&rpassManager);
                                 event->setHandled();
                                 break;
                             }
                         case Option::pipelineManager:
                             {
-                                pushState(&pipelineManager, stateEdits);
+                                pushState(&pipelineManager);
                                 event->setHandled();
                                 break;
                             }
                         case Option::openWindow:
                             {
                                 auto cmd = owPool.request();
-                                cmdStack->push(std::move(cmd));
+                                cmdStack.push(std::move(cmd));
                                 auto rs = refreshPool.request(this);
-                                cmdStack->push(std::move(rs));
+                                cmdStack.push(std::move(rs));
                                 opMap.remove(Option::openWindow);
                                 opMap.remove(Option::all);
                                 opMap.swapIn(Option::prepRenderFrames);
-                                conclude();
+                                vocab = opMap.getStrings();
+                                event->setHandled();
                                 break;
                             }
                         case Option::shaderManager:
                             {
-                                pushState(&shaderManager, stateEdits);
+                                pushState(&shaderManager);
                                 event->setHandled();
                                 break;
                             }
                         case Option::addattachState:
                             {
-                                pushState(&addAttachState, stateEdits);
+                                pushState(&addAttachState);
                                 event->setHandled();
                                 break;
                             }
@@ -372,16 +480,15 @@ void State::RendererManager::handleEvent(Event* event, EditStack* stateEdits, Co
                             {
                                 mode = Mode::createRPI;
                                 std::cout << "Enter an attachment name (or swap), a renderpass name, and a pipeline name" << ENDL;
-                                vocab.clear(); 
-                                vocab.push_back("swap");
+                                std::vector<std::string> words;
+                                words.push_back("swap");
                                 for (const auto& i : reports) 
                                 {
                                     auto type = i->getType();
                                     if (type == ReportType::Renderpass || type == ReportType::Pipeline)
-                                        vocab.push_back(i->getObjectName());
+                                        words.push_back(i->getObjectName());
                                 }
-                                auto cmd = refreshPool.request(this);
-                                cmdStack->push(std::move(cmd));
+                                vocab = words;
                                 event->setHandled();
                                 break;
                             }
@@ -428,12 +535,13 @@ void State::RendererManager::handleEvent(Event* event, EditStack* stateEdits, Co
                         break;
                     }
                     auto cmd = criPool.request(attachName, renderpassName, pipelineName);
-                    cmdStack->push(std::move(cmd));
+                    cmdStack.push(std::move(cmd));
                     auto report = std::make_unique<RenderpassInstanceReport>(attachName, renderpassName, pipelineName, rpiReports.size());
                     const auto& r = rpiReports.emplace_back(std::move(report));
                     reports.push_back(r.get());
                     mode = Mode::null;
-                    conclude();
+                    vocab = opMap.getStrings();
+                    event->setHandled();
                     break;
                 }
             case Mode::render:
@@ -442,9 +550,10 @@ void State::RendererManager::handleEvent(Event* event, EditStack* stateEdits, Co
                     bool updateUbo;
                     instream >> rendercmdIndex >> updateUbo;
                     auto cmd = renderPool.request(rendercmdIndex, updateUbo);
-                    cmdStack->push(std::move(cmd));
+                    cmdStack.push(std::move(cmd));
                     mode = Mode::null;
-                    conclude();
+                    vocab = opMap.getStrings();
+                    event->setHandled();
                     break;
                 }
             case Mode::recordRenderCmd:
@@ -456,11 +565,12 @@ void State::RendererManager::handleEvent(Event* event, EditStack* stateEdits, Co
                     while (instream >> i)
                         rpiIndices.push_back(i);
                     auto cmd = rrcPool.request(cmdIndex, rpiIndices);
-                    cmdStack->push(std::move(cmd));
+                    cmdStack.push(std::move(cmd));
                     auto& r = rcReports.emplace_back(std::make_unique<RenderCommandReport>(cmdIndex, rpiIndices));
                     reports.push_back(r.get());
                     mode = Mode::null;
-                    conclude();
+                    vocab = opMap.getStrings();
+                    event->setHandled();
                     break;
                 }
         }
@@ -470,7 +580,8 @@ void State::RendererManager::handleEvent(Event* event, EditStack* stateEdits, Co
         if (mode != Mode::null)
         {
             mode = Mode::null;
-            conclude();
+            vocab = opMap.getStrings();
+            event->setHandled();
         }
     }
 }
@@ -526,20 +637,15 @@ void State::RendererManager::onPushExt(Application* app)
 
 void State::ShaderManager::setShaderVocab()
 {
-    vocab.clear();
+    std::vector<std::string> words;
     auto dir = std::filesystem::directory_iterator(SHADER_DIR);
     for (const auto& entry : dir) 
-        vocab.push_back(entry.path().filename());
+        words.push_back(entry.path().filename());
+    vocab = words;
 }
 
-void State::ShaderManager::handleEvent(Event* event, EditStack* stateEdits, CommandStack* cmdStack)
+void State::ShaderManager::handleEvent(Event* event)
 {
-    auto conclude = [&]() mutable 
-    {
-        auto rs = refreshPool.request(this);
-        cmdStack->push(std::move(rs));
-        event->setHandled();
-    };
     if (event->getCategory() == EventCategory::CommandLine)
     {
         auto input = static_cast<CommandLineEvent*>(event)->getInput();
@@ -557,7 +663,7 @@ void State::ShaderManager::handleEvent(Event* event, EditStack* stateEdits, Comm
                                 mode = Mode::loadFragShaders;
                                 std::cout << "Choose which frag shaders to load." << ENDL;
                                 setShaderVocab();
-                                conclude();
+                                event->setHandled();
                                 break;
                             }
                         case Option::loadVertShaders:
@@ -565,7 +671,7 @@ void State::ShaderManager::handleEvent(Event* event, EditStack* stateEdits, Comm
                                 mode = Mode::loadVertShaders;
                                 std::cout << "Choose which vert shaders to load." << ENDL;
                                 setShaderVocab();
-                                conclude();
+                                event->setHandled();
                                 break;
                             }
                         case Option::shaderReport:
@@ -580,12 +686,7 @@ void State::ShaderManager::handleEvent(Event* event, EditStack* stateEdits, Comm
                                 mode = Mode::setSpecFloats;
                                 std::cout << "Enter two floats, v or f, and the names of the shaders to set" << ENDL;
                                 setShaderVocab();
-                                vocab.clear();
-                                for (const auto& i : shaderReports) 
-                                {
-                                    vocab.push_back(i.second->getObjectName());
-                                }
-                                conclude();
+                                event->setHandled();
                                 break;
                             }
                         case Option::setSpecInts:
@@ -593,7 +694,7 @@ void State::ShaderManager::handleEvent(Event* event, EditStack* stateEdits, Comm
                                 mode = Mode::setSpecInts;
                                 std::cout << "Enter two ints, v or f, and the names of the shaders to set" << ENDL;
                                 setShaderVocab();
-                                conclude();
+                                event->setHandled();
                                 break;
                             }
                     }
@@ -604,12 +705,12 @@ void State::ShaderManager::handleEvent(Event* event, EditStack* stateEdits, Comm
                     while (instream >> input)
                     {
                         auto cmd = loadFragPool.request(input);
-                        cmdStack->push(std::move(cmd));
+                        cmdStack.push(std::move(cmd));
                         shaderReports.emplace(input, std::make_unique<ShaderReport>(input, "Vertex", 0, 0, 0, 0));
                     }
                     mode = Mode::null;
                     vocab = opMap.getStrings();
-                    conclude();
+                    event->setHandled();
                     break;
                 }
             case Mode::loadVertShaders:
@@ -617,12 +718,12 @@ void State::ShaderManager::handleEvent(Event* event, EditStack* stateEdits, Comm
                     while (instream >> input)
                     {
                         auto cmd = loadVertPool.request(input);
-                        cmdStack->push(std::move(cmd));
+                        cmdStack.push(std::move(cmd));
                         shaderReports.emplace(input, std::make_unique<ShaderReport>(input, "Vertex", 0, 0, 0, 0));
                     }
                     mode = Mode::null;
                     vocab = opMap.getStrings();
-                    conclude();
+                    event->setHandled();
                     break;
                 }
             case Mode::setSpecFloats:
@@ -633,14 +734,14 @@ void State::ShaderManager::handleEvent(Event* event, EditStack* stateEdits, Comm
                     while (instream >> input)
                     {
                         auto cmd = ssfPool.request(input, type, first, second);
-                        cmdStack->push(std::move(cmd));
+                        cmdStack.push(std::move(cmd));
                         auto& report = shaderReports.at(input);
                         report->setSpecFloat(0, first);
                         report->setSpecFloat(1, second);
                     }
                     mode = Mode::null;
                     vocab = opMap.getStrings();
-                    conclude();
+                    event->setHandled();
                     break;
                 }
             case Mode::setSpecInts:
@@ -648,7 +749,7 @@ void State::ShaderManager::handleEvent(Event* event, EditStack* stateEdits, Comm
                     std::cout << "todo" << ENDL;
                     mode = Mode::null;
                     vocab = opMap.getStrings();
-                    conclude();
+                    event->setHandled();
                     break;
                 }
         }
@@ -659,7 +760,7 @@ void State::ShaderManager::handleEvent(Event* event, EditStack* stateEdits, Comm
         {
             mode = Mode::null;
             vocab = opMap.getStrings();
-            conclude();
+            event->setHandled();
         }
     }
 }
@@ -730,14 +831,6 @@ void Command::CreateDescriptorSetLayout::execute(Application* app)
     app->renderer.createDescriptorSetLayout("paintLayout", bindings);
 }
 
-void Command::CreatePipelineLayout::execute(Application* app)
-{
-    auto paintingLayout = app->renderer.createDescriptorSetLayout("paintLayout", bindings);
-    app->renderer.createFrameDescriptorSets({paintingLayout}); //order matters for access
-    auto paintPLayout = app->renderer.createPipelineLayout(layoutname, {paintingLayout});
-    std::cout << "Created Pipeline Layout: " << layoutname << ENDL;
-}
-
 void Command::CreateSwapchainRenderpass::execute(Application* app)
 {
     auto& rpass = app->renderer.createRenderPass(rpassName);
@@ -773,18 +866,13 @@ void Command::RefreshState::execute(Application* app)
     state->refresh(app);
 }
 
-Command::CreatePipelineLayout::CreatePipelineLayout()
+void Command::UpdateVocab::execute(Application* app)
 {
-    bindings.resize(2);
-    bindings[0].setBinding(0);
-    bindings[0].setDescriptorType(vk::DescriptorType::eUniformBuffer);
-    bindings[0].setDescriptorCount(1);
-    bindings[0].setStageFlags(vk::ShaderStageFlagBits::eFragment);
+    app->ev.updateVocab();
+}
 
-    bindings[1].setBinding(1);
-    bindings[1].setDescriptorType(vk::DescriptorType::eCombinedImageSampler);
-    bindings[1].setDescriptorCount(1); //arbitrary
-    bindings[1].setStageFlags(vk::ShaderStageFlagBits::eFragment);
+void Command::CreatePipelineLayout::execute(Application* app)
+{
 }
 
 Application::Application(uint16_t w, uint16_t h, const std::string logfile) :
@@ -794,7 +882,7 @@ Application::Application(uint16_t w, uint16_t h, const std::string logfile) :
     offscreenDim{{w, h}},
     swapDim{{w, h}},
     eventlog{logfile},
-    dirState{window, stateStack}
+    dirState{window, stateStack, stateEdits, cmdStack}
 {
     stateStack.push(&dirState);
     dirState.onEnter(this);
@@ -823,9 +911,9 @@ void Application::pushState(State::State* state)
     ev.updateVocab();
 }
 
-void Application::setVocabulary(std::vector<std::string> vocab)
+void Application::setVocabulary(State::Vocab vocab)
 {
-    ev.setVocabulary(vocab);
+    ev.setVocabulary(*vocab.getValues());
 }
 
 void Application::createPipelineLayout()
@@ -928,7 +1016,7 @@ void Application::run()
                 if (recordevents) recordEvent(event, os);
                 for (auto state : stateStack) 
                     if (!event->isHandled())
-                        state->handleEvent(event, &stateEdits, &cmdStack);
+                        state->handleEvent(event);
             }
             for (auto state : stateEdits) 
             {
