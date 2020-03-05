@@ -25,72 +25,57 @@ class OptionMap
 {
 public:
     using Element = std::pair<S, T>;
-    OptionMap(
-            std::initializer_list<Element> avail,
-            std::initializer_list<Element> reserved) : 
-        optionsAvailable(avail),
-        optionsReserved(reserved) {}
-    inline T findOption(CommandLineEvent* event) const
+    OptionMap(std::initializer_list<Element> avail) : options{avail} {}
+    inline std::pair<bool, T> findOption(CommandLineEvent* event) const
     {
-        std::string input = static_cast<CommandLineEvent*>(event)->getInput();
+        std::string input = event->getInput();
         std::stringstream instream{input};
         instream >> input;
         return findOption(input);
     }
-    inline T findOption(const S& s) const 
+    inline std::pair<bool, T> findOption(const S& s) const 
     {
-        T t;
-        for (const auto& item : optionsAvailable) 
+        for (const auto& item : options) 
             if (item.first == s)
-                t = item.second;
-        return t; //should be 0 if not found 
+                return {true, item.second};
+        return {false, static_cast<T>(0)};
     }
-    inline void swapOut(T t) 
+    inline void move(T t, OptionMap<S,T>& other) 
     {
-        const size_t size = optionsAvailable.size();
+        const size_t size = options.size();
         for (int i = 0; i < size; i++) 
-           if (optionsAvailable[i].second == t)
+           if (options[i].second == t)
            {
-               Element element = optionsAvailable[i];
-               optionsReserved.push_back(element);
-               optionsAvailable.erase(optionsAvailable.begin() + i); 
+               Element element = options[i];
+               other.push(element);
+               options.erase(options.begin() + i); 
            }
     }
     inline void remove(T t)
     {
-        size_t size = optionsAvailable.size();
+        size_t size = options.size();
         for (int i = 0; i < size; i++) 
-           if (optionsAvailable[i].second == t)
-               optionsAvailable.erase(optionsAvailable.begin() + i); 
-        size = optionsReserved.size();
-        for (int i = 0; i < size; i++) 
-           if (optionsReserved[i].second == t)
-               optionsReserved.erase(optionsReserved.begin() + i); 
+           if (options[i].second == t)
+               options.erase(options.begin() + i); 
     }
     inline std::vector<S> getStrings() const
     {
         std::vector<std::string> vec;
-        vec.reserve(optionsAvailable.size());
-        for (const auto& item : optionsAvailable) 
+        vec.reserve(options.size());
+        for (const auto& item : options) 
             vec.push_back(item.first);
         return vec;
     }
-    inline void swapIn(T t)
+    inline void push(Element element)
     {
-        const size_t size = optionsReserved.size();
-        for (int i = 0; i < size; i++) 
-        {
-            if (optionsReserved[i].second == t)
-            {
-                Element element = optionsReserved[i];
-                optionsAvailable.push_back(element);
-                optionsReserved.erase(optionsReserved.begin() + i);
-            }   
-        }
+        options.push_back(element);
+    }
+    inline T end()
+    {
+        return options.end();
     }
 private:
-    std::vector<std::pair<S, T>> optionsAvailable;
-    std::vector<std::pair<S, T>> optionsReserved;
+    std::vector<std::pair<S, T>> options;
 };
 
 namespace rpt
@@ -673,15 +658,12 @@ private:
     enum class Option {loadFragShaders = 1, loadVertShaders, shaderReport, setSpecInts, setSpecFloats};
     enum class Mode {null, loadFragShaders, loadVertShaders, setSpecInts, setSpecFloats};
     OptionMap<std::string, Option> opMap{
-        {
-            {"loadfragshaders", Option::loadFragShaders},
-            {"loadvertshaders", Option::loadVertShaders},
-            {"report", Option::shaderReport},
-            {"setspecints", Option::setSpecInts},
-            {"setspecfloats", Option::setSpecFloats},
-            {"setwindowresolution", Option::setSpecFloats}
-        },{
-        }};
+        {"loadfragshaders", Option::loadFragShaders},
+        {"loadvertshaders", Option::loadVertShaders},
+        {"report", Option::shaderReport},
+        {"setspecints", Option::setSpecInts},
+        {"setspecfloats", Option::setSpecFloats},
+        {"setwindowresolution", Option::setSpecFloats}};
 
     Mode mode{Mode::null};
     std::map<std::string, std::unique_ptr<ShaderReport>> shaderReports;
@@ -698,12 +680,9 @@ private:
     enum class Option : uint8_t {setdimensions = 1, fulldescription, addsamplesources};
     enum class Mode : uint8_t {null, setdimensions, fulldescription, addsamplesources};
     OptionMap<std::string, Option> opMap {
-        {
-            {"setDimensions", Option::setdimensions},
-            {"fulldescription", Option::fulldescription},
-            {"addSampleSources", Option::addsamplesources}
-        },{
-        }};
+        {"setDimensions", Option::setdimensions},
+        {"fulldescription", Option::fulldescription},
+        {"addSampleSources", Option::addsamplesources}};
 
     Mode mode{Mode::null};
 };
@@ -734,11 +713,8 @@ private:
     enum class Option : uint8_t {createSwapRenderpass = 1, report};
     enum class Mode : uint8_t {null, createSwapRenderpass};
     OptionMap<std::string, Option> opMap{
-        {
         {"create_swap_renderpass", Option::createSwapRenderpass},
-        {"report", Option::report},
-        },{
-        }};
+        {"report", Option::report}};
     std::vector<std::unique_ptr<RenderpassReport>> renderpassReports;
     Mode mode{Mode::null};
 };
@@ -761,11 +737,8 @@ private:
     enum class Option : uint8_t {createGraphicsPipeline = 1, report};
     enum class Mode : uint8_t {null, createGraphicsPipeline};
     OptionMap<std::string, Option> opMap{
-        {
         {"createGraphicsPipeline", Option::createGraphicsPipeline},
-        {"report", Option::report }
-        },{
-        }};
+        {"report", Option::report }};
 
     Mode mode{Mode::null};
     std::map<std::string, std::unique_ptr<GraphicsPipelineReport>> gpReports;
@@ -791,36 +764,18 @@ private:
     Mode mode{Mode::null};
     uint8_t curStage{0};
     uint8_t bindingCount{0};
-    OptionMap<std::string, Option> opMap
-    {
-        {
+    OptionMap<std::string, Option> opMap{
             {"enterbindings", Option::enterBindings},
-            {"createdescriptorsetlayout", Option::createDescriptorSetLayout},
-        },{
-        }
-    };
-    OptionMap<std::string, vk::DescriptorType> descTypeMap
-    {
-        {
+            {"createdescriptorsetlayout", Option::createDescriptorSetLayout}};
+    OptionMap<std::string, vk::DescriptorType> descTypeMap{
             {"uniformbuffer", vk::DescriptorType::eUniformBuffer},
-            {"combinedImageSampler", vk::DescriptorType::eCombinedImageSampler},
-        },{
-        }
-    };
-    OptionMap<std::string, vk::ShaderStageFlagBits> shaderStageMap
-    {
-        {
-            {"fragmentShader", vk::ShaderStageFlagBits::eFragment}
-        },{
-        }
-    };
+            {"combinedImageSampler", vk::DescriptorType::eCombinedImageSampler}};
+    OptionMap<std::string, vk::ShaderStageFlagBits> shaderStageMap{
+            {"fragmentShader", vk::ShaderStageFlagBits::eFragment}};
     OptionMap<Mode, MemFunc> funcMap{
-        {
             {Mode::null, &CreateDescriptorSetLayout::initial},
             {Mode::enterBindings, &CreateDescriptorSetLayout::enterBindings},
-            {Mode::createLayout, &CreateDescriptorSetLayout::createLayout}
-        },{
-        }};
+            {Mode::createLayout, &CreateDescriptorSetLayout::createLayout}};
 };
 
 class DescriptorManager : public State
@@ -834,18 +789,13 @@ private:
     CreateDescriptorSetLayout cdsl;
     enum class Option {createDescriptorSetLayout = 1};
     OptionMap<std::string, Option> opMap{
-        {
-            {"createdescriptorsetlayout", Option::createDescriptorSetLayout},
-        },{
-        }};
+            {"createdescriptorsetlayout", Option::createDescriptorSetLayout}};
+    OptionMap<std::string, Option> resMap{};
     OptionMap<Option, MemFunc> funcMap{
-        {
-            {Option::createDescriptorSetLayout, &DescriptorManager::pushCDSL},
-        },{
-        }};
+            {Option::createDescriptorSetLayout, &DescriptorManager::pushCDSL}};
     static constexpr std::array<Option, 1> dynamicOptions{Option::createDescriptorSetLayout};
-    inline void removeDynamicOps() override { for (const auto& op : dynamicOptions) opMap.swapOut(op); vocab = opMap.getStrings();}
-    inline void addDynamicOps() override { for (const auto& op : dynamicOptions) opMap.swapIn(op); vocab = opMap.getStrings();}
+    inline void removeDynamicOps() override { for (const auto& op : dynamicOptions) opMap.move(op, resMap); vocab = opMap.getStrings();}
+    inline void addDynamicOps() override { for (const auto& op : dynamicOptions) resMap.move(op, opMap); vocab = opMap.getStrings();}
 };
 
 class RendererManager : public State
@@ -857,14 +807,14 @@ public:
         rpassManager{es, cs},
         shaderManager{es, cs},
         pipelineManager{es, cs},
-        addAttachState{es, cs}
+        addAttachState{es, cs},
+        descriptorManager{es, cs}
         {vocab = opMap.getStrings();}
     STATE_BASE("rendererManager");
     void onResumeExt(Application* app) override;
     void onPushExt(Application* app) override;
 private:
     Command::Pool<Command::PrepareRenderFrames> prfPool{1};
-    Command::Pool<Command::CreatePipelineLayout> cplPool{1};
     Command::Pool<Command::OpenWindow> owPool{1};
     Command::Pool<Command::CreateRenderpassInstance> criPool{5};
     Command::Pool<Command::RecordRenderCommand> rrcPool{5};
@@ -873,30 +823,33 @@ private:
     PipelineManager pipelineManager;
     ShaderManager shaderManager;
     AddAttachment addAttachState;
+    DescriptorManager descriptorManager;
 
-    enum class Option : uint8_t {render = 1, recordRenderCmd, rpiReport, printReports, createRPI, shaderManager, openWindow, addattachState, prepRenderFrames, createPipelineLayout, rpassManager, pipelineManager, all};
+    enum class Option : uint8_t {render = 1, descriptionManager, recordRenderCmd, rpiReport, printReports, createRPI, shaderManager, openWindow, addattachState, prepRenderFrames, rpassManager, pipelineManager, all};
     enum class Mode : uint8_t {null, createRPI, render, recordRenderCmd};
     OptionMap<std::string, Option> opMap{
-        {
-            {"createPipelineLayout", Option::createPipelineLayout},
             {"openWindow", Option::openWindow},
             {"addAttachState", Option::addattachState},
             {"shaderManager", Option::shaderManager},
             {"all", Option::all},
             {"printReports", Option::printReports},
             {"rpiReports", Option::rpiReport}
-        },{
-            {"rpassManager", Option::rpassManager},
-            {"prepRenderFrames", Option::prepRenderFrames},
-            {"pipelineManager", Option::pipelineManager},
-            {"createRenderpassInstance", Option::createRPI},
-            {"render", Option::render},
-            {"recordRenderCmd", Option::recordRenderCmd}
-        }};
+    };
+    OptionMap<std::string, Option> resMap{
+    };
+    OptionMap<std::string, Option> dependentMap{
+        {"descriptionmanager", Option::descriptionManager},
+        {"rpassManager", Option::rpassManager},
+        {"pipelineManager", Option::pipelineManager},
+        {"prepRenderFrames", Option::prepRenderFrames},
+        {"render", Option::render},
+        {"recordRenderCmd", Option::recordRenderCmd},
+        {"createRenderpassInstance", Option::createRPI},
+    };
 
-    static constexpr std::array<Option, 8> dynamicOptions{Option::shaderManager, Option::addattachState, Option::rpassManager, Option::pipelineManager, Option::all, Option::createRPI, Option::recordRenderCmd, Option::render};
-    inline void removeDynamicOps() override { for (const auto& op : dynamicOptions) opMap.swapOut(op); vocab = opMap.getStrings();}
-    inline void addDynamicOps() override { for (const auto& op : dynamicOptions) opMap.swapIn(op); vocab = opMap.getStrings();}
+    static constexpr std::array<Option, 9> dynamicOptions{Option::descriptionManager, Option::shaderManager, Option::addattachState, Option::rpassManager, Option::pipelineManager, Option::all, Option::createRPI, Option::recordRenderCmd, Option::render};
+    inline void removeDynamicOps() override { for (const auto& op : dynamicOptions) opMap.move(op, resMap); vocab = opMap.getStrings();}
+    inline void addDynamicOps() override { for (const auto& op : dynamicOptions) resMap.move(op, opMap); vocab = opMap.getStrings();}
 
     Mode mode{Mode::null};
     XWindow& window;
@@ -922,17 +875,19 @@ private:
     RendererManager initRenState;
     Paint paint;
     enum class Option : uint8_t {initRenState = 1, paint, printStack};
-    OptionMap<std::string, Option> opMap{
-        {
-            {"rendererManager", Option::initRenState},
-            {"printStack", Option::printStack},
-            {"painter", Option::paint}
-        },{
-        }};
+    OptionMap<std::string, Option> opMap
+    {
+        {"rendererManager", Option::initRenState},
+        {"printStack", Option::printStack},
+        {"painter", Option::paint}
+    };
+    OptionMap<std::string, Option> resMap
+    {
+    };
 
     static constexpr std::array<Option, 2> dynamicOptions{Option::paint, Option::initRenState};
-    inline void removeDynamicOps() override { for (const auto& op : dynamicOptions) opMap.swapOut(op);}
-    inline void addDynamicOps() override { for (const auto& op : dynamicOptions) opMap.swapIn(op);}
+    inline void removeDynamicOps() override { for (const auto& op : dynamicOptions) opMap.move(op, resMap);}
+    inline void addDynamicOps() override { for (const auto& op : dynamicOptions) resMap.move(op,opMap);}
 
     const StateStack& stateStack;
 };
