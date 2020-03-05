@@ -21,11 +21,11 @@ class AddAttachment;
 //1) Each state can have ONLY ONE CHILD on the stack at any given time. 
 //   The thought here is to prevent 
 template <typename S, typename T>
-class OptionMap
+class SmallMap
 {
 public:
     using Element = std::pair<S, T>;
-    OptionMap(std::initializer_list<Element> avail) : options{avail} {}
+    SmallMap(std::initializer_list<Element> avail) : options{avail} {}
     inline std::pair<bool, T> findOption(CommandLineEvent* event) const
     {
         std::string input = event->getInput();
@@ -40,7 +40,7 @@ public:
                 return {true, item.second};
         return {false, static_cast<T>(0)};
     }
-    inline void move(T t, OptionMap<S,T>& other) 
+    inline void move(T t, SmallMap<S,T>& other) 
     {
         const size_t size = options.size();
         for (int i = 0; i < size; i++) 
@@ -87,7 +87,8 @@ enum class ReportType : uint8_t
     Renderpass,
     Pipeline,
     RenderpassInstance,
-    RenderCommand
+    RenderCommand,
+    DescriptorSetLayout
 };
 
 class Report
@@ -239,6 +240,39 @@ public:
 private:
     int cmdIndex;
     std::vector<uint32_t> rpiIndices;
+};
+
+class DescriptorSetLayoutReport : public Report
+{
+public:
+    inline DescriptorSetLayoutReport(
+            const std::string name, std::vector<vk::DescriptorSetLayoutBinding> bindings) :
+   name{name}, bindings{bindings} {}
+    inline void operator()() const override
+    {
+        std::cout << "============= Descriptor Set Layout Report =============" << std::endl;
+        std::cout << "Name:                " << name << std::endl;
+        auto bcount = bindings.size();
+        std::cout << "Binding count:       " << bcount << std::endl;
+        for (int i = 0; i < bcount; i++) 
+        {
+        std::cout << "-----------------------------------" << std::endl;
+        std::cout << "Binding " << i << std::endl;
+        std::cout << "Descriptor Type:    " << vk::to_string(bindings[i].descriptorType) << std::endl;
+        std::cout << "Descriptor Count:   " << bindings[i].descriptorCount << std::endl;
+        std::cout << "Shader Stage Flags: " << vk::to_string(bindings[i].stageFlags) << std::endl;
+        }
+    }
+    inline ReportType getType() const override {return ReportType::DescriptorSetLayout;}
+    inline const std::string getObjectName() const override {return name;}
+private:
+    const std::string name;
+    const std::vector<vk::DescriptorSetLayoutBinding> bindings;
+    inline std::string getDescriptorType(int index) 
+    {
+        auto binding = bindings.at(index);
+        return vk::to_string(binding.descriptorType);
+    }
 };
 
 };
@@ -620,9 +654,11 @@ public:
     void onPush(Application* app);
     virtual void refresh(Application* app);
     virtual const char* getName() const = 0;
+    virtual std::vector<const Report*> getReports() const {return {};};
 protected:
     void pushState(State* state);
     void popState(EditStack* edits);
+    void syncReports(State* child);
     virtual void removeDynamicOps() {}
     virtual void addDynamicOps() { std::cout << "Called Base dynOps" << std::endl;}
     virtual void onResumeExt(Application*) {}
@@ -635,6 +671,7 @@ protected:
     Vocab vocab;
     EditStack& stateEdits;
     CommandStack& cmdStack;
+    std::vector<const Report *> reports;
 };
 
 class ShaderManager: public State
@@ -642,7 +679,7 @@ class ShaderManager: public State
 public:
     STATE_BASE("shadermanager");
     ShaderManager(EditStack& es, CommandStack& cs) : State::State{es, cs} {vocab = opMap.getStrings();}
-    std::vector<const Report*> getReports() const
+    std::vector<const Report*> getReports() const override
     {
         std::vector<const Report*> reports;
         for (const auto& item : shaderReports) 
@@ -657,7 +694,7 @@ private:
     Command::Pool<Command::SetSpecInt> ssiPool{10};
     enum class Option {loadFragShaders = 1, loadVertShaders, shaderReport, setSpecInts, setSpecFloats};
     enum class Mode {null, loadFragShaders, loadVertShaders, setSpecInts, setSpecFloats};
-    OptionMap<std::string, Option> opMap{
+    SmallMap<std::string, Option> opMap{
         {"loadfragshaders", Option::loadFragShaders},
         {"loadvertshaders", Option::loadVertShaders},
         {"report", Option::shaderReport},
@@ -679,7 +716,7 @@ private:
     int width, height;
     enum class Option : uint8_t {setdimensions = 1, fulldescription, addsamplesources};
     enum class Mode : uint8_t {null, setdimensions, fulldescription, addsamplesources};
-    OptionMap<std::string, Option> opMap {
+    SmallMap<std::string, Option> opMap {
         {"setDimensions", Option::setdimensions},
         {"fulldescription", Option::fulldescription},
         {"addSampleSources", Option::addsamplesources}};
@@ -700,7 +737,7 @@ class RenderpassManager: public State
 public:
     STATE_BASE("renderpassManager");
     RenderpassManager(EditStack& es, CommandStack& cs) : State::State{es, cs}  {vocab = opMap.getStrings();}
-    std::vector<const Report*> getReports() const 
+    std::vector<const Report*> getReports() const override
     {
         std::vector<const Report*> reports;
         for (const auto& item : renderpassReports) 
@@ -712,7 +749,7 @@ private:
     Command::Pool<Command::CreateSwapchainRenderpass> csrPool{1};
     enum class Option : uint8_t {createSwapRenderpass = 1, report};
     enum class Mode : uint8_t {null, createSwapRenderpass};
-    OptionMap<std::string, Option> opMap{
+    SmallMap<std::string, Option> opMap{
         {"create_swap_renderpass", Option::createSwapRenderpass},
         {"report", Option::report}};
     std::vector<std::unique_ptr<RenderpassReport>> renderpassReports;
@@ -725,7 +762,7 @@ public:
     STATE_BASE("pipelineManager");
     PipelineManager(EditStack& es, CommandStack& cs) : State::State{es, cs}  {vocab = opMap.getStrings();}
     inline void setCGPVocab(std::vector<std::string> v) { cgpVocab = v;}
-    std::vector<const Report*> getReports() const
+    std::vector<const Report*> getReports() const override
     {
         std::vector<const Report*> reports;
         for (const auto& item : gpReports) 
@@ -736,7 +773,7 @@ private:
     Command::Pool<Command::CreateGraphicsPipeline> cgpPool{10};
     enum class Option : uint8_t {createGraphicsPipeline = 1, report};
     enum class Mode : uint8_t {null, createGraphicsPipeline};
-    OptionMap<std::string, Option> opMap{
+    SmallMap<std::string, Option> opMap{
         {"createGraphicsPipeline", Option::createGraphicsPipeline},
         {"report", Option::report }};
 
@@ -754,28 +791,43 @@ public:
     void initial(Event*);
     void enterBindings(Event*);
     void createLayout(Event*);
+    std::vector<const Report*> getReports() const override
+    {
+        std::vector<const Report*> reports;
+        for (const auto& item : descSetLayoutReports) 
+        {
+            reports.push_back(&item);
+        }
+        return reports;
+    }
 private:
     using MemFunc = void (CreateDescriptorSetLayout::*)(Event*);
     Command::Pool<Command::CreateDescriptorSetLayout> cdslPool{1};
     std::vector<vk::DescriptorSetLayoutBinding> pendingBindings;
+    std::vector<DescriptorSetLayoutReport> descSetLayoutReports;
     enum class Stage : uint8_t {descriptorTypeEntry, descriptorCountEntry, shaderStageEntry};
     enum class Option : uint8_t {enterBindings = 1, createDescriptorSetLayout};
     enum class Mode : uint8_t {null, enterBindings, createLayout};
     Mode mode{Mode::null};
     uint8_t curStage{0};
     uint8_t bindingCount{0};
-    OptionMap<std::string, Option> opMap{
+    SmallMap<std::string, Option> opMap{
             {"enterbindings", Option::enterBindings},
             {"createdescriptorsetlayout", Option::createDescriptorSetLayout}};
-    OptionMap<std::string, vk::DescriptorType> descTypeMap{
+    SmallMap<std::string, vk::DescriptorType> descTypeMap{
             {"uniformbuffer", vk::DescriptorType::eUniformBuffer},
             {"combinedImageSampler", vk::DescriptorType::eCombinedImageSampler}};
-    OptionMap<std::string, vk::ShaderStageFlagBits> shaderStageMap{
+    SmallMap<std::string, vk::ShaderStageFlagBits> shaderStageMap{
             {"fragmentShader", vk::ShaderStageFlagBits::eFragment}};
-    OptionMap<Mode, MemFunc> funcMap{
+    SmallMap<Mode, MemFunc> funcMap{
             {Mode::null, &CreateDescriptorSetLayout::initial},
             {Mode::enterBindings, &CreateDescriptorSetLayout::enterBindings},
             {Mode::createLayout, &CreateDescriptorSetLayout::createLayout}};
+    SmallMap<vk::DescriptorType, std::string> descToString
+    {
+        {vk::DescriptorType::eUniformBuffer, "Uniform Buffer"},
+        {vk::DescriptorType::eCombinedImageSampler, "Combined Image Sampler"}
+    };
 };
 
 class DescriptorManager : public State
@@ -783,15 +835,19 @@ class DescriptorManager : public State
 public:
     STATE_BASE("descriptorManager");
     DescriptorManager(EditStack& es, CommandStack& cs) : State::State{es, cs}, cdsl{es, cs}  {vocab = opMap.getStrings();}
+    std::vector<const Report*> getReports() const override
+    {
+        return reports;
+    }
 private:
     using MemFunc = void (DescriptorManager::*)(Event*);
     inline void pushCDSL(Event* event) {pushState(&cdsl);}
     CreateDescriptorSetLayout cdsl;
     enum class Option {createDescriptorSetLayout = 1};
-    OptionMap<std::string, Option> opMap{
+    SmallMap<std::string, Option> opMap{
             {"createdescriptorsetlayout", Option::createDescriptorSetLayout}};
-    OptionMap<std::string, Option> resMap{};
-    OptionMap<Option, MemFunc> funcMap{
+    SmallMap<std::string, Option> resMap{};
+    SmallMap<Option, MemFunc> funcMap{
             {Option::createDescriptorSetLayout, &DescriptorManager::pushCDSL}};
     static constexpr std::array<Option, 1> dynamicOptions{Option::createDescriptorSetLayout};
     inline void removeDynamicOps() override { for (const auto& op : dynamicOptions) opMap.move(op, resMap); vocab = opMap.getStrings();}
@@ -811,7 +867,6 @@ public:
         descriptorManager{es, cs}
         {vocab = opMap.getStrings();}
     STATE_BASE("rendererManager");
-    void onResumeExt(Application* app) override;
     void onPushExt(Application* app) override;
 private:
     Command::Pool<Command::PrepareRenderFrames> prfPool{1};
@@ -827,7 +882,7 @@ private:
 
     enum class Option : uint8_t {render = 1, descriptionManager, recordRenderCmd, rpiReport, printReports, createRPI, shaderManager, openWindow, addattachState, prepRenderFrames, rpassManager, pipelineManager, all};
     enum class Mode : uint8_t {null, createRPI, render, recordRenderCmd};
-    OptionMap<std::string, Option> opMap{
+    SmallMap<std::string, Option> opMap{
             {"openWindow", Option::openWindow},
             {"addAttachState", Option::addattachState},
             {"shaderManager", Option::shaderManager},
@@ -835,9 +890,9 @@ private:
             {"printReports", Option::printReports},
             {"rpiReports", Option::rpiReport}
     };
-    OptionMap<std::string, Option> resMap{
+    SmallMap<std::string, Option> resMap{
     };
-    OptionMap<std::string, Option> dependentMap{
+    SmallMap<std::string, Option> dependentMap{
         {"descriptionmanager", Option::descriptionManager},
         {"rpassManager", Option::rpassManager},
         {"pipelineManager", Option::pipelineManager},
@@ -854,7 +909,6 @@ private:
     Mode mode{Mode::null};
     XWindow& window;
 
-    std::vector<const Report *> reports;
     std::vector<std::unique_ptr<RenderpassInstanceReport>> rpiReports;
     std::vector<std::unique_ptr<RenderCommandReport>> rcReports;
 };
@@ -875,13 +929,13 @@ private:
     RendererManager initRenState;
     Paint paint;
     enum class Option : uint8_t {initRenState = 1, paint, printStack};
-    OptionMap<std::string, Option> opMap
+    SmallMap<std::string, Option> opMap
     {
         {"rendererManager", Option::initRenState},
         {"printStack", Option::printStack},
         {"painter", Option::paint}
     };
-    OptionMap<std::string, Option> resMap
+    SmallMap<std::string, Option> resMap
     {
     };
 

@@ -17,11 +17,28 @@
 constexpr const char* SHADER_DIR = "/home/michaelb/dev/sword/build/shaders/";
 
 void State::State::pushState(State* state) {stateEdits.pushState(state); activeChild = state;} 
-void State::State::onResume(Application* app) {addDynamicOps(); onResumeExt(app); activeChild = nullptr;}
+void State::State::onResume(Application* app) {addDynamicOps(); syncReports(activeChild); onResumeExt(app); activeChild = nullptr;}
 void State::State::onPush(Application* app) {removeDynamicOps(); onPushExt(app);}
 void State::State::onExit(Application* app) {onExitExt(app); app->ev.popVocab();}
 void State::State::onEnter(Application* app) {onEnterExt(app); app->ev.addVocab(vocab.getValues());}
 void State::State::refresh(Application* app) {app->ev.updateVocab();}
+void State::State::syncReports(State* t)
+{
+    auto newReports = t->getReports();
+    for (const auto& nr : newReports) 
+    {
+        bool alreadyIn{false};
+        for (auto& r : reports)
+            if (r->getObjectName() == nr->getObjectName()) 
+            {
+                alreadyIn = true;
+                r = nr;
+                break;
+            }
+        if (!alreadyIn)
+            reports.push_back(nr);   
+    }
+}
 
 void State::DescriptorManager::handleEvent(Event* event)
 {
@@ -125,6 +142,7 @@ void State::CreateDescriptorSetLayout::createLayout(Event* event)
     ss >> name;
     auto cmd = cdslPool.request(name, pendingBindings);
     cmdStack.push(std::move(cmd));
+    descSetLayoutReports.emplace_back(name, pendingBindings);
     pendingBindings.clear();
     vocab = opMap.getStrings();
     event->setHandled();
@@ -591,37 +609,6 @@ void State::RendererManager::handleEvent(Event* event)
             event->setHandled();
         }
     }
-}
-
-//TODO: we can't store pointers to vector elements
-//      we should instead change over the report collection
-//      mechanism to store pointers to the vectors of reports
-//      themselves. const pointers.
-void State::RendererManager::onResumeExt(Application* app)
-{
-    auto syncReports = [this](const auto& t)
-    {
-        if (activeChild == &t)
-        {
-            auto newReports = t.getReports();
-            for (const auto& nr : newReports) 
-            {
-                bool alreadyIn{false};
-                for (auto& r : reports)
-                    if (r->getObjectName() == nr->getObjectName()) 
-                    {
-                        alreadyIn = true;
-                        r = nr;
-                        break;
-                    }
-                if (!alreadyIn)
-                    reports.push_back(nr);   
-            }
-        }
-    };
-    syncReports(shaderManager);
-    syncReports(rpassManager);
-    syncReports(pipelineManager);
 }
 
 void State::RendererManager::onPushExt(Application* app)
