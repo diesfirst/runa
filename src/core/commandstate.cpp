@@ -268,8 +268,14 @@ void State::AddAttachment::handleEvent(Event* event)
                 {
                     std::string name; int w; int h; bool sample; bool transfersrc;
                     instream >> name >> w >> h >> sample >> transfersrc;
-                    auto cmd = addAttPool.request(name, w, h, sample, transfersrc);
+                    vk::ImageUsageFlags usage = vk::ImageUsageFlagBits::eColorAttachment;
+                    if (sample)
+                        usage = usage | vk::ImageUsageFlagBits::eSampled;
+                    if (transfersrc)
+                        usage = usage | vk::ImageUsageFlagBits::eTransferSrc;
+                    auto cmd = addAttPool.request(name, w, h, usage);
                     cmdStack.push(std::move(cmd));
+                    attachmentReports.emplace_back(name, w, h, usage);
                     mode = Mode::null;
                     event->setHandled();
                     break;
@@ -317,7 +323,7 @@ void State::RenderpassManager::handleEvent(Event* event)
                     instream >> input;
                     auto cmd = csrPool.request(input);
                     cmdStack.push(std::move(cmd));
-                    renderpassReports.emplace_back(std::make_unique<RenderpassReport>(input));
+                    renderpassReports.emplace_back(std::make_unique<RenderpassReport>(input, rpt::RenderpassReport::Type::swapchain));
                     mode = Mode::null;
                     break;
                 }
@@ -335,67 +341,87 @@ void State::Paint::handleEvent(Event* event)
     std::cout << "oooh" << ENDL;
 }
 
+void State::PipelineManager::base(Event* event)
+{
+    auto input = static_cast<CommandLineEvent*>(event)->getFirstWord();
+    auto option = opMap.findOption(input);
+    if (!option) return;
+    switch (*option)
+    {
+        case Option::createGraphicsPipeline:
+        {
+            std::cout << "Enter a name for the pipeline, then provide names for"
+               " a pipelinelayout, a vertshader, a fragshader, "
+               " a renderpass, 4 numbers for the render region,"
+               " and a 1 or a 0 for whether or not this is a 3d or 2d pipeline" << ENDL;
+            mode = Mode::createGraphicsPipeline;
+            vocab = cgpVocab;
+            event->setHandled();
+            break;
+        }
+        case Option::report:
+        {
+            for (const auto& i : gpReports) 
+                std::invoke(*i.second);
+            break;
+        }
+        case Option::createPipelineLayout:
+        {
+            std::cout << "Enter name a name for the pipeline layout and the names of the descriptor set layouts" << std::endl;
+            mode = Mode::createPipelineLayout;
+            break;
+        }
+    }
+}
+
+void State::PipelineManager::createPipelineLayout(Event* event)
+{
+    auto instream = static_cast<CommandLineEvent*>(event)->getStream();
+    std::string name;
+    std::string layout;
+    std::vector<std::string> layoutnames;
+    instream >> name;
+    while (instream >> layout)
+        layoutnames.push_back(layout);
+    auto cmd = cpplPool.request(name, layoutnames);
+    cmdStack.push(std::move(cmd));
+    event->setHandled();
+    mode = Mode::null;
+}
+
+void State::PipelineManager::createGraphicsPipeline(Event* event)
+{
+    auto instream = static_cast<CommandLineEvent*>(event)->getStream();
+    std::string name{"default"};
+    std::string pipelineLayout{"default"};
+    std::string vertshader{"default"};
+    std::string fragshader{"default"};
+    std::string renderpass{"default"};
+    int a1;
+    int a2;
+    uint32_t a3;
+    uint32_t a4;
+    bool is3d{false};
+    instream >> name >> pipelineLayout >> vertshader >> fragshader >> renderpass >> a1 >> a2 >> a3 >> a4 >> is3d;
+    vk::Rect2D renderArea{{a1, a2}, {a3, a4}};
+    auto cmd = cgpPool.request(name, pipelineLayout, vertshader, fragshader, renderpass, renderArea, is3d);
+    if (cmd) 
+    {
+        cmdStack.push(std::move(cmd));
+        gpReports.emplace(name, std::make_unique<GraphicsPipelineReport>(name, pipelineLayout, vertshader, fragshader, renderpass, a1, a2, a3, a4, is3d));
+    }
+    mode = Mode::null;
+    vocab = opMap.getStrings();
+    event->setHandled();
+}
+
 void State::PipelineManager::handleEvent(Event* event)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
-        auto input = static_cast<CommandLineEvent*>(event)->getInput();
-        std::stringstream instream{input};
-        switch (mode)
-        {
-            case Mode::null:
-            {
-                instream >> input;
-                auto option = opMap.findOption(input);
-                if (!option) return;
-                switch (*option)
-                {
-                    case Option::createGraphicsPipeline:
-                    {
-                        std::cout << "Enter a name for the pipeline, then provide names for"
-                           " a pipelinelayout, a vertshader, a fragshader, "
-                           " a renderpass, 4 numbers for the render region,"
-                           " and a 1 or a 0 for whether or not this is a 3d or 2d pipeline" << ENDL;
-                        mode = Mode::createGraphicsPipeline;
-                        vocab = cgpVocab;
-                        event->setHandled();
-                        break;
-                    }
-                    case Option::report:
-                    {
-                        for (const auto& i : gpReports) 
-                            std::invoke(*i.second);
-                        break;
-                    }
-                }
-                break;
-            }
-            case Mode::createGraphicsPipeline:
-            {
-                std::string name{"default"};
-                std::string pipelineLayout{"default"};
-                std::string vertshader{"default"};
-                std::string fragshader{"default"};
-                std::string renderpass{"default"};
-                int a1;
-                int a2;
-                uint32_t a3;
-                uint32_t a4;
-                bool is3d{false};
-                instream >> name >> pipelineLayout >> vertshader >> fragshader >> renderpass >> a1 >> a2 >> a3 >> a4 >> is3d;
-                vk::Rect2D renderArea{{a1, a2}, {a3, a4}};
-                auto cmd = cgpPool.request(name, pipelineLayout, vertshader, fragshader, renderpass, renderArea, is3d);
-                if (cmd) 
-                {
-                    cmdStack.push(std::move(cmd));
-                    gpReports.emplace(name, std::make_unique<GraphicsPipelineReport>(name, pipelineLayout, vertshader, fragshader, renderpass, a1, a2, a3, a4, is3d));
-                }
-                mode = Mode::null;
-                vocab = opMap.getStrings();
-                event->setHandled();
-                break;
-            }
-        }
+        auto option = modeToFunc.findOption(mode);
+        if (option)
+            std::invoke(*option, this, event);
     }
 }
 
@@ -433,7 +459,8 @@ void State::Director::handleEvent(Event* event)
     }
     if (event->getCategory() == EventCategory::Abort)
     {
-        stateEdits.popState();
+        if (stateStack.size() > 1)
+            stateEdits.popState();
     }
 }
 
@@ -462,6 +489,11 @@ void State::RendererManager::base(Event* event)
                 cmdStack.push(std::move(cmd));
                 opMap.remove(Option::prepRenderFrames);
                 dependentMap.move(Option::descriptionManager, opMap);
+                dependentMap.move(Option::rpassManager, opMap);
+                dependentMap.move(Option::pipelineManager, opMap);
+                dependentMap.move(Option::createRPI, opMap);
+                dependentMap.move(Option::render, opMap);
+                dependentMap.move(Option::recordRenderCmd, opMap);
                 vocab = opMap.getStrings();
                 event->setHandled();
                 break;
@@ -572,6 +604,9 @@ void State::RendererManager::base(Event* event)
             }
     }
 }
+
+//foo
+//
 
 void State::RendererManager::createRPI(Event* event)
 {
@@ -798,11 +833,6 @@ void State::ShaderManager::handleEvent(Event* event)
 
 void Command::AddAttachment::execute(Application* app)
 {
-        vk::ImageUsageFlags usage = vk::ImageUsageFlagBits::eColorAttachment;
-        if (isSampled)
-            usage = usage | vk::ImageUsageFlagBits::eSampled;
-        if (isTransferSrc)
-            usage = usage | vk::ImageUsageFlagBits::eTransferSrc;
         app->renderer.createAttachment(attachmentName, dimensions, usage);
 }
 
@@ -904,6 +934,7 @@ void Command::UpdateVocab::execute(Application* app)
 
 void Command::CreatePipelineLayout::execute(Application* app)
 {
+    app->renderer.createPipelineLayout(name, descriptorSetLayoutNames);
 }
 
 void Command::CreateFrameDescriptorSets::execute(Application* app)
@@ -917,15 +948,16 @@ Application::Application(uint16_t w, uint16_t h, const std::string logfile) :
     renderer{context},
     offscreenDim{{w, h}},
     swapDim{{w, h}},
-    eventlog{logfile},
+    readlog{logfile},
     dirState{window, stateStack, stateEdits, cmdStack}
 {
     stateStack.push(&dirState);
     dirState.onEnter(this);
     ev.updateVocab();
-    if (eventlog != "eventlog")
+    if (readlog != "eventlog")
     {
-        recordevents = false;
+        std::cout << "reading events from " << readlog << std::endl;
+        recordevents = true;
         readevents = true;
     }
 }
@@ -993,7 +1025,7 @@ void Application::recordEvent(Event* event, std::ofstream& os)
     if (event->getCategory() == EventCategory::CommandLine)
     {
 
-        os.open(eventlog, std::ios::out | std::ios::binary | std::ios::app);
+        os.open(writelog, std::ios::out | std::ios::binary | std::ios::app);
         auto ce = static_cast<CommandLineEvent*>(event);
         ce->serialize(os);
         os.close();
@@ -1001,7 +1033,7 @@ void Application::recordEvent(Event* event, std::ofstream& os)
     if (event->getCategory() == EventCategory::Abort)
     {
 
-        os.open(eventlog, std::ios::out | std::ios::binary | std::ios::app);
+        os.open(writelog, std::ios::out | std::ios::binary | std::ios::app);
         auto ce = static_cast<Abort*>(event);
         ce->serialize(os);
         os.close();
@@ -1010,7 +1042,7 @@ void Application::recordEvent(Event* event, std::ofstream& os)
 
 void Application::readEvents(std::ifstream& is)
 {
-    is.open(eventlog, std::ios::binary);
+    is.open(readlog, std::ios::binary);
     bool reading{true};
     while (is.peek() != EOF)
     {
@@ -1040,7 +1072,7 @@ void Application::run()
     std::ifstream is;
     
     if (readevents) readEvents(is);
-    if (recordevents) std::remove(eventlog.data());
+    if (recordevents) std::remove(writelog.data());
 
     while (1)
     {

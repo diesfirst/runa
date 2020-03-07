@@ -115,6 +115,10 @@ public:
         std::string word; ss >> word;
         return word;
     }
+    inline std::stringstream getStream() const
+    {
+        return std::stringstream{input};
+    }
     inline void serialize(std::ofstream& os) {
         auto cat = getCategory();
         os.write((char*)&cat, sizeof(EventCategory));

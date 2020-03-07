@@ -89,7 +89,8 @@ enum class ReportType : uint8_t
     RenderpassInstance,
     RenderCommand,
     DescriptorSetLayout,
-    DescriptorSet
+    DescriptorSet,
+    Attachment
 };
 
 class Report
@@ -178,17 +179,37 @@ private:
 class RenderpassReport : public Report
 {
 public:
-    inline RenderpassReport(std::string n) :
-        name{n} {}
+    enum class Type : uint8_t {swapchain, offscreen}; 
+    inline RenderpassReport(std::string n, Type t) :
+        name{n}, type{t} {}
     inline void operator()() const override
     {
         std::cout << "================== Renderpass Report ==================" << std::endl;
         std::cout << "Name:                  " << name << std::endl;
+        std::cout << "Type:                  " << typeToString() << std::endl;
     }
     inline const std::string getObjectName() const override {return name;}
     inline ReportType getType() const override {return ReportType::Renderpass;}
 private:
     const std::string name{"unitilialized"};
+    Type type;
+    inline std::string typeToString() const
+    {
+        switch (type)
+        {
+            case Type::swapchain:
+            {
+                return "Swapchain";
+                break;
+            }
+            case Type::offscreen:
+            {
+                return "Offscreen";
+                break;
+            }
+        }
+        return "no type";
+    }
 };
 
 class RenderpassInstanceReport : public Report
@@ -303,6 +324,32 @@ private:
     Type type;
 };
 
+class AttachmentReport : public Report
+{
+public:
+    AttachmentReport(const std::string n, const int w, const int h, vk::ImageUsageFlags f) :
+        name{n}, width{w}, height{h}, usageFlags{f} {}
+    void operator()() const override
+    {
+        std::cout << "========= Attachment Report ============" << std::endl;
+        std::cout << "Name:        " << name << std::endl;
+        std::cout << "Dimensions:  " << width << " " << height << std::endl;
+        std::cout << "Usage Flags: " << vk::to_string(usageFlags) << std::endl;
+    }
+    const std::string getObjectName() const override
+    {
+        return name;
+    }
+    ReportType getType() const override
+    {
+        return ReportType::Attachment;
+    }
+private:
+    const std::string name;
+    const int width, height;
+    vk::ImageUsageFlags usageFlags;
+};
+
 };
 
 template <class T>
@@ -315,6 +362,7 @@ public:
     inline T top() const {return items.back();}
     inline bool empty() const {return items.empty();}
     inline void print() const {for (const auto& item : items) std::cout << item->getName() << std::endl;}
+    inline size_t size() const {return items.size();}
 protected:
     std::vector<T> items;
 };
@@ -361,9 +409,10 @@ class Command
 public:
     virtual ~Command() = default;
     virtual void execute(Application*) = 0;
+    template <typename... Args> inline void set(Args... args) {}
     static const char* getName() {return "commandBase";}
     inline bool isAvailable() const {return !inUse;}
-    template <typename... Args> inline void set(Args... args) {inUse = true;}
+    template <typename... Args> inline void set_(Args... args) {inUse = true; set(args...);}
     void reset() {inUse = false;}
 protected:
     Command() = default;
@@ -427,21 +476,19 @@ class AddAttachment: public Command
 {
 public:
     CMD_BASE("addAttachment");
-    inline void set(std::string name, int x, int y, bool sample, bool transfer)
+    inline void set(std::string name, int x, int y, vk::ImageUsageFlags usage)
     {
         assert(x > 0 && y > 0 && "Bad attachment size");
         Command::set();
         attachmentName = name;
-        isSampled = sample;
-        isTransferSrc = transfer;
+        this->usage = usage;
         dimensions.setWidth(x);
         dimensions.setHeight(y);
     }
 private:
     std::string attachmentName;
     vk::Extent2D dimensions{{500, 500}};
-    bool isSampled{false};   
-    bool isTransferSrc{false};
+    vk::ImageUsageFlags usage;
 };
 
 class OpenWindow : public Command
@@ -476,8 +523,14 @@ class CreatePipelineLayout : public Command
 {
 public:
     CMD_BASE("createPipelineLayout")
+    inline void set( std::string n, std::vector<std::string> descSetLayoutNames)
+    {
+        name = n;
+        descriptorSetLayoutNames = descSetLayoutNames;
+    }
 private:
-    std::string layoutname{"foo"};
+    std::string name{"default"};
+    std::vector<std::string> descriptorSetLayoutNames;
 };
 
 class PrepareRenderFrames : public Command
@@ -605,7 +658,7 @@ public:
         for (int i = 0; i < size; i++) 
             if (pool[i].isAvailable())
             {
-                pool[i].set(args...);
+                pool[i].set_(args...);
                 Pointer<Command> ptr{&pool[i], [](Command* t)
                     {
                         t->reset();
@@ -763,6 +816,8 @@ private:
         {"fulldescription", Option::fulldescription},
         {"addSampleSources", Option::addsamplesources}};
 
+    std::vector<rpt::AttachmentReport> attachmentReports;
+
     Mode mode{Mode::null};
 };
 
@@ -811,13 +866,26 @@ public:
             reports.push_back(item.second.get());
         return reports;
     }
+    void createPipelineLayout(Event*);
+    void createGraphicsPipeline(Event*);
+    void base(Event*);
 private:
-    Command::Pool<Command::CreateGraphicsPipeline> cgpPool{10};
-    enum class Option : uint8_t {createGraphicsPipeline = 1, report};
-    enum class Mode : uint8_t {null, createGraphicsPipeline};
-    SmallMap<std::string, Option> opMap{
-        {"createGraphicsPipeline", Option::createGraphicsPipeline},
-        {"report", Option::report }};
+    Command::Pool<Command::CreateGraphicsPipeline> cgpPool{5};
+    Command::Pool<Command::CreatePipelineLayout> cpplPool{1};
+    enum class Option : uint8_t {createGraphicsPipeline, report, createPipelineLayout};
+    enum class Mode : uint8_t {null, createGraphicsPipeline, createPipelineLayout};
+    SmallMap<std::string, Option> opMap
+    {
+        {"create_graphics_pipeline", Option::createGraphicsPipeline},
+        {"report", Option::report },
+        {"create_pipeline_layout", Option::createPipelineLayout}
+    };
+    SmallMap<Mode, void(PipelineManager::*)(Event*)> modeToFunc
+    {
+        {Mode::null, &PipelineManager::base},
+        {Mode::createGraphicsPipeline, &PipelineManager::createGraphicsPipeline},
+        {Mode::createPipelineLayout, &PipelineManager::createPipelineLayout}
+    };
 
     Mode mode{Mode::null};
     std::map<std::string, std::unique_ptr<GraphicsPipelineReport>> gpReports;
@@ -956,7 +1024,7 @@ private:
         {"shaderManager", Option::shaderManager},
         {"all", Option::all},
         {"printReports", Option::printReports},
-        {"rpiReports", Option::rpiReport}
+        {"rpiReports", Option::rpiReport},
     };
 
     SmallMap<std::string, Option> resMap{
@@ -1071,7 +1139,8 @@ public:
     vk::Extent2D swapDim;;
 
 private:
-    std::string eventlog;
+    std::string readlog;
+    std::string writelog{"eventlog"};
     bool recordevents{true};
     bool readevents{false};
     
