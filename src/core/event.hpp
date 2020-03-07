@@ -6,6 +6,8 @@
 #include <thread>
 #include <queue>
 #include <fstream>
+#include <sstream>
+#include <optional>
 
 enum class MouseButton : uint8_t
 {
@@ -107,6 +109,12 @@ public:
     inline EventCategory getCategory() const override {return EventCategory::CommandLine;}
     inline std::string getName() const override {return "CommandLine";};
     inline CommandLineInput getInput() const {return input;}
+    inline std::string getFirstWord() const 
+    {
+        std::stringstream ss{input};
+        std::string word; ss >> word;
+        return word;
+    }
     inline void serialize(std::ofstream& os) {
         auto cat = getCategory();
         os.write((char*)&cat, sizeof(EventCategory));
@@ -132,6 +140,11 @@ class WindowEvent : public Event
 public:
     inline EventCategory getCategory() const override {return EventCategory::Window;}
     virtual WindowEventType getType() const = 0;
+    inline int16_t getX() const {return xPos;}
+    inline int16_t getY() const {return yPos;}
+protected:
+    WindowEvent(const int16_t x, const int16_t y) : xPos{x}, yPos{y} {}
+    const int16_t xPos, yPos;
 };
 
 class KeyEvent : public WindowEvent
@@ -140,14 +153,14 @@ public:
     Key getKey() const {return key;}
 
 protected:
-    KeyEvent(Key key) : key{key} {}
+    KeyEvent(int16_t x, int16_t y, Key key) : WindowEvent{x, y}, key{key} {}
     Key key;
 };
 
 class KeyPressEvent : public KeyEvent
 {
 public:
-    KeyPressEvent(Key key) : KeyEvent{key} {}
+    KeyPressEvent(int16_t x, int16_t y, Key key) : KeyEvent{x, y, key} {}
     inline WindowEventType getType() const override {return WindowEventType::Keypress;}
     inline std::string getName() const override {return "KeyPressEvent";};
 };
@@ -155,24 +168,24 @@ public:
 class KeyReleaseEvent : public KeyEvent
 {
 public:
-    KeyReleaseEvent(Key key) : KeyEvent{key} {}
+    KeyReleaseEvent(int16_t x, int16_t y, Key key) : KeyEvent{x, y, key} {}
     inline WindowEventType getType() const override {return WindowEventType::Keypress;}
     inline std::string getName() const override {return "KeyReleaseEvent";};
 };
 
-class MouseButtonEvent : public WindowEvent
+class MouseButtonEvent : public WindowEvent 
 {
 public:
     MouseButton getMouseButton() const {return button;}
 protected:
-    MouseButtonEvent(MouseButton button) : button{button} {};
+    MouseButtonEvent(int16_t x, int16_t y, MouseButton button) : WindowEvent{x, y}, button{button} {};
     const MouseButton button;
 };
 
 class MousePressEvent : public MouseButtonEvent
 {
 public:
-    MousePressEvent(MouseButton button) : MouseButtonEvent{button} {};
+    MousePressEvent(int16_t x, int16_t y, MouseButton button) :  MouseButtonEvent{x, y, button} {};
     inline WindowEventType getType() const override {return WindowEventType::MousePress;}
     inline std::string getName() const override {return "MousePressEvent";};
 };
@@ -180,7 +193,7 @@ public:
 class MouseReleaseEvent : public MouseButtonEvent
 {
 public:
-    MouseReleaseEvent(MouseButton button) : MouseButtonEvent{button} {};
+    MouseReleaseEvent(int16_t x, int16_t y, MouseButton button) : MouseButtonEvent{x, y, button} {};
     inline WindowEventType getType() const override {return WindowEventType::MouseRelease;}
     inline std::string getName() const override {return "MouseReleaseEvent";};
 };
@@ -188,13 +201,9 @@ public:
 class MouseMotionEvent : public WindowEvent 
 {
 public:
-    MouseMotionEvent(int16_t x, int16_t y) : xPos{x}, yPos{y} {}
+    MouseMotionEvent(int16_t x, int16_t y) : WindowEvent{x, y} {}
     inline WindowEventType getType() const override {return WindowEventType::Motion;}
     inline std::string getName() const override {return "MouseMotionEvent";};
-    inline int16_t getX() const {return xPos;}
-    inline int16_t getY() const {return yPos;}
-private:
-    const int16_t xPos, yPos;
 };
 
 typedef std::queue<std::unique_ptr<Event>> EventQueue;

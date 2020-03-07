@@ -40,15 +40,57 @@ void State::State::syncReports(State* t)
     }
 }
 
+void State::DescriptorManager::base(Event* event)
+{
+    auto input = static_cast<CommandLineEvent*>(event)->getFirstWord();
+    auto option = opMap.findOption(input);
+    if (!option) return;
+    switch (*option)
+    {
+        case Option::createDescriptorSetLayout:
+        {
+            pushState(&cdsl);
+            event->setHandled();
+            break;
+        }
+        case Option::createFrameDescriptorSets:
+        {
+            std::cout << "Enter the descriptor set layout names" << std::endl;
+            mode = Mode::createFrameDescriptorSets;
+            event->setHandled();
+            break;
+        }
+        case Option::printReports:
+        {
+            for (const auto& i : reports) 
+            {
+                std::invoke(*i);
+                event->setHandled();
+            }
+            break;
+        }
+    }
+}
+
+void State::DescriptorManager::createFrameDescriptorSets(Event* event)
+{
+    std::stringstream ss{static_cast<CommandLineEvent*>(event)->getInput()};
+    std::vector<std::string> layoutNames;
+    std::string name;
+    while (ss >> name)
+        layoutNames.push_back(name);
+    auto cmd = cfdsPool.request(layoutNames);
+    cmdStack.push(std::move(cmd));
+    descSetReports.emplace_back(layoutNames, rpt::DescriptorSetReport::Type::frameOwned);
+    mode = Mode::null;
+    event->setHandled();
+}
+
 void State::DescriptorManager::handleEvent(Event* event)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
-        CommandLineEvent* ev = static_cast<CommandLineEvent*>(event);
-        auto res = opMap.findOption(ev);
-        if (!res.first) return;
-        Option option = res.second;
-        MemFunc func = funcMap.findOption(option).second;
+        MemFunc func = *funcMap.findOption(mode);
         std::invoke(func, this, event);
     }
 }
@@ -60,10 +102,9 @@ void State::CreateDescriptorSetLayout::enterBindings(Event* event)
     {
         case Stage::descriptorTypeEntry:
         {
-            auto res = descTypeMap.findOption(cmdEvent);
-            if (!res.first)
-                return;
-            pendingBindings.at(bindingCount).setDescriptorType(res.second);
+            auto option = descTypeMap.findOption(cmdEvent);
+            if (!option) return;
+            pendingBindings.at(bindingCount).setDescriptorType(*option);
             curStage++;
             vocab = {};
             event->setHandled();
@@ -85,10 +126,9 @@ void State::CreateDescriptorSetLayout::enterBindings(Event* event)
         }
         case Stage::shaderStageEntry:
         {
-            auto res = shaderStageMap.findOption(cmdEvent);
-            if (!res.first)
-                return;
-            pendingBindings.at(bindingCount).setStageFlags(res.second);
+            auto option = shaderStageMap.findOption(cmdEvent);
+            if (!option) return;
+            pendingBindings.at(bindingCount).setStageFlags(*option);
             bindingCount++;
             mode = Mode::null;
             vocab = opMap.getStrings();
@@ -101,10 +141,9 @@ void State::CreateDescriptorSetLayout::enterBindings(Event* event)
 void State::CreateDescriptorSetLayout::initial(Event* event)
 {
     auto cmdEvent = static_cast<CommandLineEvent*>(event);
-    auto res = opMap.findOption(cmdEvent);
-    if (!res.first)
-        return;
-    switch (res.second)
+    auto option = opMap.findOption(cmdEvent);
+    if (!option) return;
+    switch (*option)
     {
         case Option::enterBindings:
         {
@@ -152,10 +191,9 @@ void State::CreateDescriptorSetLayout::handleEvent(Event* event)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
-        auto res = funcMap.findOption(mode);
-        if (!res.first)
-            return;
-        std::invoke(res.second, this, event);
+        auto option = funcMap.findOption(mode);
+        if (!option) return;
+        std::invoke(*option, this, event);
     }
     if (event->getCategory() == EventCategory::Abort)
     {
@@ -180,9 +218,9 @@ void State::AddAttachment::handleEvent(Event* event)
             case Mode::null:
                 {
                     instream >> input;
-                    auto res = opMap.findOption(input);
-                    if (!res.first) return;
-                    switch (res.second)
+                    auto option = opMap.findOption(input);
+                    if (!option) return;
+                    switch (*option)
                     {
                         case Option::setdimensions:
                             {
@@ -255,9 +293,9 @@ void State::RenderpassManager::handleEvent(Event* event)
             case Mode::null:
                 {
                     instream >> input;
-                    auto res = opMap.findOption(input);
-                    if (!res.first) return;
-                    switch (res.second)
+                    auto option = opMap.findOption(input);
+                    if (!option) return;
+                    switch (*option)
                     {
                         case Option::createSwapRenderpass:
                             {
@@ -308,9 +346,9 @@ void State::PipelineManager::handleEvent(Event* event)
             case Mode::null:
             {
                 instream >> input;
-                auto res = opMap.findOption(input);
-                if (!res.first) return;
-                switch (res.second)
+                auto option = opMap.findOption(input);
+                if (!option) return;
+                switch (*option)
                 {
                     case Option::createGraphicsPipeline:
                     {
@@ -368,9 +406,9 @@ void State::Director::handleEvent(Event* event)
         std::stringstream instream{static_cast<CommandLineEvent*>(event)->getInput()};
         std::string input;
         instream >> input;
-        auto res = opMap.findOption(input);
-        if (!res.first) return;
-        switch (res.second)
+        auto option = opMap.findOption(input);
+        if (!option) return;
+        switch (*option)
         {
             case Option::initRenState:
                 {
@@ -409,196 +447,194 @@ void State::Director::onResumeExt(Application* app)
     vocab = opMap.getStrings();
 }
 
+void State::RendererManager::base(Event* event)
+{
+    std::stringstream instream{static_cast<CommandLineEvent*>(event)->getInput()};
+    std::string input;
+    instream >> input;
+    auto option = opMap.findOption(input);
+    if (!option) return;
+    switch(*option)
+    {
+        case Option::prepRenderFrames:
+            {
+                auto cmd = prfPool.request(&window);
+                cmdStack.push(std::move(cmd));
+                opMap.remove(Option::prepRenderFrames);
+                dependentMap.move(Option::descriptionManager, opMap);
+                vocab = opMap.getStrings();
+                event->setHandled();
+                break;
+            }
+        case Option::all:
+            {
+                auto ow = owPool.request();
+                cmdStack.push(std::move(ow));
+                auto pf = prfPool.request(&window);
+                cmdStack.push(std::move(pf));
+                opMap.remove(Option::all);
+                opMap.remove(Option::openWindow);
+                dependentMap.move(Option::rpassManager, opMap);
+                dependentMap.move(Option::pipelineManager, opMap);
+                dependentMap.move(Option::createRPI, opMap);
+                dependentMap.move(Option::render, opMap);
+                dependentMap.move(Option::recordRenderCmd, opMap);
+                vocab = opMap.getStrings();
+                event->setHandled();
+                break;
+            }
+        case Option::rpassManager:
+            {
+                pushState(&rpassManager);
+                event->setHandled();
+                break;
+            }
+        case Option::pipelineManager:
+            {
+                pushState(&pipelineManager);
+                event->setHandled();
+                break;
+            }
+        case Option::openWindow:
+            {
+                auto cmd = owPool.request();
+                cmdStack.push(std::move(cmd));
+                auto rs = refreshPool.request(this);
+                cmdStack.push(std::move(rs));
+                opMap.remove(Option::openWindow);
+                opMap.remove(Option::all);
+                dependentMap.move(Option::prepRenderFrames, opMap);
+                vocab = opMap.getStrings();
+                event->setHandled();
+                break;
+            }
+        case Option::shaderManager:
+            {
+                pushState(&shaderManager);
+                event->setHandled();
+                break;
+            }
+        case Option::addattachState:
+            {
+                pushState(&addAttachState);
+                event->setHandled();
+                break;
+            }
+        case Option::printReports:
+            {
+                for (const auto& item : reports) 
+                    std::invoke(*item);   
+                event->setHandled();
+                break;
+            }
+        case Option::createRPI:
+            {
+                mode = Mode::createRPI;
+                std::cout << "Enter an attachment name (or swap), a renderpass name, and a pipeline name" << ENDL;
+                std::vector<std::string> words;
+                words.push_back("swap");
+                for (const auto& i : reports) 
+                {
+                    auto type = i->getType();
+                    if (type == ReportType::Renderpass || type == ReportType::Pipeline)
+                        words.push_back(i->getObjectName());
+                }
+                vocab = words;
+                event->setHandled();
+                break;
+            }
+        case Option::rpiReport:
+            {
+                for (const auto& item : rpiReports) 
+                    std::invoke(*item);
+                event->setHandled();
+                break;
+            }
+        case Option::render:
+            {
+                std::cout << "Enter a render command index and 0 or 1 based on whether or not to update ubo" << ENDL;
+                mode = Mode::render;
+                event->setHandled();
+                break;
+            }
+        case Option::recordRenderCmd:
+            {
+                std::cout << "Enter a command index, and an array of render pass instance indices to use." << ENDL;
+                mode = Mode::recordRenderCmd;
+                event->setHandled();
+                break;
+            }
+        case Option::descriptionManager:
+            {
+                pushState(&descriptorManager);
+                event->setHandled();
+                break;
+            }
+    }
+}
+
+void State::RendererManager::createRPI(Event* event)
+{
+    std::stringstream instream{static_cast<CommandLineEvent*>(event)->getInput()};
+    auto find = [this](const std::string& s) mutable
+    {
+        for (const auto& i : vocab) 
+            if (s == i)
+             return true;   
+        return false;
+    };
+    std::string attachName, renderpassName, pipelineName;
+    instream >> attachName >> renderpassName >> pipelineName;
+    if (!find(attachName) || !find(renderpassName) || !find(pipelineName))
+        std::cout << "Bad input" << ENDL;
+    auto cmd = criPool.request(attachName, renderpassName, pipelineName);
+    cmdStack.push(std::move(cmd));
+    auto report = std::make_unique<RenderpassInstanceReport>(attachName, renderpassName, pipelineName, rpiReports.size());
+    const auto& r = rpiReports.emplace_back(std::move(report));
+    reports.push_back(r.get());
+    mode = Mode::null;
+    vocab = opMap.getStrings();
+    event->setHandled();
+}
+
+void State::RendererManager::recordRenderCmd(Event* event)
+{
+    std::stringstream instream{static_cast<CommandLineEvent*>(event)->getInput()};
+    int cmdIndex;
+    uint32_t i;
+    std::vector<uint32_t> rpiIndices;
+    instream >> cmdIndex;
+    while (instream >> i)
+        rpiIndices.push_back(i);
+    auto cmd = rrcPool.request(cmdIndex, rpiIndices);
+    cmdStack.push(std::move(cmd));
+    auto& r = rcReports.emplace_back(std::make_unique<RenderCommandReport>(cmdIndex, rpiIndices));
+    reports.push_back(r.get());
+    mode = Mode::null;
+    vocab = opMap.getStrings();
+    event->setHandled();
+}
+
+void State::RendererManager::render(Event* event)
+{
+    std::stringstream instream{static_cast<CommandLineEvent*>(event)->getInput()};
+    int rendercmdIndex;
+    bool updateUbo;
+    instream >> rendercmdIndex >> updateUbo;
+    auto cmd = renderPool.request(rendercmdIndex, updateUbo);
+    cmdStack.push(std::move(cmd));
+    mode = Mode::null;
+    vocab = opMap.getStrings();
+    event->setHandled();
+}
+
 void State::RendererManager::handleEvent(Event* event)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
-        std::stringstream instream{static_cast<CommandLineEvent*>(event)->getInput()};
-        std::string input; 
-        switch (mode)
-        {
-            case Mode::null:
-                {
-                    instream >> input;
-                    auto res = opMap.findOption(input);
-                    if (!res.first) return;
-                    switch(res.second)
-                    {
-                        case Option::prepRenderFrames:
-                            {
-                                auto cmd = prfPool.request(&window);
-                                cmdStack.push(std::move(cmd));
-                                opMap.remove(Option::prepRenderFrames);
-                                dependentMap.move(Option::descriptionManager, opMap);
-                                vocab = opMap.getStrings();
-                                event->setHandled();
-                                break;
-                            }
-                        case Option::all:
-                            {
-                                auto ow = owPool.request();
-                                cmdStack.push(std::move(ow));
-                                auto pf = prfPool.request(&window);
-                                cmdStack.push(std::move(pf));
-                                opMap.remove(Option::all);
-                                opMap.remove(Option::openWindow);
-                                dependentMap.move(Option::rpassManager, opMap);
-                                dependentMap.move(Option::pipelineManager, opMap);
-                                dependentMap.move(Option::createRPI, opMap);
-                                dependentMap.move(Option::render, opMap);
-                                dependentMap.move(Option::recordRenderCmd, opMap);
-                                vocab = opMap.getStrings();
-                                event->setHandled();
-                                break;
-                            }
-                        case Option::rpassManager:
-                            {
-                                pushState(&rpassManager);
-                                event->setHandled();
-                                break;
-                            }
-                        case Option::pipelineManager:
-                            {
-                                pushState(&pipelineManager);
-                                event->setHandled();
-                                break;
-                            }
-                        case Option::openWindow:
-                            {
-                                auto cmd = owPool.request();
-                                cmdStack.push(std::move(cmd));
-                                auto rs = refreshPool.request(this);
-                                cmdStack.push(std::move(rs));
-                                opMap.remove(Option::openWindow);
-                                opMap.remove(Option::all);
-                                dependentMap.move(Option::prepRenderFrames, opMap);
-                                vocab = opMap.getStrings();
-                                event->setHandled();
-                                break;
-                            }
-                        case Option::shaderManager:
-                            {
-                                pushState(&shaderManager);
-                                event->setHandled();
-                                break;
-                            }
-                        case Option::addattachState:
-                            {
-                                pushState(&addAttachState);
-                                event->setHandled();
-                                break;
-                            }
-                        case Option::printReports:
-                            {
-                                for (const auto& item : reports) 
-                                    std::invoke(*item);   
-                                event->setHandled();
-                                break;
-                            }
-                        case Option::createRPI:
-                            {
-                                mode = Mode::createRPI;
-                                std::cout << "Enter an attachment name (or swap), a renderpass name, and a pipeline name" << ENDL;
-                                std::vector<std::string> words;
-                                words.push_back("swap");
-                                for (const auto& i : reports) 
-                                {
-                                    auto type = i->getType();
-                                    if (type == ReportType::Renderpass || type == ReportType::Pipeline)
-                                        words.push_back(i->getObjectName());
-                                }
-                                vocab = words;
-                                event->setHandled();
-                                break;
-                            }
-                        case Option::rpiReport:
-                            {
-                                for (const auto& item : rpiReports) 
-                                    std::invoke(*item);
-                                event->setHandled();
-                                break;
-                            }
-                        case Option::render:
-                            {
-                                std::cout << "Enter a render command index and 0 or 1 based on whether or not to update ubo" << ENDL;
-                                mode = Mode::render;
-                                event->setHandled();
-                                break;
-                            }
-                        case Option::recordRenderCmd:
-                            {
-                                std::cout << "Enter a command index, and an array of render pass instance indices to use." << ENDL;
-                                mode = Mode::recordRenderCmd;
-                                event->setHandled();
-                                break;
-                            }
-                        case Option::descriptionManager:
-                            {
-                                pushState(&descriptorManager);
-                                event->setHandled();
-                                break;
-                            }
-                    }
-                    break;
-                }
-            case Mode::createRPI:
-                {
-                    auto find = [this](const std::string& s) mutable
-                    {
-                        for (const auto& i : vocab) 
-                            if (s == i)
-                             return true;   
-                        return false;
-                    };
-                    std::string attachName;
-                    std::string renderpassName;
-                    std::string pipelineName;
-                    instream >> attachName >> renderpassName >> pipelineName;
-                    if (!find(attachName) || !find(renderpassName) || !find(pipelineName))
-                    {
-                        std::cout << "Bad input" << ENDL;
-                        break;
-                    }
-                    auto cmd = criPool.request(attachName, renderpassName, pipelineName);
-                    cmdStack.push(std::move(cmd));
-                    auto report = std::make_unique<RenderpassInstanceReport>(attachName, renderpassName, pipelineName, rpiReports.size());
-                    const auto& r = rpiReports.emplace_back(std::move(report));
-                    reports.push_back(r.get());
-                    mode = Mode::null;
-                    vocab = opMap.getStrings();
-                    event->setHandled();
-                    break;
-                }
-            case Mode::render:
-                {
-                    int rendercmdIndex;
-                    bool updateUbo;
-                    instream >> rendercmdIndex >> updateUbo;
-                    auto cmd = renderPool.request(rendercmdIndex, updateUbo);
-                    cmdStack.push(std::move(cmd));
-                    mode = Mode::null;
-                    vocab = opMap.getStrings();
-                    event->setHandled();
-                    break;
-                }
-            case Mode::recordRenderCmd:
-                {
-                    int cmdIndex;
-                    uint32_t i;
-                    std::vector<uint32_t> rpiIndices;
-                    instream >> cmdIndex;
-                    while (instream >> i)
-                        rpiIndices.push_back(i);
-                    auto cmd = rrcPool.request(cmdIndex, rpiIndices);
-                    cmdStack.push(std::move(cmd));
-                    auto& r = rcReports.emplace_back(std::make_unique<RenderCommandReport>(cmdIndex, rpiIndices));
-                    reports.push_back(r.get());
-                    mode = Mode::null;
-                    vocab = opMap.getStrings();
-                    event->setHandled();
-                    break;
-                }
-        }
+        auto option = modeToFunc.findOption(mode);
+        if (!option) return;
+        std::invoke(*option, this, event);
     }
     if (event->getCategory() == EventCategory::Abort)
     {
@@ -649,9 +685,9 @@ void State::ShaderManager::handleEvent(Event* event)
             case Mode::null:
                 {
                     instream >> input;
-                    auto res = opMap.findOption(input);
-                    if (!res.first) return;
-                    switch (res.second)
+                    auto option = opMap.findOption(input);
+                    if (!option) return;
+                    switch (*option)
                     {
                         case Option::loadFragShaders:
                             {
@@ -823,7 +859,7 @@ void Command::PrepareRenderFrames::execute(Application* app)
 
 void Command::CreateDescriptorSetLayout::execute(Application* app)
 {
-    app->renderer.createDescriptorSetLayout("paintLayout", bindings);
+    app->renderer.createDescriptorSetLayout(name, bindings);
 }
 
 void Command::CreateSwapchainRenderpass::execute(Application* app)
@@ -868,6 +904,11 @@ void Command::UpdateVocab::execute(Application* app)
 
 void Command::CreatePipelineLayout::execute(Application* app)
 {
+}
+
+void Command::CreateFrameDescriptorSets::execute(Application* app)
+{
+    app->renderer.createFrameDescriptorSets(layoutnames);
 }
 
 Application::Application(uint16_t w, uint16_t h, const std::string logfile) :

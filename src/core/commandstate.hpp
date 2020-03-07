@@ -26,19 +26,19 @@ class SmallMap
 public:
     using Element = std::pair<S, T>;
     SmallMap(std::initializer_list<Element> avail) : options{avail} {}
-    inline std::pair<bool, T> findOption(CommandLineEvent* event) const
+    inline std::optional<T> findOption(CommandLineEvent* event) const
     {
         std::string input = event->getInput();
         std::stringstream instream{input};
         instream >> input;
         return findOption(input);
     }
-    inline std::pair<bool, T> findOption(const S& s) const 
+    inline std::optional<T> findOption(const S& s) const 
     {
         for (const auto& item : options) 
             if (item.first == s)
-                return {true, item.second};
-        return {false, static_cast<T>(0)};
+                return item.second;
+        return {};
     }
     inline void move(T t, SmallMap<S,T>& other) 
     {
@@ -88,7 +88,8 @@ enum class ReportType : uint8_t
     Pipeline,
     RenderpassInstance,
     RenderCommand,
-    DescriptorSetLayout
+    DescriptorSetLayout,
+    DescriptorSet
 };
 
 class Report
@@ -275,6 +276,33 @@ private:
     }
 };
 
+class DescriptorSetReport : public Report
+{
+public:
+    enum class Type : uint8_t {frameOwned, rendererOwned};
+    inline DescriptorSetReport(
+            const std::vector<std::string> descSetLayoutNames, DescriptorSetReport::Type t) :
+        descSetLayoutNames{descSetLayoutNames}, type{t} {}
+    inline void operator()() const override
+    {
+        std::cout << "================ Descriptor Set Report ==============" << std::endl;
+        auto s = (type == Type::frameOwned) ? "Frame Owned" : "Renderer Owneded";
+        std::cout << "Descriptor Set Type: " << s << std::endl;
+        std::cout << "Descriptor Set Layout Names: ";
+        for (const auto& i : descSetLayoutNames) 
+        {
+            std::cout << i << ", " << std::endl;
+        }
+        std::cout << std::endl;
+    }
+    //not currently useful
+    inline const std::string getObjectName() const override {return "0";} 
+    inline ReportType getType() const override {return ReportType::DescriptorSet;}
+private:
+    const std::vector<std::string> descSetLayoutNames;
+    Type type;
+};
+
 };
 
 template <class T>
@@ -434,6 +462,11 @@ class CreateDescriptorSetLayout : public Command
 {
 public:
     CMD_BASE("createDescriptorSetLayout");
+    inline void set(std::string n, std::vector<vk::DescriptorSetLayoutBinding> b) 
+    {
+        name = n;
+        bindings = b;
+    }
 private:
     std::string name{"default"};
     std::vector<vk::DescriptorSetLayoutBinding> bindings;
@@ -534,6 +567,15 @@ class UpdateVocab : public Command
 public:
     CMD_BASE("updatevocab");
 private:
+};
+
+class CreateFrameDescriptorSets : public Command
+{
+public:
+    CMD_BASE("createFrameDescriptorSets");
+    inline void set(std::vector<std::string> layouts) {layoutnames = layouts;}
+private:
+    std::vector<std::string> layoutnames;
 };
 
 class Render : public Command
@@ -837,21 +879,40 @@ public:
     DescriptorManager(EditStack& es, CommandStack& cs) : State::State{es, cs}, cdsl{es, cs}  {vocab = opMap.getStrings();}
     std::vector<const Report*> getReports() const override
     {
-        return reports;
+        std::vector<const Report*> reps = reports;
+        for (const auto& r : descSetReports) 
+        {
+            reps.push_back(&r);
+        }
+        return reps;
     }
+
+    void base(Event*);
+    void createFrameDescriptorSets(Event*);
 private:
     using MemFunc = void (DescriptorManager::*)(Event*);
-    inline void pushCDSL(Event* event) {pushState(&cdsl);}
+    Command::Pool<Command::CreateFrameDescriptorSets> cfdsPool{1};
     CreateDescriptorSetLayout cdsl;
-    enum class Option {createDescriptorSetLayout = 1};
+    enum class Option {createDescriptorSetLayout, createFrameDescriptorSets, printReports};
+    enum class Mode {null, createFrameDescriptorSets};
     SmallMap<std::string, Option> opMap{
-            {"createdescriptorsetlayout", Option::createDescriptorSetLayout}};
+            {"create_descriptor_set_layout", Option::createDescriptorSetLayout},
+            {"create_frame_descriptor_sets", Option::createFrameDescriptorSets},
+            {"print_reports", Option::printReports},
+    };
     SmallMap<std::string, Option> resMap{};
-    SmallMap<Option, MemFunc> funcMap{
-            {Option::createDescriptorSetLayout, &DescriptorManager::pushCDSL}};
-    static constexpr std::array<Option, 1> dynamicOptions{Option::createDescriptorSetLayout};
+    SmallMap<Mode, MemFunc> funcMap
+    {
+        {Mode::null, &DescriptorManager::base},
+        {Mode::createFrameDescriptorSets, &DescriptorManager::createFrameDescriptorSets}
+    };
+    static constexpr std::array<Option, 2> dynamicOptions{Option::createDescriptorSetLayout, Option::createFrameDescriptorSets};
     inline void removeDynamicOps() override { for (const auto& op : dynamicOptions) opMap.move(op, resMap); vocab = opMap.getStrings();}
     inline void addDynamicOps() override { for (const auto& op : dynamicOptions) resMap.move(op, opMap); vocab = opMap.getStrings();}
+
+    std::vector<DescriptorSetReport> descSetReports;
+
+    Mode mode{Mode::null};
 };
 
 class RendererManager : public State
@@ -868,7 +929,13 @@ public:
         {vocab = opMap.getStrings();}
     STATE_BASE("rendererManager");
     void onPushExt(Application* app) override;
+
+    void base(Event*);
+    void createRPI(Event*);
+    void render(Event*);
+    void recordRenderCmd(Event*);
 private:
+    using MemFunc = void (RendererManager::*)(Event*);
     Command::Pool<Command::PrepareRenderFrames> prfPool{1};
     Command::Pool<Command::OpenWindow> owPool{1};
     Command::Pool<Command::CreateRenderpassInstance> criPool{5};
@@ -882,17 +949,21 @@ private:
 
     enum class Option : uint8_t {render = 1, descriptionManager, recordRenderCmd, rpiReport, printReports, createRPI, shaderManager, openWindow, addattachState, prepRenderFrames, rpassManager, pipelineManager, all};
     enum class Mode : uint8_t {null, createRPI, render, recordRenderCmd};
-    SmallMap<std::string, Option> opMap{
-            {"openWindow", Option::openWindow},
-            {"addAttachState", Option::addattachState},
-            {"shaderManager", Option::shaderManager},
-            {"all", Option::all},
-            {"printReports", Option::printReports},
-            {"rpiReports", Option::rpiReport}
+    SmallMap<std::string, Option> opMap
+    {
+        {"openWindow", Option::openWindow},
+        {"addAttachState", Option::addattachState},
+        {"shaderManager", Option::shaderManager},
+        {"all", Option::all},
+        {"printReports", Option::printReports},
+        {"rpiReports", Option::rpiReport}
     };
+
     SmallMap<std::string, Option> resMap{
     };
-    SmallMap<std::string, Option> dependentMap{
+
+    SmallMap<std::string, Option> dependentMap
+    {
         {"descriptionmanager", Option::descriptionManager},
         {"rpassManager", Option::rpassManager},
         {"pipelineManager", Option::pipelineManager},
@@ -900,6 +971,14 @@ private:
         {"render", Option::render},
         {"recordRenderCmd", Option::recordRenderCmd},
         {"createRenderpassInstance", Option::createRPI},
+    };
+
+    SmallMap<Mode, MemFunc> modeToFunc
+    {
+        {Mode::null, &RendererManager::base},
+        {Mode::createRPI, &RendererManager::createRPI},
+        {Mode::recordRenderCmd, &RendererManager::recordRenderCmd},
+        {Mode::render, &RendererManager::render}
     };
 
     static constexpr std::array<Option, 9> dynamicOptions{Option::descriptionManager, Option::shaderManager, Option::addattachState, Option::rpassManager, Option::pipelineManager, Option::all, Option::createRPI, Option::recordRenderCmd, Option::render};

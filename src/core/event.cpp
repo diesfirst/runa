@@ -158,14 +158,15 @@ void EventHandler::fetchWindowInput()
 		{
             xcb_button_press_event_t* press = 
                 (xcb_button_press_event_t*)event;
-            curEvent = std::make_unique<MousePressEvent>(static_cast<MouseButton>(press->detail));
+            curEvent = std::make_unique<MousePressEvent>(press->event_x, press->event_y, static_cast<MouseButton>(press->detail));
             break;
 		}
         case WindowEventType::MouseRelease:
 		{
             xcb_button_press_event_t* press = 
                 (xcb_button_press_event_t*)event;
-            curEvent = std::make_unique<MouseReleaseEvent>(static_cast<MouseButton>(press->detail));
+            curEvent = std::make_unique<MouseReleaseEvent>(
+                    press->event_x, press->event_y, static_cast<MouseButton>(press->detail));
             break;
 		}
         case WindowEventType::Keypress:
@@ -175,14 +176,16 @@ void EventHandler::fetchWindowInput()
             //will cause this to be the last iteration of the window loop
             if (static_cast<Key>(keyPress->detail) == Key::Esc)
                 keepWindowThread = false;
-            curEvent = std::make_unique<KeyPressEvent>(static_cast<Key>(keyPress->detail));
+            curEvent = std::make_unique<KeyPressEvent>(
+                    keyPress->event_x, keyPress->event_y, static_cast<Key>(keyPress->detail));
             break;
 		}
         case WindowEventType::Keyrelease:
         {
             xcb_button_release_event_t* keyRelease = 
                 (xcb_button_release_event_t*)event;
-            curEvent = std::make_unique<KeyReleaseEvent>(static_cast<Key>(keyRelease->detail));
+            curEvent = std::make_unique<KeyReleaseEvent>(
+                    keyRelease->event_x, keyRelease->event_y, static_cast<Key>(keyRelease->detail));
             break;
         }
         case WindowEventType::EnterWindow:
