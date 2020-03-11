@@ -16,6 +16,10 @@ public:
 
 	void open();
 
+    uint16_t getWidth() {return width;}
+
+    uint16_t getHeight() {return height;}
+
     void close();
 
     bool isOpen() {return opened;}
@@ -34,6 +38,7 @@ private:
 	xcb_screen_t* screen;
 	uint32_t values[2];
 	uint32_t mask = 0;
+    uint16_t width, height;
 	xcb_generic_event_t* event;
 	xcb_atom_t wmProtocols;
 	xcb_atom_t wmDeleteWin;

@@ -749,6 +749,7 @@ Renderer::Renderer(Context& context) :
     createDescriptorPool();
     createDescriptorBuffer(100000000); //arbitrary for now. 100MB
     descriptorBuffer->map();
+    ubos.resize(1);
 }
 
 Renderer::~Renderer()
@@ -859,7 +860,6 @@ void Renderer::initFrameUBOs(size_t size, uint32_t binding)
         device.updateDescriptorSets(bw, nullptr);
         frame.bufferBlock = block;
     }
-    ubos.resize(1);
 }
 
 void Renderer::updateFrameSamplers(const vk::ImageView* view, const vk::Sampler* sampler, uint32_t binding)

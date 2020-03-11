@@ -1,2 +1,15 @@
 call the engine sword.
 sword, forged by vulkan.
+
+Wed Mar 11 16:06:20 EDT 2020
+    Things to do: 
+    Need to implememnt a way of removing things. Removing renderpasses, render commands, pipeline objects. etc.
+    Need to add Pipeline Layouts to the things that create_graphics_pipeline will complete on.
+    Should provide an option to create a graphics pipeline that sets the render region for you.
+    Need to think about how to bring back the xforms to the painter. Perhaps if I don't provide
+    a render command for a mode, like brush resizing, I don't have access to that mode.
+    I need to separate out the rendering from the presentation, I think. Or, the rendering from the strokes.
+    Perhaps the paint does not actually render things, but instead create strokes and stroke points, 
+    which then get renderered on a steady interval?
+    Look into adding atomics for stopping the window and command line threads with a single action.
+    Need a way to filter reports by type when printing them out.

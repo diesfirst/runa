@@ -13,7 +13,23 @@ class AddAttachment;
 
 #define CMD_BASE(name) \
     void execute(Application*) override;\
-    static const char* getName() {return name;}
+    const char* getName() override {return name;};
+
+
+constexpr uint32_t POOL_DEFAULT_SIZE = 3;
+
+struct FragmentInput
+{
+    float time;
+	float mouseX{0};
+	float mouseY{0};	
+    float r{1.};
+    float g{1.};
+    float b{1.};
+    float a{1.};
+    float brushSize{1.};
+    glm::mat4 xform{1.};
+};
 
 //TODO:
 //want to make it so that we can call commands up the state stack
@@ -90,7 +106,8 @@ enum class ReportType : uint8_t
     RenderCommand,
     DescriptorSetLayout,
     DescriptorSet,
-    Attachment
+    Attachment,
+    PipelineLayout
 };
 
 class Report
@@ -123,7 +140,11 @@ public:
         if (index == 0) specfloat0 = val;
         if (index == 1) specfloat1 = val;
     }
-
+    inline void setSpecInt(int index, int val)
+    {
+        if (index == 0) specint0 = val;
+        if (index == 1) specint1 = val;
+    }
 private:
     const std::string name{"unitilialized"};
     const char* type{"uninilialized"};
@@ -182,11 +203,14 @@ public:
     enum class Type : uint8_t {swapchain, offscreen}; 
     inline RenderpassReport(std::string n, Type t) :
         name{n}, type{t} {}
+    inline RenderpassReport(std::string n, Type t, vk::AttachmentLoadOp loadOp) :
+        name{n}, type{t}, loadOp{loadOp} {}
     inline void operator()() const override
     {
         std::cout << "================== Renderpass Report ==================" << std::endl;
         std::cout << "Name:                  " << name << std::endl;
         std::cout << "Type:                  " << typeToString() << std::endl;
+        std::cout << "Attachment Load Op:    " << vk::to_string(loadOp) << std::endl;
     }
     inline const std::string getObjectName() const override {return name;}
     inline ReportType getType() const override {return ReportType::Renderpass;}
@@ -210,6 +234,7 @@ private:
         }
         return "no type";
     }
+    vk::AttachmentLoadOp loadOp;
 };
 
 class RenderpassInstanceReport : public Report
@@ -350,50 +375,28 @@ private:
     vk::ImageUsageFlags usageFlags;
 };
 
-};
-
-template <class T>
-class Stack
+class PipelineLayoutReport : public Report
 {
 public:
-    friend class Application;
-    inline void push(T&& item) {items.push_back(std::forward<T>(item));}
-    inline void pop() {items.pop_back();}
-    inline T top() const {return items.back();}
-    inline bool empty() const {return items.empty();}
-    inline void print() const {for (const auto& item : items) std::cout << item->getName() << std::endl;}
-    inline size_t size() const {return items.size();}
-protected:
-    std::vector<T> items;
+    PipelineLayoutReport(std::string name, std::vector<std::string> dlnames) : name{name}, descriptorSetLayouts{dlnames} {}
+    void operator()() const 
+    {
+        std::cout << "============== Pipeline Layout Report ============== " << std::endl;
+        std::cout << "Name:     " << name << std::endl;
+        std::cout << "Descriptor set layouts: ";
+        for (const auto& i : descriptorSetLayouts) 
+        {
+            std::cout << i << "   ";
+        }
+        std::cout << std::endl;
+    }
+    const std::string getObjectName() const {return name;}
+    ReportType getType() const {return ReportType::PipelineLayout;}
+private:
+    std::string name;
+    std::vector<std::string> descriptorSetLayouts;
 };
 
-template <class T>
-class ForwardStack : public Stack<T>
-{
-public:
-    inline auto begin() {return this->items.begin();}
-    inline auto end() {return this->items.end();}
-};
-
-template <class T>
-class ReverseStack : public Stack<T>
-{
-public:
-    inline auto begin() {return this->items.rbegin();}
-    inline auto end() {return this->items.rend();}
-};
-
-struct FragmentInput
-{
-    float time;
-	float mouseX{0};
-	float mouseY{0};	
-    float r{1.};
-    float g{1.};
-    float b{1.};
-    float a{1.};
-    float brushSize{1.};
-    glm::mat4 xform{1.};
 };
 
 namespace State
@@ -409,11 +412,11 @@ class Command
 public:
     virtual ~Command() = default;
     virtual void execute(Application*) = 0;
-    template <typename... Args> inline void set(Args... args) {}
-    static const char* getName() {return "commandBase";}
+    virtual const char* getName() {return "commandBase";}
     inline bool isAvailable() const {return !inUse;}
-    template <typename... Args> inline void set_(Args... args) {inUse = true; set(args...);}
+    template <typename... Args> void set(Args... args) {}
     void reset() {inUse = false;}
+    void activate() {inUse = true;}
 protected:
     Command() = default;
     bool inUse{false};
@@ -423,7 +426,7 @@ class RefreshState : public Command
 {
 public:
     CMD_BASE("refreshState");
-    inline void set(State::State* state) {Command::set(); this->state = state;}
+    inline void set(State::State* state) {this->state = state;}
 private:
     State::State* state{nullptr};
 };
@@ -432,7 +435,7 @@ class LoadFragShader: public Command
 {
 public:
     CMD_BASE("loadFragShader");
-    inline void set(std::string name) {Command::set(); shaderName = name;}
+    inline void set(std::string name) {shaderName = name;}
 private:
     std::string shaderName;
 };
@@ -441,7 +444,7 @@ class LoadVertShader: public Command
 {
 public:
     CMD_BASE("loadVertShader");
-    inline void set(std::string name) {Command::set(); shaderName = name;}
+    inline void set(std::string name) {shaderName = name;}
 private:
     std::string shaderName;
 };
@@ -451,7 +454,7 @@ class SetSpecFloat: public Command
 public:
     CMD_BASE("setSpecFloat");
     inline void set(std::string name, std::string t, float first, float second) {
-        Command::set(); shaderName = name; type = t; x = first; y = second;}
+        shaderName = name; type = t; x = first; y = second;}
 private:
     std::string shaderName;
     std::string type;
@@ -464,7 +467,7 @@ class SetSpecInt: public Command
 public:
     CMD_BASE("setSpecInt");
     inline void set(std::string name, std::string t, int first, int second) {
-        Command::set(); shaderName = name; type = t; x = first; y = second;}
+        shaderName = name; type = t; x = first; y = second;}
 private:
     std::string shaderName;
     std::string type;
@@ -479,7 +482,6 @@ public:
     inline void set(std::string name, int x, int y, vk::ImageUsageFlags usage)
     {
         assert(x > 0 && y > 0 && "Bad attachment size");
-        Command::set();
         attachmentName = name;
         this->usage = usage;
         dimensions.setWidth(x);
@@ -537,7 +539,7 @@ class PrepareRenderFrames : public Command
 {
 public:
     CMD_BASE("prepareRenderFrames");
-    inline void set(XWindow* window) {Command::set(); this->window = window;}
+    inline void set(XWindow* window) {this->window = window;}
 private:
     XWindow* window{nullptr};
 };
@@ -577,9 +579,19 @@ class CreateSwapchainRenderpass : public Command
 {
 public:
     CMD_BASE("create_swapchain_render_pass");
-    inline void set(std::string name) {Command::set(); rpassName = name;}
+    inline void set(std::string name) {rpassName = name;}
 private:
     std::string rpassName;
+};
+
+class CreateOffscreenRenderpass : public Command
+{
+public:
+    CMD_BASE("create_offscreen_render_pass");
+    inline void set(std::string name, vk::AttachmentLoadOp op) {rpassName = name; loadOp = op;}
+private:
+    std::string rpassName;
+    vk::AttachmentLoadOp loadOp;
 };
 
 class CreateRenderpassInstance : public Command
@@ -631,6 +643,24 @@ private:
     std::vector<std::string> layoutnames;
 };
 
+class InitFrameUbos : public Command
+{
+public:
+    CMD_BASE("initFrameUbos");
+    void set(uint32_t b) {binding = b;}
+private:
+    uint32_t binding;
+};
+
+class UpdateFrameSamplers : public Command
+{
+public:
+    CMD_BASE("updateFrameSamplers");
+    void set(uint32_t b) {binding = b;}
+private:
+    uint32_t binding;
+};
+
 class Render : public Command
 {
 public:
@@ -652,13 +682,15 @@ public:
     template <typename P> using Pointer = std::unique_ptr<P, std::function<void(P*)>>;
 
     Pool(size_t size) : size{size}, pool(size) {}
+    Pool() : size{POOL_DEFAULT_SIZE}, pool(size) {}
 
     template <typename... Args> Pointer<Command> request(Args... args)
     {
         for (int i = 0; i < size; i++) 
             if (pool[i].isAvailable())
             {
-                pool[i].set_(args...);
+                pool[i].set(args...);
+                pool[i].activate();
                 Pointer<Command> ptr{&pool[i], [](Command* t)
                     {
                         t->reset();
@@ -689,6 +721,8 @@ private:
 };
 
 };
+
+using CmdPtr = std::unique_ptr<Command::Command, std::function<void(Command::Command*)>>;
 
 typedef ForwardStack<std::unique_ptr<Command::Command, std::function<void(Command::Command*)>>> CommandStack;
 
@@ -738,6 +772,9 @@ private:
 
 using namespace rpt;
 
+//TODO: we should create a generic function for parsing the commandline input
+//      into arguments that will do type checking for us based on the 
+//      argument type
 class State
 {
 public:
@@ -754,6 +791,7 @@ protected:
     void pushState(State* state);
     void popState(EditStack* edits);
     void syncReports(State* child);
+    void pushCmd(CmdPtr ptr);
     virtual void removeDynamicOps() {}
     virtual void addDynamicOps() { std::cout << "Called Base dynOps" << std::endl;}
     virtual void onResumeExt(Application*) {}
@@ -806,8 +844,17 @@ class AddAttachment: public State
 public:
     STATE_BASE("addAttachment");
     AddAttachment(EditStack& es, CommandStack& cs) : State::State{es, cs} {vocab = opMap.getStrings();};
+    std::vector<const Report*> getReports() const override
+    {
+        std::vector<const Report*> reports;
+        for (const auto& r : attachmentReports) 
+        {
+            reports.push_back(&r);   
+        }
+        return reports;
+    }
 private:
-    Command::Pool<Command::AddAttachment> addAttPool{20};
+    Command::Pool<Command::AddAttachment> addAttPool{10};
     int width, height;
     enum class Option : uint8_t {setdimensions = 1, fulldescription, addsamplesources};
     enum class Mode : uint8_t {null, setdimensions, fulldescription, addsamplesources};
@@ -825,8 +872,101 @@ class Paint : public State
 {
 public:
     STATE_BASE("paint")
-    Paint(EditStack& es, CommandStack& cs) : State::State{es, cs} {}
+    Paint(EditStack& es, CommandStack& cs, uint32_t w, uint32_t h) : 
+        State::State{es, cs}, width{w}, cwidth{w}, height{h}, cheight{h} 
+    {
+        cMapX = float(width)/float(cwidth);
+        cMapY = float(height)/float(cheight);
+        fragInput.xform = glm::scale(glm::mat4(1.), glm::vec3(cMapX, cMapY, 1.0));
+        fragInput.xform = toCanvasSpace;
+        toCanvasSpace = glm::scale(glm::mat4(1.), glm::vec3(cMapX, cMapY, 1.0)); 
+        pivotMatrix = glm::translate(glm::mat4(1.), glm::vec3{-0.5 * cMapX, -0.5 * cMapY, 0.0});
+
+        vocab = opMap.getStrings();
+    }
+    void onEnterExt(Application* app) override;
+
+    using ReturnType = void;
+
+    ReturnType initial(Event*);
+    ReturnType setup(Event*);
+    ReturnType paint(Event*);
+    ReturnType paint_hm(Event*);
+
 private:
+    using MemFunc = ReturnType (Paint::*)(Event*);
+    Command::Pool<Command::Render> renderPool{300};
+    const uint32_t width, height; //swapchain
+    const uint32_t cwidth, cheight; //canvas;
+    float cMapX;
+    float cMapY;
+    FragmentInput fragInput;
+
+    uint32_t paintCommand = 0;
+    uint32_t swapOnlyCmd = 1;
+    uint32_t paletteCmd = 2;
+    uint32_t brushSizeCmd = 3;
+
+    glm::mat4 toCanvasSpace;
+    glm::mat4 transMatrix{1.};
+    glm::mat4 pivotMatrix;
+    glm::mat4 scaleRotMatrix{1.};
+
+    float angleScale{3};
+    glm::mat4 transCache{1.};
+    glm::mat4 scaleRotCache{1.};
+    glm::mat4 scaleCache{1.};
+    bool rotateDown{false};
+    float scale{1};
+    float mouseXCache{0};
+    float mouseYCache{0};
+    float angle{0};
+    float angleInitCache{0};
+    float brushSizeCache{1.};
+    glm::vec4 mPos{0};
+    glm::vec4 transMouseCache{0};
+
+    enum class PressAction : uint8_t 
+    {
+        Rotate = static_cast<uint8_t>(Key::Alt),
+        Color = static_cast<uint8_t>(Key::C),
+        BrushSize = static_cast<uint8_t>(Key::B),
+        BrushInteractive = static_cast<uint8_t>(Key::Shift_L),
+        Exit = static_cast<uint8_t>(Key::Esc),
+        Save = static_cast<uint8_t>(Key::S),
+        Alpha = static_cast<uint8_t>(Key::A),
+        Palette = static_cast<uint8_t>(Key::P)
+    };
+
+    enum class InputState : uint8_t
+    {
+        Paint,
+        Rotate,
+        Scale, 
+        Translate,
+        Idle,
+        BrushResize
+    };
+
+    enum class ReleaseAction : uint8_t 
+    {
+        Rotate = static_cast<uint8_t>(PressAction::Rotate),
+        BrushSize = static_cast<uint8_t>(PressAction::BrushInteractive)
+    };
+
+    InputState state{InputState::Idle};
+
+    enum class Option : uint8_t {setup, paint};
+    inline static SmallMap< std::string, Option> opMap
+    {
+        {"setup", Option::setup},
+        {"paint", Option::paint},
+    };
+
+    enum class Mode : uint8_t {initial, setup, paint};
+    static constexpr std::array<MemFunc, 3> functions{&Paint::initial, &Paint::setup, &Paint::paint};
+
+    Mode mode{Mode::initial};
 };
 
 class RenderpassManager: public State
@@ -838,18 +978,37 @@ public:
     {
         std::vector<const Report*> reports;
         for (const auto& item : renderpassReports) 
-            reports.push_back(item.get());
+            reports.push_back(&item);
         return reports;
     }
 
+    enum class Mode : uint8_t {null, createSwapRenderpass, createOffscreenRenderpass};
+
+    using ReturnType = std::optional<Mode>;
+
+    ReturnType initial(Event*);
+    ReturnType createSwapRenderpass(Event*);
+    ReturnType createOffscreenRenderpass(Event*);
+
 private:    
-    Command::Pool<Command::CreateSwapchainRenderpass> csrPool{1};
-    enum class Option : uint8_t {createSwapRenderpass = 1, report};
-    enum class Mode : uint8_t {null, createSwapRenderpass};
-    SmallMap<std::string, Option> opMap{
+    Command::Pool<Command::CreateSwapchainRenderpass> csrPool;
+    Command::Pool<Command::CreateOffscreenRenderpass> corPool;
+    enum class Option : uint8_t {createSwapRenderpass, createOffscreenRenderpass, report};
+    SmallMap<std::string, Option> opMap
+    {
+        {"create_offscreen_renderpass", Option::createOffscreenRenderpass},
         {"create_swap_renderpass", Option::createSwapRenderpass},
-        {"report", Option::report}};
-    std::vector<std::unique_ptr<RenderpassReport>> renderpassReports;
+        {"report", Option::report}
+    };
+
+    using MemFunc = ReturnType (RenderpassManager::*)(Event*);
+    SmallMap<Mode, MemFunc> modeToFunc
+    {
+        {Mode::null, &RenderpassManager::initial},
+        {Mode::createSwapRenderpass, &RenderpassManager::createSwapRenderpass},
+        {Mode::createOffscreenRenderpass, &RenderpassManager::createOffscreenRenderpass}
+    };
+    std::vector<RenderpassReport> renderpassReports;
     Mode mode{Mode::null};
 };
 
@@ -864,6 +1023,10 @@ public:
         std::vector<const Report*> reports;
         for (const auto& item : gpReports) 
             reports.push_back(item.second.get());
+        for (const auto& i : pipelineLayoutReports) 
+        {
+            reports.push_back(&i);   
+        }
         return reports;
     }
     void createPipelineLayout(Event*);
@@ -889,6 +1052,7 @@ private:
 
     Mode mode{Mode::null};
     std::map<std::string, std::unique_ptr<GraphicsPipelineReport>> gpReports;
+    std::vector<PipelineLayoutReport> pipelineLayoutReports;
 
     std::vector<std::string> cgpVocab;
 };
@@ -957,22 +1121,30 @@ public:
 
     void base(Event*);
     void createFrameDescriptorSets(Event*);
+    void initFrameUbos(Event*);
+    void updateFrameSamplers(Event*);
 private:
     using MemFunc = void (DescriptorManager::*)(Event*);
     Command::Pool<Command::CreateFrameDescriptorSets> cfdsPool{1};
+    Command::Pool<Command::InitFrameUbos> ifuPool{1};
+    Command::Pool<Command::UpdateFrameSamplers> ufsPool{1};
     CreateDescriptorSetLayout cdsl;
-    enum class Option {createDescriptorSetLayout, createFrameDescriptorSets, printReports};
-    enum class Mode {null, createFrameDescriptorSets};
+    enum class Option {initFrameUbos, updateFrameSamplers, createDescriptorSetLayout, createFrameDescriptorSets, printReports};
+    enum class Mode {null, createFrameDescriptorSets, initFrameUbos, updateFrameSamplers};
     SmallMap<std::string, Option> opMap{
             {"create_descriptor_set_layout", Option::createDescriptorSetLayout},
             {"create_frame_descriptor_sets", Option::createFrameDescriptorSets},
             {"print_reports", Option::printReports},
+            {"initframeubos", Option::initFrameUbos},
+            {"updateframesamplers", Option::updateFrameSamplers},
     };
     SmallMap<std::string, Option> resMap{};
     SmallMap<Mode, MemFunc> funcMap
     {
         {Mode::null, &DescriptorManager::base},
-        {Mode::createFrameDescriptorSets, &DescriptorManager::createFrameDescriptorSets}
+        {Mode::createFrameDescriptorSets, &DescriptorManager::createFrameDescriptorSets},
+        {Mode::updateFrameSamplers, &DescriptorManager::updateFrameSamplers},
+        {Mode::initFrameUbos, &DescriptorManager::initFrameUbos}
     };
     static constexpr std::array<Option, 2> dynamicOptions{Option::createDescriptorSetLayout, Option::createFrameDescriptorSets};
     inline void removeDynamicOps() override { for (const auto& op : dynamicOptions) opMap.move(op, resMap); vocab = opMap.getStrings();}
@@ -1068,7 +1240,7 @@ public:
         initRenState{window, es, cs}, 
         stateStack{ss},
         State::State{es, cs},
-        paint{es, cs}
+        paint{es, cs, window.getWidth(), window.getHeight()}
     {vocab = opMap.getStrings();}
     void onPushExt(Application*) override;
     void onResumeExt(Application*) override;
@@ -1118,7 +1290,7 @@ private:
 class Application
 {
 public:
-    Application(uint16_t w, uint16_t h, const std::string logfile);
+    Application(uint16_t w, uint16_t h, const std::string logfile, int eventPops = 0);
     void setVocabulary(State::Vocab vocab);
     void run();
     void popState();
@@ -1128,7 +1300,7 @@ public:
     void createDefaultRenderPasses();
     void initUBO();
 
-    void readEvents(std::ifstream&);
+    void readEvents(std::ifstream&, int eventPops);
     void recordEvent(Event* event, std::ofstream& os);
 
     Context context;
@@ -1137,6 +1309,11 @@ public:
     EventHandler ev;
     vk::Extent2D offscreenDim;
     vk::Extent2D swapDim;;
+    std::ofstream os;
+    std::ifstream is;
+   
+    FragmentInput fragInput;
+    std::vector<const mm::Image*> sampledImages;
 
 private:
     std::string readlog;
@@ -1147,7 +1324,6 @@ private:
     StateStack stateStack;
     EditStack stateEdits;
     CommandStack cmdStack;
-    FragmentInput fragInput;
 
     State::Director dirState;
 };

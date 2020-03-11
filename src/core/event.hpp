@@ -9,6 +9,38 @@
 #include <sstream>
 #include <optional>
 
+template <class T>
+class Stack
+{
+public:
+    friend class Application;
+    inline void push(T&& item) {items.push_back(std::forward<T>(item));}
+    inline void pop() {items.pop_back();}
+    inline T top() const {return items.back();}
+    inline bool empty() const {return items.empty();}
+    inline void print() const {for (const auto& item : items) std::cout << item->getName() << std::endl;}
+    inline size_t size() const {return items.size();}
+    inline void emplace_back(T&& t) { items.emplace_back(std::move(t));}
+protected:
+    std::vector<T> items;
+};
+
+template <class T>
+class ForwardStack : public Stack<T>
+{
+public:
+    inline auto begin() {return this->items.begin();}
+    inline auto end() {return this->items.end();}
+};
+
+template <class T>
+class ReverseStack : public Stack<T>
+{
+public:
+    inline auto begin() {return this->items.rbegin();}
+    inline auto end() {return this->items.rend();}
+};
+
 enum class MouseButton : uint8_t
 {
     Left = 1,
@@ -210,7 +242,7 @@ public:
     inline std::string getName() const override {return "MouseMotionEvent";};
 };
 
-typedef std::queue<std::unique_ptr<Event>> EventQueue;
+using EventQueue = ForwardStack<std::unique_ptr<Event>>;
 
 enum class InputMode : uint8_t
 {

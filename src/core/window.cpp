@@ -2,7 +2,8 @@
 
 XWindow::XWindow(uint16_t width, uint16_t height) :
 	connection{xcb_connect(NULL,NULL)},
-    window{xcb_generate_id(connection)}
+    window{xcb_generate_id(connection)},
+    width{width}, height{height}
 {
 	screen = xcb_setup_roots_iterator(
 			xcb_get_setup(connection)).data;

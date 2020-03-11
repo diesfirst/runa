@@ -10,6 +10,7 @@
 
 typedef void (EventHandler::*pEventFunc)(xcb_generic_event_t* event);
 
+constexpr uint32_t RL_DELAY = 100;
 float normCoords(int16_t windowCoord, int16_t extent)
 {
 	float x = (float)windowCoord / extent; // 0<x<1
@@ -118,7 +119,7 @@ void EventHandler::fetchCommandLineInput()
     if (input.empty())
     {
         auto event = std::make_unique<Nothing>();
-        eventQueue.emplace(std::move(event));
+        eventQueue.emplace_back(std::move(event));
         std::cout << "Nothing" << std::endl;
         return;
     }
@@ -131,14 +132,17 @@ void EventHandler::fetchCommandLineInput()
         if (catcher == "q")
         {
             auto event = std::make_unique<Abort>();
-            eventQueue.emplace(std::move(event));
+            eventQueue.emplace_back(std::move(event));
             std::cout << "Aborting operation" << std::endl;
+            std::this_thread::sleep_for(std::chrono::milliseconds(RL_DELAY));
             return;
         }
     }
 
     auto event = std::make_unique<CommandLineEvent>(input);
-    eventQueue.emplace(std::move(event));
+    eventQueue.emplace_back(std::move(event));
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(RL_DELAY));
 }
 
 void EventHandler::fetchWindowInput()
@@ -200,7 +204,7 @@ void EventHandler::fetchWindowInput()
         }
 	}
 	free(event);
-    eventQueue.emplace(std::move(curEvent));
+    eventQueue.emplace_back(std::move(curEvent));
 }
 
 void EventHandler::runCommandLineLoop()
@@ -220,7 +224,6 @@ void EventHandler::runWindowInputLoop()
     }
     std::cout << "Window thread exitted." << std::endl;
 }
-
 
 void EventHandler::pollEvents()
 {

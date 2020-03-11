@@ -16,20 +16,33 @@
 
 constexpr const char* SHADER_DIR = "/home/michaelb/dev/sword/build/shaders/";
 
-void State::State::pushState(State* state) {stateEdits.pushState(state); activeChild = state;} 
-void State::State::onResume(Application* app) {addDynamicOps(); syncReports(activeChild); onResumeExt(app); activeChild = nullptr;}
-void State::State::onPush(Application* app) {removeDynamicOps(); onPushExt(app);}
-void State::State::onExit(Application* app) {onExitExt(app); app->ev.popVocab();}
-void State::State::onEnter(Application* app) {onEnterExt(app); app->ev.addVocab(vocab.getValues());}
-void State::State::refresh(Application* app) {app->ev.updateVocab();}
-void State::State::syncReports(State* t)
+namespace State
+{
+
+void State::pushState(State* state) {stateEdits.pushState(state); activeChild = state;} 
+void State::pushCmd(CmdPtr cmd) {cmdStack.push(std::move(cmd));}
+void State::onResume(Application* app) {addDynamicOps(); syncReports(activeChild); onResumeExt(app); activeChild = nullptr;}
+void State::onPush(Application* app) {removeDynamicOps(); onPushExt(app);}
+void State::onExit(Application* app) {onExitExt(app); app->ev.popVocab();}
+void State::onEnter(Application* app) 
+{
+    onEnterExt(app); app->ev.addVocab(vocab.getValues());
+    std::cout << "Commandline options:   "; 
+    for (const auto& i : vocab) 
+    {
+        std::cout << i << "   ";
+    }
+    std::cout << std::endl;
+}
+void State::refresh(Application* app) {app->ev.updateVocab();}
+void State::syncReports(State* t)
 {
     auto newReports = t->getReports();
     for (const auto& nr : newReports) 
     {
         bool alreadyIn{false};
         for (auto& r : reports)
-            if (r->getObjectName() == nr->getObjectName()) 
+            if (r->getObjectName() == nr->getObjectName() && r->getType() == nr->getType()) 
             {
                 alreadyIn = true;
                 r = nr;
@@ -40,7 +53,7 @@ void State::State::syncReports(State* t)
     }
 }
 
-void State::DescriptorManager::base(Event* event)
+void DescriptorManager::base(Event* event)
 {
     auto input = static_cast<CommandLineEvent*>(event)->getFirstWord();
     auto option = opMap.findOption(input);
@@ -69,10 +82,24 @@ void State::DescriptorManager::base(Event* event)
             }
             break;
         }
+        case Option::initFrameUbos:
+        {
+            std::cout << "Enter a binding number" << std::endl;
+            mode = Mode::initFrameUbos;
+            event->setHandled();
+            break;
+        }
+        case Option::updateFrameSamplers:
+        {
+            std::cout << "Enter a binding number" << std::endl;           
+            mode = Mode::updateFrameSamplers;
+            event->setHandled();
+            break;
+        }
     }
 }
 
-void State::DescriptorManager::createFrameDescriptorSets(Event* event)
+void DescriptorManager::createFrameDescriptorSets(Event* event)
 {
     std::stringstream ss{static_cast<CommandLineEvent*>(event)->getInput()};
     std::vector<std::string> layoutNames;
@@ -86,7 +113,29 @@ void State::DescriptorManager::createFrameDescriptorSets(Event* event)
     event->setHandled();
 }
 
-void State::DescriptorManager::handleEvent(Event* event)
+void DescriptorManager::initFrameUbos(Event* event)
+{
+    auto ss = static_cast<CommandLineEvent*>(event)->getStream();
+    int binding; 
+    ss >> binding;
+    auto cmd = ifuPool.request(binding);
+    pushCmd(std::move(cmd));
+    mode = Mode::null;
+    event->setHandled();
+}
+
+void DescriptorManager::updateFrameSamplers(Event* event)
+{
+    auto ss = static_cast<CommandLineEvent*>(event)->getStream();
+    int binding; 
+    ss >> binding;
+    auto cmd = ufsPool.request(binding);
+    pushCmd(std::move(cmd));
+    mode = Mode::null;
+    event->setHandled();
+}
+
+void DescriptorManager::handleEvent(Event* event)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
@@ -95,7 +144,7 @@ void State::DescriptorManager::handleEvent(Event* event)
     }
 }
 
-void State::CreateDescriptorSetLayout::enterBindings(Event* event)
+void CreateDescriptorSetLayout::enterBindings(Event* event)
 {
     auto cmdEvent = static_cast<CommandLineEvent*>(event);
     switch(static_cast<Stage>(curStage))
@@ -138,7 +187,7 @@ void State::CreateDescriptorSetLayout::enterBindings(Event* event)
     }
 }
 
-void State::CreateDescriptorSetLayout::initial(Event* event)
+void CreateDescriptorSetLayout::initial(Event* event)
 {
     auto cmdEvent = static_cast<CommandLineEvent*>(event);
     auto option = opMap.findOption(cmdEvent);
@@ -173,7 +222,7 @@ void State::CreateDescriptorSetLayout::initial(Event* event)
     }
 }
 
-void State::CreateDescriptorSetLayout::createLayout(Event* event)
+void CreateDescriptorSetLayout::createLayout(Event* event)
 {
     auto cmdEvent = static_cast<CommandLineEvent*>(event);
     std::stringstream ss{cmdEvent->getInput()};
@@ -187,7 +236,7 @@ void State::CreateDescriptorSetLayout::createLayout(Event* event)
     event->setHandled();
 }
 
-void State::CreateDescriptorSetLayout::handleEvent(Event* event)
+void CreateDescriptorSetLayout::handleEvent(Event* event)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
@@ -207,7 +256,7 @@ void State::CreateDescriptorSetLayout::handleEvent(Event* event)
     }
 }
 
-void State::AddAttachment::handleEvent(Event* event)
+void AddAttachment::handleEvent(Event* event)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
@@ -257,7 +306,9 @@ void State::AddAttachment::handleEvent(Event* event)
                 {
                     while (instream >> input)
                     {
-                        auto cmd = addAttPool.request(input, width, height, true, false);
+                        vk::ImageUsageFlags usage = vk::ImageUsageFlagBits::eColorAttachment | 
+                            vk::ImageUsageFlagBits::eSampled;
+                        auto cmd = addAttPool.request(input, width, height, usage);
                         cmdStack.push(std::move(cmd));
                     }
                     mode = Mode::null;
@@ -288,47 +339,89 @@ void State::AddAttachment::handleEvent(Event* event)
     }
 }
 
-void State::RenderpassManager::handleEvent(Event* event)
+RenderpassManager::ReturnType RenderpassManager::initial(Event* event)
+{
+    auto input = static_cast<CommandLineEvent*>(event)->getFirstWord();
+    auto option = opMap.findOption(input);
+    if (option) 
+        switch (*option)
+        {
+            case Option::createSwapRenderpass:
+                {
+                    std::cout << "Enter a name for the swapchain render pass" << std::endl;
+                    return Mode::createSwapRenderpass;
+                }
+            case Option::createOffscreenRenderpass:
+                {
+                    std::cout << "Enter a name for the offscreen render pass and load or clear to define the attachment load op" << std::endl;   
+                    return Mode::createOffscreenRenderpass;
+                }
+            case Option::report:
+                {
+                    for (const auto& report : renderpassReports) 
+                        std::invoke(report);
+                    return Mode::null;
+                }
+        }
+    return {};
+}
+
+RenderpassManager::ReturnType RenderpassManager::createSwapRenderpass(Event* event)
+{
+    auto instream = static_cast<CommandLineEvent*>(event)->getStream();
+    std::string name;
+    instream >> name;
+    auto cmd = csrPool.request(name);
+    if (cmd)
+    {
+        pushCmd(std::move(cmd));
+        renderpassReports.emplace_back(name, rpt::RenderpassReport::Type::swapchain);
+        return mode = Mode::null;
+    }
+    return {};
+}
+
+RenderpassManager::ReturnType RenderpassManager::createOffscreenRenderpass(Event* event)
+{
+    auto instream = static_cast<CommandLineEvent*>(event)->getStream();
+    std::string name;
+    std::string opString;
+    vk::AttachmentLoadOp loadOp;
+    instream >> name;
+    instream >> opString;
+    if (opString == "load")
+        loadOp = vk::AttachmentLoadOp::eLoad;
+    else if (opString == "clear")
+        loadOp = vk::AttachmentLoadOp::eClear;
+    else
+    {
+        std::cout << "Bad load op" << std::endl;
+        return {};
+    }
+    auto cmd = corPool.request(name, loadOp);
+    if (cmd)
+    {
+        pushCmd(std::move(cmd));
+        renderpassReports.emplace_back(
+                name, rpt::RenderpassReport::Type::offscreen, loadOp);
+        return mode = Mode::null;
+    }
+    return {};
+}
+
+void RenderpassManager::handleEvent(Event* event)
 {    
     if (event->getCategory() == EventCategory::CommandLine)
     {
-        auto input = static_cast<CommandLineEvent*>(event)->getInput();
-        std::stringstream instream{input};
-        switch (mode)
+        auto option = modeToFunc.findOption(mode);
+        if (!option) return;
+        auto res = std::invoke(*option, this, event);
+        if (res)
         {
-            case Mode::null:
-                {
-                    instream >> input;
-                    auto option = opMap.findOption(input);
-                    if (!option) return;
-                    switch (*option)
-                    {
-                        case Option::createSwapRenderpass:
-                            {
-                                std::cout << "Enter a name for the swapchain render pass" << ENDL;
-                                mode = Mode::createSwapRenderpass;
-                                break;
-                            }
-                        case Option::report:
-                            {
-                                for (const auto& report : renderpassReports) 
-                                    std::invoke(*report);
-                                break;
-                            }
-                    }
-                    break;
-                }
-            case Mode::createSwapRenderpass:
-                {
-                    instream >> input;
-                    auto cmd = csrPool.request(input);
-                    cmdStack.push(std::move(cmd));
-                    renderpassReports.emplace_back(std::make_unique<RenderpassReport>(input, rpt::RenderpassReport::Type::swapchain));
-                    mode = Mode::null;
-                    break;
-                }
+            mode = *res;
+            event->setHandled();
+            std::cout << "Success" << std::endl;
         }
-        event->setHandled();
     }
     if (event->getCategory() == EventCategory::Abort && mode != Mode::null)
     {
@@ -336,12 +429,7 @@ void State::RenderpassManager::handleEvent(Event* event)
     }
 }
 
-void State::Paint::handleEvent(Event* event)
-{
-    std::cout << "oooh" << ENDL;
-}
-
-void State::PipelineManager::base(Event* event)
+void PipelineManager::base(Event* event)
 {
     auto input = static_cast<CommandLineEvent*>(event)->getFirstWord();
     auto option = opMap.findOption(input);
@@ -374,7 +462,7 @@ void State::PipelineManager::base(Event* event)
     }
 }
 
-void State::PipelineManager::createPipelineLayout(Event* event)
+void PipelineManager::createPipelineLayout(Event* event)
 {
     auto instream = static_cast<CommandLineEvent*>(event)->getStream();
     std::string name;
@@ -385,11 +473,12 @@ void State::PipelineManager::createPipelineLayout(Event* event)
         layoutnames.push_back(layout);
     auto cmd = cpplPool.request(name, layoutnames);
     cmdStack.push(std::move(cmd));
+    pipelineLayoutReports.emplace_back(name, layoutnames);
     event->setHandled();
     mode = Mode::null;
 }
 
-void State::PipelineManager::createGraphicsPipeline(Event* event)
+void PipelineManager::createGraphicsPipeline(Event* event)
 {
     auto instream = static_cast<CommandLineEvent*>(event)->getStream();
     std::string name{"default"};
@@ -415,7 +504,7 @@ void State::PipelineManager::createGraphicsPipeline(Event* event)
     event->setHandled();
 }
 
-void State::PipelineManager::handleEvent(Event* event)
+void PipelineManager::handleEvent(Event* event)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
@@ -423,9 +512,14 @@ void State::PipelineManager::handleEvent(Event* event)
         if (option)
             std::invoke(*option, this, event);
     }
+    if (event->getCategory() == EventCategory::Abort && mode != Mode::null)
+    {
+        mode = Mode::null;
+        vocab = opMap.getStrings();
+    }
 }
 
-void State::Director::handleEvent(Event* event)
+void Director::handleEvent(Event* event)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
@@ -464,17 +558,17 @@ void State::Director::handleEvent(Event* event)
     }
 }
 
-void State::Director::onPushExt(Application* app)
+void Director::onPushExt(Application* app)
 {
     vocab = opMap.getStrings();
 }
 
-void State::Director::onResumeExt(Application* app)
+void Director::onResumeExt(Application* app)
 {
     vocab = opMap.getStrings();
 }
 
-void State::RendererManager::base(Event* event)
+void RendererManager::base(Event* event)
 {
     std::stringstream instream{static_cast<CommandLineEvent*>(event)->getInput()};
     std::string input;
@@ -605,10 +699,7 @@ void State::RendererManager::base(Event* event)
     }
 }
 
-//foo
-//
-
-void State::RendererManager::createRPI(Event* event)
+void RendererManager::createRPI(Event* event)
 {
     std::stringstream instream{static_cast<CommandLineEvent*>(event)->getInput()};
     auto find = [this](const std::string& s) mutable
@@ -632,7 +723,7 @@ void State::RendererManager::createRPI(Event* event)
     event->setHandled();
 }
 
-void State::RendererManager::recordRenderCmd(Event* event)
+void RendererManager::recordRenderCmd(Event* event)
 {
     std::stringstream instream{static_cast<CommandLineEvent*>(event)->getInput()};
     int cmdIndex;
@@ -650,7 +741,7 @@ void State::RendererManager::recordRenderCmd(Event* event)
     event->setHandled();
 }
 
-void State::RendererManager::render(Event* event)
+void RendererManager::render(Event* event)
 {
     std::stringstream instream{static_cast<CommandLineEvent*>(event)->getInput()};
     int rendercmdIndex;
@@ -663,7 +754,7 @@ void State::RendererManager::render(Event* event)
     event->setHandled();
 }
 
-void State::RendererManager::handleEvent(Event* event)
+void RendererManager::handleEvent(Event* event)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
@@ -682,7 +773,7 @@ void State::RendererManager::handleEvent(Event* event)
     }
 }
 
-void State::RendererManager::onPushExt(Application* app)
+void RendererManager::onPushExt(Application* app)
 {
     if (activeChild == &pipelineManager)
     {
@@ -700,7 +791,7 @@ void State::RendererManager::onPushExt(Application* app)
     }
 }
 
-void State::ShaderManager::setShaderVocab()
+void ShaderManager::setShaderVocab()
 {
     std::vector<std::string> words;
     auto dir = std::filesystem::directory_iterator(SHADER_DIR);
@@ -709,7 +800,7 @@ void State::ShaderManager::setShaderVocab()
     vocab = words;
 }
 
-void State::ShaderManager::handleEvent(Event* event)
+void ShaderManager::handleEvent(Event* event)
 {
     if (event->getCategory() == EventCategory::CommandLine)
     {
@@ -812,7 +903,17 @@ void State::ShaderManager::handleEvent(Event* event)
                 }
             case Mode::setSpecInts:
                 {
-                    std::cout << "todo" << ENDL;
+                    int first; int second; std::string type;
+                    instream >> first >> second >> type;
+                    assert (type == "f" || type == "v" && "Type specified incorrectly");
+                    while (instream >> input)
+                    {
+                        auto cmd = ssiPool.request(input, type, first, second);
+                        cmdStack.push(std::move(cmd));
+                        auto& report = shaderReports.at(input);
+                        report->setSpecInt(0, first);
+                        report->setSpecInt(1, second);
+                    }
                     mode = Mode::null;
                     vocab = opMap.getStrings();
                     event->setHandled();
@@ -831,22 +932,375 @@ void State::ShaderManager::handleEvent(Event* event)
     }
 }
 
-void Command::AddAttachment::execute(Application* app)
+Paint::ReturnType Paint::initial(Event* event)
 {
-        app->renderer.createAttachment(attachmentName, dimensions, usage);
+    if (event->getCategory() == EventCategory::CommandLine)
+    {
+        auto input = static_cast<CommandLineEvent*>(event)->getFirstWord();
+        auto option = opMap.findOption(input);
+        if (!option) return;
+        switch (*option)
+        {
+            case Option::setup:
+            {
+                std::cout << "Enter the render command id to use for painting." << std::endl;
+                mode = Mode::setup;
+                event->setHandled();
+                vocab = {};
+                break;
+            }
+            case Option::paint:
+            {
+                mode = Mode::paint;
+                event->setHandled();
+                vocab = {};
+                break;
+            }
+        }
+    }
 }
 
-void Command::LoadFragShader::execute(Application* app)
+Paint::ReturnType Paint::setup(Event* event)
+{
+    if (event->getCategory() == EventCategory::CommandLine)
+    {
+        auto ss = static_cast<CommandLineEvent*>(event)->getStream();
+        ss >> paintCommand;
+        std::cout << "Paint command set to: " << paintCommand << std::endl;
+        mode = Mode::initial;
+        vocab = opMap.getStrings();
+    }
+}
+
+Paint::ReturnType Paint::paint(Event* event)
+{
+    if (event->getCategory() == EventCategory::Window)
+    {
+        auto winevent = static_cast<WindowEvent*>(event);
+        if (winevent->getType() == WindowEventType::Motion)
+        {
+            auto input = static_cast<MouseMotionEvent*>(event);
+//            mPos = glm::vec4{
+//                input->getX() / float(width), input->getY() / float(width), 1., 1.};
+//            mPos = fragInput.xform * mPos;
+            fragInput.mouseX = input->getX() / float(width);
+            fragInput.mouseY = input->getY() / float(height);
+            std::cout << "X: " << mPos.x << " Y: " << mPos.y << std::endl;
+            auto cmd = renderPool.request(paintCommand, true);
+            pushCmd(std::move(cmd));
+        }
+    }
+}
+
+Paint::ReturnType Paint::paint_hm(Event* event)
+{
+    if (event->getCategory() == EventCategory::Window)
+    {
+        auto winevent = static_cast<WindowEvent*>(event);
+        switch(winevent->getType())
+        {
+            case WindowEventType::Motion:
+                {
+                    std::cout << "got motion" << std::endl;
+                    auto input = static_cast<MouseMotionEvent*>(winevent);
+                    glm::vec4 mPos = glm::vec4{
+                        input->getX() / float(width), input->getY() / float(width), 1., 1.};
+                    switch (state)
+                    {
+                        case InputState::Paint:
+                            {
+                                mPos = fragInput.xform * mPos;
+                                fragInput.mouseX = mPos.x;
+                                fragInput.mouseY = mPos.y;
+                                auto cmd = renderPool.request(paintCommand, true);
+                                pushCmd(std::move(cmd));
+                                break;
+                            }
+                        case InputState::Idle:
+                            {
+                                mPos = fragInput.xform * mPos;
+                                fragInput.mouseX = mPos.x;
+                                fragInput.mouseY = mPos.y;
+                                auto cmd = renderPool.request(brushSizeCmd, true);
+                                pushCmd(std::move(cmd));
+                                break;
+                            }
+                        case InputState::Rotate:
+                            {
+                                angle = 
+                                    angleScale * input->getX() / float(width) - mouseXCache + 
+                                    angleScale * input->getY()/ float(height) - mouseYCache;
+                                scaleRotMatrix = scaleRotCache * transMatrix * glm::rotate(glm::mat4(1.), angle, {0, 0, 1.}) * glm::inverse(transMatrix);
+                                fragInput.xform = 
+                                    glm::inverse(pivotMatrix) * 
+                                    scaleRotMatrix * 
+                                    transMatrix * 
+                                    pivotMatrix * 
+                                    toCanvasSpace;
+                                auto cmd = renderPool.request(swapOnlyCmd, true);
+                                pushCmd(std::move(cmd));
+                                break;
+                            }
+                        case InputState::Scale:
+                            {
+                                scale = 
+                                    mPos.x - mouseXCache +
+                                    mPos.y - mouseYCache +
+                                    1.;
+                                glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.), glm::vec3(scale, scale, 1.));
+                                scaleRotMatrix = scaleRotCache * transMatrix * scaleMatrix * glm::inverse(transMatrix);
+                                fragInput.xform = 
+                                    glm::inverse(pivotMatrix) *
+                                    scaleRotMatrix * 
+                                    transMatrix * 
+                                    pivotMatrix * 
+                                    toCanvasSpace;
+                                auto cmd = renderPool.request(swapOnlyCmd, true);
+                                pushCmd(std::move(cmd));
+                                break;
+                            }
+                        case InputState::Translate:
+                            {
+                                mPos = toCanvasSpace * mPos - transMouseCache;
+                                mPos *= -1;
+                                transMatrix = 
+                                    glm::translate(glm::mat4(1.), glm::vec3(mPos.x, mPos.y, 0.)) * 
+                                    transCache;
+                                fragInput.xform = 
+                                    glm::inverse(pivotMatrix) * 
+                                    scaleRotMatrix * 
+                                    transMatrix * 
+                                    pivotMatrix * 
+                                    toCanvasSpace;
+                                auto cmd = renderPool.request(swapOnlyCmd, true);
+                                pushCmd(std::move(cmd));
+                                break;
+                            }
+                        case InputState::BrushResize:
+                            {
+                                float brushSize = 
+                                    mPos.x - mouseXCache +
+                                    mPos.y - mouseYCache +
+                                    brushSizeCache;
+                                fragInput.brushSize = brushSize;
+                                auto cmd = renderPool.request(brushSizeCmd, true);
+                                pushCmd(std::move(cmd));
+                                std::cout << "resizing " << brushSize << std::endl;
+                                break;
+                            }
+                    }
+                    break;
+                }
+            case WindowEventType::MousePress:
+                {
+                    auto input = static_cast<MousePressEvent*>(winevent);
+                    mPos = glm::vec4{
+                        input->getX()/ float(width), 
+                        input->getY()/ float(width), 
+                        0., 1.};
+                    switch (input->getMouseButton())
+                    {
+                        case MouseButton::Left:
+                            {
+                                state = InputState::Paint;
+                                mPos = fragInput.xform * mPos;
+                                fragInput.mouseX = mPos.x;
+                                fragInput.mouseY = mPos.y;
+                                auto cmd = renderPool.request(paintCommand, true);
+                                pushCmd(std::move(cmd));
+                                break;
+                            }
+                        case MouseButton::Right:
+                            {
+                                mouseXCache = mPos.x;
+                                mouseYCache = mPos.y;
+                                state = InputState::Scale;
+                                break;
+                            }
+                        case MouseButton::Middle:
+                            {
+                                transMouseCache = toCanvasSpace * mPos;
+                                state = InputState::Translate;
+                            }
+                    }
+                    break;
+                }
+            case WindowEventType::Keypress:
+                {
+                    auto input = static_cast<KeyPressEvent*>(winevent);
+                    switch (static_cast<PressAction>(input->getKey()))
+                    {
+                        case PressAction::Rotate:
+                            {
+                                std::cout << "Entering rotation" << std::endl;
+                                state = InputState::Rotate;
+                                mouseXCache = angleScale * input->getX() / float(width);
+                                mouseYCache = angleScale * input->getY() / float(height);
+                                break;
+                            }
+                        case PressAction::Color:
+                            {
+//                                std::cout << "Loading color from pixel under cursor" << std::endl;
+//                                vk::Rect2D region;
+//                                region.offset.x = input->getX();
+//                                region.offset.y = input->getY();
+//                                region.extent.setWidth(1);
+//                                region.extent.setHeight(1);
+//                                auto block = renderer.copySwapToHost(region);
+//                                uint8_t* ptr = static_cast<uint8_t*>(block->pHostMemory);
+//                                std::cout << "B: " << static_cast<uint16_t>(*ptr) << std::endl;
+//                                fragInput.b = float(*ptr++) / 255.;
+//                                std::cout << "G: " << static_cast<uint16_t>(*ptr) << std::endl;
+//                                fragInput.g = float(*ptr++) / 255.;
+//                                std::cout << "R: " << static_cast<uint16_t>(*ptr) << std::endl;
+//                                fragInput.r = float(*ptr++) / 255.;
+//                                renderer.popBufferBlock();
+//                                renderer.render(swapOnlyCmd, true);
+                                break;
+                            }
+                        case PressAction::Alpha:
+                            {
+                                std::cout << "Enter an alpha value." << std::endl;
+                                std::cin >> fragInput.a;
+                                break;
+                            }
+                        case PressAction::BrushSize:
+                            {
+                                std::cout << "Choose brush size" << std::endl;
+                                std::cin >> fragInput.brushSize;
+                                break;
+                            }
+                        case PressAction::BrushInteractive:
+                            {
+                                mouseXCache = input->getX() / float(width);
+                                mouseYCache = input->getY() / float(height);
+                                state = InputState::BrushResize;
+                                auto cmd = renderPool.request(brushSizeCmd, true);
+                                pushCmd(std::move(cmd));
+                                break;
+                            }
+                        case PressAction::Exit:
+                            {
+                                std::cout << "Closing application" << std::endl;
+                            }
+                        case PressAction::Save:
+                            {
+//                                std::cout << "Copying to buffer" << std::endl;
+//                                vk::Rect2D region;
+//                                region.offset.x = 0;
+//                                region.offset.y = 0;
+//                                region.extent.setWidth(C_WIDTH);
+//                                region.extent.setHeight(C_HEIGHT);
+//                                std::cout << "size: " << C_WIDTH * C_HEIGHT * 4 << std::endl;
+//                                auto block = renderer.copyAttachmentToHost("paint0", region);
+//                                const unsigned char* blockPtr = static_cast<const unsigned char*>(block->pHostMemory);
+//                                std::vector<unsigned char> pngBuffer;
+//                                lodepng::encode(
+//                                        pngBuffer, 
+//                                        blockPtr, 
+//                                        C_WIDTH,
+//                                        C_HEIGHT);
+//                                std::string name;
+//                                std::cout << "Please name your image." << std::endl;
+//                                std::cin >> name;
+//                                std::string path = "output/images/" + name + ".png";
+//                                lodepng::save_file(pngBuffer, path);
+//                                renderer.render(swapOnlyCmd, true);
+//                                renderer.popBufferBlock();
+                                break;
+                            }
+                        case PressAction::Palette:
+                            {
+                                auto cmd = renderPool.request(brushSizeCmd, true);
+                                pushCmd(std::move(cmd));
+                                break;
+                            }
+                    }
+                    break;
+                }
+            case WindowEventType::Keyrelease:
+                {
+                    auto input = static_cast<KeyReleaseEvent*>(winevent);
+                    switch (static_cast<ReleaseAction>(input->getKey()))
+                    {
+                        case ReleaseAction::Rotate:
+                            {
+                                std::cout << "Leaving rotation" << std::endl;
+                                rotateDown = false;
+                                scaleRotCache = scaleRotMatrix;
+                                state = InputState::Idle;
+                                break;
+                            }
+                        case ReleaseAction::BrushSize:
+                            {
+                                state = InputState::Idle;
+                                brushSizeCache = fragInput.brushSize;
+                                break;
+                            }
+                    }
+                    break;
+                }
+            case WindowEventType::MouseRelease:
+                {
+                    transCache = transMatrix;
+                    scaleRotCache = scaleRotMatrix;
+                    state = InputState::Idle;
+                    break;
+                }
+            case WindowEventType::LeaveWindow:
+                {
+                    rotateDown = false;
+                    state = InputState::Idle;
+                    break;
+                }
+            case WindowEventType::EnterWindow:
+                {
+                    break;
+                }
+        }
+    }
+}
+
+void Paint::handleEvent(Event* event)
+{
+    if (event->getCategory() == EventCategory::Abort && mode != Mode::initial)
+    {
+        mode = Mode::initial;
+        vocab = opMap.getStrings();
+        event->setHandled();
+    }
+    else
+        std::invoke(functions[static_cast<uint8_t>(mode)], this, event);
+}
+
+void Paint::onEnterExt(Application* app)
+{
+    app->renderer.bindUboData(static_cast<void*>(&fragInput), sizeof(FragmentInput), 0);
+}
+
+}
+
+namespace Command
+{
+
+void AddAttachment::execute(Application* app)
+{
+        auto& attachment = app->renderer.createAttachment(attachmentName, dimensions, usage);
+        if (usage & vk::ImageUsageFlagBits::eSampled)
+            app->sampledImages.push_back(&attachment.getImage(0));
+}
+
+void LoadFragShader::execute(Application* app)
 {
     app->renderer.loadFragShader(SHADER_DIR + shaderName, shaderName);
 }
 
-void Command::LoadVertShader::execute(Application* app)
+void LoadVertShader::execute(Application* app)
 {
     app->renderer.loadVertShader(SHADER_DIR + shaderName, shaderName);
 }
 
-void Command::SetSpecFloat::execute(Application* app)
+void SetSpecFloat::execute(Application* app)
 {
     if (type == "f")
     {
@@ -860,7 +1314,7 @@ void Command::SetSpecFloat::execute(Application* app)
     }
 }
 
-void Command::SetSpecInt::execute(Application* app)
+void SetSpecInt::execute(Application* app)
 {
     if (type == "f")
     {
@@ -876,29 +1330,35 @@ void Command::SetSpecInt::execute(Application* app)
     }
 }
 
-void Command::OpenWindow::execute(Application* app)
+void OpenWindow::execute(Application* app)
 {
     app->window.open();
 }
 
-void Command::PrepareRenderFrames::execute(Application* app)
+void PrepareRenderFrames::execute(Application* app)
 {
     app->renderer.prepareRenderFrames(*window);
     std::cout << "Render frames prepared" << ENDL;
 }
 
-void Command::CreateDescriptorSetLayout::execute(Application* app)
+void CreateDescriptorSetLayout::execute(Application* app)
 {
     app->renderer.createDescriptorSetLayout(name, bindings);
 }
 
-void Command::CreateSwapchainRenderpass::execute(Application* app)
+void CreateSwapchainRenderpass::execute(Application* app)
 {
     auto& rpass = app->renderer.createRenderPass(rpassName);
     app->renderer.prepareAsSwapchainPass(rpass);
 }
 
-void Command::CreateGraphicsPipeline::execute(Application* app)
+void CreateOffscreenRenderpass::execute(Application* app)
+{
+    auto& rpass = app->renderer.createRenderPass(rpassName);
+    app->renderer.prepareAsOffscreenPass(rpass, loadOp);
+}
+
+void CreateGraphicsPipeline::execute(Application* app)
 {
     auto& pipeline = app->renderer.createGraphicsPipeline(
             name, pipelineLayout,
@@ -907,42 +1367,54 @@ void Command::CreateGraphicsPipeline::execute(Application* app)
     pipeline.create();
 }
 
-void Command::CreateRenderpassInstance::execute(Application* app)
+void CreateRenderpassInstance::execute(Application* app)
 {
     app->renderer.addRenderPassInstance(attachment, renderpass, pipeline);
 }
 
-void Command::RecordRenderCommand::execute(Application* app)
+void RecordRenderCommand::execute(Application* app)
 {
     app->renderer.recordRenderCommands(cmdBufferId, renderpassInstances);
 }
 
-void Command::Render::execute(Application* app)
+void Render::execute(Application* app)
 {
     app->renderer.render(renderCommandId, updateUBO);
 }
 
-void Command::RefreshState::execute(Application* app)
+void RefreshState::execute(Application* app)
 {
     state->refresh(app);
 }
 
-void Command::UpdateVocab::execute(Application* app)
+void UpdateVocab::execute(Application* app)
 {
     app->ev.updateVocab();
 }
 
-void Command::CreatePipelineLayout::execute(Application* app)
+void CreatePipelineLayout::execute(Application* app)
 {
     app->renderer.createPipelineLayout(name, descriptorSetLayoutNames);
 }
 
-void Command::CreateFrameDescriptorSets::execute(Application* app)
+void CreateFrameDescriptorSets::execute(Application* app)
 {
     app->renderer.createFrameDescriptorSets(layoutnames);
 }
 
-Application::Application(uint16_t w, uint16_t h, const std::string logfile) :
+void InitFrameUbos::execute(Application* app)
+{
+    app->renderer.initFrameUBOs(sizeof(app->fragInput), binding);
+}
+
+void UpdateFrameSamplers::execute(Application* app)
+{
+    app->renderer.updateFrameSamplers(app->sampledImages, binding);
+}
+
+}
+
+Application::Application(uint16_t w, uint16_t h, const std::string logfile, int eventPops) :
     window{w, h},
     ev{window},
     renderer{context},
@@ -960,6 +1432,10 @@ Application::Application(uint16_t w, uint16_t h, const std::string logfile) :
         recordevents = true;
         readevents = true;
     }
+    stateStack.top()->onEnter(this);
+    
+    if (readevents) readEvents(is, eventPops);
+    if (recordevents) std::remove(writelog.data());
 }
 
 void Application::popState()
@@ -1040,7 +1516,7 @@ void Application::recordEvent(Event* event, std::ofstream& os)
     }
 }
 
-void Application::readEvents(std::ifstream& is)
+void Application::readEvents(std::ifstream& is, int eventPops)
 {
     is.open(readlog, std::ios::binary);
     bool reading{true};
@@ -1061,30 +1537,28 @@ void Application::readEvents(std::ifstream& is)
             std::cout << "pushed abort event" << ENDL;
         }
     }
+    for (int i = 0; i < eventPops; i++) 
+    {
+        ev.eventQueue.pop();
+        std::cout << "popped from queue" << std::endl;
+    }
     is.close();
 }
 
 void Application::run()
 {
-    stateStack.top()->onEnter(this);
     ev.pollEvents();
-    std::ofstream os;
-    std::ifstream is;
-    
-    if (readevents) readEvents(is);
-    if (recordevents) std::remove(writelog.data());
 
     while (1)
     {
-        while (!ev.eventQueue.empty())
+        for (const auto& event : ev.eventQueue) 
         {
-            auto event = ev.eventQueue.front().get();
             if (event)
             {
-                if (recordevents) recordEvent(event, os);
+                if (recordevents) recordEvent(event.get(), os);
                 for (auto state : stateStack) 
                     if (!event->isHandled())
-                        state->handleEvent(event);
+                        state->handleEvent(event.get());
             }
             for (auto state : stateEdits) 
             {
@@ -1094,22 +1568,19 @@ void Application::run()
                     popState();
             }
             stateEdits.clear();
-            ev.eventQueue.pop();
         }
-        if (!cmdStack.empty())
+        for (auto& cmd : cmdStack.items)
         {
-            for (auto& cmd : cmdStack.items)
+            if (cmd)
             {
-                if (cmd)
-                {
-                    cmd->execute(this);
-                    std::cout << "Command run" << ENDL;
-                }
-                else
-                    std::cout << "Recieved null cmd" << ENDL;
+                cmd->execute(this);
+                std::cout << "Command run: " << cmd->getName() << ENDL;
             }
-            cmdStack.items.clear();
+            else
+                std::cout << "Recieved null cmd" << std::endl;
         }
+        ev.eventQueue.items.clear();
+        cmdStack.items.clear();
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
