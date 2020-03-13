@@ -116,14 +116,6 @@ void EventHandler::fetchCommandLineInput()
         keepCommandThread = false;   
     }
 
-    if (input.empty())
-    {
-        auto event = std::make_unique<Nothing>();
-        eventQueue.emplace_back(std::move(event));
-        std::cout << "Nothing" << std::endl;
-        return;
-    }
-
     std::stringstream ss{input};
     std::string catcher;
 
@@ -131,16 +123,16 @@ void EventHandler::fetchCommandLineInput()
     {
         if (catcher == "q")
         {
-            auto event = std::make_unique<Abort>();
-            eventQueue.emplace_back(std::move(event));
+            auto event = aPool.request();
+            eventQueue.push(std::move(event));
             std::cout << "Aborting operation" << std::endl;
             std::this_thread::sleep_for(std::chrono::milliseconds(RL_DELAY));
             return;
         }
     }
 
-    auto event = std::make_unique<CommandLineEvent>(input);
-    eventQueue.emplace_back(std::move(event));
+    auto event = clPool.request(input);
+    eventQueue.push(std::move(event));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(RL_DELAY));
 }
@@ -148,29 +140,28 @@ void EventHandler::fetchCommandLineInput()
 void EventHandler::fetchWindowInput()
 {	
     auto* event = window.waitForEvent();
-    std::unique_ptr<Event> curEvent;
+    EventPtr curEvent;
 	switch (static_cast<WindowEventType>(event->response_type))
 	{
         case WindowEventType::Motion: 
 		{
 			xcb_motion_notify_event_t* motion =
 				(xcb_motion_notify_event_t*)event;
-            curEvent = std::make_unique<MouseMotionEvent>(motion->event_x, motion->event_y);
+            curEvent = mmPool.request(motion->event_x, motion->event_y);
             break;
 		}
         case WindowEventType::MousePress:
 		{
             xcb_button_press_event_t* press = 
                 (xcb_button_press_event_t*)event;
-            curEvent = std::make_unique<MousePressEvent>(press->event_x, press->event_y, static_cast<MouseButton>(press->detail));
+            curEvent = mpPool.request(press->event_x, press->event_y, static_cast<MouseButton>(press->detail));
             break;
 		}
         case WindowEventType::MouseRelease:
 		{
             xcb_button_press_event_t* press = 
                 (xcb_button_press_event_t*)event;
-            curEvent = std::make_unique<MouseReleaseEvent>(
-                    press->event_x, press->event_y, static_cast<MouseButton>(press->detail));
+            curEvent = mrPool.request(press->event_x, press->event_y, static_cast<MouseButton>(press->detail));
             break;
 		}
         case WindowEventType::Keypress:
@@ -180,16 +171,14 @@ void EventHandler::fetchWindowInput()
             //will cause this to be the last iteration of the window loop
             if (static_cast<Key>(keyPress->detail) == Key::Esc)
                 keepWindowThread = false;
-            curEvent = std::make_unique<KeyPressEvent>(
-                    keyPress->event_x, keyPress->event_y, static_cast<Key>(keyPress->detail));
+            curEvent = kpPool.request(keyPress->event_x, keyPress->event_y, static_cast<Key>(keyPress->detail));
             break;
 		}
         case WindowEventType::Keyrelease:
         {
             xcb_button_release_event_t* keyRelease = 
                 (xcb_button_release_event_t*)event;
-            curEvent = std::make_unique<KeyReleaseEvent>(
-                    keyRelease->event_x, keyRelease->event_y, static_cast<Key>(keyRelease->detail));
+            curEvent = kpPool.request(keyRelease->event_x, keyRelease->event_y, static_cast<Key>(keyRelease->detail));
             break;
         }
         case WindowEventType::EnterWindow:
@@ -204,7 +193,7 @@ void EventHandler::fetchWindowInput()
         }
 	}
 	free(event);
-    eventQueue.emplace_back(std::move(curEvent));
+    eventQueue.push(std::move(curEvent));
 }
 
 void EventHandler::runCommandLineLoop()
@@ -232,3 +221,36 @@ void EventHandler::pollEvents()
     t0.detach();
     t1.detach();
 }
+
+static int clCount = 0;
+
+void EventHandler::readEvents(std::ifstream& is, int eventPops)
+{
+    bool reading{true};
+    while (is.peek() != EOF)
+    {
+        EventCategory ec = Event::unserializeCategory(is);
+        if (ec == EventCategory::CommandLine)
+        {
+            auto event = clPool.request("foo");
+            auto cmdevent = static_cast<CommandLineEvent*>(event.get());
+            cmdevent->unserialize(is);
+            eventQueue.push(std::move(event));
+            clCount++;
+            std::cout << "pushed commandline event" << std::endl;
+            std::cout << "Cl count: "<< clCount << std::endl;
+        }
+        if (ec == EventCategory::Abort)
+        {
+            auto abrt = aPool.request();
+            eventQueue.push(std::move(abrt));
+            std::cout << "pushed abort event" << std::endl;
+        }
+    }
+    for (int i = 0; i < eventPops; i++) 
+    {
+        eventQueue.pop();
+        std::cout << "popped from queue" << std::endl;
+    }
+}
+

@@ -553,8 +553,12 @@ void Director::handleEvent(Event* event)
     }
     if (event->getCategory() == EventCategory::Abort)
     {
+        std::cout << "director recieved abort" << std::endl;
         if (stateStack.size() > 1)
+        {
             stateEdits.popState();
+            std::cout << "popping state" << std::endl;
+        }
     }
 }
 
@@ -976,6 +980,7 @@ Paint::ReturnType Paint::paint(Event* event)
 {
     if (event->getCategory() == EventCategory::Window)
     {
+        std::cout << "indeed" << std::endl;
         auto winevent = static_cast<WindowEvent*>(event);
         if (winevent->getType() == WindowEventType::Motion)
         {
@@ -1263,6 +1268,7 @@ Paint::ReturnType Paint::paint_hm(Event* event)
 
 void Paint::handleEvent(Event* event)
 {
+    std::cout << "mode is: " << static_cast<int>(mode) << std::endl;
     if (event->getCategory() == EventCategory::Abort && mode != Mode::initial)
     {
         mode = Mode::initial;
@@ -1270,7 +1276,24 @@ void Paint::handleEvent(Event* event)
         event->setHandled();
     }
     else
-        std::invoke(functions[static_cast<uint8_t>(mode)], this, event);
+        switch (mode)
+        {
+            case Mode::initial:
+            {
+                initial(event);
+                break;
+            }
+            case Mode::setup:
+            {
+                setup(event);
+                break;
+            }
+            case Mode::paint:
+            {
+                paint(event);
+                break;
+            }
+        }
 }
 
 void Paint::onEnterExt(Application* app)
@@ -1519,29 +1542,7 @@ void Application::recordEvent(Event* event, std::ofstream& os)
 void Application::readEvents(std::ifstream& is, int eventPops)
 {
     is.open(readlog, std::ios::binary);
-    bool reading{true};
-    while (is.peek() != EOF)
-    {
-        EventCategory ec = Event::unserializeCategory(is);
-        if (ec == EventCategory::CommandLine)
-        {
-            auto cmdevnt = std::make_unique<CommandLineEvent>("foo");
-            cmdevnt->unserialize(is);
-            ev.eventQueue.push(std::move(cmdevnt));
-            std::cout << "pushed commandline event" << ENDL;
-        }
-        if (ec == EventCategory::Abort)
-        {
-            auto abrt = std::make_unique<Abort>();
-            ev.eventQueue.push(std::move(abrt));
-            std::cout << "pushed abort event" << ENDL;
-        }
-    }
-    for (int i = 0; i < eventPops; i++) 
-    {
-        ev.eventQueue.pop();
-        std::cout << "popped from queue" << std::endl;
-    }
+    ev.readEvents(is, eventPops);
     is.close();
 }
 
@@ -1551,8 +1552,12 @@ void Application::run()
 
     while (1)
     {
-        for (const auto& event : ev.eventQueue) 
+        size_t eventCount = ev.eventQueue.size();
+        int i = 0;
+        while (i < ev.eventQueue.size())
         {
+            std::cout << "got events" << std::endl;
+            auto& event = ev.eventQueue.items[i];
             if (event)
             {
                 if (recordevents) recordEvent(event.get(), os);
@@ -1568,7 +1573,9 @@ void Application::run()
                     popState();
             }
             stateEdits.clear();
+            i++;
         }
+        ev.eventQueue.items.clear();
         for (auto& cmd : cmdStack.items)
         {
             if (cmd)
@@ -1579,9 +1586,8 @@ void Application::run()
             else
                 std::cout << "Recieved null cmd" << std::endl;
         }
-        ev.eventQueue.items.clear();
         cmdStack.items.clear();
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 }
 

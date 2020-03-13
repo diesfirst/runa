@@ -8,6 +8,9 @@
 #include <fstream>
 #include <sstream>
 #include <optional>
+#include <functional>
+
+constexpr uint32_t POOL_DEFAULT_SIZE = 3;
 
 template <class T>
 class Stack
@@ -40,6 +43,50 @@ public:
     inline auto begin() {return this->items.rbegin();}
     inline auto end() {return this->items.rend();}
 };
+
+template <typename T, typename Base>
+class Pool
+{
+public:
+    template <typename P> using Pointer = std::unique_ptr<P, std::function<void(P*)>>;
+
+    Pool(size_t size) : size{size}, pool(size) {}
+    Pool() : size{POOL_DEFAULT_SIZE}, pool(size) {}
+
+    template <typename... Args> Pointer<Base> request(Args... args)
+    {
+        for (int i = 0; i < size; i++) 
+            if (pool[i].isAvailable())
+            {
+                pool[i].set(args...);
+                pool[i].activate();
+                Pointer<Base> ptr{&pool[i], [](Base* t)
+                    {
+                        t->reset();
+                    }};
+                return ptr; //tentatively may need to be std::move? copy should be ellided tho
+            }    
+        return nullptr;
+    }
+
+    void printAll() const 
+    {
+        for (auto& i : pool) 
+            i.print();
+    }
+
+private:
+
+    template <typename... Args> void initialize(Args&&... args)
+    {
+        for (int i = 0; i < size; i++) 
+            pool.emplace_back(args...);   
+    }
+
+    const size_t size;
+    std::vector<T> pool;
+};
+
 
 enum class MouseButton : uint8_t
 {
@@ -96,6 +143,8 @@ class Event
 public:
     virtual EventCategory getCategory() const = 0;
     virtual std::string getName() const = 0;
+    template <typename... Args> void set(Args... args) {}
+    inline bool isAvailable() const {return !inUse;}
     inline void setHandled() {handled = true;}
     inline bool isHandled() const {return handled;}
     inline static EventCategory unserializeCategory(std::ifstream& is)
@@ -111,8 +160,11 @@ public:
             throw std::runtime_error("Could not unserialize category");
         }
     }
+    void reset() {inUse = false; handled = false;}
+    void activate() {inUse = true;}
 protected:
     bool handled{false};
+    bool inUse{false};
 };
 
 class Abort : public Event
@@ -120,6 +172,7 @@ class Abort : public Event
 public:
    inline EventCategory getCategory() const override {return EventCategory::Abort;} 
    inline std::string getName() const override {return "Abort";}
+   void set() {}
    inline void serialize(std::ofstream& os) 
    {
        auto cat = getCategory();
@@ -137,7 +190,7 @@ public:
 class CommandLineEvent : public Event
 {
 public:
-    CommandLineEvent(CommandLineInput input) : input{input} {};
+    void set(CommandLineInput input) { this->input = input;}
     inline EventCategory getCategory() const override {return EventCategory::CommandLine;}
     inline std::string getName() const override {return "CommandLine";};
     inline CommandLineInput getInput() const {return input;}
@@ -179,8 +232,7 @@ public:
     inline int16_t getX() const {return xPos;}
     inline int16_t getY() const {return yPos;}
 protected:
-    WindowEvent(const int16_t x, const int16_t y) : xPos{x}, yPos{y} {}
-    const int16_t xPos, yPos;
+    int16_t xPos, yPos;
 };
 
 class KeyEvent : public WindowEvent
@@ -189,22 +241,21 @@ public:
     Key getKey() const {return key;}
 
 protected:
-    KeyEvent(int16_t x, int16_t y, Key key) : WindowEvent{x, y}, key{key} {}
     Key key;
 };
 
-class KeyPressEvent : public KeyEvent
+class KeyPressEvent final : public KeyEvent
 {
 public:
-    KeyPressEvent(int16_t x, int16_t y, Key key) : KeyEvent{x, y, key} {}
+    void set(int16_t x, int16_t y, Key key) {xPos = x; yPos = y; this->key = key;}
     inline WindowEventType getType() const override {return WindowEventType::Keypress;}
     inline std::string getName() const override {return "KeyPressEvent";};
 };
 
-class KeyReleaseEvent : public KeyEvent
+class KeyReleaseEvent final : public KeyEvent
 {
 public:
-    KeyReleaseEvent(int16_t x, int16_t y, Key key) : KeyEvent{x, y, key} {}
+    void set(int16_t x, int16_t y, Key key) {xPos = x; yPos = y; this->key = key;}
     inline WindowEventType getType() const override {return WindowEventType::Keypress;}
     inline std::string getName() const override {return "KeyReleaseEvent";};
 };
@@ -214,35 +265,33 @@ class MouseButtonEvent : public WindowEvent
 public:
     MouseButton getMouseButton() const {return button;}
 protected:
-    MouseButtonEvent(int16_t x, int16_t y, MouseButton button) : WindowEvent{x, y}, button{button} {};
-    const MouseButton button;
+    MouseButton button;
 };
 
-class MousePressEvent : public MouseButtonEvent
+class MousePressEvent final : public MouseButtonEvent
 {
 public:
-    MousePressEvent(int16_t x, int16_t y, MouseButton button) :  MouseButtonEvent{x, y, button} {};
+    void set(int16_t x, int16_t y, MouseButton button) {xPos = x; yPos = y; this->button = button;}
     inline WindowEventType getType() const override {return WindowEventType::MousePress;}
     inline std::string getName() const override {return "MousePressEvent";};
 };
 
-class MouseReleaseEvent : public MouseButtonEvent
+class MouseReleaseEvent final : public MouseButtonEvent
 {
 public:
-    MouseReleaseEvent(int16_t x, int16_t y, MouseButton button) : MouseButtonEvent{x, y, button} {};
+    void set(int16_t x, int16_t y, MouseButton button) {xPos = x; yPos = y; this->button = button;}
     inline WindowEventType getType() const override {return WindowEventType::MouseRelease;}
     inline std::string getName() const override {return "MouseReleaseEvent";};
 };
 
-class MouseMotionEvent : public WindowEvent 
+class MouseMotionEvent final : public WindowEvent 
 {
 public:
-    MouseMotionEvent(int16_t x, int16_t y) : WindowEvent{x, y} {}
+    void set(int16_t x, int16_t y) {xPos = x; yPos = y;}
     inline WindowEventType getType() const override {return WindowEventType::Motion;}
     inline std::string getName() const override {return "MouseMotionEvent";};
 };
 
-using EventQueue = ForwardStack<std::unique_ptr<Event>>;
 
 enum class InputMode : uint8_t
 {
@@ -251,6 +300,12 @@ enum class InputMode : uint8_t
 };
 
 using Vocab = std::vector<std::string>;
+
+template <typename T>
+using EventPool = Pool<T, Event>;
+using EventPtr = std::unique_ptr<Event, std::function<void(Event*)>>;
+
+using EventQueue = ForwardStack<EventPtr>;
 
 //this class is not thread safe at all
 class EventHandler
@@ -270,6 +325,8 @@ public:
 
     void runCommandLineLoop();
     void runWindowInputLoop();
+    void readEvents(std::ifstream& is, int eventPops);
+
 
     void getNextEvent();
 
@@ -291,4 +348,13 @@ private:
     static char** completer(const char* text, int start, int end);
     bool keepWindowThread{true};
     bool keepCommandThread{true};
+
+    //pools
+    EventPool<CommandLineEvent> clPool{200};
+    EventPool<KeyPressEvent> kpPool{50};
+    EventPool<KeyReleaseEvent> krPool{20};
+    EventPool<MousePressEvent> mpPool{20};
+    EventPool<MouseReleaseEvent> mrPool{20};
+    EventPool<MouseMotionEvent> mmPool{100};
+    EventPool<Abort> aPool{50};
 };

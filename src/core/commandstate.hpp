@@ -16,8 +16,6 @@ class AddAttachment;
     const char* getName() override {return name;};
 
 
-constexpr uint32_t POOL_DEFAULT_SIZE = 3;
-
 struct FragmentInput
 {
     float time;
@@ -676,49 +674,7 @@ private:
 };
 
 template <typename T>
-class Pool
-{
-public:
-    template <typename P> using Pointer = std::unique_ptr<P, std::function<void(P*)>>;
-
-    Pool(size_t size) : size{size}, pool(size) {}
-    Pool() : size{POOL_DEFAULT_SIZE}, pool(size) {}
-
-    template <typename... Args> Pointer<Command> request(Args... args)
-    {
-        for (int i = 0; i < size; i++) 
-            if (pool[i].isAvailable())
-            {
-                pool[i].set(args...);
-                pool[i].activate();
-                Pointer<Command> ptr{&pool[i], [](Command* t)
-                    {
-                        t->reset();
-                    }};
-                return ptr; //tentatively may need to be std::move? copy should be ellided tho
-            }    
-        return nullptr;
-    }
-
-    void printAll() const 
-    {
-        for (auto& i : pool) 
-            i.print();
-    }
-
-    static const char* getName() {return T::getName();}
-
-private:
-
-    template <typename... Args> void initialize(Args&&... args)
-    {
-        for (int i = 0; i < size; i++) 
-            pool.emplace_back(args...);   
-    }
-
-    const size_t size;
-    std::vector<T> pool;
-};
+using Pool = Pool<T, Command>;
 
 };
 
@@ -799,7 +755,7 @@ protected:
     virtual void onEnterExt(Application*) {}
     virtual void onExitExt(Application*) {}
 
-    inline static Command::Pool<Command::RefreshState> refreshPool{1};
+    inline static Command::Pool<Command::RefreshState> refreshPool{10};
     State* activeChild{nullptr};
     Vocab vocab;
     EditStack& stateEdits;
