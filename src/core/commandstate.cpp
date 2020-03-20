@@ -980,7 +980,6 @@ Paint::ReturnType Paint::paint(Event* event)
 {
     if (event->getCategory() == EventCategory::Window)
     {
-        std::cout << "indeed" << std::endl;
         auto winevent = static_cast<WindowEvent*>(event);
         if (winevent->getType() == WindowEventType::Motion)
         {
