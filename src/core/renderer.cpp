@@ -1053,7 +1053,7 @@ void Renderer::recordRenderCommands(uint32_t id, std::vector<uint32_t> fbIds)
 
         for (auto fbId : fbIds)
         {
-            auto& renderPassInstance = frame.renderPassInstances[fbId];
+            auto& renderPassInstance = frame.getRenderpassInstance(fbId);
             auto& renderPass = renderPassInstance.getRenderPass();
             auto& pipeline = renderPassInstance.getPipeline();
             auto& framebuffer = renderPassInstance.getFramebuffer();

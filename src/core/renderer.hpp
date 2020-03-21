@@ -238,15 +238,16 @@ public:
 	vk::Semaphore requestSemaphore();
 	CommandBuffer& requestRenderBuffer(uint32_t bufferId); //will reset if exists
     CommandBuffer& getRenderBuffer(uint32_t bufferId);  //will fetch existing
+    RenderPassInstance& getRenderpassInstance(int id) { return renderPassInstances.at(id);}
     void addRenderPassInstance(Attachment&, const RenderPass&, const GraphicsPipeline&);
     void addRenderPassInstance(const RenderPass&, const GraphicsPipeline&);
     void clearRenderPassInstances();
-    std::vector<RenderPassInstance> renderPassInstances;
     mm::BufferBlock* bufferBlock;
     
 
 private:
 	std::unique_ptr<Attachment> swapchainAttachment;
+    std::vector<RenderPassInstance> renderPassInstances;
 	const Context& context;
 	const vk::Device& device;
 	CommandPool commandPool;
@@ -321,6 +322,10 @@ public:
     FragShader& fragShaderAt(const std::string);
     VertShader& vertShaderAt(const std::string);
     RenderPass& renderPassAt(const std::string);
+    void removeFragmentShader(const std::string name) {fragmentShaders.erase(name);}
+    void removeVertexShader(const std::string name) {vertexShaders.erase(name);}
+    void removeGraphicsPipeline(const std::string name) {graphicsPipelines.erase(name);}
+    void removeRenderpassInstance(int index);
 
     mm::BufferBlock* copySwapToHost(const vk::Rect2D region);
     mm::BufferBlock* copyAttachmentToHost(const std::string, const vk::Rect2D region);
