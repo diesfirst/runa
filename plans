@@ -90,3 +90,10 @@ Sidenote:
     I'm thinking like binding the fragment input held by the paint layer to the renderer. Also, this means that
     the whole hiding of state-pushing options must be done in the onPush function, not the push itself.
     
+
+Sat Mar 21 18:58:01 EDT 2020
+    The way to do the inotify events is to allow the event to be modified
+    by the event handlers. This way, we can have a shader update event that
+    get handled by the pipeline manager but then turns the event into a 
+    renderpassinstance update event (with the appropriate name)
+    so it can be handled by the renderer manager.

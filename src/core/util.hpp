@@ -7,26 +7,8 @@
 #include <iostream>
 #include <chrono>
 
-class Swapchain;
-class Context;
-
-void printMaxDynamicUBOs(vk::Device device);
-
-void printImageCounts(const Swapchain&);
-
-void printCurrentExtent(const Swapchain&);
-
-void printFormatsAvailable(const Swapchain&);
-
-void printSurfaceCapabilities(const Swapchain&);
-
-void printSurfaceCapabilities(const Swapchain&);
-
-void performChecks(const Swapchain&);
-
-void checkBufferMemReqs(const Context& context, const vk::Buffer& buffer);
-
-void printAlphaComposite(const vk::SurfaceCapabilitiesKHR surfCaps);
+namespace sword
+{
 
 class Timer
 {
@@ -51,5 +33,27 @@ void Timer::end(const std::string& funcName)
 		<< elapsedTime
 		<< " s" << std::endl;
 }
+
+}; // namespace sword
+//class Swapchain;
+//class Context;
+//
+//void printMaxDynamicUBOs(vk::Device device);
+//
+//void printImageCounts(const Swapchain&);
+//
+//void printCurrentExtent(const Swapchain&);
+//
+//void printFormatsAvailable(const Swapchain&);
+//
+//void printSurfaceCapabilities(const Swapchain&);
+//
+//void printSurfaceCapabilities(const Swapchain&);
+//
+//void performChecks(const Swapchain&);
+//
+//void checkBufferMemReqs(const Context& context, const vk::Buffer& buffer);
+//
+//void printAlphaComposite(const vk::SurfaceCapabilitiesKHR surfCaps);
 
 #endif

@@ -1,0 +1,1977 @@
+# GNU Make 4.2.1
+# Built for x86_64-pc-linux-gnu
+# Copyright (C) 1988-2016 Free Software Foundation, Inc.
+# License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+# This is free software: you are free to change and redistribute it.
+# There is NO WARRANTY, to the extent permitted by law.
+
+# Make data base, printed on Mon Mar 30 13:46:25 2020
+
+# Variables
+
+# 'override' directive
+GNUMAKEFLAGS := 
+# automatic
+<D = $(patsubst %/,%,$(dir $<))
+# automatic
+?F = $(notdir $?)
+# environment
+DESKTOP_SESSION = i3
+# default
+.SHELLFLAGS := -c
+# environment
+XDG_SESSION_CLASS = user
+# environment
+SWORD = /home/michaelb/dev/sword
+# environment
+MODELS = /home/michaelb/Assets/Models
+# environment
+XDG_SESSION_TYPE = x11
+# default
+CWEAVE = cweave
+# makefile (from 'Makefile', line 8)
+TARGET := bin/sword
+# environment
+DEADLINE_PATH = /opt/Thinkbox/Deadline10/bin
+# automatic
+?D = $(patsubst %/,%,$(dir $?))
+# makefile (from 'Makefile', line 25)
+CPPFLAGS = $(DEPFLAGS) -g -std=c++17 $(WFLAGS) $(INC_DIRS) -fPIC 
+# automatic
+@D = $(patsubst %/,%,$(dir $@))
+# environment
+XAUTHORITY = /run/user/2710/gdm/Xauthority
+# environment
+GDMSESSION = i3
+# default
+MAKE_VERSION := 4.2.1
+# environment
+HI = /home/michaelb/Util/HoudiniInstalls
+# makefile
+CURDIR := /home/michaelb/dev/sword
+# makefile (from 'Makefile', line 29)
+LINK = $(LDIRS) $(LDFLAGS)
+# makefile
+SHELL = /bin/sh
+# default
+RM = rm -f
+# makefile (from 'Makefile', line 1)
+BIN := bin
+# default
+CO = co
+# environment
+VTE_VERSION = 5802
+# environment
+_ = /usr/bin/make
+# default
+PREPROCESS.F = $(FC) $(FFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -F
+# makefile (from 'Makefile', line 22)
+INC_DIRS := -Isrc/core -I/usr/include -I./include/thirdparty
+# makefile (from 'Makefile', line 18)
+DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.d
+# default
+LINK.m = $(OBJC) $(OBJCFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH)
+# environment
+XDG_CONFIG_DIRS = /etc/xdg/xdg-i3:/etc/xdg
+# default
+OUTPUT_OPTION = -o $@
+# default
+COMPILE.cpp = $(COMPILE.cc)
+# makefile (from '.deps/event/event.d', line 1)
+MAKEFILE_LIST :=  Makefile .deps/render/renderframe.d .deps/render/shader.d .deps/render/surface/window.d .deps/render/resource.d .deps/render/command.d .deps/render/renderlayer.d .deps/render/renderer.d .deps/render/renderpass.d .deps/render/swapchain.d .deps/render/context.d .deps/render/pipeline.d .deps/render/attachment.d .deps/state/director.d .deps/state/state.d .deps/application.d .deps/event/event.d
+# automatic
+@F = $(notdir $@)
+# environment
+MUS = /home/michaelb/scenes/muscles/explore
+# environment
+USERNAME = michaelb
+# default
+LINK.p = $(PC) $(PFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH)
+# environment
+MANDATORY_PATH = /usr/share/gconf/i3.mandatory.path
+# environment
+XDG_DATA_DIRS = /usr/share/i3:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop
+# makefile (from 'Makefile', line 30)
+SPV = ./build/shadersstar
+# environment
+DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/2710/bus
+# makefile (from 'Makefile', line 21)
+CC = g++
+# makefile (from 'Makefile', line 44)
+DEPFILES := .deps/render/renderframe.d .deps/render/shader.d .deps/render/surface/window.d .deps/render/resource.d .deps/render/command.d .deps/render/renderlayer.d .deps/render/renderer.d .deps/render/renderpass.d .deps/render/swapchain.d .deps/render/context.d .deps/render/pipeline.d .deps/render/attachment.d .deps/state/director.d .deps/state/state.d .deps/application.d .deps/event/event.d
+# makefile (from 'Makefile', line 15)
+OBJS := build/render/renderframe.o build/render/shader.o build/render/surface/window.o build/render/resource.o build/render/command.o build/render/renderlayer.o build/render/renderer.o build/render/renderpass.o build/render/swapchain.o build/render/context.o build/render/pipeline.o build/render/attachment.o build/state/director.o build/state/state.o build/application.o build/event/event.o build/main.o
+# makefile (from 'Makefile', line 28)
+LDIRS = -L$(LIB) 
+# default
+CHECKOUT,v = +$(if $(wildcard $@),,$(CO) $(COFLAGS) $< $@)
+# environment
+LESSOPEN = | /usr/bin/lesspipe %s
+# environment
+HQ = /mnt/hq/projects/michaelb
+# default
+CPP = $(CC) -E
+# default
+LINK.cc = $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH)
+# default
+MAKE_HOST := x86_64-pc-linux-gnu
+# environment
+PATH = /home/michaelb/dev/sword/src/core:~/bin:~/bin:/home/michaelb/.local/bin:/home/michaelb/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+# default
+LD = ld
+# makefile (from 'Makefile', line 6)
+MAINOBJ := build/main.o
+# default
+TEXI2DVI = texi2dvi
+# environment
+GPG_AGENT_INFO = /run/user/2710/gnupg/S.gpg-agent:0:1
+# default
+YACC = yacc
+# default
+COMPILE.mod = $(M2C) $(M2FLAGS) $(MODFLAGS) $(TARGET_ARCH)
+# environment
+XDG_RUNTIME_DIR = /run/user/2710
+# default
+ARFLAGS = rv
+# makefile (from 'Makefile', line 5)
+MAINSRC := src/programs/main.cpp
+# default
+LINK.r = $(FC) $(FFLAGS) $(RFLAGS) $(LDFLAGS) $(TARGET_ARCH)
+# default
+LINT = lint
+# default
+COMPILE.f = $(FC) $(FFLAGS) $(TARGET_ARCH) -c
+# default
+LINT.c = $(LINT) $(LINTFLAGS) $(CPPFLAGS) $(TARGET_ARCH)
+# default
+YACC.m = $(YACC) $(YFLAGS)
+# default
+YACC.y = $(YACC) $(YFLAGS)
+# default
+AR = ar
+# makefile (from 'Makefile', line 24)
+WFLAGS = -Wall -W -Wno-parentheses -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-uninitialized -Wno-unused-parameter -Wno-unused-local-typedefs
+# makefile (from 'Makefile', line 27)
+LIB = ./lib
+# default
+.FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell archives jobserver output-sync check-symlink load
+# default
+TANGLE = tangle
+# environment
+LS_COLORS = rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:
+# environment
+XDG_SESSION_DESKTOP = i3
+# environment
+SSH_AUTH_SOCK = /tmp/ssh-mWDp0WuGJd47/agent.2244
+# default
+GET = get
+# automatic
+%F = $(notdir $%)
+# environment
+DISPLAY = :1
+# default
+COMPILE.F = $(FC) $(FFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
+# default
+CTANGLE = ctangle
+# default
+.LIBPATTERNS = lib%.so lib%.a
+# makefile (from 'Makefile', line 9)
+SRC_DIRS = $(CORE)
+# default
+LINK.C = $(LINK.cc)
+# environment
+PWD = /home/michaelb/dev/sword
+# default
+.LOADED := 
+# default
+LINK.S = $(CC) $(ASFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_MACH)
+# environment
+XDG_SEAT = seat0
+# default
+PREPROCESS.r = $(FC) $(FFLAGS) $(RFLAGS) $(TARGET_ARCH) -F
+# environment
+SSH_AGENT_PID = 2303
+# default
+LINK.c = $(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH)
+# environment
+GTK_MODULES = gail:atk-bridge
+# default
+LINK.s = $(CC) $(ASFLAGS) $(LDFLAGS) $(TARGET_MACH)
+# environment
+HOME = /home/michaelb
+# environment
+LESSCLOSE = /usr/bin/lesspipe %s %s
+# environment
+LOGNAME = michaelb
+# automatic
+^D = $(patsubst %/,%,$(dir $^))
+# environment
+XDG_VTNR = 2
+# environment
+MAKELEVEL := 0
+# default
+COMPILE.m = $(OBJC) $(OBJCFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
+# environment
+COLORTERM = truecolor
+# default
+MAKE = $(MAKE_COMMAND)
+# makefile (from 'Makefile', line 12)
+SRCS := render/renderframe.cpp render/shader.cpp render/surface/window.cpp render/resource.cpp render/command.cpp render/renderlayer.cpp render/renderer.cpp render/renderpass.cpp render/swapchain.cpp render/context.cpp render/pipeline.cpp render/attachment.cpp state/director.cpp state/state.cpp application.cpp event/event.cpp
+# environment
+SHLVL = 1
+# default
+AS = as
+# default
+PREPROCESS.S = $(CC) -E $(CPPFLAGS)
+# default
+COMPILE.p = $(PC) $(PFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
+# environment
+XDG_SESSION_ID = 3
+# environment
+EDITOR = gvim
+# default
+FC = f77
+# makefile
+.DEFAULT_GOAL := bin/sword
+# environment
+XDG_CURRENT_DESKTOP = i3
+# makefile (from 'Makefile', line 31)
+THIRD = ./src/thirdparty
+# automatic
+%D = $(patsubst %/,%,$(dir $%))
+# makefile (from 'Makefile', line 4)
+PROGDIR := src/programs
+# default
+WEAVE = weave
+# default
+MAKE_COMMAND := make
+# default
+LINK.cpp = $(LINK.cc)
+# default
+F77 = $(FC)
+# environment
+OLDPWD = /home/michaelb/dev/sword/build/render
+# default
+.VARIABLES := 
+# default
+PC = pc
+# automatic
+*F = $(notdir $*)
+# environment
+LANGUAGE = en_CA:en
+# default
+COMPILE.def = $(M2C) $(M2FLAGS) $(DEFFLAGS) $(TARGET_ARCH)
+# environment
+EXT = /media/michaelb/external
+# default
+LEX = lex
+# makefile
+MAKEFLAGS = p
+# environment
+MFLAGS = -p
+# automatic
+*D = $(patsubst %/,%,$(dir $*))
+# default
+LEX.l = $(LEX) $(LFLAGS) -t
+# default
+LEX.m = $(LEX) $(LFLAGS) -t
+# automatic
++D = $(patsubst %/,%,$(dir $+))
+# default
+COMPILE.r = $(FC) $(FFLAGS) $(RFLAGS) $(TARGET_ARCH) -c
+# automatic
++F = $(notdir $+)
+# default
+M2C = m2c
+# environment
+PYTHONSTARTUP = /home/michaelb/.pythonrc
+# environment
+DEFAULTS_PATH = /usr/share/gconf/i3.default.path
+# makefile (from 'Makefile', line 26)
+LDFLAGS = -lpthread -lxcb -lvulkan -lX11 -lreadline -ldl
+# 'override' directive
+.SHELLSTATUS := 0
+# default
+MAKEFILES := 
+# makefile (from 'Makefile', line 17)
+DEPDIR := .deps
+# default
+COMPILE.cc = $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
+# makefile (from 'Makefile', line 3)
+BUILD := build
+# automatic
+<F = $(notdir $<)
+# environment
+USER = michaelb
+# default
+CXX = g++
+# default
+COFLAGS = 
+# default
+COMPILE.C = $(COMPILE.cc)
+# environment
+GNOME_TERMINAL_SCREEN = /org/gnome/Terminal/screen/9c720b31_c08c_4d17_b110_60c20d3c1d66
+# automatic
+^F = $(notdir $^)
+# default
+COMPILE.S = $(CC) $(ASFLAGS) $(CPPFLAGS) $(TARGET_MACH) -c
+# default
+LINK.F = $(FC) $(FFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH)
+# environment
+GNOME_TERMINAL_SERVICE = :1.51
+# default
+SUFFIXES := .out .a .ln .o .c .cc .C .cpp .p .f .F .m .r .y .l .ym .yl .s .S .mod .sym .def .h .info .dvi .tex .texinfo .texi .txinfo .w .ch .web .sh .elc .el
+# default
+COMPILE.c = $(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
+# environment
+WINDOWPATH = 2
+# default
+COMPILE.s = $(AS) $(ASFLAGS) $(TARGET_MACH)
+# default
+.INCLUDE_DIRS = /usr/include /usr/local/include /usr/include
+# makefile (from 'Makefile', line 2)
+CORE := src/core
+# default
+.RECIPEPREFIX := 
+# default
+MAKEINFO = makeinfo
+# default
+MAKE_TERMERR := /dev/pts/1
+# default
+OBJC = cc
+# default
+LINK.f = $(FC) $(FFLAGS) $(LDFLAGS) $(TARGET_ARCH)
+# environment
+TEX = /home/michaelb/Assets/Textures
+# environment
+LANG = en_CA.UTF-8
+# environment
+TERM = xterm-256color
+# default
+F77FLAGS = $(FFLAGS)
+# default
+LINK.o = $(CC) $(LDFLAGS) $(TARGET_ARCH)
+# variable set hash-table stats:
+# Load=171/1024=17%, Rehash=0, Collisions=32/268=12%
+
+# Pattern-specific Variable Values
+
+# No pattern-specific variable values.
+
+# Directories
+
+# src/core/event (device 2050, inode 41295882): 5 files, 19 impossibilities.
+# src/core/types/RCS: could not be stat'd.
+# SCCS: could not be stat'd.
+# .deps/state/RCS: could not be stat'd.
+# include/thirdparty/vulkan (device 2050, inode 30818514): 21 files, 19 impossibilities.
+# src/core/event/SCCS: could not be stat'd.
+# src/programs (device 2050, inode 41295874): 12 files, no impossibilities so far.
+# .deps/render/surface/SCCS: could not be stat'd.
+# . (device 2050, inode 30807228): 32 files, 19 impossibilities.
+# src/core/render (device 2050, inode 41295881): 31 files, 228 impossibilities.
+# src/core (device 2050, inode 41295873): 13 files, 20 impossibilities.
+# include/thirdparty/vulkan/SCCS: could not be stat'd.
+# src/core/event/RCS: could not be stat'd.
+# .deps/render/surface/RCS: could not be stat'd.
+# src/core/state/RCS: could not be stat'd.
+# src/core/render/SCCS: could not be stat'd.
+# src/core/state (device 2050, inode 41295878): 13 files, 95 impossibilities.
+# src/core/SCCS: could not be stat'd.
+# build (device 2050, inode 41288618): 9 files, 17 impossibilities.
+# src/core/command (device 2050, inode 41295879): 13 files, 57 impossibilities.
+# include/thirdparty/vulkan/RCS: could not be stat'd.
+# src/core/render/RCS: could not be stat'd.
+# .deps/event (device 2050, inode 41295889): 3 files, 19 impossibilities.
+# src/core/state/SCCS: could not be stat'd.
+# src/core/render/surface (device 2050, inode 41295883): 4 files, 19 impossibilities.
+# src/core/RCS: could not be stat'd.
+# build/SCCS: could not be stat'd.
+# src/core/command/SCCS: could not be stat'd.
+# .deps/event/SCCS: could not be stat'd.
+# .deps/render (device 2050, inode 41295886): 14 files, 209 impossibilities.
+# src/core/render/surface/SCCS: could not be stat'd.
+# build/RCS: could not be stat'd.
+# .deps (device 2050, inode 41295885): 9 files, 20 impossibilities.
+# src/core/command/RCS: could not be stat'd.
+# .deps/event/RCS: could not be stat'd.
+# .deps/render/SCCS: could not be stat'd.
+# .deps/state (device 2050, inode 41295887): 4 files, 38 impossibilities.
+# src/core/types (device 2050, inode 41295880): 9 files, 76 impossibilities.
+# src/core/render/surface/RCS: could not be stat'd.
+# .deps/SCCS: could not be stat'd.
+# .deps/render/RCS: could not be stat'd.
+# src/core/types/SCCS: could not be stat'd.
+# .deps/state/SCCS: could not be stat'd.
+# .deps/render/surface (device 2050, inode 41295897): 3 files, 19 impossibilities.
+# RCS: could not be stat'd.
+# .deps/RCS: could not be stat'd.
+
+# 195 files, 874 impossibilities in 46 directories.
+
+# Implicit Rules
+
+build/%.o: src/core/%.cpp .deps/%.d | .deps
+#  recipe to execute (from 'Makefile', line 37):
+	$(CC) $(CPPFLAGS) -c $< -o $@
+
+build/%.o: src/programs/main.cpp .deps/main.d | .deps
+#  recipe to execute (from 'Makefile', line 40):
+	$(CC) $(CPPFLAGS) -c $< -o $@
+
+%.out:
+
+%.a:
+
+%.ln:
+
+%.o:
+
+%: %.o
+#  recipe to execute (built-in):
+	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+%.c:
+
+%: %.c
+#  recipe to execute (built-in):
+	$(LINK.c) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+%.ln: %.c
+#  recipe to execute (built-in):
+	$(LINT.c) -C$* $<
+
+%.o: %.c
+#  recipe to execute (built-in):
+	$(COMPILE.c) $(OUTPUT_OPTION) $<
+
+%.cc:
+
+%: %.cc
+#  recipe to execute (built-in):
+	$(LINK.cc) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+%.o: %.cc
+#  recipe to execute (built-in):
+	$(COMPILE.cc) $(OUTPUT_OPTION) $<
+
+%.C:
+
+%: %.C
+#  recipe to execute (built-in):
+	$(LINK.C) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+%.o: %.C
+#  recipe to execute (built-in):
+	$(COMPILE.C) $(OUTPUT_OPTION) $<
+
+%.cpp:
+
+%: %.cpp
+#  recipe to execute (built-in):
+	$(LINK.cpp) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+%.o: %.cpp
+#  recipe to execute (built-in):
+	$(COMPILE.cpp) $(OUTPUT_OPTION) $<
+
+%.p:
+
+%: %.p
+#  recipe to execute (built-in):
+	$(LINK.p) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+%.o: %.p
+#  recipe to execute (built-in):
+	$(COMPILE.p) $(OUTPUT_OPTION) $<
+
+%.f:
+
+%: %.f
+#  recipe to execute (built-in):
+	$(LINK.f) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+%.o: %.f
+#  recipe to execute (built-in):
+	$(COMPILE.f) $(OUTPUT_OPTION) $<
+
+%.F:
+
+%: %.F
+#  recipe to execute (built-in):
+	$(LINK.F) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+%.o: %.F
+#  recipe to execute (built-in):
+	$(COMPILE.F) $(OUTPUT_OPTION) $<
+
+%.f: %.F
+#  recipe to execute (built-in):
+	$(PREPROCESS.F) $(OUTPUT_OPTION) $<
+
+%.m:
+
+%: %.m
+#  recipe to execute (built-in):
+	$(LINK.m) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+%.o: %.m
+#  recipe to execute (built-in):
+	$(COMPILE.m) $(OUTPUT_OPTION) $<
+
+%.r:
+
+%: %.r
+#  recipe to execute (built-in):
+	$(LINK.r) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+%.o: %.r
+#  recipe to execute (built-in):
+	$(COMPILE.r) $(OUTPUT_OPTION) $<
+
+%.f: %.r
+#  recipe to execute (built-in):
+	$(PREPROCESS.r) $(OUTPUT_OPTION) $<
+
+%.y:
+
+%.ln: %.y
+#  recipe to execute (built-in):
+	$(YACC.y) $< 
+	 $(LINT.c) -C$* y.tab.c 
+	 $(RM) y.tab.c
+
+%.c: %.y
+#  recipe to execute (built-in):
+	$(YACC.y) $< 
+	 mv -f y.tab.c $@
+
+%.l:
+
+%.ln: %.l
+#  recipe to execute (built-in):
+	@$(RM) $*.c
+	 $(LEX.l) $< > $*.c
+	$(LINT.c) -i $*.c -o $@
+	 $(RM) $*.c
+
+%.c: %.l
+#  recipe to execute (built-in):
+	@$(RM) $@ 
+	 $(LEX.l) $< > $@
+
+%.r: %.l
+#  recipe to execute (built-in):
+	$(LEX.l) $< > $@ 
+	 mv -f lex.yy.r $@
+
+%.ym:
+
+%.m: %.ym
+#  recipe to execute (built-in):
+	$(YACC.m) $< 
+	 mv -f y.tab.c $@
+
+%.yl:
+
+%.s:
+
+%: %.s
+#  recipe to execute (built-in):
+	$(LINK.s) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+%.o: %.s
+#  recipe to execute (built-in):
+	$(COMPILE.s) -o $@ $<
+
+%.S:
+
+%: %.S
+#  recipe to execute (built-in):
+	$(LINK.S) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+%.o: %.S
+#  recipe to execute (built-in):
+	$(COMPILE.S) -o $@ $<
+
+%.s: %.S
+#  recipe to execute (built-in):
+	$(PREPROCESS.S) $< > $@
+
+%.mod:
+
+%: %.mod
+#  recipe to execute (built-in):
+	$(COMPILE.mod) -o $@ -e $@ $^
+
+%.o: %.mod
+#  recipe to execute (built-in):
+	$(COMPILE.mod) -o $@ $<
+
+%.sym:
+
+%.def:
+
+%.sym: %.def
+#  recipe to execute (built-in):
+	$(COMPILE.def) -o $@ $<
+
+%.h:
+
+%.info:
+
+%.dvi:
+
+%.tex:
+
+%.dvi: %.tex
+#  recipe to execute (built-in):
+	$(TEX) $<
+
+%.texinfo:
+
+%.info: %.texinfo
+#  recipe to execute (built-in):
+	$(MAKEINFO) $(MAKEINFO_FLAGS) $< -o $@
+
+%.dvi: %.texinfo
+#  recipe to execute (built-in):
+	$(TEXI2DVI) $(TEXI2DVI_FLAGS) $<
+
+%.texi:
+
+%.info: %.texi
+#  recipe to execute (built-in):
+	$(MAKEINFO) $(MAKEINFO_FLAGS) $< -o $@
+
+%.dvi: %.texi
+#  recipe to execute (built-in):
+	$(TEXI2DVI) $(TEXI2DVI_FLAGS) $<
+
+%.txinfo:
+
+%.info: %.txinfo
+#  recipe to execute (built-in):
+	$(MAKEINFO) $(MAKEINFO_FLAGS) $< -o $@
+
+%.dvi: %.txinfo
+#  recipe to execute (built-in):
+	$(TEXI2DVI) $(TEXI2DVI_FLAGS) $<
+
+%.w:
+
+%.c: %.w
+#  recipe to execute (built-in):
+	$(CTANGLE) $< - $@
+
+%.tex: %.w
+#  recipe to execute (built-in):
+	$(CWEAVE) $< - $@
+
+%.ch:
+
+%.web:
+
+%.p: %.web
+#  recipe to execute (built-in):
+	$(TANGLE) $<
+
+%.tex: %.web
+#  recipe to execute (built-in):
+	$(WEAVE) $<
+
+%.sh:
+
+%: %.sh
+#  recipe to execute (built-in):
+	cat $< >$@ 
+	 chmod a+x $@
+
+%.elc:
+
+%.el:
+
+(%): %
+#  recipe to execute (built-in):
+	$(AR) $(ARFLAGS) $@ $<
+
+%.out: %
+#  recipe to execute (built-in):
+	@rm -f $@ 
+	 cp $< $@
+
+%.c: %.w %.ch
+#  recipe to execute (built-in):
+	$(CTANGLE) $^ $@
+
+%.tex: %.w %.ch
+#  recipe to execute (built-in):
+	$(CWEAVE) $^ $@
+
+%:: %,v
+#  recipe to execute (built-in):
+	$(CHECKOUT,v)
+
+%:: RCS/%,v
+#  recipe to execute (built-in):
+	$(CHECKOUT,v)
+
+%:: RCS/%
+#  recipe to execute (built-in):
+	$(CHECKOUT,v)
+
+%:: s.%
+#  recipe to execute (built-in):
+	$(GET) $(GFLAGS) $(SCCS_OUTPUT_OPTION) $<
+
+%:: SCCS/s.%
+#  recipe to execute (built-in):
+	$(GET) $(GFLAGS) $(SCCS_OUTPUT_OPTION) $<
+
+# 94 implicit rules, 5 (5.3%) terminal.
+
+# Files
+
+.deps/event/event.d:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 10:18:37.36566639
+#  File has been updated.
+#  Successfully updated.
+
+.deps/render/swapchain.d:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 09:47:33.410398168
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.web.p:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(TANGLE) $<
+
+src/core/types/vocab.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 10:03:39.460958123
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.l.r:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(LEX.l) $< > $@ 
+	 mv -f lex.yy.r $@
+
+bin/sword: build/render/renderframe.o build/render/shader.o build/render/surface/window.o build/render/resource.o build/render/command.o build/render/renderlayer.o build/render/renderer.o build/render/renderpass.o build/render/swapchain.o build/render/context.o build/render/pipeline.o build/render/attachment.o build/state/director.o build/state/state.o build/application.o build/event/event.o build/main.o
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 34):
+	$(CC) $(OBJS) -o $@ $(LDFLAGS)
+
+.deps/render/resource.d:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 09:43:53.25346099
+#  File has been updated.
+#  Successfully updated.
+
+build/main:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 56):
+	@echo '$(DEPFLAGS)'
+
+# Not a target:
+.dvi:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+include/thirdparty/vulkan/vulkan.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-13 16:52:40.863933232
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.ym:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+src/core/command/commandtypes.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-22 14:53:55.52460599
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.f.o:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(COMPILE.f) $(OUTPUT_OPTION) $<
+
+.deps/state/director.d:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 13:00:10.833810673
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.l:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+.m:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(LINK.m) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+# Not a target:
+.ln:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+.o:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+src/core/state/report.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-22 15:09:31.599428851
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.y:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+src/core/render/attachment.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-29 14:29:34.602252414
+#  File has been updated.
+#  Successfully updated.
+
+src/core/command/command.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-29 15:21:45.291202523
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.def.sym:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(COMPILE.def) -o $@ $<
+
+.PHONY: clean shaders test
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+.p.o:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(COMPILE.p) $(OUTPUT_OPTION) $<
+
+# Not a target:
+.p:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(LINK.p) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+# Not a target:
+.txinfo.dvi:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(TEXI2DVI) $(TEXI2DVI_FLAGS) $<
+
+build/render/context.o: src/core/render/context.cpp .deps/render/context.d src/core/render/context.cpp src/core/render/context.hpp include/thirdparty/vulkan/vulkan.hpp include/thirdparty/vulkan/vulkan.h include/thirdparty/vulkan/vk_platform.h include/thirdparty/vulkan/vulkan_core.h include/thirdparty/vulkan/vulkan_xcb.h | .deps
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'render/context'
+#  Last modified 2020-03-30 09:47:34.854328012
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 37):
+	$(CC) $(CPPFLAGS) -c $< -o $@
+
+.deps/render/surface/window.d:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 09:43:52.145446063
+#  File has been updated.
+#  Successfully updated.
+
+build/application.o: src/core/application.cpp .deps/application.d src/core/application.cpp src/core/application.hpp src/core/event/event.hpp src/core/render/surface/window.hpp src/core/types/pool.hpp src/core/types/stack.hpp src/core/types/vocab.hpp src/core/command/commandtypes.hpp src/core/command/command.hpp src/core/command/updatevocab.hpp src/core/state/director.hpp src/core/state/state.hpp src/core/state/report.hpp src/core/state/editstack.hpp src/core/types/map.hpp src/core/state/statetypes.hpp src/core/render/ubotypes.hpp src/core/render/context.hpp include/thirdparty/vulkan/vulkan.hpp include/thirdparty/vulkan/vulkan.h include/thirdparty/vulkan/vk_platform.h include/thirdparty/vulkan/vulkan_core.h include/thirdparty/vulkan/vulkan_xcb.h src/core/render/renderer.hpp src/core/render/command.hpp src/core/render/shader.hpp src/core/render/pipeline.hpp src/core/render/renderpass.hpp | .deps
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'application'
+#  Last modified 2020-03-30 13:00:14.873921747
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 37):
+	$(CC) $(CPPFLAGS) -c $< -o $@
+
+# Not a target:
+.a:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+.yl:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+src/core/state/state.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-28 15:23:10.450341365
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/core/render/context.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-29 13:46:08.513145376
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.l.ln:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	@$(RM) $*.c
+	 $(LEX.l) $< > $*.c
+	$(LINT.c) -i $*.c -o $@
+	 $(RM) $*.c
+
+# Not a target:
+.F.o:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(COMPILE.F) $(OUTPUT_OPTION) $<
+
+# Not a target:
+.texi.info:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(MAKEINFO) $(MAKEINFO_FLAGS) $< -o $@
+
+# Not a target:
+.w.c:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(CTANGLE) $< - $@
+
+# Not a target:
+.texi.dvi:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(TEXI2DVI) $(TEXI2DVI_FLAGS) $<
+
+# Not a target:
+.ch:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+build/render/renderlayer.o: src/core/render/renderlayer.cpp .deps/render/renderlayer.d src/core/render/renderlayer.cpp src/core/render/renderlayer.hpp include/thirdparty/vulkan/vulkan.hpp include/thirdparty/vulkan/vulkan.h include/thirdparty/vulkan/vk_platform.h include/thirdparty/vulkan/vulkan_core.h src/core/render/attachment.hpp src/core/render/resource.hpp src/core/render/renderpass.hpp | .deps
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'render/renderlayer'
+#  Last modified 2020-03-30 09:43:55.453490622
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 37):
+	$(CC) $(CPPFLAGS) -c $< -o $@
+
+# Not a target:
+.m.o:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(COMPILE.m) $(OUTPUT_OPTION) $<
+
+# Not a target:
+.cc:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(LINK.cc) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+# Not a target:
+src/core/render/renderlayer.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-29 14:28:24.544641207
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.cc.o:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(COMPILE.cc) $(OUTPUT_OPTION) $<
+
+src/core/command/updatevocab.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 12:59:52.965316387
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.def:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+.SUFFIXES: .out .a .ln .o .c .cc .C .cpp .p .f .F .m .r .y .l .ym .yl .s .S .mod .sym .def .h .info .dvi .tex .texinfo .texi .txinfo .w .ch .web .sh .elc .el
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+.c.o:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(COMPILE.c) $(OUTPUT_OPTION) $<
+
+# Not a target:
+Makefile:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 13:44:26.464706306
+#  File has been updated.
+#  Successfully updated.
+
+build/render/renderer.o: src/core/render/renderer.cpp .deps/render/renderer.d src/core/render/renderer.cpp src/core/render/context.hpp include/thirdparty/vulkan/vulkan.hpp include/thirdparty/vulkan/vulkan.h include/thirdparty/vulkan/vk_platform.h include/thirdparty/vulkan/vulkan_core.h include/thirdparty/vulkan/vulkan_xcb.h src/core/render/resource.hpp src/core/render/swapchain.hpp src/core/render/renderframe.hpp src/core/render/command.hpp src/core/render/renderlayer.hpp src/core/render/attachment.hpp src/core/render/renderer.hpp src/core/render/shader.hpp src/core/render/pipeline.hpp src/core/render/renderpass.hpp | .deps
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'render/renderer'
+#  Last modified 2020-03-30 10:16:18.821626217
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 37):
+	$(CC) $(CPPFLAGS) -c $< -o $@
+
+# Not a target:
+.r.o:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(COMPILE.r) $(OUTPUT_OPTION) $<
+
+# Not a target:
+.r:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(LINK.r) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+# Not a target:
+src/core/render/renderer.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 10:16:13.193638921
+#  File has been updated.
+#  Successfully updated.
+
+build/render/renderpass.o: src/core/render/renderpass.cpp .deps/render/renderpass.d src/core/render/renderpass.cpp src/core/render/renderpass.hpp include/thirdparty/vulkan/vulkan.hpp include/thirdparty/vulkan/vulkan.h include/thirdparty/vulkan/vk_platform.h include/thirdparty/vulkan/vulkan_core.h | .deps
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'render/renderpass'
+#  Last modified 2020-03-30 09:47:32.210456611
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 37):
+	$(CC) $(CPPFLAGS) -c $< -o $@
+
+test:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+# Not a target:
+src/core/render/renderpass.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-29 14:29:34.598252516
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.ym.m:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(YACC.m) $< 
+	 mv -f y.tab.c $@
+
+# Not a target:
+.y.ln:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(YACC.y) $< 
+	 $(LINT.c) -C$* y.tab.c 
+	 $(RM) y.tab.c
+
+src/core/render/context.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-29 13:46:08.493145919
+#  File has been updated.
+#  Successfully updated.
+
+src/core/application.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 10:17:32.0054699
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+build/main.o:
+#  Implicit rule search has been done.
+#  File does not exist.
+#  File has not been updated.
+
+build/state/director.o: src/core/state/director.cpp .deps/state/director.d src/core/state/director.cpp src/core/state/director.hpp src/core/state/state.hpp src/core/command/commandtypes.hpp src/core/command/command.hpp src/core/types/pool.hpp src/core/types/stack.hpp src/core/state/report.hpp src/core/state/editstack.hpp src/core/types/vocab.hpp src/core/command/updatevocab.hpp src/core/types/map.hpp src/core/event/event.hpp src/core/render/surface/window.hpp | .deps
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'state/director'
+#  Last modified 2020-03-30 13:00:10.865811554
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 37):
+	$(CC) $(CPPFLAGS) -c $< -o $@
+
+# Not a target:
+.elc:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+src/core/render/renderlayer.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-28 17:31:43.644732868
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.l.c:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	@$(RM) $@ 
+	 $(LEX.l) $< > $@
+
+# Not a target:
+src/core/state/director.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 09:48:54.610741638
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.out:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+build/state/state.o: src/core/state/state.cpp .deps/state/state.d src/core/state/state.cpp src/core/state/state.hpp src/core/command/commandtypes.hpp src/core/command/command.hpp src/core/types/pool.hpp src/core/types/stack.hpp src/core/state/report.hpp src/core/state/editstack.hpp src/core/types/vocab.hpp src/core/command/updatevocab.hpp src/core/types/map.hpp src/core/event/event.hpp src/core/render/surface/window.hpp src/core/application.hpp src/core/state/director.hpp src/core/state/statetypes.hpp src/core/render/ubotypes.hpp src/core/render/context.hpp include/thirdparty/vulkan/vulkan.hpp include/thirdparty/vulkan/vulkan.h include/thirdparty/vulkan/vk_platform.h include/thirdparty/vulkan/vulkan_core.h include/thirdparty/vulkan/vulkan_xcb.h src/core/render/renderer.hpp src/core/render/command.hpp src/core/render/shader.hpp src/core/render/pipeline.hpp src/core/render/renderpass.hpp | .deps
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'state/state'
+#  Last modified 2020-03-30 13:00:12.781864261
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 37):
+	$(CC) $(CPPFLAGS) -c $< -o $@
+
+# Not a target:
+.C:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(LINK.C) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+build/render/pipeline.o: src/core/render/pipeline.cpp .deps/render/pipeline.d src/core/render/pipeline.cpp src/core/render/pipeline.hpp include/thirdparty/vulkan/vulkan.hpp include/thirdparty/vulkan/vulkan.h include/thirdparty/vulkan/vk_platform.h include/thirdparty/vulkan/vulkan_core.h src/core/render/renderpass.hpp src/core/render/shader.hpp | .deps
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'render/pipeline'
+#  Last modified 2020-03-30 09:47:36.0182716
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 37):
+	$(CC) $(CPPFLAGS) -c $< -o $@
+
+src/core/state/editstack.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-27 20:25:20.538191637
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.r.f:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(PREPROCESS.r) $(OUTPUT_OPTION) $<
+
+# Not a target:
+.S:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(LINK.S) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+# Not a target:
+src/core/render/pipeline.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-29 14:15:12.573300531
+#  File has been updated.
+#  Successfully updated.
+
+src/core/render/renderer.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 10:16:13.193638921
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.texinfo.info:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(MAKEINFO) $(MAKEINFO_FLAGS) $< -o $@
+
+.deps/render/context.d:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 09:47:34.778331702
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.c:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(LINK.c) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+.deps/application.d:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 13:00:14.773919
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.w.tex:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(CWEAVE) $< - $@
+
+include/thirdparty/vulkan/vk_platform.h:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-13 16:52:40.855933252
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.c.ln:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(LINT.c) -C$* $<
+
+# Not a target:
+.s.o:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(COMPILE.s) -o $@ $<
+
+# Not a target:
+.s:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(LINK.s) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+src/core/render/renderpass.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-28 17:22:52.023695359
+#  File has been updated.
+#  Successfully updated.
+
+build/render/renderframe.o: src/core/render/renderframe.cpp .deps/render/renderframe.d src/core/render/renderframe.cpp src/core/render/renderframe.hpp include/thirdparty/vulkan/vulkan.hpp include/thirdparty/vulkan/vulkan.h include/thirdparty/vulkan/vk_platform.h include/thirdparty/vulkan/vulkan_core.h src/core/render/command.hpp src/core/render/renderlayer.hpp src/core/render/context.hpp src/core/render/pipeline.hpp src/core/render/attachment.hpp src/core/render/resource.hpp | .deps
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'render/renderframe'
+#  Last modified 2020-03-30 09:21:16.610125738
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 37):
+	$(CC) $(CPPFLAGS) -c $< -o $@
+
+src/core/render/surface/window.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-29 14:09:36.278460529
+#  File has been updated.
+#  Successfully updated.
+
+.deps/render/renderlayer.d:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 09:43:55.421490191
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/core/render/renderframe.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 09:15:55.676156518
+#  File has been updated.
+#  Successfully updated.
+
+src/core/state/director.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-29 15:21:45.28320228
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.texinfo.dvi:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(TEXI2DVI) $(TEXI2DVI_FLAGS) $<
+
+# Not a target:
+.el:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+src/core/render/pipeline.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-28 17:22:52.027695546
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.lm.m:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	@$(RM) $@ 
+	 $(LEX.m) $< > $@
+
+.deps/render/renderer.d:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 10:16:18.657626586
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.y.c:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(YACC.y) $< 
+	 mv -f y.tab.c $@
+
+src/core/state/statetypes.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-29 15:15:00.463492895
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.web.tex:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(WEAVE) $<
+
+src/core/render/ubotypes.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 10:17:32.013469884
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.texinfo:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+src/core/state/state.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 12:19:52.71481311
+#  File has been updated.
+#  Successfully updated.
+
+.deps/render/renderpass.d:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 09:47:32.15445934
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.DEFAULT:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+include/thirdparty/vulkan/vulkan_core.h:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-13 16:52:40.867933222
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.h:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+build/render/attachment.o: src/core/render/attachment.cpp .deps/render/attachment.d src/core/render/attachment.cpp src/core/render/attachment.hpp include/thirdparty/vulkan/vulkan.hpp include/thirdparty/vulkan/vulkan.h include/thirdparty/vulkan/vk_platform.h include/thirdparty/vulkan/vulkan_core.h src/core/render/resource.hpp | .deps
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'render/attachment'
+#  Last modified 2020-03-30 09:47:37.026222858
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 37):
+	$(CC) $(CPPFLAGS) -c $< -o $@
+
+build/render/command.o: src/core/render/command.cpp .deps/render/command.d src/core/render/command.cpp src/core/render/command.hpp include/thirdparty/vulkan/vulkan.hpp include/thirdparty/vulkan/vulkan.h include/thirdparty/vulkan/vk_platform.h include/thirdparty/vulkan/vulkan_core.h | .deps
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'render/command'
+#  Last modified 2020-03-30 09:43:54.481477531
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 37):
+	$(CC) $(CPPFLAGS) -c $< -o $@
+
+src/core/render/renderframe.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 09:14:33.016882434
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/core/render/command.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-29 14:29:34.514254631
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.tex.dvi:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(TEX) $<
+
+# Not a target:
+.cpp.o:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(COMPILE.cpp) $(OUTPUT_OPTION) $<
+
+# Not a target:
+.cpp:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(LINK.cpp) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+clean:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 50):
+	rm -f $(BUILD)/*.o ; rm -f $(LIB)/*.a
+
+# Not a target:
+.C.o:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(COMPILE.C) $(OUTPUT_OPTION) $<
+
+# Not a target:
+.texi:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+build/render/shader.o: src/core/render/shader.cpp .deps/render/shader.d src/core/render/shader.cpp src/core/render/shader.hpp include/thirdparty/vulkan/vulkan.hpp include/thirdparty/vulkan/vulkan.h include/thirdparty/vulkan/vk_platform.h include/thirdparty/vulkan/vulkan_core.h | .deps
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'render/shader'
+#  Last modified 2020-03-30 09:21:17.694153748
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 37):
+	$(CC) $(CPPFLAGS) -c $< -o $@
+
+# Not a target:
+.txinfo:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+.deps/render/pipeline.d:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 09:47:35.966274119
+#  File has been updated.
+#  Successfully updated.
+
+.deps/state/state.d:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 13:00:12.701862061
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.tex:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+src/core/render/shader.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-29 14:29:34.594252615
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.txinfo.info:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(MAKEINFO) $(MAKEINFO_FLAGS) $< -o $@
+
+build/event/event.o: src/core/event/event.cpp .deps/event/event.d src/core/event/event.cpp src/core/event/event.hpp src/core/render/surface/window.hpp src/core/types/pool.hpp src/core/types/stack.hpp | .deps
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'event/event'
+#  Last modified 2020-03-30 10:18:37.433668577
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 37):
+	$(CC) $(CPPFLAGS) -c $< -o $@
+
+build/render/swapchain.o: src/core/render/swapchain.cpp .deps/render/swapchain.d src/core/render/swapchain.cpp src/core/render/context.hpp include/thirdparty/vulkan/vulkan.hpp include/thirdparty/vulkan/vulkan.h include/thirdparty/vulkan/vk_platform.h include/thirdparty/vulkan/vulkan_core.h include/thirdparty/vulkan/vulkan_xcb.h src/core/render/swapchain.hpp src/core/render/surface/window.hpp | .deps
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'render/swapchain'
+#  Last modified 2020-03-30 09:47:33.478394862
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 37):
+	$(CC) $(CPPFLAGS) -c $< -o $@
+
+# Not a target:
+src/core/event/event.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-29 15:21:45.279202158
+#  File has been updated.
+#  Successfully updated.
+
+.deps/render/renderframe.d:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 09:21:16.546124084
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/core/render/swapchain.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-29 14:29:34.586252816
+#  File has been updated.
+#  Successfully updated.
+
+src/core/render/swapchain.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-29 14:29:34.590252716
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.sh:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	cat $< >$@ 
+	 chmod a+x $@
+
+src/core/render/attachment.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-28 17:17:21.907503948
+#  File has been updated.
+#  Successfully updated.
+
+build/render/resource.o: src/core/render/resource.cpp .deps/render/resource.d src/core/render/resource.cpp src/core/render/resource.hpp include/thirdparty/vulkan/vulkan.hpp include/thirdparty/vulkan/vulkan.h include/thirdparty/vulkan/vk_platform.h include/thirdparty/vulkan/vulkan_core.h | .deps
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'render/resource'
+#  Last modified 2020-03-30 09:43:53.305461692
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 37):
+	$(CC) $(CPPFLAGS) -c $< -o $@
+
+src/core/render/command.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-29 13:19:22.949471408
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/core/render/resource.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-29 14:29:34.582252919
+#  File has been updated.
+#  Successfully updated.
+
+src/core/types/stack.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-29 15:21:45.299202766
+#  File has been updated.
+#  Successfully updated.
+
+maim:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 59):
+	@echo '$(PROGDIR)/main.cpp $(DEPDIR)/main.d | $(DEPDIR)'
+
+# Not a target:
+.S.s:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(PREPROCESS.S) $< > $@
+
+# Not a target:
+.mod:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(COMPILE.mod) -o $@ -e $@ $^
+
+# Not a target:
+.mod.o:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(COMPILE.mod) -o $@ $<
+
+# Not a target:
+.F.f:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(PREPROCESS.F) $(OUTPUT_OPTION) $<
+
+include/thirdparty/vulkan/vulkan.h:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-13 16:52:40.859933243
+#  File has been updated.
+#  Successfully updated.
+
+src/core/render/shader.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-29 13:46:08.501145702
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.w:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+.S.o:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(COMPILE.S) -o $@ $<
+
+src/core/types/pool.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 09:52:13.743859725
+#  File has been updated.
+#  Successfully updated.
+
+.deps/render/attachment.d:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 09:47:37.002224016
+#  File has been updated.
+#  Successfully updated.
+
+src/core/event/event.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 09:57:23.90121361
+#  File has been updated.
+#  Successfully updated.
+
+build/render/surface/window.o: src/core/render/surface/window.cpp .deps/render/surface/window.d src/core/render/surface/window.cpp src/core/render/surface/window.hpp | .deps
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'render/surface/window'
+#  Last modified 2020-03-30 09:43:52.161446279
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 37):
+	$(CC) $(CPPFLAGS) -c $< -o $@
+
+# Not a target:
+src/core/application.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 10:18:27.861362792
+#  File has been updated.
+#  Successfully updated.
+
+.deps/render/command.d:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 09:43:54.421476723
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+src/core/render/surface/window.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-29 14:11:34.572914507
+#  File has been updated.
+#  Successfully updated.
+
+.deps:
+#  Implicit rule search has not been done.
+#  Last modified 2020-03-30 13:17:54.418252389
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 42):
+	 @mkdir -p $@
+
+include/thirdparty/vulkan/vulkan_xcb.h:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-13 16:52:40.875933202
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.F:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(LINK.F) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+src/core/render/resource.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-29 13:46:08.505145594
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.web:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+.sym:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+src/core/types/map.hpp:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-27 16:10:18.043454092
+#  File has been updated.
+#  Successfully updated.
+
+.deps/render/shader.d:
+#  Implicit rule search has been done.
+#  Last modified 2020-03-30 09:21:17.654152715
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.f:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (built-in):
+	$(LINK.f) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+# Not a target:
+.info:
+#  Builtin rule
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+shaders:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 53):
+	python3 tools/compileShaders.py
+
+# files hash-table stats:
+# Load=162/1024=16%, Rehash=0, Collisions=1975/9060=22%
+# VPATH Search Paths
+
+# No 'vpath' search paths.
+
+# No general ('VPATH' variable) search path.
+
+# strcache buffers: 25 (24) / strings = 6822 / storage = 198005 B / avg = 29 B
+# current buf: size = 8162 B / used = 2406 B / count = 150 / avg = 16 B
+# other used: total = 195599 B / count = 6672 / avg = 29 B
+# other free: total = 289 B / max = 26 B / min = 1 B / avg = 12 B
+
+# strcache performance: lookups = 10019 / hit rate = 31%
+# hash-table stats:
+# Load=6822/8192=83%, Rehash=0, Collisions=10962/10019=109%
+# Finished Make data base on Mon Mar 30 13:46:25 2020
+

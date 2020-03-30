@@ -1,4 +1,4 @@
-#include "../core/commandstate.hpp"
+#include <application.hpp>
 #include <fstream>
 
 int main(int argc, const char *argv[])
@@ -17,8 +17,7 @@ int main(int argc, const char *argv[])
         popEvents = atoi(argv[2]);
         std::cout << "Pop events: " << popEvents << std::endl;
     }
-    Application app{800, 800, logfile, popEvents};
+    sword::Application app{800, 800, logfile, popEvents};
     app.run();
-    sleep(1);
     return 0;
 }

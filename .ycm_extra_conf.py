@@ -36,7 +36,7 @@ import ycm_core
 flags = [
     '-x',
     'c++',
-    '-I/home/michaelb/Dev/runa/include/thirdparty',
+    '-I/home/michaelb/dev/sword/src/core',
     '-std=c++17',
 ]
 
