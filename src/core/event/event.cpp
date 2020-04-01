@@ -33,6 +33,7 @@ int abortHelper(int count, int key)
 EventDispatcher::EventDispatcher(const render::Window& window):
 	window{window}
 {
+    std::cout << "event dispatcher ctor called" << std::endl;
     rl_attempted_completion_function = completer;
     rl_bind_key(27, abortHelper);
 }

@@ -20,7 +20,7 @@ public:
     constexpr Option opcast(Op op) {return static_cast<Option>(op);}
     constexpr Op opcast(Option op) {return static_cast<Op>(op);}
     virtual ~Director() = default;
-    Director(EditStack& es, CommandStack& cs, const StateStack& ss, render::Window window) :
+    Director(EditStack& es, CommandStack& cs, const StateStack& ss, render::Window& window) :
         BranchState{es, cs, {
             {"foo", opcast(Op::foo)}, 
             {"jim", opcast(Op::jim)},
