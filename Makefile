@@ -31,7 +31,7 @@ SPV = ./build/shadersstar
 THIRD = ./src/thirdparty
 
 $(TARGET) : $(OBJS) 
-	$(CC) $(OBJS) -o $@ $(LDFLAGS)
+	$(CC) $(OBJS) -o $@ $(LDFLAGS) ; ctags -R .
 
 $(BUILD)/%.o : $(CORE)/%.cpp $(DEPDIR)/%.d | $(DEPDIR)
 	$(CC) $(CPPFLAGS) -c $< -o $@
@@ -47,7 +47,7 @@ $(DEPFILES):
 .PHONY: clean shaders test
 
 clean:
-	rm -f $(BUILD)/*.o ; rm -f $(LIB)/*.a
+	find $(BUILD) -type f -delete 
 
 shaders: 
 	python3 tools/compileShaders.py

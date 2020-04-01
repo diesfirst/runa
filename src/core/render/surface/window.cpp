@@ -1,4 +1,5 @@
 #include <render/surface/window.hpp>
+#include <iostream>
 
 namespace sword
 {
@@ -103,7 +104,6 @@ void Window::open()
 	xcb_flush(connection);
     opened = true;
 }
-
 
 }; // namespace render
 

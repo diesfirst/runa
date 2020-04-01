@@ -96,11 +96,13 @@ void EventDispatcher::updateVocab()
 void EventDispatcher::addVocab(const Vocab* vptr)
 {
     vocabPtrs.push_back(vptr);
+    updateVocab();
 }
 
 void EventDispatcher::popVocab()
 {
     vocabPtrs.pop_back();
+    updateVocab();
 }
 
 void EventDispatcher::fetchCommandLineInput()
@@ -145,7 +147,11 @@ void EventDispatcher::fetchCommandLineInput()
 void EventDispatcher::fetchWindowInput()
 {	
     auto* event = window.waitForEvent();
+    static int count = 0;
+    count++;
+    if (!event) return; //TODO: this was not necesary before Tue Mar 31 00:26:29 EDT 2020... why?
     EventPtr curEvent;
+    std::cout << "Event response type: " << event->response_type << std::endl;
 	switch (static_cast<WindowEventType>(event->response_type))
 	{
         case WindowEventType::Motion: 
@@ -199,6 +205,7 @@ void EventDispatcher::fetchWindowInput()
 	}
 	free(event);
     eventQueue.push(std::move(curEvent));
+    if (count > 5) keepWindowThread = false;
 }
 
 void EventDispatcher::runCommandLineLoop()

@@ -12,7 +12,7 @@ namespace command
 class UpdateVocab : public Command
 {
 public:
-    void execute(Application*) override {}
+    void execute(Application*) override;
     const char* getName() const override { return "update_vocab";}
 private:
 };

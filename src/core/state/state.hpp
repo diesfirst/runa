@@ -4,12 +4,14 @@
 #include <command/commandtypes.hpp>
 #include <state/report.hpp>
 #include <state/editstack.hpp>
-#include <types/vocab.hpp>
 #include <types/stack.hpp>
 #include <types/map.hpp>
 #include <functional>
 #include <bitset>
 #include <event/event.hpp>
+#include <command/updatevocab.hpp>
+#include <command/addvocab.hpp>
+#include <command/popvocab.hpp>
 
 #define STATE_BASE(name) \
     void handleEvent(Event* event) override;\
@@ -29,38 +31,37 @@ namespace state
 using ReportCallbackFn = std::function<void(Report*)>;
 using OptionMask = std::bitset<32>;
 
-struct StateData
-{
-    StateData(EditStack& es, CommandStack& cs) :
-        cmdStack{cs}, editStack{es}, vocab{cs} {}
-    CommandStack& cmdStack;
-    EditStack& editStack;
-    Vocab vocab;
-};
-
 class State
 {
 public:
     virtual void handleEvent(event::Event* event) = 0;
     virtual const char* getName() const = 0;
     virtual ~State() = default;
-    void onEnter(Application*);
-    void onExit(Application*);
+    void onEnter();
+    void onExit();
 //    virtual std::vector<const Report*> getReports() const {return {};};
 protected:
-    State(CommandStack& cs) : cmdStack{cs}, vocab{cs} {}
-    State(CommandStack& cs, ReportCallbackFn callback) : cmdStack{cs}, vocab{cs}, reportCallback{callback} {}
+    State(CommandStack& cs) : cmdStack{cs} {}
+    State(CommandStack& cs, ReportCallbackFn callback) : cmdStack{cs}, reportCallback{callback} {}
 //    State(EditStack& editStack, CommandStack& cmdStack) : stateEdits{editStack}, cmdStack{cmdStack}, vocab{cmdStack} {}
 //    State(EditStack& editStack, CommandStack& cmdStack, ReportCallbackFn callback) : 
 //        stateEdits{editStack}, cmdStack{cmdStack}, vocab{cmdStack}, reportCallback{callback} {}
     void pushCmd(CmdPtr ptr);
-    Vocab vocab;
+    void setVocab(std::vector<std::string> strings);
+    void clearVocab() { vocab.clear(); }
+    void addToVocab(std::string word) { vocab.push_back(word); }
+    void updateVocab();
+    void printVocab();
 //    inline static Command::Pool<Command::RefreshState> refreshPool{10};
 private:
+    CommandPool<command::UpdateVocab> uvPool{1};
+    CommandPool<command::PopVocab> pvPool{1};
+    CommandPool<command::AddVocab> avPool{1};
+    std::vector<std::string> vocab;
     ReportCallbackFn reportCallback{nullptr};
     CommandStack& cmdStack;
-    virtual void onEnterExt(Application*) {}
-    virtual void onExitExt(Application*) {}
+    virtual void onEnterExt() {}
+    virtual void onExitExt() {}
 };
 
 class LeafState : public State
@@ -84,24 +85,26 @@ class BranchState : public State
 {
 public:
     ~BranchState() = default;
-    virtual void dynamicOpsActive(bool) = 0;
-    void onResume(Application* app) {} //TODO: must define better
-    void onPush(Application* app) {} //TODO: must define better
+    void onResume();
+    void onPush();
 protected:
     using Element = std::pair<std::string, Option>;
     BranchState(EditStack& es, CommandStack& cs, 
             std::initializer_list<Element> ops) :
-        State{cs}, editStack{es}, options{ops} 
-    {
-        vocab = options.getStrings();
-    }
+        State{cs}, editStack{es}, options{ops} {}
     void pushState(State* state);
     Optional extractCommand(event::Event*);
+    void activate(Option op) { topMask.set(op); }
+    void keepOn(Option op) { lowMask.set(op); }
 
-    OptionMask opmask;
 private:
-    virtual void onResumeExt(Application*) {}
-    virtual void onPushExt(Application*) {}
+    virtual void onResumeExt() {}
+    virtual void onPushExt() {}
+    void onEnterExt() override { setActiveVocab(); }
+    void setActiveVocab();
+    void filterOutVocab();
+    OptionMask topMask;
+    OptionMask lowMask;
     State* activeChild{nullptr};
     std::vector<const Report*> reports;
     SmallMap<std::string, Option> options;

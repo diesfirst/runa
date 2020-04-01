@@ -54,6 +54,8 @@ public:
             vec.push_back(item.first);
         return vec;
     }
+
+    std::string stringAt(int i) const { return options.at(i).first; }
     
     void push(Element element)
     {
@@ -64,6 +66,8 @@ public:
     {
         return options.end();
     }
+
+    size_t size() const { return options.size(); }
 
 private:
     std::vector<std::pair<S, T>> options;

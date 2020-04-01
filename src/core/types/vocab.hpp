@@ -21,7 +21,7 @@ public:
         cmdStack.push(std::move(cmd));
         return *this;
     }
-    const std::vector<std::string>* getValues() const {return &vocab;}
+    const std::vector<std::string>* getValuesPtr() const {return &vocab;}
     inline auto begin() const {return vocab.begin();}
     inline auto end() const {return vocab.end();}
 

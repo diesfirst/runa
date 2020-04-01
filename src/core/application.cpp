@@ -13,31 +13,29 @@ Application::Application(uint16_t w, uint16_t h, const std::string logfile, int 
     offscreenDim{{w, h}},
     swapDim{{w, h}},
     readlog{logfile},
-    dirState{stateEdits, cmdStack}
+    dirState{stateEdits, cmdStack, stateStack, window}
 {
     stateStack.push(&dirState);
-    dirState.onEnter(this);
-    dispatcher.updateVocab();
+    stateStack.top()->onEnter();
+
     if (readlog != "eventlog")
     {
         std::cout << "reading events from " << readlog << std::endl;
         recordevents = true;
         readevents = true;
     }
-    stateStack.top()->onEnter(this);
-    
     if (readevents) readEvents(is, eventPops);
     if (recordevents) std::remove(writelog.data());
 }
 
 void Application::popState()
 {
-    stateStack.top()->onExit(this);
+    stateStack.top()->onExit();
     stateStack.pop();
     auto top = stateStack.top();
     auto topBranch = dynamic_cast<state::BranchState*>(top);
     if (topBranch)
-        topBranch->onResume(this);
+        topBranch->onResume();
     else
         std::cout << "we had multiple leaf states in tree. should not be possible." << std::endl;
     dispatcher.updateVocab();
@@ -47,20 +45,15 @@ void Application::pushState(state::State* state)
 {
     auto top = dynamic_cast<state::BranchState*>(stateStack.top());
     if (top)
-        top->onPush(this);
+        top->onPush();
     else 
     {
         std::cout << "cannout push onto a leaf state" << std::endl;
         return;
     }
     stateStack.push(std::move(state));
-    state->onEnter(this);
+    state->onEnter();
     dispatcher.updateVocab();
-}
-
-void Application::setVocabulary(Vocab vocab)
-{
-    dispatcher.setVocabulary(*vocab.getValues());
 }
 
 void Application::createPipelineLayout()

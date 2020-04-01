@@ -5,8 +5,6 @@
     void execute(Application*) override;\
     const char* getName() const override {return name;};
 
-#include <types/pool.hpp>
-
 namespace sword
 {
 
