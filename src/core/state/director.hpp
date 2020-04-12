@@ -19,6 +19,8 @@ public:
     enum class Op : Option {foo, jim, pushRenderManager, printHierarchy};
     constexpr Option opcast(Op op) {return static_cast<Option>(op);}
     constexpr Op opcast(Option op) {return static_cast<Op>(op);}
+    const char* getName() const override { return "director"; }
+    void handleEvent(event::Event*) override;
     virtual ~Director() = default;
     Director(EditStack& es, CommandStack& cs, const StateStack& ss, render::Window& window) :
         BranchState{es, cs, {
@@ -28,20 +30,20 @@ public:
             {"print_state_hierarchy", opcast(Op::printHierarchy)},
         }}, 
         stateStack{ss},
-        renderManager{es, cs, window}
-    {
+        renderManager{es, cs}
+    { 
         activate(opcast(Op::foo));
         activate(opcast(Op::jim));
         activate(opcast(Op::pushRenderManager));
         activate(opcast(Op::printHierarchy));
+        keepOn(opcast(Op::printHierarchy));
     }
-    const char* getName() const override { return "director"; }
-    void handleEvent(event::Event*) override;
 private:
     void jim();
     void foo();
     void pushRenderManager();
     void printStateHierarchy();
+    void popTop();
 
     RenderManager renderManager;
 

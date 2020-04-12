@@ -4,7 +4,7 @@ import os
 BASEDIR = os.path.join( os.path.dirname(__file__), '..')
 SHADER_DIRS = [BASEDIR + '/src/shaders/basic/', BASEDIR + '/src/shaders/tarot/']
 OUTDIR = BASEDIR + '/build/shaders/'
-GLSLC_PATH = '/home/michaelb/Dev/Vulkan/1.1.126.0/x86_64/bin/glslc'
+GLSLC_PATH = '/home/michaelb/dev/Vulkan/1.1.126.0/x86_64/bin/glslc'
 
 def compileShaders(shader_dir):
     shaders = []

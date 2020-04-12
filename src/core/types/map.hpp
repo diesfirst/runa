@@ -1,5 +1,6 @@
 #include <optional>
 #include <vector>
+#include <bitset>
 
 
 namespace sword
@@ -23,6 +24,15 @@ public:
         for (const auto& item : options) 
             if (item.first == s)
                 return item.second;
+        return {};
+    }
+
+    template <size_t N>
+    std::optional<T> findOption(const S& s, std::bitset<N> mask) const 
+    {
+        for (int i = 0; i < options.size(); i++) 
+            if (mask[i] && options[i].first == s)
+                return options[i].second;
         return {};
     }
 
@@ -52,6 +62,19 @@ public:
         vec.reserve(options.size());
         for (const auto& item : options) 
             vec.push_back(item.first);
+        return vec;
+    }
+
+    template <size_t N>
+    std::vector<S> getStrings(std::bitset<N> mask) const
+    {
+        std::vector<std::string> vec;
+        vec.reserve(options.size());
+        for (int i = 0; i < options.size(); i++) 
+        {
+            if (mask[i])
+                vec.push_back(options[i].first);
+        }
         return vec;
     }
 

@@ -1,5 +1,6 @@
 #include <state/director.hpp>
 #include <event/event.hpp>
+#include <util/stringutil.hpp>
 
 namespace sword
 {
@@ -20,6 +21,11 @@ void Director::handleEvent(event::Event* event)
             case Op::printHierarchy: printStateHierarchy(); break;
             case Op::pushRenderManager: pushRenderManager(); break;
         }
+        event->setHandled();
+    }
+    if (event->getCategory() == event::Category::Abort)
+    {
+        popTop();
     }
 }
 
@@ -35,10 +41,19 @@ void Director::jim()
 
 void Director::printStateHierarchy()
 {
+    std::cout << util::makeHeader("State Stack") << std::endl;
+    stateStack.print();
 }
 
 void Director::pushRenderManager()
 {
+    pushState(&renderManager);
+}
+
+void Director::popTop()
+{
+    if (stateStack.size() > 1)
+        editStack.popState();
 }
 
 }; // namespace state

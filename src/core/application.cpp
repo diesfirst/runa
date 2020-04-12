@@ -26,7 +26,6 @@ Application::Application(uint16_t w, uint16_t h, const std::string logfile, int 
     }
     if (readevents) readEvents(is, eventPops);
     if (recordevents) std::remove(writelog.data());
-    std::cout << "Application cstor called" << std::endl;
 }
 
 void Application::popState()

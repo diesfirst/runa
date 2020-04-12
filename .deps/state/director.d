@@ -6,7 +6,13 @@ build/state/director.o: src/core/state/director.cpp \
  src/core/types/map.hpp src/core/event/event.hpp \
  src/core/render/surface/window.hpp src/core/command/updatevocab.hpp \
  src/core/command/addvocab.hpp src/core/command/popvocab.hpp \
- src/core/state/statetypes.hpp src/core/state/rendermanager.hpp
+ src/core/state/statetypes.hpp src/core/state/rendermanager.hpp \
+ src/core/state/pipelinemanager.hpp src/core/state/descriptormanager.hpp \
+ src/core/state/renderpassmanager.hpp src/core/state/shader.hpp \
+ src/core/command/rendercommands.hpp src/core/command/command.hpp \
+ include/thirdparty/vulkan/vulkan.hpp include/thirdparty/vulkan/vulkan.h \
+ include/thirdparty/vulkan/vk_platform.h \
+ include/thirdparty/vulkan/vulkan_core.h src/core/util/stringutil.hpp
 
 src/core/state/director.hpp:
 
@@ -39,3 +45,25 @@ src/core/command/popvocab.hpp:
 src/core/state/statetypes.hpp:
 
 src/core/state/rendermanager.hpp:
+
+src/core/state/pipelinemanager.hpp:
+
+src/core/state/descriptormanager.hpp:
+
+src/core/state/renderpassmanager.hpp:
+
+src/core/state/shader.hpp:
+
+src/core/command/rendercommands.hpp:
+
+src/core/command/command.hpp:
+
+include/thirdparty/vulkan/vulkan.hpp:
+
+include/thirdparty/vulkan/vulkan.h:
+
+include/thirdparty/vulkan/vk_platform.h:
+
+include/thirdparty/vulkan/vulkan_core.h:
+
+src/core/util/stringutil.hpp:

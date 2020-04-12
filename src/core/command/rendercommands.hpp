@@ -7,8 +7,6 @@
 namespace sword
 {
 
-class XWindow;
-
 namespace command
 {
 
@@ -120,9 +118,7 @@ class PrepareRenderFrames : public Command
 {
 public:
     CMD_BASE("prepareRenderFrames");
-    inline void set(XWindow* window) {this->window = window;}
 private:
-    XWindow* window{nullptr};
 };
 
 class CreateGraphicsPipeline : public Command

@@ -1,0 +1,16 @@
+Thu Apr  9 13:41:46 EDT 2020
+
+I have an idea for how this software could end up looking at the end of everything.
+The idea is for a kind of latex of cg. Or a language for writing a cg software. 
+Kind of like houdini to the next level. We are no longer creating a recipe for an
+asset, we are creating a recipe for a software. So I create some lines or text 
+in a particular format, and that is markup for what the scene will create. So could have some
+thing like:
+[sphere]
+    radius 1
+[sphere]
+    radius 2
+    color 1, 0, 0
+That looks a lot like USD, and it seems that USD already solves that problem.
+But that is static. What about a script that sets up the rendering environment,
+loads shaders, adds states to that did not exist before. Needs more thought

@@ -31,7 +31,7 @@ SPV = ./build/shadersstar
 THIRD = ./src/thirdparty
 
 $(TARGET) : $(OBJS) 
-	$(CC) $(OBJS) -o $@ $(LDFLAGS) ; ctags -R $(CORE) ;
+	$(CC) $(OBJS) -o $@ $(LDFLAGS) ; ctags -R . ; cd $(CORE) ; ctags -R . 
 
 $(BUILD)/%.o : $(CORE)/%.cpp $(DEPDIR)/%.d | $(DEPDIR)
 	$(CC) $(CPPFLAGS) -c $< -o $@

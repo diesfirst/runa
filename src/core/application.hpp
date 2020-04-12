@@ -5,6 +5,7 @@
 #include <types/vocab.hpp>
 #include <state/director.hpp>
 #include <state/statetypes.hpp>
+#include <state/editstack.hpp>
 #include <render/ubotypes.hpp>
 #include <render/context.hpp>
 #include <render/surface/window.hpp>

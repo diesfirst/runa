@@ -23,6 +23,8 @@ void State::onEnter()
 void State::onExit()
 {
     onExitExt();
+    if (onExitCallback)
+        std::invoke(onExitCallback);
     auto cmd = pvPool.request();
     pushCmd(std::move(cmd));
 }
@@ -30,7 +32,6 @@ void State::onExit()
 void State::setVocab(std::vector<std::string> strings)
 {
     vocab = strings;
-    updateVocab();
 }
 
 void State::updateVocab()
@@ -56,35 +57,38 @@ Optional BranchState::extractCommand(event::Event* event)
 {
     auto cmdevent = static_cast<event::CommandLine*>(event);
     std::string input = cmdevent->getFirstWord();
-    return options.findOption(input);
+    if (active)
+        return options.findOption(input, topMask); //TODO give this a bitmask parameter to filter the options by
+    else
+        return options.findOption(input, topMask & lowMask);
 }
 
 void BranchState::onPush()
 {
-    setActiveVocab();
+    filterOutVocab();
+    active = false;
 }
 
 void BranchState::onResume()
 {
-    filterOutVocab();
+    setActiveVocab();
+    active = true;
 }
 
 void BranchState::setActiveVocab()
 {
-    clearVocab();
-    for (int i = 0; i < options.size(); i++) 
-        if (topMask[i]) 
-            addToVocab(options.stringAt(i));
-    printVocab();
+    setVocab(options.getStrings(topMask));
 }
 
 void BranchState::filterOutVocab()
 {
-    clearVocab();
-    auto mask = lowMask & topMask;
-    for (int i = 0; i < options.size(); i++) 
-        if (mask[i]) 
-            addToVocab(options.stringAt(i));
+    setVocab(options.getStrings(topMask & lowMask));
+}
+
+void BranchState::updateActiveVocab()
+{
+    setActiveVocab();
+    updateVocab();
 }
 
 }; //state
