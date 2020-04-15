@@ -17,6 +17,8 @@
 namespace sword
 {
 
+namespace state { class Vocab; }
+
 namespace event
 {
 
@@ -234,8 +236,6 @@ enum class InputMode : uint8_t
     Window,
 };
 
-using Vocab = std::vector<std::string>;
-
 template <typename T>
 using EventPool = Pool<T, Event>;
 using EventPtr = std::unique_ptr<Event, std::function<void(Event*)>>;
@@ -251,7 +251,7 @@ public:
 
     void setVocabulary(std::vector<std::string> vocab);
     static void updateVocab();
-    void addVocab(const Vocab*);
+    void addVocab(const state::Vocab*);
     void popVocab();
 
     void fetchWindowInput();
@@ -275,8 +275,8 @@ private:
     const render::Window& window;
     InputMode inputMode{InputMode::CommandLine};
 
-    inline static Vocab vocabulary{};
-    inline static std::vector<const Vocab*> vocabPtrs;
+    inline static std::vector<std::string> vocabulary{};
+    inline static std::vector<const state::Vocab*> vocabPtrs;
     static char* completion_generator(const char* text, int state);
     static char** completer(const char* text, int start, int end);
     bool keepWindowThread{true};

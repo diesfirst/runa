@@ -22,22 +22,8 @@ public:
     const char* getName() const override { return "director"; }
     void handleEvent(event::Event*) override;
     virtual ~Director() = default;
-    Director(EditStack& es, CommandStack& cs, const StateStack& ss, render::Window& window) :
-        BranchState{es, cs, {
-            {"foo", opcast(Op::foo)}, 
-            {"jim", opcast(Op::jim)},
-            {"render_manager", opcast(Op::pushRenderManager)},
-            {"print_state_hierarchy", opcast(Op::printHierarchy)},
-        }}, 
-        stateStack{ss},
-        renderManager{es, cs}
-    { 
-        activate(opcast(Op::foo));
-        activate(opcast(Op::jim));
-        activate(opcast(Op::pushRenderManager));
-        activate(opcast(Op::printHierarchy));
-        keepOn(opcast(Op::printHierarchy));
-    }
+    Director(EditStack& es, CommandStack& cs, const StateStack& ss, render::Window& window);
+
 private:
     void jim();
     void foo();

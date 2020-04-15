@@ -23,21 +23,7 @@ public:
     const char* getName() const override { return "render_manager"; }
     void handleEvent(event::Event*) override;
     virtual ~RenderManager() = default;
-    RenderManager(EditStack& es, CommandStack& cs)  : 
-        BranchState{es, cs,{
-            {"open_window", opcast(Op::openWindow)},
-            {"prep_render_frames", opcast(Op::prepRenderFrames)},
-            {"shader_manager", opcast(Op::shaderManager)}
-        }},
-        pipelineManager{es, cs},
-        rpassManager{es, cs},
-        descriptorManager{es, cs},
-        shaderManager{es, cs}
-    {   
-        activate(opcast(Op::openWindow));
-        activate(opcast(Op::shaderManager));
-        activate(opcast(Op::prepRenderFrames));
-    }
+    RenderManager(EditStack& es, CommandStack& cs, ExitCallbackFn cb);
 private:
     CommandPool<command::OpenWindow> owPool;
     CommandPool<command::PrepareRenderFrames> prfPool;

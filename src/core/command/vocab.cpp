@@ -1,6 +1,4 @@
-#include <command/updatevocab.hpp>
-#include <command/popvocab.hpp>
-#include <command/addvocab.hpp>
+#include <command/vocab.hpp>
 #include <application.hpp>
 
 namespace sword
@@ -22,6 +20,11 @@ void AddVocab::execute(Application* app)
 void PopVocab::execute(Application* app)
 {
     app->dispatcher.popVocab();
+}
+
+void SetVocab::execute(Application* app)
+{
+    app->dispatcher.setVocabulary(vocab);
 }
 
 }; // namespace command

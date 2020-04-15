@@ -2,7 +2,6 @@
 #define APPLICATION_HPP_
 
 #include <event/event.hpp>
-#include <types/vocab.hpp>
 #include <state/director.hpp>
 #include <state/statetypes.hpp>
 #include <state/editstack.hpp>
@@ -19,7 +18,6 @@ class Application
 {
 public:
     Application(uint16_t w, uint16_t h, const std::string logfile, int eventPops = 0);
-    void setVocabulary(Vocab vocab);
     void run();
     void popState();
     void pushState(state::State* const);

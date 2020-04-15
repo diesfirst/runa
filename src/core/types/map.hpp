@@ -1,3 +1,6 @@
+#ifndef TYPES_MAP_HPP
+#define TYPES_MAP_HPP
+
 #include <optional>
 #include <vector>
 #include <bitset>
@@ -78,11 +81,18 @@ public:
         return vec;
     }
 
-    std::string stringAt(int i) const { return options.at(i).first; }
+    S keyAt(int i) const { return options.at(i).first; }
+
+    T valueAt(int i) const { return options.at(i).second; }
     
     void push(Element element)
     {
         options.push_back(element);
+    }
+
+    auto begin()
+    {
+        return options.begin();
     }
 
     T end()
@@ -93,8 +103,11 @@ public:
     size_t size() const { return options.size(); }
 
 private:
-    std::vector<std::pair<S, T>> options;
+    std::vector<Element> options;
 };
 
 
 }; //sword
+
+
+#endif /* end of include guard: TYPES_MAP_HPP */

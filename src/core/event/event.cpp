@@ -7,6 +7,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <cassert>
+#include <state/state.hpp>
 
 namespace sword
 {
@@ -91,11 +92,14 @@ void EventDispatcher::updateVocab()
 {
     vocabulary.clear();
     for (const auto& vptr : vocabPtrs) 
-        for (const auto& word : *vptr) 
+    {
+        auto words = vptr->getWords();
+        for (const auto& word : words) 
             vocabulary.push_back(word);   
+    }
 }
 
-void EventDispatcher::addVocab(const Vocab* vptr)
+void EventDispatcher::addVocab(const state::Vocab* vptr)
 {
     vocabPtrs.push_back(vptr);
     updateVocab();

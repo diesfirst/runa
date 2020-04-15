@@ -8,6 +8,22 @@ namespace sword
 namespace state
 {
 
+Director::Director(EditStack& es, CommandStack& cs, const StateStack& ss, render::Window& window) :
+    BranchState{es, cs, {
+        {"foo", opcast(Op::foo)}, 
+        {"jim", opcast(Op::jim)},
+        {"render_manager", opcast(Op::pushRenderManager)},
+        {"print_state_hierarchy", opcast(Op::printHierarchy)},
+    }}, 
+    stateStack{ss},
+    renderManager{es, cs, [this](){activate(opcast(Op::pushRenderManager));}}
+{ 
+    activate(opcast(Op::foo));
+    activate(opcast(Op::jim));
+    activate(opcast(Op::pushRenderManager));
+    activate(opcast(Op::printHierarchy));
+}
+
 void Director::handleEvent(event::Event* event)
 {
     if (event->getCategory() == event::Category::CommandLine)
@@ -48,6 +64,7 @@ void Director::printStateHierarchy()
 void Director::pushRenderManager()
 {
     pushState(&renderManager);
+    deactivate(opcast(Op::pushRenderManager));
 }
 
 void Director::popTop()
