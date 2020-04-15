@@ -17,7 +17,7 @@ namespace state
 class RenderManager final : public BranchState
 {
 public:
-    enum class Op : Option {openWindow, prepRenderFrames, shaderManager};
+    enum class Op : Option {openWindow, prepRenderFrames, shaderManager, descriptorManager};
     constexpr Option opcast(Op op) {return static_cast<Option>(op);}
     constexpr Op opcast(Option op) {return static_cast<Op>(op);}
     const char* getName() const override { return "render_manager"; }

@@ -31,7 +31,7 @@ using OptionMask = std::bitset<32>;
 using Option = uint8_t;
 using Optional = std::optional<Option>;
 
-constexpr bool isCommandLine(event::Event* event) { return event->getCategory() == event::Category::CommandLine;}
+//constexpr bool isCommandLine(event::Event* event) { return event->getCategory() == event::Category::CommandLine;}
 constexpr event::CommandLine* toCommandLine(event::Event* event) { return static_cast<event::CommandLine*>(event);}
 
 class Vocab

@@ -63,7 +63,7 @@ void SetSpec::onEnterExt()
 
 void SetSpec::handleEvent(event::Event* event)
 {
-    if (isCommandLine(event))
+    if (event->getCategory() == event::Category::CommandLine)
     {
         auto stream = toCommandLine(event)->getStream();
         int first; int second; std::string type; std::string name;

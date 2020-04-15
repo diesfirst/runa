@@ -18,12 +18,7 @@ public:
     const char* getName() const override { return "descriptor_manager"; }
     void handleEvent(event::Event*) override {}
     virtual ~DescriptorManager() = default;
-    DescriptorManager(EditStack& es, CommandStack& cs)  : 
-        BranchState{es, cs,{
-            {},
-        }}
-    {   
-    }
+    DescriptorManager(EditStack& es, CommandStack& cs, ExitCallbackFn);
 private:
 };
 
