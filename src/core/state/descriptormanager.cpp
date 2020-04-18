@@ -91,7 +91,10 @@ DescriptorManager::DescriptorManager(StateArgs sa, ExitCallbackFn cb) :
             {"update_frame_samplers", opcast(Op::updateFrameSamplers)}
         }
     },
-    createFrameDescriptorSets{sa, std::bind(&BranchState::addReport<DescriptorSetReport>, this, std::placeholders::_1, &reports)},
+    createFrameDescriptorSets{sa, 
+        std::bind(&BranchState::addReport<DescriptorSetReport>, this, std::placeholders::_1, &reports),
+        [this](){ activate(opcast(Op::initFrameUBOs)); }
+    },
     descriptorSetLayoutMgr{sa, std::bind(&DescriptorManager::activateDSetLayoutNeeding, this)},
     initFrameUbos{sa},
     updateFrameSamplers{sa}

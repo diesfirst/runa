@@ -18,7 +18,7 @@ public:
     const char* getName() const override { return "CreateFrameDescriptorSets"; }
     void handleEvent(event::Event*) override;
     virtual ~CreateFrameDescriptorSets() = default;   
-    CreateFrameDescriptorSets(StateArgs, ReportCallbackFn callback);
+    CreateFrameDescriptorSets(StateArgs, ReportCallbackFn callback, ExitCallbackFn cb);
 private:
     void onEnterExt() override;
     CommandPool<command::CreateFrameDescriptorSets> cfdsPool;
