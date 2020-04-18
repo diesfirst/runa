@@ -52,6 +52,28 @@ void SetSpecInt::execute(Application* app)
     }
 }
 
+void CreateFrameDescriptorSets::execute(Application* app)
+{
+    app->renderer.createFrameDescriptorSets(layoutnames);
+}
+
+void CreateDescriptorSetLayout::execute(Application* app)
+{
+    app->renderer.createDescriptorSetLayout(name, bindings);
+}
+
+void InitFrameUbos::execute(Application* app)
+{
+    app->renderer.initFrameUBOs(sizeof(app->fragInput), binding);
+}
+
+void UpdateFrameSamplers::execute(Application* app)
+{
+    app->renderer.updateFrameSamplers(app->sampledImages, binding);
+}
+
+
+
 
 }; // namespace command
 

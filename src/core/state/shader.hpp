@@ -18,7 +18,7 @@ namespace shader
     enum class SpecType : uint8_t {integer, floating};
 }
 
-using ShaderReports = std::vector<std::unique_ptr<ShaderReport>>;
+using ShaderReports = Reports<ShaderReport>;
 
 class LoadFragShaders : public LeafState
 {
@@ -26,8 +26,8 @@ public:
     const char* getName() const override { return "load_frag_shaders"; }
     void handleEvent(event::Event*) override;
     virtual ~LoadFragShaders() = default;   
-    LoadFragShaders(EditStack& es, CommandStack& cs, ReportCallbackFn callback) :
-        LeafState{es, cs, callback} 
+    LoadFragShaders(StateArgs sa, ReportCallbackFn callback) :
+        LeafState{sa, callback} 
     {}
 private:
     CommandPool<command::LoadFragShader> lfPool;
@@ -40,8 +40,8 @@ public:
     const char* getName() const override { return "load_vert_shaders"; }
     void handleEvent(event::Event*) override;
     virtual ~LoadVertShaders() = default;   
-    LoadVertShaders(EditStack& es, CommandStack& cs, ReportCallbackFn callback) :
-        LeafState{es, cs, callback} 
+    LoadVertShaders(StateArgs sa, ReportCallbackFn callback) :
+        LeafState{sa, callback} 
     {}
 private:
     CommandPool<command::LoadVertShader> lvPool;
@@ -54,8 +54,8 @@ public:
     const char* getName() const override { return "set_spec"; }
     void handleEvent(event::Event*) override;
     virtual ~SetSpec() = default;   
-    SetSpec(EditStack& es, CommandStack& cs, shader::SpecType t, ShaderReports& reports) :
-        LeafState{es, cs}, type{t}, reports{reports}
+    SetSpec(StateArgs sa, shader::SpecType t, ShaderReports& reports) :
+        LeafState{sa}, type{t}, reports{reports}
     {}
 private:
     CommandPool<command::SetSpecInt> ssiPool;
@@ -74,7 +74,7 @@ public:
     const char* getName() const override { return "shader_manager"; }
     void handleEvent(event::Event*) override;
     virtual ~ShaderManager() = default;
-    ShaderManager(EditStack& es, CommandStack& cs, ExitCallbackFn);
+    ShaderManager(StateArgs, ExitCallbackFn);
     enum class SpecType : uint8_t {integer, floating};
 private:
     void printReports();

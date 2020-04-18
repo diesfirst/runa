@@ -128,16 +128,23 @@ class CommandLine: public Event
 {
 public:
     void set(std::string input) { this->input = input;}
-    inline Category getCategory() const override {return Category::CommandLine;}
-    inline std::string getName() const override {return "CommandLine";};
-    inline std::string getInput() const {return input;}
-    inline std::string getFirstWord() const 
+    Category getCategory() const override {return Category::CommandLine;}
+    std::string getName() const override {return "CommandLine";};
+    std::string getInput() const {return input;}
+    std::string getFirstWord() const 
     {
         std::stringstream ss{input};
         std::string word; ss >> word;
         return word;
     }
-    inline std::stringstream getStream() const
+    template<typename T>
+    T getFirst() const
+    {
+        std::stringstream ss{input};
+        T item; ss >> item;
+        return item;
+    }
+    std::stringstream getStream() const
     {
         return std::stringstream{input};
     }

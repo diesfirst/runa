@@ -113,18 +113,18 @@ void LoadVertShaders::handleEvent(event::Event* event)
     }
 }
 
-ShaderManager::ShaderManager(EditStack& es, CommandStack& cs, ExitCallbackFn exitCb)  : 
-    BranchState{es, cs, exitCb, {
+ShaderManager::ShaderManager(StateArgs sa, ExitCallbackFn exitCb)  : 
+    BranchState{sa, exitCb, {
         {"load_frag_shaders", opcast(Op::loadFrag)},
         {"load_vert_shaders", opcast(Op::loadVert)},
         {"print_reports", opcast(Op::printReports)},
         {"set_spec_int", opcast(Op::setSpecInt)},
         {"set_spec_float", opcast(Op::setSpecFloat)}
     }},
-    loadFragShaders{es, cs, std::bind(&BranchState::addReport<ShaderReport>, this, std::placeholders::_1, &shaderReports)},
-    loadVertShaders{es, cs, std::bind(&BranchState::addReport<ShaderReport>, this, std::placeholders::_1, &shaderReports)},
-    setSpecInt{es, cs, shader::SpecType::integer, shaderReports},
-    setSpecFloat{es, cs, shader::SpecType::floating, shaderReports}
+    loadFragShaders{sa, std::bind(&BranchState::addReport<ShaderReport>, this, std::placeholders::_1, &shaderReports)},
+    loadVertShaders{sa, std::bind(&BranchState::addReport<ShaderReport>, this, std::placeholders::_1, &shaderReports)},
+    setSpecInt{sa, shader::SpecType::integer, shaderReports},
+    setSpecFloat{sa, shader::SpecType::floating, shaderReports}
 {   
     activate(opcast(Op::loadFrag));
     activate(opcast(Op::loadVert));

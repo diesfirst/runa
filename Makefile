@@ -22,7 +22,7 @@ CC = g++
 INC_DIRS := -I$(CORE) -I/usr/include -I./include/thirdparty
 
 WFLAGS = -Wall -W -Wno-parentheses -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-uninitialized -Wno-unused-parameter -Wno-unused-local-typedefs
-CPPFLAGS = $(DEPFLAGS) -g -std=c++2a $(WFLAGS) $(INC_DIRS) -fPIC 
+CPPFLAGS = $(DEPFLAGS) -g -std=c++17 $(WFLAGS) $(INC_DIRS) -fPIC 
 LDFLAGS = -lpthread -lxcb -lvulkan -lX11 -lreadline -ldl
 LIB = ./lib
 LDIRS = -L$(LIB) #-L$(LIB)/loader 

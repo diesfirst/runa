@@ -31,6 +31,9 @@ using OptionMask = std::bitset<32>;
 using Option = uint8_t;
 using Optional = std::optional<Option>;
 
+template <typename T>
+using Reports = std::vector<std::unique_ptr<T>>;
+
 //constexpr bool isCommandLine(event::Event* event) { return event->getCategory() == event::Category::CommandLine;}
 constexpr event::CommandLine* toCommandLine(event::Event* event) { return static_cast<event::CommandLine*>(event);}
 
@@ -69,8 +72,16 @@ public:
         std::cout << std::endl;
     }
 private:
-    OptionMask* mask;
+    OptionMask* mask{nullptr};
     std::vector<std::string> words;
+};
+
+enum class StateType : uint8_t {leaf, branch};
+
+struct StateArgs
+{
+    EditStack& es;
+    CommandStack& cs;
 };
 
 class State
@@ -78,6 +89,7 @@ class State
 public:
     virtual void handleEvent(event::Event* event) = 0;
     virtual const char* getName() const = 0;
+    virtual StateType getType() const = 0;
     virtual ~State() = default;
     void onEnter();
     void onExit();
@@ -85,10 +97,6 @@ public:
 protected:
     State(CommandStack& cs) : cmdStack{cs} {}
     State(CommandStack& cs, ExitCallbackFn callback) : cmdStack{cs}, onExitCallback{callback} {}
-//    State(CommandStack& cs, ReportCallbackFn callback) : cmdStack{cs}, reportCallback{callback} {}
-//    State(EditStack& editStack, CommandStack& cmdStack) : stateEdits{editStack}, cmdStack{cmdStack}, vocab{cmdStack} {}
-//    State(EditStack& editStack, CommandStack& cmdStack, ReportCallbackFn callback) : 
-//        stateEdits{editStack}, cmdStack{cmdStack}, vocab{cmdStack}, reportCallback{callback} {}
     void pushCmd(CmdPtr ptr);
     void setVocab(std::vector<std::string> strings);
     void clearVocab() { vocab.clear(); }
@@ -97,7 +105,6 @@ protected:
     void printVocab();
     void setVocabMask(OptionMask* mask) { vocab.setMaskPtr(mask); }
     std::vector<std::string> getVocab();
-//    inline static Command::Pool<Command::RefreshState> refreshPool{10};
 private:
     CommandPool<command::UpdateVocab> uvPool{1};
     CommandPool<command::PopVocab> pvPool{1};
@@ -116,11 +123,16 @@ class LeafState : public State
 {
 public:
     ~LeafState() = default;
+    StateType getType() const override final { return StateType::leaf; }
 protected:
-    LeafState(EditStack& es, CommandStack& cs) :
-        State{cs}, editStack{es} {}
-    LeafState(EditStack& es, CommandStack& cs, ReportCallbackFn callback) :
-        State{cs}, editStack{es}, reportCallback{callback} {}
+    LeafState(StateArgs sa) :
+        State{sa.cs}, editStack{sa.es} {}
+    LeafState(StateArgs sa, ReportCallbackFn callback) :
+        State{sa.cs}, editStack{sa.es}, reportCallback{callback} {}
+    LeafState(StateArgs sa, ExitCallbackFn cb) :
+        State{sa.cs, cb}, editStack{sa.es} {}
+    LeafState(StateArgs sa, ReportCallbackFn rcb, ExitCallbackFn ecb) :
+        State{sa.cs, ecb}, editStack{sa.es}, reportCallback{rcb} {}
     void popSelf() { editStack.popState(); }
     ReportCallbackFn reportCallback{nullptr};
 
@@ -150,6 +162,7 @@ class BranchState : public State
 friend class Director;
 public:
     ~BranchState() = default;
+    StateType getType() const override final { return StateType::branch; }
     template<typename R>
     void addReport(Report* ptr, std::vector<std::unique_ptr<R>>* derivedReports)
     {
@@ -171,12 +184,24 @@ protected:
         setVocab(options.getStrings());
         setVocabMask(&topMask); 
     }
+    BranchState(StateArgs sa, std::initializer_list<Element> ops) :
+        State{sa.cs}, editStack{sa.es}, options{ops}
+    {
+        setVocab(options.getStrings());
+        setVocabMask(&topMask); 
+    }
     BranchState(EditStack& es, CommandStack& cs, ExitCallbackFn cb,
             std::initializer_list<Element> ops) :
         State{cs, cb}, editStack{es}, options{ops} 
     {
         setVocab(options.getStrings());
         setVocabMask(&topMask);
+    }
+    BranchState(StateArgs sa, ExitCallbackFn cb, std::initializer_list<Element> ops) :
+        State{sa.cs, cb}, editStack{sa.es}, options{ops}
+    {
+        setVocab(options.getStrings());
+        setVocabMask(&topMask); 
     }
     void pushState(State* state);
     Optional extractCommand(event::Event*);

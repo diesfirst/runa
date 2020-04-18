@@ -6,17 +6,17 @@ namespace sword
 namespace state
 {
 
-RenderManager::RenderManager(EditStack& es, CommandStack& cs, ExitCallbackFn cb) :
-    BranchState{es, cs, cb, {
+RenderManager::RenderManager(StateArgs sa, ExitCallbackFn cb) :
+    BranchState{sa, cb, {
         {"open_window", opcast(Op::openWindow)},
         {"prep_render_frames", opcast(Op::prepRenderFrames)},
         {"shader_manager", opcast(Op::shaderManager)},
         {"descriptor_manager", opcast(Op::descriptorManager)}
     }},
-    pipelineManager{es, cs},
-    rpassManager{es, cs},
-    descriptorManager{es, cs, [this](){activate(opcast(Op::descriptorManager));}},
-    shaderManager{es, cs, [this](){activate(opcast(Op::shaderManager));}}
+    pipelineManager{sa},
+    rpassManager{sa},
+    descriptorManager{sa, [this](){activate(opcast(Op::descriptorManager));}},
+    shaderManager{sa, [this](){activate(opcast(Op::shaderManager));}}
 {   
     activate(opcast(Op::openWindow));
     activate(opcast(Op::shaderManager));
@@ -33,7 +33,7 @@ void RenderManager::handleEvent(event::Event* event)
             case Op::openWindow: openWindow(); break;
             case Op::prepRenderFrames: prepRenderFrames(); break;
             case Op::shaderManager: pushState(&shaderManager); deactivate(opcast(Op::shaderManager)); break;
-            case Op::descriptorManager: break;
+            case Op::descriptorManager: pushState(&descriptorManager); deactivate(opcast(Op::descriptorManager)); break;
         }
     }
 }
@@ -51,6 +51,7 @@ void RenderManager::prepRenderFrames()
     auto cmd = prfPool.request();
     pushCmd(std::move(cmd));
     deactivate(opcast(Op::prepRenderFrames));
+    activate(opcast(Op::descriptorManager));
     updateVocab();
 }
 

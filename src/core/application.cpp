@@ -13,7 +13,7 @@ Application::Application(uint16_t w, uint16_t h, const std::string logfile, int 
     offscreenDim{{w, h}},
     swapDim{{w, h}},
     readlog{logfile},
-    dirState{stateEdits, cmdStack, stateStack, window}
+    dirState{{stateEdits, cmdStack}, stateStack, window}
 {
     stateStack.push(&dirState);
     stateStack.top()->onEnter();
@@ -32,12 +32,14 @@ void Application::popState()
 {
     stateStack.top()->onExit();
     stateStack.pop();
+
 }
 
 void Application::pushState(state::State* state)
 {
     stateStack.push(std::move(state));
-    state->onEnter();
+    if (state->getType() == state::StateType::branch)
+        state->onEnter();
 }
 
 void Application::createPipelineLayout()
@@ -122,14 +124,20 @@ void Application::run()
                     if (!event->isHandled())
                         state->handleEvent(event.get());
             }
-            for (auto state : stateEdits) 
+            if (stateEdits.size() > 0)
             {
-                if (state)
-                    pushState(state);
-                else
-                    popState();
+                for (auto state : stateEdits) 
+                {
+                    if (state)
+                        pushState(state);
+                    else
+                        popState();
+                }
+                stateEdits.clear();
+                // this allows mutiple leaves to be pushed at once, and they get entered in order
+                if (stateStack.top()->getType() == state::StateType::leaf)
+                    stateStack.top()->onEnter();
             }
-            stateEdits.clear();
             i++;
         }
         dispatcher.eventQueue.items.clear();

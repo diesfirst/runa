@@ -18,8 +18,8 @@ public:
     const char* getName() const override { return "pipeline_manager"; }
     void handleEvent(event::Event*) override {}
     virtual ~PipelineManager () = default;
-    PipelineManager (EditStack& es, CommandStack& cs)  : 
-        BranchState{es, cs,{
+    PipelineManager (StateArgs sa)  : 
+        BranchState{sa,{
             {},
         }}
     {   

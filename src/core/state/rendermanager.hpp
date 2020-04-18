@@ -23,7 +23,7 @@ public:
     const char* getName() const override { return "render_manager"; }
     void handleEvent(event::Event*) override;
     virtual ~RenderManager() = default;
-    RenderManager(EditStack& es, CommandStack& cs, ExitCallbackFn cb);
+    RenderManager(StateArgs, ExitCallbackFn cb);
 private:
     CommandPool<command::OpenWindow> owPool;
     CommandPool<command::PrepareRenderFrames> prfPool;

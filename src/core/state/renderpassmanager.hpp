@@ -18,8 +18,8 @@ public:
     const char* getName() const override { return "rpass_manager"; }
     void handleEvent(event::Event*) override {}
     virtual ~RenderpassManager() = default;
-    RenderpassManager(EditStack& es, CommandStack& cs)  : 
-        BranchState{es, cs,{
+    RenderpassManager(StateArgs sa)  : 
+        BranchState{sa,{
             {},
         }}
     {   

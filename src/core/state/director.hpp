@@ -16,13 +16,13 @@ namespace state
 class Director final : public BranchState
 {
 public:
-    enum class Op : Option {foo, jim, pushRenderManager, printHierarchy};
+    enum class Op : Option {pushRenderManager, printHierarchy};
     constexpr Option opcast(Op op) {return static_cast<Option>(op);}
     constexpr Op opcast(Option op) {return static_cast<Op>(op);}
     const char* getName() const override { return "director"; }
     void handleEvent(event::Event*) override;
     virtual ~Director() = default;
-    Director(EditStack& es, CommandStack& cs, const StateStack& ss, render::Window& window);
+    Director(StateArgs, const StateStack& ss, render::Window& window);
 
 private:
     void jim();

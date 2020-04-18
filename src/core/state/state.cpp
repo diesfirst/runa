@@ -21,6 +21,8 @@ void State::onExit()
 {
     onExitExt();
     onExitImp();
+    if (onExitCallback)
+        std::invoke(onExitCallback);
 }
 
 void State::onEnterImp()
@@ -33,8 +35,6 @@ void State::onEnterImp()
 
 void State::onExitImp()
 {
-    if (onExitCallback)
-        std::invoke(onExitCallback);
     auto cmd = pvPool.request();
     pushCmd(std::move(cmd));
 }
@@ -62,7 +62,6 @@ std::vector<std::string> State::getVocab()
 
 void LeafState::onEnterImp()
 {
-    onEnterExt();
     auto cmd = svPool.request(getVocab());
     pushCmd(std::move(cmd));
     std::cout << "Commandline options: ";
@@ -71,7 +70,7 @@ void LeafState::onEnterImp()
 
 void LeafState::onExitImp()
 {
-    onExitExt();
+//    onExitExt();
     updateVocab();
 }
 

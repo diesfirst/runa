@@ -8,18 +8,14 @@ namespace sword
 namespace state
 {
 
-Director::Director(EditStack& es, CommandStack& cs, const StateStack& ss, render::Window& window) :
-    BranchState{es, cs, {
-        {"foo", opcast(Op::foo)}, 
-        {"jim", opcast(Op::jim)},
+Director::Director(StateArgs sa, const StateStack& ss, render::Window& window) :
+    BranchState{sa, {
         {"render_manager", opcast(Op::pushRenderManager)},
         {"print_state_hierarchy", opcast(Op::printHierarchy)},
     }}, 
     stateStack{ss},
-    renderManager{es, cs, [this](){activate(opcast(Op::pushRenderManager));}}
+    renderManager{sa, [this](){activate(opcast(Op::pushRenderManager));}}
 { 
-    activate(opcast(Op::foo));
-    activate(opcast(Op::jim));
     activate(opcast(Op::pushRenderManager));
     activate(opcast(Op::printHierarchy));
 }
@@ -32,8 +28,6 @@ void Director::handleEvent(event::Event* event)
         if (!option) return;
         switch(opcast(*option))
         {
-            case Op::foo: foo(); break;
-            case Op::jim: jim(); break;
             case Op::printHierarchy: printStateHierarchy(); break;
             case Op::pushRenderManager: pushRenderManager(); break;
         }
@@ -43,16 +37,6 @@ void Director::handleEvent(event::Event* event)
     {
         popTop();
     }
-}
-
-void Director::foo() 
-{
-    std::cout << "Foo boy!" << std::endl;
-}
-
-void Director::jim()
-{
-    std::cout << "Fuck you Jim, fuck you." << std::endl;
 }
 
 void Director::printStateHierarchy()
