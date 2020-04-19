@@ -14,7 +14,7 @@ namespace state
 enum class ReportType : uint8_t
 {
     Shader,
-    Renderpass,
+    RenderPass,
     Pipeline,
     RenderpassInstance,
     RenderCommand,
@@ -112,23 +112,23 @@ private:
     bool is3d{false};
 };
 
-class RenderpassReport : public Report
+class RenderPassReport : public Report
 {
 public:
     enum class Type : uint8_t {swapchain, offscreen}; 
-    inline RenderpassReport(std::string n, Type t) :
+    inline RenderPassReport(std::string n, Type t) :
         name{n}, type{t} {}
-    inline RenderpassReport(std::string n, Type t, vk::AttachmentLoadOp loadOp) :
+    inline RenderPassReport(std::string n, Type t, vk::AttachmentLoadOp loadOp) :
         name{n}, type{t}, loadOp{loadOp} {}
     inline void operator()() const override
     {
-        std::cout << "================== Renderpass Report ==================" << std::endl;
+        std::cout << "================== RenderPass Report ==================" << std::endl;
         std::cout << "Name:                  " << name << std::endl;
         std::cout << "Type:                  " << typeToString() << std::endl;
         std::cout << "Attachment Load Op:    " << vk::to_string(loadOp) << std::endl;
     }
     inline const std::string getObjectName() const override {return name;}
-    inline ReportType getType() const override {return ReportType::Renderpass;}
+    inline ReportType getType() const override {return ReportType::RenderPass;}
 private:
     const std::string name{"unitilialized"};
     Type type;

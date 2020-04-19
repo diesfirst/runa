@@ -9,12 +9,13 @@ namespace state
 {
 
 Director::Director(StateArgs sa, const StateStack& ss, render::Window& window) :
-    BranchState{sa, {
+    BranchState{sa, Callbacks(), {
         {"render_manager", opcast(Op::pushRenderManager)},
         {"print_state_hierarchy", opcast(Op::printHierarchy)},
     }}, 
     stateStack{ss},
-    renderManager{sa, [this](){activate(opcast(Op::pushRenderManager));}}
+    renderManager{sa, 
+        {[this](){activate(opcast(Op::pushRenderManager));}, nullptr}}
 { 
     activate(opcast(Op::pushRenderManager));
     activate(opcast(Op::printHierarchy));

@@ -6,8 +6,8 @@ namespace sword
 namespace state
 {
 
-SetStateType::SetStateType(StateArgs sa, vk::DescriptorSetLayoutBinding* const & binding) :
-    LeafState{sa},
+SetStateType::SetStateType(StateArgs sa, Callbacks cb, vk::DescriptorSetLayoutBinding* const & binding) :
+    LeafState{sa, cb},
     options{
         {"uniform_buffer", vk::DescriptorType::eUniformBuffer},
         {"combinded_image_sampler", vk::DescriptorType::eCombinedImageSampler}
@@ -38,8 +38,8 @@ void SetStateType::handleEvent(event::Event* event)
     }
 }
 
-SetDescriptorCount::SetDescriptorCount(StateArgs sa, vk::DescriptorSetLayoutBinding* const & binding) :
-    LeafState{sa},
+SetDescriptorCount::SetDescriptorCount(StateArgs sa, Callbacks cb, vk::DescriptorSetLayoutBinding* const & binding) :
+    LeafState{sa, cb},
     binding{binding}
 {}
 
@@ -63,8 +63,8 @@ void SetDescriptorCount::handleEvent(event::Event* event)
     }
 }
 
-SetShaderStageEntry::SetShaderStageEntry(StateArgs sa, vk::DescriptorSetLayoutBinding* const & binding) :
-    LeafState{sa},
+SetShaderStageEntry::SetShaderStageEntry(StateArgs sa, Callbacks cb, vk::DescriptorSetLayoutBinding* const & binding) :
+    LeafState{sa, cb},
     options{
         {"fragment_shader", vk::ShaderStageFlagBits::eFragment}
     },
@@ -95,7 +95,7 @@ void SetShaderStageEntry::handleEvent(event::Event* event)
 }
 
 CreateDescriptorSetLayout::CreateDescriptorSetLayout(StateArgs sa, 
-        ReportCallbackFn cb, std::vector<vk::DescriptorSetLayoutBinding>& bindings) :
+        Callbacks cb, std::vector<vk::DescriptorSetLayoutBinding>& bindings) :
     LeafState{sa, cb},
     bindings{bindings}
 {}
@@ -121,20 +121,20 @@ void CreateDescriptorSetLayout::handleEvent(event::Event* event)
     }
 }
 
-DescriptorSetLayoutManager::DescriptorSetLayoutManager(StateArgs sa, ExitCallbackFn cb) :
+DescriptorSetLayoutManager::DescriptorSetLayoutManager(StateArgs sa, Callbacks cb) :
     BranchState{sa, cb, 
         {
             {"create_binding", opcast(Op::createBinding)},
             {"create_descriptor_set_layout", opcast(Op::createDescriptorSetLayout)},
             {"print_report", opcast(Op::printReports)}
         }},
-    setStateType{sa, curBinding},
-    setDescriptorCount{sa, curBinding},
-    setShaderStageEntry{sa, curBinding},
-    createDescriptorSetLayout{sa, 
-        std::bind(&BranchState::addReport<DescriptorSetLayoutReport>, this, std::placeholders::_1, &reports),
-        bindings
-    }
+    setStateType{sa, {}, curBinding},
+    setDescriptorCount{sa, {}, curBinding},
+    setShaderStageEntry{sa, {}, curBinding},
+    createDescriptorSetLayout{
+        sa, 
+        {nullptr, std::bind(&BranchState::addReport<DescriptorSetLayoutReport>, this, std::placeholders::_1, &reports)}, 
+        bindings}
 {
     activate(opcast(Op::createBinding));
     activate(opcast(Op::printReports));

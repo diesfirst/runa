@@ -7,8 +7,8 @@ namespace state
 {
 
 
-CreateFrameDescriptorSets::CreateFrameDescriptorSets(StateArgs sa, ReportCallbackFn callback) :
-    LeafState{sa, callback} 
+CreateFrameDescriptorSets::CreateFrameDescriptorSets(StateArgs sa, Callbacks cb) :
+    LeafState{sa, cb} 
 {}
 
 void CreateFrameDescriptorSets::onEnterExt()
@@ -38,7 +38,7 @@ void CreateFrameDescriptorSets::handleEvent(event::Event* event)
 }
 
 InitFrameUbos::InitFrameUbos(StateArgs sa) :
-    LeafState{sa}
+    LeafState{sa, {}}
 {}
 
 void InitFrameUbos::onEnterExt()
@@ -60,7 +60,7 @@ void InitFrameUbos::handleEvent(event::Event* event)
 }
 
 UpdateFrameSamplers::UpdateFrameSamplers(StateArgs sa) :
-    LeafState{sa}
+    LeafState{sa, {}}
 {}
 
 void UpdateFrameSamplers::onEnterExt()
@@ -81,7 +81,7 @@ void UpdateFrameSamplers::handleEvent(event::Event* event)
     }
 }
 
-DescriptorManager::DescriptorManager(StateArgs sa, ExitCallbackFn cb) :
+DescriptorManager::DescriptorManager(StateArgs sa, Callbacks cb) :
     BranchState{sa, cb, 
         {
             {"create_frame_descriptor_sets", opcast(Op::createFrameDescriptorSets)},
@@ -92,10 +92,9 @@ DescriptorManager::DescriptorManager(StateArgs sa, ExitCallbackFn cb) :
         }
     },
     createFrameDescriptorSets{sa, 
-        std::bind(&BranchState::addReport<DescriptorSetReport>, this, std::placeholders::_1, &reports),
-        [this](){ activate(opcast(Op::initFrameUBOs)); }
-    },
-    descriptorSetLayoutMgr{sa, std::bind(&DescriptorManager::activateDSetLayoutNeeding, this)},
+        {[this](){ activate(opcast(Op::initFrameUBOs));},
+        std::bind(&BranchState::addReport<DescriptorSetReport>, this, std::placeholders::_1, &reports)}},
+    descriptorSetLayoutMgr{sa, {std::bind(&DescriptorManager::activateDSetLayoutNeeding, this)}},
     initFrameUbos{sa},
     updateFrameSamplers{sa}
 {
@@ -131,6 +130,7 @@ void DescriptorManager::printReports()
 
 void DescriptorManager::activateDSetLayoutNeeding()
 {
+    activate(opcast(Op::descriptorSetLayoutMgr));
     if (descriptorSetLayoutMgr.hasCreatedLayout())
         activate(opcast(Op::createFrameDescriptorSets));
 }

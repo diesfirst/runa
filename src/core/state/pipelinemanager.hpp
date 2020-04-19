@@ -19,7 +19,7 @@ public:
     void handleEvent(event::Event*) override {}
     virtual ~PipelineManager () = default;
     PipelineManager (StateArgs sa)  : 
-        BranchState{sa,{
+        BranchState{sa, {}, {
             {},
         }}
     {   

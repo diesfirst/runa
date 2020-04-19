@@ -37,6 +37,12 @@ using Reports = std::vector<std::unique_ptr<T>>;
 //constexpr bool isCommandLine(event::Event* event) { return event->getCategory() == event::Category::CommandLine;}
 constexpr event::CommandLine* toCommandLine(event::Event* event) { return static_cast<event::CommandLine*>(event);}
 
+//template<typename T>
+//constexpr Option opcast(T op) {return static_cast<Option>(op);}
+//
+//template<typename T>
+//constexpr T opcast(Option op) {return static_cast<T>(op);}
+
 class Vocab
 {
 public:
@@ -84,6 +90,12 @@ struct StateArgs
     CommandStack& cs;
 };
 
+struct Callbacks
+{
+    ExitCallbackFn ex{nullptr};
+    ReportCallbackFn rp{nullptr};
+};
+
 class State
 {
 public:
@@ -125,14 +137,16 @@ public:
     ~LeafState() = default;
     StateType getType() const override final { return StateType::leaf; }
 protected:
-    LeafState(StateArgs sa) :
-        State{sa.cs}, editStack{sa.es} {}
-    LeafState(StateArgs sa, ReportCallbackFn callback) :
-        State{sa.cs}, editStack{sa.es}, reportCallback{callback} {}
-    LeafState(StateArgs sa, ExitCallbackFn cb) :
-        State{sa.cs, cb}, editStack{sa.es} {}
-    LeafState(StateArgs sa, ReportCallbackFn rcb, ExitCallbackFn ecb) :
-        State{sa.cs, ecb}, editStack{sa.es}, reportCallback{rcb} {}
+//    LeafState(StateArgs sa) :
+//        State{sa.cs}, editStack{sa.es} {}
+//    LeafState(StateArgs sa, ReportCallbackFn callback) :
+//        State{sa.cs}, editStack{sa.es}, reportCallback{callback} {}
+//    LeafState(StateArgs sa, ExitCallbackFn cb) :
+//        State{sa.cs, cb}, editStack{sa.es} {}
+//    LeafState(StateArgs sa, ReportCallbackFn rcb, ExitCallbackFn ecb) :
+//        State{sa.cs, ecb}, editStack{sa.es}, reportCallback{rcb} {}
+    LeafState(StateArgs sa, Callbacks cb) :
+        State{sa.cs, cb.ex}, editStack{sa.es}, reportCallback{cb.rp} {}
     void popSelf() { editStack.popState(); }
     ReportCallbackFn reportCallback{nullptr};
 
@@ -177,28 +191,34 @@ public:
     }
 protected:
     using Element = std::pair<std::string, Option>;
-    BranchState(EditStack& es, CommandStack& cs,
-            std::initializer_list<Element> ops) :
-        State{cs}, editStack{es}, options{ops} 
-    { 
-        setVocab(options.getStrings());
-        setVocabMask(&topMask); 
-    }
-    BranchState(StateArgs sa, std::initializer_list<Element> ops) :
-        State{sa.cs}, editStack{sa.es}, options{ops}
-    {
-        setVocab(options.getStrings());
-        setVocabMask(&topMask); 
-    }
-    BranchState(EditStack& es, CommandStack& cs, ExitCallbackFn cb,
-            std::initializer_list<Element> ops) :
-        State{cs, cb}, editStack{es}, options{ops} 
-    {
-        setVocab(options.getStrings());
-        setVocabMask(&topMask);
-    }
-    BranchState(StateArgs sa, ExitCallbackFn cb, std::initializer_list<Element> ops) :
-        State{sa.cs, cb}, editStack{sa.es}, options{ops}
+//    BranchState(EditStack& es, CommandStack& cs,
+//            std::initializer_list<Element> ops) :
+//        State{cs}, editStack{es}, options{ops} 
+//    { 
+//        setVocab(options.getStrings());
+//        setVocabMask(&topMask); 
+//    }
+//    BranchState(StateArgs sa, std::initializer_list<Element> ops) :
+//        State{sa.cs}, editStack{sa.es}, options{ops}
+//    {
+//        setVocab(options.getStrings());
+//        setVocabMask(&topMask); 
+//    }
+//    BranchState(EditStack& es, CommandStack& cs, ExitCallbackFn cb,
+//            std::initializer_list<Element> ops) :
+//        State{cs, cb}, editStack{es}, options{ops} 
+//    {
+//        setVocab(options.getStrings());
+//        setVocabMask(&topMask);
+//    }
+//    BranchState(StateArgs sa, ExitCallbackFn cb, std::initializer_list<Element> ops) :
+//        State{sa.cs, cb}, editStack{sa.es}, options{ops}
+//    {
+//        setVocab(options.getStrings());
+//        setVocabMask(&topMask); 
+//    }    
+    BranchState(StateArgs sa, Callbacks cb, std::initializer_list<Element> ops) :
+        State{sa.cs, cb.ex}, editStack{sa.es}, options{ops}
     {
         setVocab(options.getStrings());
         setVocabMask(&topMask); 

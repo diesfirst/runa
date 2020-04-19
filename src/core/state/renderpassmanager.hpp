@@ -2,6 +2,7 @@
 #define STATE_RENDERPASSMANAGER_HPP
 
 #include <state/state.hpp>
+#include <command/rendercommands.hpp>
 
 namespace sword
 {
@@ -9,22 +10,38 @@ namespace sword
 namespace state
 {
 
-class RenderpassManager final : public BranchState
+enum class RenderPassType : uint8_t {swapchain, offscreen};
+
+class CreateRenderPass : public LeafState
 {
 public:
-    enum class Op : Option {};
+    const char* getName() const override { return "CreateRenderPass"; }
+    void handleEvent(event::Event*) override;
+    virtual ~CreateRenderPass() = default;   
+    CreateRenderPass(StateArgs, Callbacks);
+    void setType(RenderPassType);
+private:
+    void onEnterExt() override;
+    RenderPassType type;
+    CommandPool<command::CreateSwapchainRenderpass> csrpPool;
+    CommandPool<command::CreateOffscreenRenderpass> corpPool;
+};
+
+class RenderPassManager final : public BranchState
+{
+public:
+    enum class Op : Option {createSwapRpass, createOffscreenRpass};
     constexpr Option opcast(Op op) {return static_cast<Option>(op);}
     constexpr Op opcast(Option op) {return static_cast<Op>(op);}
     const char* getName() const override { return "rpass_manager"; }
-    void handleEvent(event::Event*) override {}
-    virtual ~RenderpassManager() = default;
-    RenderpassManager(StateArgs sa)  : 
-        BranchState{sa,{
-            {},
-        }}
-    {   
-    }
+    void handleEvent(event::Event*) override;
+    virtual ~RenderPassManager() = default;
+    RenderPassManager(StateArgs sa, Callbacks cb);
 private:
+    CreateRenderPass createRenderPass;
+    void pushCreateRenderPass(RenderPassType);
+
+    Reports<RenderPassReport> reports;
 };
 
 }; // namespace state

@@ -144,6 +144,17 @@ public:
         T item; ss >> item;
         return item;
     }
+    template<typename T, int I>
+    T getArg()
+    {
+        std::stringstream ss{input};
+        std::string catcher;
+        T arg;
+        for (int i = 0; i < I; i++) 
+            ss >> catcher;   
+        ss >> arg; 
+        return arg;
+    }
     std::stringstream getStream() const
     {
         return std::stringstream{input};

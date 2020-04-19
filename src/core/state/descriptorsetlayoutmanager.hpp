@@ -16,7 +16,7 @@ public:
     const char* getName() const override { return "SetStateType"; }
     void handleEvent(event::Event*) override;
     virtual ~SetStateType() = default;   
-    SetStateType(StateArgs, vk::DescriptorSetLayoutBinding* const &);
+    SetStateType(StateArgs, Callbacks, vk::DescriptorSetLayoutBinding* const &);
     vk::DescriptorSetLayoutBinding* const & binding;
 private:
     void onEnterExt() override;
@@ -29,7 +29,7 @@ public:
     const char* getName() const override { return "SetDescriptorCount"; }
     void handleEvent(event::Event*) override;
     virtual ~SetDescriptorCount() = default;   
-    SetDescriptorCount(StateArgs, vk::DescriptorSetLayoutBinding* const &);
+    SetDescriptorCount(StateArgs, Callbacks, vk::DescriptorSetLayoutBinding* const &);
     vk::DescriptorSetLayoutBinding* const & binding;
 private:
     void onEnterExt() override;
@@ -41,7 +41,7 @@ public:
     const char* getName() const override { return "SetShaderStageEntry"; }
     void handleEvent(event::Event*) override;
     virtual ~SetShaderStageEntry() = default;   
-    SetShaderStageEntry(StateArgs, vk::DescriptorSetLayoutBinding* const &);
+    SetShaderStageEntry(StateArgs, Callbacks, vk::DescriptorSetLayoutBinding* const &);
     vk::DescriptorSetLayoutBinding* const & binding;
 private:
     void onEnterExt() override;
@@ -54,7 +54,7 @@ public:
     const char* getName() const override { return "CreateDescriptorSetLayout"; }
     void handleEvent(event::Event*) override;
     virtual ~CreateDescriptorSetLayout() = default;   
-    CreateDescriptorSetLayout(StateArgs, ReportCallbackFn callback, 
+    CreateDescriptorSetLayout(StateArgs, Callbacks, 
             std::vector<vk::DescriptorSetLayoutBinding>&);
 private:
     std::vector<vk::DescriptorSetLayoutBinding>& bindings;
@@ -72,7 +72,7 @@ public:
     const char* getName() const override { return "DescriptorSetLayoutManager"; }
     void handleEvent(event::Event*) override;
     virtual ~DescriptorSetLayoutManager() = default;
-    DescriptorSetLayoutManager(StateArgs, ExitCallbackFn);
+    DescriptorSetLayoutManager(StateArgs, Callbacks);
     bool hasCreatedLayout();
 private:
     SetStateType setStateType;

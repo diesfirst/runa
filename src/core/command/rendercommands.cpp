@@ -72,6 +72,17 @@ void UpdateFrameSamplers::execute(Application* app)
     app->renderer.updateFrameSamplers(app->sampledImages, binding);
 }
 
+void CreateSwapchainRenderpass::execute(Application* app)
+{
+    auto& rpass = app->renderer.createRenderPass(rpassName);
+    app->renderer.prepareAsSwapchainPass(rpass);
+}
+
+void CreateOffscreenRenderpass::execute(Application* app)
+{
+    auto& rpass = app->renderer.createRenderPass(rpassName);
+    app->renderer.prepareAsOffscreenPass(rpass, loadOp);
+}
 
 
 

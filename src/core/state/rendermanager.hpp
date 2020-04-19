@@ -17,19 +17,19 @@ namespace state
 class RenderManager final : public BranchState
 {
 public:
-    enum class Op : Option {openWindow, prepRenderFrames, shaderManager, descriptorManager};
+    enum class Op : Option {renderPassMgr, openWindow, prepRenderFrames, shaderManager, descriptorManager};
     constexpr Option opcast(Op op) {return static_cast<Option>(op);}
     constexpr Op opcast(Option op) {return static_cast<Op>(op);}
     const char* getName() const override { return "render_manager"; }
     void handleEvent(event::Event*) override;
     virtual ~RenderManager() = default;
-    RenderManager(StateArgs, ExitCallbackFn cb);
+    RenderManager(StateArgs, Callbacks cb);
 private:
     CommandPool<command::OpenWindow> owPool;
     CommandPool<command::PrepareRenderFrames> prfPool;
 
     PipelineManager pipelineManager;
-    RenderpassManager rpassManager;
+    RenderPassManager rpassManager;
     DescriptorManager descriptorManager;
     ShaderManager shaderManager;
 

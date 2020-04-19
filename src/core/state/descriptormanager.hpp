@@ -18,7 +18,7 @@ public:
     const char* getName() const override { return "CreateFrameDescriptorSets"; }
     void handleEvent(event::Event*) override;
     virtual ~CreateFrameDescriptorSets() = default;   
-    CreateFrameDescriptorSets(StateArgs, ReportCallbackFn callback, ExitCallbackFn cb);
+    CreateFrameDescriptorSets(StateArgs, Callbacks);
 private:
     void onEnterExt() override;
     CommandPool<command::CreateFrameDescriptorSets> cfdsPool;
@@ -57,7 +57,7 @@ public:
     const char* getName() const override { return "descriptor_manager"; }
     void handleEvent(event::Event*) override;
     virtual ~DescriptorManager() = default;
-    DescriptorManager(StateArgs, ExitCallbackFn);
+    DescriptorManager(StateArgs, Callbacks);
 private:
     DescriptorSetLayoutManager descriptorSetLayoutMgr;
     CreateFrameDescriptorSets createFrameDescriptorSets;
