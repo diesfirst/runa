@@ -1,6 +1,8 @@
 #ifndef STATE_RENDERMANAGER_HPP
 #define STATE_RENDERMANAGER_HPP
 
+//imp : state/rendermanager.cpp
+
 #include <state/state.hpp>
 #include <state/pipelinemanager.hpp>
 #include <state/descriptormanager.hpp>
@@ -17,14 +19,13 @@ namespace state
 class RenderManager final : public BranchState
 {
 public:
-    enum class Op : Option {renderPassMgr, openWindow, prepRenderFrames, shaderManager, descriptorManager};
-    constexpr Option opcast(Op op) {return static_cast<Option>(op);}
-    constexpr Op opcast(Option op) {return static_cast<Op>(op);}
     const char* getName() const override { return "render_manager"; }
     void handleEvent(event::Event*) override;
     virtual ~RenderManager() = default;
     RenderManager(StateArgs, Callbacks cb);
 private:
+    enum class Op : Option {openWindow, prepRenderFrames, shaderManager, descriptorManager, renderPassManager, pipelineManager};
+
     CommandPool<command::OpenWindow> owPool;
     CommandPool<command::PrepareRenderFrames> prfPool;
 
@@ -35,6 +36,7 @@ private:
 
     void openWindow();
     void prepRenderFrames();
+    void onDescriptorSetLayoutCreate();
 };
 
 }; // namespace state

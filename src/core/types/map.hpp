@@ -22,7 +22,7 @@ public:
 //        instream >> input;
 //        return findOption(input);
 //    }
-    std::optional<T> findOption(const S& s) const 
+    std::optional<T> findValue(const S& s) const 
     {
         for (const auto& item : options) 
             if (item.first == s)
@@ -31,24 +31,12 @@ public:
     }
 
     template <size_t N>
-    std::optional<T> findOption(const S& s, std::bitset<N> mask) const 
+    std::optional<T> findValue(const S& s, std::bitset<N> mask) const 
     {
         for (int i = 0; i < options.size(); i++) 
-            if (mask[i] && options[i].first == s)
+            if (mask[options[i].second] && options[i].first == s)
                 return options[i].second;
         return {};
-    }
-
-    void move(T t, SmallMap<S,T>& other) 
-    {
-        const size_t size = options.size();
-        for (int i = 0; i < size; i++) 
-           if (options[i].second == t)
-           {
-               Element element = options[i];
-               other.push(element);
-               options.erase(options.begin() + i); 
-           }
     }
 
     void remove(T t)
@@ -59,9 +47,11 @@ public:
                options.erase(options.begin() + i); 
     }
 
-    std::vector<S> getStrings() const
+    //TODO: we need to extend the map to the specific case of <string, option> 
+    //      and make sure that this function in that setting returns the strings in order
+    std::vector<S> getKeys() const
     {
-        std::vector<std::string> vec;
+        std::vector<S> vec;
         vec.reserve(options.size());
         for (const auto& item : options) 
             vec.push_back(item.first);
@@ -69,9 +59,9 @@ public:
     }
 
     template <size_t N>
-    std::vector<S> getStrings(std::bitset<N> mask) const
+    std::vector<S> getKeys(std::bitset<N> mask) const
     {
-        std::vector<std::string> vec;
+        std::vector<S> vec;
         vec.reserve(options.size());
         for (int i = 0; i < options.size(); i++) 
         {
@@ -95,7 +85,7 @@ public:
         return options.begin();
     }
 
-    T end()
+    auto end()
     {
         return options.end();
     }
@@ -105,6 +95,7 @@ public:
 private:
     std::vector<Element> options;
 };
+
 
 
 }; //sword

@@ -27,6 +27,7 @@ namespace state
 
 using ReportCallbackFn = std::function<void(Report*)>;
 using ExitCallbackFn = std::function<void()>;
+using GenericCallbackFn = std::function<void()>;
 using OptionMask = std::bitset<32>;
 using Option = uint8_t;
 using Optional = std::optional<Option>;
@@ -37,11 +38,11 @@ using Reports = std::vector<std::unique_ptr<T>>;
 //constexpr bool isCommandLine(event::Event* event) { return event->getCategory() == event::Category::CommandLine;}
 constexpr event::CommandLine* toCommandLine(event::Event* event) { return static_cast<event::CommandLine*>(event);}
 
-//template<typename T>
-//constexpr Option opcast(T op) {return static_cast<Option>(op);}
-//
-//template<typename T>
-//constexpr T opcast(Option op) {return static_cast<T>(op);}
+template<typename T>
+constexpr Option opcast(T op) {return static_cast<Option>(op);}
+
+template<typename T>
+constexpr T opcast(Option op) {return static_cast<T>(op);}
 
 class Vocab
 {
@@ -94,7 +95,32 @@ struct Callbacks
 {
     ExitCallbackFn ex{nullptr};
     ReportCallbackFn rp{nullptr};
+    GenericCallbackFn gn{nullptr};
 };
+
+class OptionMap
+{
+public:
+    using Element = std::pair<std::string, Option>;
+    OptionMap(std::initializer_list<Element> init) :
+        map{init} 
+    {
+        std::sort(map.begin(), map.end(), [](const Element& e1, const Element& e2) { return e1.second < e2.second; });
+    }
+
+    std::vector<std::string> getStrings()
+    {
+        return map.getKeys();
+    }
+
+    std::optional<Option> findOption(const std::string& s, OptionMask mask) const
+    {
+        return map.findValue(s, mask);
+    }
+private:
+    SmallMap<std::string, Option> map;
+};
+
 
 class State
 {
@@ -137,14 +163,6 @@ public:
     ~LeafState() = default;
     StateType getType() const override final { return StateType::leaf; }
 protected:
-//    LeafState(StateArgs sa) :
-//        State{sa.cs}, editStack{sa.es} {}
-//    LeafState(StateArgs sa, ReportCallbackFn callback) :
-//        State{sa.cs}, editStack{sa.es}, reportCallback{callback} {}
-//    LeafState(StateArgs sa, ExitCallbackFn cb) :
-//        State{sa.cs, cb}, editStack{sa.es} {}
-//    LeafState(StateArgs sa, ReportCallbackFn rcb, ExitCallbackFn ecb) :
-//        State{sa.cs, ecb}, editStack{sa.es}, reportCallback{rcb} {}
     LeafState(StateArgs sa, Callbacks cb) :
         State{sa.cs, cb.ex}, editStack{sa.es}, reportCallback{cb.rp} {}
     void popSelf() { editStack.popState(); }
@@ -191,32 +209,6 @@ public:
     }
 protected:
     using Element = std::pair<std::string, Option>;
-//    BranchState(EditStack& es, CommandStack& cs,
-//            std::initializer_list<Element> ops) :
-//        State{cs}, editStack{es}, options{ops} 
-//    { 
-//        setVocab(options.getStrings());
-//        setVocabMask(&topMask); 
-//    }
-//    BranchState(StateArgs sa, std::initializer_list<Element> ops) :
-//        State{sa.cs}, editStack{sa.es}, options{ops}
-//    {
-//        setVocab(options.getStrings());
-//        setVocabMask(&topMask); 
-//    }
-//    BranchState(EditStack& es, CommandStack& cs, ExitCallbackFn cb,
-//            std::initializer_list<Element> ops) :
-//        State{cs, cb}, editStack{es}, options{ops} 
-//    {
-//        setVocab(options.getStrings());
-//        setVocabMask(&topMask);
-//    }
-//    BranchState(StateArgs sa, ExitCallbackFn cb, std::initializer_list<Element> ops) :
-//        State{sa.cs, cb}, editStack{sa.es}, options{ops}
-//    {
-//        setVocab(options.getStrings());
-//        setVocabMask(&topMask); 
-//    }    
     BranchState(StateArgs sa, Callbacks cb, std::initializer_list<Element> ops) :
         State{sa.cs, cb.ex}, editStack{sa.es}, options{ops}
     {
@@ -228,16 +220,12 @@ protected:
     void activate(Option op) { topMask.set(op); }
     void deactivate(Option op) { topMask.reset(op); }
     void updateActiveVocab();
-//    void deactivateVocal(Option op) { deactivate(op); setActiveVocab(); }
-//    void activateVocal(Option op) { activate(op); updateActiveVocab(); }
+    void printMask();
 
 private:
-//    void onEnterExt() override { setActiveVocab(); }
-//    void setActiveVocab();
-//    void filterOutVocab();
     OptionMask topMask;
     std::vector<const Report*> reports;
-    SmallMap<std::string, Option> options;
+    OptionMap options;
     EditStack& editStack;
 };
 

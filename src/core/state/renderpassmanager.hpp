@@ -30,14 +30,13 @@ private:
 class RenderPassManager final : public BranchState
 {
 public:
-    enum class Op : Option {createSwapRpass, createOffscreenRpass};
-    constexpr Option opcast(Op op) {return static_cast<Option>(op);}
-    constexpr Op opcast(Option op) {return static_cast<Op>(op);}
     const char* getName() const override { return "rpass_manager"; }
     void handleEvent(event::Event*) override;
     virtual ~RenderPassManager() = default;
     RenderPassManager(StateArgs sa, Callbacks cb);
+    void activateCreateSwap();
 private:
+    enum class Op : Option {createSwapRpass, createOffscreenRpass};
     CreateRenderPass createRenderPass;
     void pushCreateRenderPass(RenderPassType);
 

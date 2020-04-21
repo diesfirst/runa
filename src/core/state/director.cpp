@@ -27,7 +27,7 @@ void Director::handleEvent(event::Event* event)
     {
         Optional option = extractCommand(event);
         if (!option) return;
-        switch(opcast(*option))
+        switch(opcast<Op>(*option))
         {
             case Op::printHierarchy: printStateHierarchy(); break;
             case Op::pushRenderManager: pushRenderManager(); break;

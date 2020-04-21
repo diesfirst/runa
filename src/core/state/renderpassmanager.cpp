@@ -24,7 +24,7 @@ void CreateRenderPass::handleEvent(event::Event* event)
         CmdPtr cmd;
         if (type == RenderPassType::swapchain)
             cmd = csrpPool.request(name);
-        if (type == RenderPassType::offscreen)
+        else if (type == RenderPassType::offscreen)
         {
             std::string strType = ce->getArg<std::string, 1>();
             vk::AttachmentLoadOp loadop;
@@ -59,7 +59,9 @@ RenderPassManager::RenderPassManager(StateArgs sa, Callbacks cb) :
     },
     createRenderPass{sa, 
         {nullptr, std::bind(&BranchState::addReport<RenderPassReport>, this, std::placeholders::_1, &reports)}}
-{}
+{
+    activate(opcast(Op::createOffscreenRpass));
+}
 
 void RenderPassManager::handleEvent(event::Event* event)
 {
@@ -67,7 +69,7 @@ void RenderPassManager::handleEvent(event::Event* event)
     {
         auto option = extractCommand(event);
         if (!option) return;
-        switch (opcast(*option))
+        switch (opcast<Op>(*option))
         {
             case Op::createSwapRpass: pushCreateRenderPass(RenderPassType::swapchain); break;
             case Op::createOffscreenRpass: pushCreateRenderPass(RenderPassType::offscreen); break;
@@ -80,6 +82,11 @@ void RenderPassManager::pushCreateRenderPass(RenderPassType type)
 {
     createRenderPass.setType(type);
     pushState(&createRenderPass);
+}
+
+void RenderPassManager::activateCreateSwap()
+{
+    activate(opcast(Op::createSwapRpass));
 }
 
 }; // namespace state

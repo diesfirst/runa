@@ -1,6 +1,8 @@
 #ifndef STATE_DESCRIPTORSETLAYOUTMANAGER_HPP
 #define STATE_DESCRIPTORSETLAYOUTMANAGER_HPP
 
+//imp: state/descriptorsetlayoutmanager.cpp
+
 #include <state/state.hpp>
 #include <command/rendercommands.hpp>
 
@@ -59,6 +61,9 @@ public:
 private:
     std::vector<vk::DescriptorSetLayoutBinding>& bindings;
     CommandPool<command::CreateDescriptorSetLayout> cdslPool;
+
+    GenericCallbackFn onCreate{nullptr};
+
     void onEnterExt() override;
 };
 
@@ -66,15 +71,14 @@ private:
 class DescriptorSetLayoutManager final : public BranchState
 {
 public:
-    enum class Op : Option {createBinding, createDescriptorSetLayout, printReports};
-    constexpr Option opcast(Op op) {return static_cast<Option>(op);}
-    constexpr Op opcast(Option op) {return static_cast<Op>(op);}
     const char* getName() const override { return "DescriptorSetLayoutManager"; }
     void handleEvent(event::Event*) override;
     virtual ~DescriptorSetLayoutManager() = default;
     DescriptorSetLayoutManager(StateArgs, Callbacks);
     bool hasCreatedLayout();
 private:
+    enum class Op : Option {createBinding, createDescriptorSetLayout, printReports};
+
     SetStateType setStateType;
     SetDescriptorCount setDescriptorCount;
     SetShaderStageEntry setShaderStageEntry;

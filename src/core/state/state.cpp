@@ -97,6 +97,12 @@ void BranchState::updateActiveVocab()
     updateVocab();
 }
 
+void BranchState::printMask()
+{
+    std::cout << "Mask: ";
+    std::cout << topMask.to_string() << std::endl;
+}
+
 }; //state
 
 }; //sword

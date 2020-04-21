@@ -18,7 +18,7 @@ SetStateType::SetStateType(StateArgs sa, Callbacks cb, vk::DescriptorSetLayoutBi
 void SetStateType::onEnterExt()
 {
     std::cout << "Enter a descriptor type" << std::endl;
-    setVocab(options.getStrings());
+    setVocab(options.getKeys());
 }
 
 void SetStateType::handleEvent(event::Event* event)
@@ -27,7 +27,7 @@ void SetStateType::handleEvent(event::Event* event)
     {
         auto ce = toCommandLine(event);
         auto input = ce->getFirstWord();
-        auto option = options.findOption(input);
+        auto option = options.findValue(input);
         if (option)
         {
             assert(binding);
@@ -74,7 +74,7 @@ SetShaderStageEntry::SetShaderStageEntry(StateArgs sa, Callbacks cb, vk::Descrip
 void SetShaderStageEntry::onEnterExt()
 {
     std::cout << "Enter a shader stage" << std::endl;
-    setVocab(options.getStrings());
+    setVocab(options.getKeys());
 }
 
 void SetShaderStageEntry::handleEvent(event::Event* event)
@@ -83,7 +83,7 @@ void SetShaderStageEntry::handleEvent(event::Event* event)
     {
         auto ce = toCommandLine(event);
         auto input = ce->getFirstWord();
-        auto option = options.findOption(input);
+        auto option = options.findValue(input);
         if (option)
         {
             std::cout << "Got option" << std::endl;
@@ -97,7 +97,8 @@ void SetShaderStageEntry::handleEvent(event::Event* event)
 CreateDescriptorSetLayout::CreateDescriptorSetLayout(StateArgs sa, 
         Callbacks cb, std::vector<vk::DescriptorSetLayoutBinding>& bindings) :
     LeafState{sa, cb},
-    bindings{bindings}
+    bindings{bindings},
+    onCreate{cb.gn}
 {}
 
 void CreateDescriptorSetLayout::onEnterExt()
@@ -118,6 +119,8 @@ void CreateDescriptorSetLayout::handleEvent(event::Event* event)
         event->setHandled();
         popSelf();
         bindings.clear();
+        if (onCreate)
+            std::invoke(onCreate);
     }
 }
 
@@ -133,7 +136,7 @@ DescriptorSetLayoutManager::DescriptorSetLayoutManager(StateArgs sa, Callbacks c
     setShaderStageEntry{sa, {}, curBinding},
     createDescriptorSetLayout{
         sa, 
-        {nullptr, std::bind(&BranchState::addReport<DescriptorSetLayoutReport>, this, std::placeholders::_1, &reports)}, 
+        {nullptr, std::bind(&BranchState::addReport<DescriptorSetLayoutReport>, this, std::placeholders::_1, &reports), cb.gn}, 
         bindings}
 {
     activate(opcast(Op::createBinding));
@@ -157,7 +160,7 @@ void DescriptorSetLayoutManager::handleEvent(event::Event* event)
     {
         auto option = extractCommand(event);
         if (!option) return;
-        switch (opcast(*option))
+        switch (opcast<Op>(*option))
         {
             case Op::createBinding: createBinding(); break;
             case Op::createDescriptorSetLayout: pushCreateDescSetLayout(); break;

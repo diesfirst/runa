@@ -94,7 +94,7 @@ DescriptorManager::DescriptorManager(StateArgs sa, Callbacks cb) :
     createFrameDescriptorSets{sa, 
         {[this](){ activate(opcast(Op::initFrameUBOs));},
         std::bind(&BranchState::addReport<DescriptorSetReport>, this, std::placeholders::_1, &reports)}},
-    descriptorSetLayoutMgr{sa, {std::bind(&DescriptorManager::activateDSetLayoutNeeding, this)}},
+    descriptorSetLayoutMgr{sa, {std::bind(&DescriptorManager::activateDSetLayoutNeeding, this), nullptr, cb.gn}},
     initFrameUbos{sa},
     updateFrameSamplers{sa}
 {
