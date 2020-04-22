@@ -60,7 +60,6 @@ void Director::popTop()
 
 void Director::quickSetup()
 {
-//    renderManager.prepRenderFrames();
 }
 
 }; // namespace state

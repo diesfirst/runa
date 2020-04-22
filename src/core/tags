@@ -829,6 +829,7 @@ queue	render/command.hpp	/^    const vk::Queue& queue;$/;"	m	class:sword::render
 queue	render/command.hpp	/^    const vk::Queue& queue;$/;"	m	class:sword::render::CommandPool
 queue	render/context.hpp	/^    vk::Queue queue;$/;"	m	class:sword::render::Context
 queueFamilies	render/context.hpp	/^    std::vector<vk::QueueFamilyProperties> queueFamilies;$/;"	m	class:sword::render::Context
+quickSetup	state/director.cpp	/^void Director::quickSetup()$/;"	f	class:sword::state::Director
 rasterizationState	render/pipeline.hpp	/^    vk::PipelineRasterizationStateCreateInfo rasterizationState;$/;"	m	class:sword::render::GraphicsPipeline
 readEvents	application.cpp	/^void Application::readEvents(std::ifstream& is, int eventPops)$/;"	f	class:sword::Application
 readEvents	event/event.cpp	/^void EventDispatcher::readEvents(std::ifstream& is, int eventPops)$/;"	f	class:sword::event::EventDispatcher
