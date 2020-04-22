@@ -13,7 +13,7 @@ Application::Application(uint16_t w, uint16_t h, const std::string logfile, int 
     offscreenDim{{w, h}},
     swapDim{{w, h}},
     readlog{logfile},
-    dirState{{stateEdits, cmdStack}, stateStack, window}
+    dirState{{stateEdits, cmdStack, cmdPools, stateRegister}, stateStack, window}
 {
     stateStack.push(&dirState);
     stateStack.top()->onEnter();
@@ -146,7 +146,7 @@ void Application::run()
             if (cmd)
             {
                 cmd->execute(this);
-                std::cout << "Command run: " << cmd->getName() << std::endl;
+                std::cout << "Command run: " << cmd->getName() << ", Success status: " << cmd->succeeded() << '\n';
             }
             else
                 std::cout << "Recieved null cmd" << std::endl;

@@ -60,7 +60,7 @@ public:
             std::vector<vk::DescriptorSetLayoutBinding>&);
 private:
     std::vector<vk::DescriptorSetLayoutBinding>& bindings;
-    CommandPool<command::CreateDescriptorSetLayout> cdslPool;
+    CommandPool<command::CreateDescriptorSetLayout>& cdslPool;
 
     GenericCallbackFn onCreate{nullptr};
 

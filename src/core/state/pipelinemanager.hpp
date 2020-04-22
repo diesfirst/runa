@@ -1,6 +1,8 @@
 #ifndef STATE_PIPELINEMANAGER_HPP
 #define STATE_PIPELINEMANAGER_HPP
 
+//imp: state/pipelinemanager.cpp
+
 #include <state/state.hpp>
 #include <command/rendercommands.hpp>
 
@@ -29,7 +31,7 @@ public:
     virtual ~CreatePipelineLayout() = default;   
     CreatePipelineLayout(StateArgs, Callbacks);
 private:
-    CommandPool<command::CreatePipelineLayout> pool;
+    CommandPool<command::CreatePipelineLayout>& pool;
 
     void onEnterExt() override;
 };

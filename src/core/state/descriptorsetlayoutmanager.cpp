@@ -98,7 +98,8 @@ CreateDescriptorSetLayout::CreateDescriptorSetLayout(StateArgs sa,
         Callbacks cb, std::vector<vk::DescriptorSetLayoutBinding>& bindings) :
     LeafState{sa, cb},
     bindings{bindings},
-    onCreate{cb.gn}
+    onCreate{cb.gn},
+    cdslPool{sa.cp.createDescriptorSetLayout}
 {}
 
 void CreateDescriptorSetLayout::onEnterExt()

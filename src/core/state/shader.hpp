@@ -28,11 +28,9 @@ public:
     const char* getName() const override { return "load_frag_shaders"; }
     void handleEvent(event::Event*) override;
     virtual ~LoadFragShaders() = default;   
-    LoadFragShaders(StateArgs sa, Callbacks cb) :
-        LeafState{sa, cb} 
-    {}
+    LoadFragShaders(StateArgs sa, Callbacks cb);
 private:
-    CommandPool<command::LoadFragShader> lfPool;
+    CommandPool<command::LoadFragShader>& lfPool;
     void onEnterExt() override;
 };
 
@@ -42,11 +40,9 @@ public:
     const char* getName() const override { return "load_vert_shaders"; }
     void handleEvent(event::Event*) override;
     virtual ~LoadVertShaders() = default;   
-    LoadVertShaders(StateArgs sa, Callbacks cb) :
-        LeafState{sa, cb} 
-    {}
+    LoadVertShaders(StateArgs sa, Callbacks cb);
 private:
-    CommandPool<command::LoadVertShader> lvPool;
+    CommandPool<command::LoadVertShader>& lvPool;
     void onEnterExt() override;
 };
 
@@ -56,12 +52,10 @@ public:
     const char* getName() const override { return "set_spec"; }
     void handleEvent(event::Event*) override;
     virtual ~SetSpec() = default;   
-    SetSpec(StateArgs sa, Callbacks cb, shader::SpecType t, ShaderReports& reports) :
-        LeafState{sa, cb}, type{t}, reports{reports}
-    {}
+    SetSpec(StateArgs sa, Callbacks cb, shader::SpecType t, ShaderReports& reports);
 private:
-    CommandPool<command::SetSpecInt> ssiPool;
-    CommandPool<command::SetSpecFloat> ssfPool;
+    CommandPool<command::SetSpecInt>& ssiPool;
+    CommandPool<command::SetSpecFloat>& ssfPool;
     shader::SpecType type;
     ShaderReports& reports;
     void onEnterExt() override;

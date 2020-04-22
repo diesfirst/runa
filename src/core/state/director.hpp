@@ -24,7 +24,7 @@ public:
     Director(StateArgs, const StateStack& ss, render::Window& window);
 
 private:
-    enum class Op : Option {pushRenderManager, printHierarchy};
+    enum class Op : Option {pushRenderManager, printHierarchy, quickSetup};
 
     void pushRenderManager();
     void printStateHierarchy();
@@ -32,6 +32,9 @@ private:
     void quickSetup();
 
     RenderManager renderManager;
+
+    state::Register& sr;
+    CommandPools& cp;
 
     const StateStack& stateStack;
 };

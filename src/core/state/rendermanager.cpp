@@ -24,7 +24,9 @@ RenderManager::RenderManager(StateArgs sa, Callbacks cb) :
         [this](const DescriptorSetLayoutReport* r){ receiveDescriptorSetLayoutReport(r); }},
     shaderManager{sa, {
         [this](){activate(opcast(Op::shaderManager));}},
-        [this](const ShaderReport* r){ pipelineManager.receiveReport(r); }}
+        [this](const ShaderReport* r){ pipelineManager.receiveReport(r); }},
+    owPool{sa.cp.openWindow},
+    prfPool{sa.cp.prepareRenderFrames}
 {   
     activate(opcast(Op::openWindow));
     activate(opcast(Op::shaderManager));

@@ -10,3 +10,13 @@ using CommandStack = sword::ForwardStack<CmdPtr>;
 template <typename T>
 using CommandPool = sword::Pool<T, sword::command::Command>;
 
+//template <typename T>
+//class CommandPool
+//{
+//public:
+//
+////    template <typename... Args>
+//
+//private:
+//    sword::Pool<T, sword::command::Command> pool;
+//};

@@ -8,7 +8,7 @@ namespace state
 
 
 CreateFrameDescriptorSets::CreateFrameDescriptorSets(StateArgs sa, Callbacks cb) :
-    LeafState{sa, cb} 
+    LeafState{sa, cb}, cfdsPool{sa.cp.createFrameDescriptorSets} 
 {}
 
 void CreateFrameDescriptorSets::onEnterExt()
@@ -35,7 +35,7 @@ void CreateFrameDescriptorSets::handleEvent(event::Event* event)
 }
 
 InitFrameUbos::InitFrameUbos(StateArgs sa) :
-    LeafState{sa, {}}
+    LeafState{sa, {}}, pool{sa.cp.initFrameUbos}
 {}
 
 void InitFrameUbos::onEnterExt()
@@ -57,7 +57,7 @@ void InitFrameUbos::handleEvent(event::Event* event)
 }
 
 UpdateFrameSamplers::UpdateFrameSamplers(StateArgs sa) :
-    LeafState{sa, {}}
+    LeafState{sa, {}}, pool{sa.cp.updateFrameSamplers}
 {}
 
 void UpdateFrameSamplers::onEnterExt()

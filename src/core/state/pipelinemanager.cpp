@@ -27,7 +27,7 @@ void CreateGraphicsPipeline::handleEvent(event::Event* event)
 }
 
 CreatePipelineLayout::CreatePipelineLayout(StateArgs sa, Callbacks cb) :
-    LeafState{sa, cb}
+    LeafState{sa, cb}, pool{sa.cp.createPipelineLayout}
 {}
 
 void CreatePipelineLayout::onEnterExt()

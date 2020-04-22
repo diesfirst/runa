@@ -25,8 +25,8 @@ public:
 private:
     void onEnterExt() override;
     RenderPassType type;
-    CommandPool<command::CreateSwapchainRenderpass> csrpPool;
-    CommandPool<command::CreateOffscreenRenderpass> corpPool;
+    CommandPool<command::CreateSwapchainRenderpass>& csrpPool;
+    CommandPool<command::CreateOffscreenRenderpass>& corpPool;
 };
 
 class RenderPassManager final : public BranchState

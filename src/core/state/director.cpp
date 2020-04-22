@@ -12,13 +12,17 @@ Director::Director(StateArgs sa, const StateStack& ss, render::Window& window) :
     BranchState{sa, Callbacks(), {
         {"render_manager", opcast(Op::pushRenderManager)},
         {"print_state_hierarchy", opcast(Op::printHierarchy)},
+        {"quick_setup", opcast(Op::quickSetup)}
     }}, 
     stateStack{ss},
     renderManager{sa, 
-        {[this](){activate(opcast(Op::pushRenderManager));}, {}, {}}}
+        {[this](){activate(opcast(Op::pushRenderManager));}, {}, {}}},
+    sr{sa.rg},
+    cp{sa.cp}
 { 
     activate(opcast(Op::pushRenderManager));
     activate(opcast(Op::printHierarchy));
+    activate(opcast(Op::quickSetup));
 }
 
 void Director::handleEvent(event::Event* event)
@@ -31,6 +35,7 @@ void Director::handleEvent(event::Event* event)
         {
             case Op::printHierarchy: printStateHierarchy(); break;
             case Op::pushRenderManager: pushRenderManager(); break;
+            case Op::quickSetup: quickSetup(); break;
         }
         event->setHandled();
     }
@@ -60,6 +65,10 @@ void Director::popTop()
 
 void Director::quickSetup()
 {
+    pushCmd(cp.loadFragShader.request(sr.loadFragShaders->reportCallback(), "death.spv"));
+    pushCmd(cp.loadFragShader.request(sr.loadFragShaders->reportCallback(), "justice.spv"));
+    deactivate(opcast(Op::quickSetup));
+    updateVocab();
 }
 
 }; // namespace state

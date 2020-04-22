@@ -2,6 +2,7 @@
 #define STATE_HPP_
 
 #include <command/commandtypes.hpp>
+#include <command/commandpools.hpp>
 #include <state/report.hpp>
 #include <state/editstack.hpp>
 #include <types/stack.hpp>
@@ -50,10 +51,24 @@ constexpr T opcast(Option op) {return static_cast<T>(op);}
 
 enum class StateType : uint8_t {leaf, branch};
 
+//forward decs
+class LoadFragShaders;
+class LoadVertShaders;
+class SetSpec;
+
+struct Register
+{
+    LoadFragShaders* loadFragShaders;
+    LoadVertShaders* loadVertShaders;
+    SetSpec* setSpec;
+};
+
 struct StateArgs
 {
     EditStack& es;
     CommandStack& cs;
+    CommandPools& cp;
+    Register& rg;
 };
 
 struct Callbacks
@@ -138,7 +153,6 @@ public:
 protected:
     State(CommandStack& cs) : cmdStack{cs} {}
     State(CommandStack& cs, ExitCallbackFn callback) : cmdStack{cs}, onExitCallback{callback} {}
-    void pushCmd(CmdPtr ptr);
     void setVocab(std::vector<std::string> strings);
     void clearVocab() { vocab.clear(); }
     void addToVocab(std::string word) { vocab.push_back(word); }
@@ -153,6 +167,7 @@ private:
     Vocab vocab;
     CommandStack& cmdStack;
     ExitCallbackFn onExitCallback{nullptr};
+    void pushCmd(CmdPtr ptr);
     virtual void onEnterImp();
     virtual void onExitImp();
     virtual void onEnterExt() {}
@@ -166,10 +181,12 @@ public:
     ~LeafState() = default; //may not need this
     StateType getType() const override final { return StateType::leaf; }
     void addToVocab(std::string word) { State::addToVocab(word); }
+    const OwningReportCallbackFn reportCallback() const { return reportCallbackFn; }
 protected:
     LeafState(StateArgs sa, Callbacks cb) :
-        State{sa.cs, cb.ex}, editStack{sa.es}, reportCallback{cb.rp} {}
+        State{sa.cs, cb.ex}, cmdStack{sa.cs}, editStack{sa.es}, reportCallbackFn{cb.rp} {}
     void popSelf() { editStack.popState(); }
+    void pushCmd(CmdPtr ptr);
 
     template<typename R>
     R* findReport(const std::string& name, const std::vector<std::unique_ptr<R>>& reports)
@@ -182,11 +199,11 @@ protected:
         return nullptr;
     }
 
-    void invokeReportCallback(Report*);
 private:
-    OwningReportCallbackFn reportCallback{nullptr};
     CommandPool<command::SetVocab> svPool{1};
     EditStack& editStack;
+    OwningReportCallbackFn reportCallbackFn{nullptr};
+    CommandStack& cmdStack;
 
     void onExitImp() override final;
     void onEnterImp() override final;
@@ -222,8 +239,6 @@ public:
             delete ptr;
         }
     }
-
-
 
 protected:
     using Element = std::pair<std::string, Option>;

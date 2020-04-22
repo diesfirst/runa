@@ -11,6 +11,13 @@ namespace sword
 namespace state
 {
 
+enum class ReportUsage : uint8_t
+{
+    add,
+    merge,
+    remove
+};
+
 enum class ReportType : uint8_t
 {
     Shader,
@@ -31,6 +38,11 @@ public:
     virtual const std::string getObjectName() const = 0;
     virtual ReportType getType() const = 0;
     virtual ~Report() = default;
+
+    void setUsage(ReportUsage usage) { this->usage = usage; }
+    ReportUsage getUsage() const {return usage;}
+private:
+    ReportUsage usage{ReportUsage::add};
 };
 
 class ShaderReport final : public Report

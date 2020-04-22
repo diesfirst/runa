@@ -16,7 +16,8 @@ class LoadFragShader: public Command
 {
 public:
     CMD_BASE("loadFragShader");
-    inline void set(std::string name) {shaderName = name;}
+    void set(std::string name) {shaderName = name;}
+    state::Report* makeReport() const override;
 private:
     std::string shaderName;
 };
@@ -25,7 +26,8 @@ class LoadVertShader: public Command
 {
 public:
     CMD_BASE("loadVertShader");
-    inline void set(std::string name) {shaderName = name;}
+    void set(std::string name) {shaderName = name;}
+    state::Report* makeReport() const override;
 private:
     std::string shaderName;
 };
@@ -34,8 +36,9 @@ class SetSpecFloat: public Command
 {
 public:
     CMD_BASE("setSpecFloat");
-    inline void set(std::string name, std::string t, float first, float second) {
+    void set(std::string name, std::string t, float first, float second) {
         shaderName = name; type = t; x = first; y = second;}
+    state::Report* makeReport() const override;
 private:
     std::string shaderName;
     std::string type;
@@ -49,6 +52,7 @@ public:
     CMD_BASE("setSpecInt");
     inline void set(std::string name, std::string t, int first, int second) {
         shaderName = name; type = t; x = first; y = second;}
+    state::Report* makeReport() const override;
 private:
     std::string shaderName;
     std::string type;

@@ -74,16 +74,6 @@ void LeafState::onExitImp()
     updateVocab();
 }
 
-void LeafState::invokeReportCallback(Report* pReport)
-{
-    if (!reportCallback)
-    {
-        std::cout << "No report callback found! Deleting pointer to report." << std::endl;
-        delete pReport;
-    }
-    else std::invoke(reportCallback, pReport);
-}
-
 void BranchState::pushState(State* state)
 {
     editStack.pushState(state);

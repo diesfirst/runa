@@ -8,6 +8,13 @@ namespace sword
 namespace state
 {
 
+
+LoadFragShaders::LoadFragShaders(StateArgs sa, Callbacks cb) :
+    LeafState{sa, cb}, lfPool{sa.cp.loadFragShader} 
+{
+    sa.rg.loadFragShaders = this;
+}
+
 void LoadFragShaders::onEnterExt()
 {
     std::vector<std::string> words;
@@ -27,14 +34,18 @@ void LoadFragShaders::handleEvent(event::Event* event)
         std::string reciever;
         while (stream >> reciever)
         {
-            auto cmd = lfPool.request(reciever);
+            auto cmd = lfPool.request(reportCallback(), reciever);
             pushCmd(std::move(cmd));
-            auto report = new ShaderReport(reciever, "Frag", 0, 0, 0, 0);
-            invokeReportCallback(report); 
         }
         event->setHandled();
         popSelf();
     }
+}
+
+LoadVertShaders::LoadVertShaders(StateArgs sa, Callbacks cb) :
+    LeafState{sa, cb}, lvPool{sa.cp.loadVertShader}
+{
+    sa.rg.loadVertShaders = this;
 }
 
 void LoadVertShaders::onEnterExt()
@@ -45,6 +56,12 @@ void LoadVertShaders::onEnterExt()
         words.push_back(entry.path().filename());
     setVocab(words);
     std::cout << "Enter the names of the vert shaders to load." << std::endl;
+}
+
+SetSpec::SetSpec(StateArgs sa, Callbacks cb, shader::SpecType t, ShaderReports& reports) :
+    LeafState{sa, cb}, type{t}, reports{reports}, ssiPool{sa.cp.setSpecInt}, ssfPool{sa.cp.setSpecFloat}
+{
+    sa.rg.setSpec = this;
 }
 
 void SetSpec::onEnterExt()
@@ -97,10 +114,8 @@ void LoadVertShaders::handleEvent(event::Event* event)
         std::string reciever;
         while (stream >> reciever)
         {
-            auto cmd = lvPool.request(reciever);
+            auto cmd = lvPool.request(reportCallback(), reciever);
             pushCmd(std::move(cmd));
-            auto report = new ShaderReport(reciever, "Vert", 0, 0, 0, 0);
-            invokeReportCallback(report); //handles deletion if no callback is present
         }
         event->setHandled();
         popSelf();

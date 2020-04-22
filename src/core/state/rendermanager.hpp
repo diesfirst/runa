@@ -21,13 +21,12 @@ class RenderManager final : public BranchState
 public:
     const char* getName() const override { return "render_manager"; }
     void handleEvent(event::Event*) override;
-    virtual ~RenderManager() = default;
     RenderManager(StateArgs, Callbacks cb);
 private:
     enum class Op : Option {openWindow, prepRenderFrames, shaderManager, descriptorManager, renderPassManager, pipelineManager};
 
-    CommandPool<command::OpenWindow> owPool;
-    CommandPool<command::PrepareRenderFrames> prfPool;
+    CommandPool<command::OpenWindow>& owPool;
+    CommandPool<command::PrepareRenderFrames>& prfPool;
 
     PipelineManager pipelineManager;
     RenderPassManager rpassManager;

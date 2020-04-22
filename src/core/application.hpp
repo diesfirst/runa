@@ -10,6 +10,7 @@
 #include <render/surface/window.hpp>
 #include <render/renderer.hpp>
 #include <string>
+#include <command/commandpools.hpp>
 
 namespace sword
 {
@@ -37,6 +38,9 @@ public:
     vk::Extent2D swapDim;;
     std::ofstream os;
     std::ifstream is;
+
+    CommandPools cmdPools;
+    state::Register stateRegister;
    
     render::FragmentInput fragInput;
     std::vector<const render::Image*> sampledImages;

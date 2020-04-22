@@ -7,7 +7,7 @@ namespace state
 {
 
 CreateRenderPass::CreateRenderPass(StateArgs sa, Callbacks cb) :
-    LeafState{sa, cb}
+    LeafState{sa, cb}, csrpPool{sa.cp.createSwapchainRenderpass}, corpPool{sa.cp.createOffscreenRenderpass}
 {}
 
 void CreateRenderPass::onEnterExt()
