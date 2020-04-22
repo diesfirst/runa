@@ -7,7 +7,8 @@ build/state/pipelinemanager.o: src/core/state/pipelinemanager.cpp \
  include/thirdparty/vulkan/vk_platform.h \
  include/thirdparty/vulkan/vulkan_core.h src/core/state/editstack.hpp \
  src/core/types/map.hpp src/core/event/event.hpp \
- src/core/render/surface/window.hpp src/core/command/vocab.hpp
+ src/core/render/surface/window.hpp src/core/command/vocab.hpp \
+ src/core/command/rendercommands.hpp src/core/command/command.hpp
 
 src/core/state/pipelinemanager.hpp:
 
@@ -40,3 +41,7 @@ src/core/event/event.hpp:
 src/core/render/surface/window.hpp:
 
 src/core/command/vocab.hpp:
+
+src/core/command/rendercommands.hpp:
+
+src/core/command/command.hpp:

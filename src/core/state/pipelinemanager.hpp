@@ -2,6 +2,7 @@
 #define STATE_PIPELINEMANAGER_HPP
 
 #include <state/state.hpp>
+#include <command/rendercommands.hpp>
 
 namespace sword
 {
@@ -28,6 +29,8 @@ public:
     virtual ~CreatePipelineLayout() = default;   
     CreatePipelineLayout(StateArgs, Callbacks);
 private:
+    CommandPool<command::CreatePipelineLayout> pool;
+
     void onEnterExt() override;
 };
 
@@ -38,11 +41,19 @@ public:
     void handleEvent(event::Event*) override;
     virtual ~PipelineManager () = default;
     PipelineManager (StateArgs, Callbacks);
+    void receiveReport(const Report*);
 private:
-    enum class Op : Option {createPipelineLayout, createGraphicsPipeline};
+    enum class Op : Option {createPipelineLayout, createGraphicsPipeline, printReports};
 
     CreatePipelineLayout createPipelineLayout;
     CreateGraphicsPipeline createGraphicsPipeline;
+
+    Reports<PipelineLayoutReport> pipeLayoutReports;
+    Reports<GraphicsPipelineReport> graphicsPipeReports;
+
+    std::vector<const Report*> reports;
+
+    void printReports();
 };
 
 }; // namespace state

@@ -1,6 +1,8 @@
 #ifndef STATE_DESCRIPTORMANAGER_HPP
 #define STATE_DESCRIPTORMANAGER_HPP
 
+//imp: state/descriptormanager.cpp
+
 #include <state/state.hpp>
 #include <state/descriptorsetlayoutmanager.hpp>
 
@@ -9,8 +11,6 @@ namespace sword
 
 namespace state
 {
-
-using DescriptorReports = Reports<DescriptorSetReport>;
 
 class CreateFrameDescriptorSets : public LeafState
 {
@@ -51,23 +51,26 @@ private:
 class DescriptorManager final : public BranchState
 {
 public:
-    enum class Op : Option {createFrameDescriptorSets, printReports, descriptorSetLayoutMgr, initFrameUBOs, updateFrameSamplers};
-    constexpr Option opcast(Op op) {return static_cast<Option>(op);}
-    constexpr Op opcast(Option op) {return static_cast<Op>(op);}
     const char* getName() const override { return "descriptor_manager"; }
     void handleEvent(event::Event*) override;
     virtual ~DescriptorManager() = default;
-    DescriptorManager(StateArgs, Callbacks);
+    DescriptorManager(StateArgs, Callbacks, ReportCallbackFn<DescriptorSetLayoutReport>);
 private:
+    enum class Op : Option {createFrameDescriptorSets, printReports, descriptorSetLayoutMgr, initFrameUBOs, updateFrameSamplers};
+
     DescriptorSetLayoutManager descriptorSetLayoutMgr;
     CreateFrameDescriptorSets createFrameDescriptorSets;
     InitFrameUbos initFrameUbos;
     UpdateFrameSamplers updateFrameSamplers;
 
-    DescriptorReports reports;
+    Reports<DescriptorSetReport> descriptorSetReports; //ownding
+    std::vector<const DescriptorSetLayoutReport*> descriptorSetLayoutReports;
+
+    ReportCallbackFn<DescriptorSetLayoutReport> receivedDSLReportCb;
 
     void printReports();
     void activateDSetLayoutNeeding();
+    void receiveDescriptorSetLayoutReport(const DescriptorSetLayoutReport*);
 };
 
 }; // namespace state

@@ -113,18 +113,18 @@ void CreateDescriptorSetLayout::handleEvent(event::Event* event)
         auto ce = toCommandLine(event);
         auto name = ce->getInput();
         auto cmd = cdslPool.request(name, bindings);
-        auto report = new DescriptorSetLayoutReport(name, bindings);
         pushCmd(std::move(cmd));
-        reportCallback(report);
         event->setHandled();
         popSelf();
         bindings.clear();
         if (onCreate)
             std::invoke(onCreate);
+        auto report = new DescriptorSetLayoutReport(name, bindings);
+        invokeReportCallback(report);
     }
 }
 
-DescriptorSetLayoutManager::DescriptorSetLayoutManager(StateArgs sa, Callbacks cb) :
+DescriptorSetLayoutManager::DescriptorSetLayoutManager(StateArgs sa, Callbacks cb, ReportCallbackFn<DescriptorSetLayoutReport> dslr) :
     BranchState{sa, cb, 
         {
             {"create_binding", opcast(Op::createBinding)},
@@ -136,7 +136,7 @@ DescriptorSetLayoutManager::DescriptorSetLayoutManager(StateArgs sa, Callbacks c
     setShaderStageEntry{sa, {}, curBinding},
     createDescriptorSetLayout{
         sa, 
-        {nullptr, std::bind(&BranchState::addReport<DescriptorSetLayoutReport>, this, std::placeholders::_1, &reports), cb.gn}, 
+        {nullptr, [this, dslr](Report* r){ addReport(r, &reports, dslr); }, cb.gn}, 
         bindings}
 {
     activate(opcast(Op::createBinding));

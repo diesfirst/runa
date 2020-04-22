@@ -15,7 +15,7 @@ Director::Director(StateArgs sa, const StateStack& ss, render::Window& window) :
     }}, 
     stateStack{ss},
     renderManager{sa, 
-        {[this](){activate(opcast(Op::pushRenderManager));}, nullptr}}
+        {[this](){activate(opcast(Op::pushRenderManager));}, {}, {}}}
 { 
     activate(opcast(Op::pushRenderManager));
     activate(opcast(Op::printHierarchy));
@@ -56,6 +56,11 @@ void Director::popTop()
 {
     if (stateStack.size() > 1)
         editStack.popState();
+}
+
+void Director::quickSetup()
+{
+//    renderManager.prepRenderFrames();
 }
 
 }; // namespace state

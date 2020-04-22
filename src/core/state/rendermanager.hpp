@@ -34,9 +34,11 @@ private:
     DescriptorManager descriptorManager;
     ShaderManager shaderManager;
 
+    bool createdDescSetLayout{false};
+
     void openWindow();
     void prepRenderFrames();
-    void onDescriptorSetLayoutCreate();
+    void receiveDescriptorSetLayoutReport(const DescriptorSetLayoutReport*);
 };
 
 }; // namespace state

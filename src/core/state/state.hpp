@@ -25,7 +25,11 @@ namespace sword
 namespace state
 {
 
-using ReportCallbackFn = std::function<void(Report*)>;
+template <typename R>
+using ReportCallbackFn = std::function<void(const R*)>;
+template <typename R>
+using ReportCallbacks = std::vector<ReportCallbackFn<R>>;
+using OwningReportCallbackFn = std::function<void(Report*)>;
 using ExitCallbackFn = std::function<void()>;
 using GenericCallbackFn = std::function<void()>;
 using OptionMask = std::bitset<32>;
@@ -43,6 +47,21 @@ constexpr Option opcast(T op) {return static_cast<Option>(op);}
 
 template<typename T>
 constexpr T opcast(Option op) {return static_cast<T>(op);}
+
+enum class StateType : uint8_t {leaf, branch};
+
+struct StateArgs
+{
+    EditStack& es;
+    CommandStack& cs;
+};
+
+struct Callbacks
+{
+    ExitCallbackFn ex{nullptr};
+    OwningReportCallbackFn rp{nullptr};
+    GenericCallbackFn gn{nullptr};
+};
 
 class Vocab
 {
@@ -83,21 +102,6 @@ private:
     std::vector<std::string> words;
 };
 
-enum class StateType : uint8_t {leaf, branch};
-
-struct StateArgs
-{
-    EditStack& es;
-    CommandStack& cs;
-};
-
-struct Callbacks
-{
-    ExitCallbackFn ex{nullptr};
-    ReportCallbackFn rp{nullptr};
-    GenericCallbackFn gn{nullptr};
-};
-
 class OptionMap
 {
 public:
@@ -120,7 +124,6 @@ public:
 private:
     SmallMap<std::string, Option> map;
 };
-
 
 class State
 {
@@ -156,17 +159,17 @@ private:
     virtual void onExitExt() {}
 };
 
-//TODO: we need to make leaf state all consuming of events and all silencing
+//TODO: need to delete copy assignment and copy constructors
 class LeafState : public State
 {
 public:
-    ~LeafState() = default;
+    ~LeafState() = default; //may not need this
     StateType getType() const override final { return StateType::leaf; }
+    void addToVocab(std::string word) { State::addToVocab(word); }
 protected:
     LeafState(StateArgs sa, Callbacks cb) :
         State{sa.cs, cb.ex}, editStack{sa.es}, reportCallback{cb.rp} {}
     void popSelf() { editStack.popState(); }
-    ReportCallbackFn reportCallback{nullptr};
 
     template<typename R>
     R* findReport(const std::string& name, const std::vector<std::unique_ptr<R>>& reports)
@@ -178,17 +181,23 @@ protected:
         }
         return nullptr;
     }
+
+    void invokeReportCallback(Report*);
 private:
+    OwningReportCallbackFn reportCallback{nullptr};
     CommandPool<command::SetVocab> svPool{1};
+    EditStack& editStack;
+
     void onExitImp() override final;
     void onEnterImp() override final;
     virtual void onEnterExt() override {}
     virtual void onExitExt() override {}
-    EditStack& editStack;
+
 };
 
 //TODO: make the exit callback a requirement for branch states
 //      and make Director a special state that does not require it (or just make it null)
+//TODO: need to delete copy assignment and copy constructors
 class BranchState : public State
 {
 friend class Director;
@@ -196,17 +205,26 @@ public:
     ~BranchState() = default;
     StateType getType() const override final { return StateType::branch; }
     template<typename R>
-    void addReport(Report* ptr, std::vector<std::unique_ptr<R>>* derivedReports)
+    static void addReport(Report* ptr, std::vector<std::unique_ptr<R>>* derivedReports, ReportCallbackFn<R> callback = {})
     {
         auto derivedPtr = dynamic_cast<R*>(ptr); 
         if (derivedPtr)
+        {
             derivedReports->emplace_back(derivedPtr);
+            if (callback)
+            {
+                std::invoke(callback, derivedPtr);
+            }
+        }
         else
         {
             std::cout << "Bad report pointer passed." << std::endl;
             delete ptr;
         }
     }
+
+
+
 protected:
     using Element = std::pair<std::string, Option>;
     BranchState(StateArgs sa, Callbacks cb, std::initializer_list<Element> ops) :

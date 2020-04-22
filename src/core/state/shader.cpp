@@ -29,11 +29,8 @@ void LoadFragShaders::handleEvent(event::Event* event)
         {
             auto cmd = lfPool.request(reciever);
             pushCmd(std::move(cmd));
-            if (reportCallback)
-            {
-                auto report = new ShaderReport(reciever, "Frag", 0, 0, 0, 0);
-                std::invoke(reportCallback, report);
-            }
+            auto report = new ShaderReport(reciever, "Frag", 0, 0, 0, 0);
+            invokeReportCallback(report); 
         }
         event->setHandled();
         popSelf();
@@ -102,18 +99,15 @@ void LoadVertShaders::handleEvent(event::Event* event)
         {
             auto cmd = lvPool.request(reciever);
             pushCmd(std::move(cmd));
-            if (reportCallback)
-            {
-                auto report = new ShaderReport(reciever, "Vert", 0, 0, 0, 0);
-                std::invoke(reportCallback, report);
-            }
+            auto report = new ShaderReport(reciever, "Vert", 0, 0, 0, 0);
+            invokeReportCallback(report); //handles deletion if no callback is present
         }
         event->setHandled();
         popSelf();
     }
 }
 
-ShaderManager::ShaderManager(StateArgs sa, Callbacks cb)  : 
+ShaderManager::ShaderManager(StateArgs sa, Callbacks cb, ReportCallbackFn<ShaderReport> srcb)  : 
     BranchState{sa, cb, {
         {"load_frag_shaders", opcast(Op::loadFrag)},
         {"load_vert_shaders", opcast(Op::loadVert)},
@@ -121,8 +115,8 @@ ShaderManager::ShaderManager(StateArgs sa, Callbacks cb)  :
         {"set_spec_int", opcast(Op::setSpecInt)},
         {"set_spec_float", opcast(Op::setSpecFloat)}
     }},
-    loadFragShaders{sa, {nullptr, std::bind(&BranchState::addReport<ShaderReport>, this, std::placeholders::_1, &shaderReports)}},
-    loadVertShaders{sa, {nullptr, std::bind(&BranchState::addReport<ShaderReport>, this, std::placeholders::_1, &shaderReports)}},
+    loadFragShaders{sa, {nullptr, [this, srcb](Report* report){ addReport(report, &shaderReports, srcb); }}},
+    loadVertShaders{sa, {nullptr, [this, srcb](Report* report){ addReport(report, &shaderReports, srcb); }}},
     setSpecInt{sa, {}, shader::SpecType::integer, shaderReports},
     setSpecFloat{sa, {}, shader::SpecType::floating, shaderReports}
 {   
@@ -158,17 +152,6 @@ void ShaderManager::printReports()
     }
 }
 
-//void ShaderManager::addFragShaderReport(Report* ptr)
-//{
-//    auto shaderReportPtr = dynamic_cast<ShaderReport*>(ptr); 
-//    if (shaderReportPtr)
-//        shaderReports.emplace_back(shaderReportPtr);
-//    else
-//    {
-//        std::cout << "Bad pointer passed to addFragShaderReport" << std::endl;
-//        delete ptr;
-//    }
-//}
 
 }; // namespace state
 

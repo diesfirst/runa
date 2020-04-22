@@ -27,11 +27,8 @@ void CreateFrameDescriptorSets::handleEvent(event::Event* event)
             layoutNames.push_back(name);
         auto cmd = cfdsPool.request(layoutNames);
         pushCmd(std::move(cmd));
-        if (reportCallback)
-        {
-            auto report = new DescriptorSetReport(layoutNames, DescriptorSetReport::Type::frameOwned);
-            std::invoke(reportCallback, report);
-        }
+        auto report = new DescriptorSetReport(layoutNames, DescriptorSetReport::Type::frameOwned);
+        invokeReportCallback(report);
         event->setHandled();
         popSelf();
     }
@@ -81,7 +78,7 @@ void UpdateFrameSamplers::handleEvent(event::Event* event)
     }
 }
 
-DescriptorManager::DescriptorManager(StateArgs sa, Callbacks cb) :
+DescriptorManager::DescriptorManager(StateArgs sa, Callbacks cb, ReportCallbackFn<DescriptorSetLayoutReport> dslrCb) :
     BranchState{sa, cb, 
         {
             {"create_frame_descriptor_sets", opcast(Op::createFrameDescriptorSets)},
@@ -91,12 +88,16 @@ DescriptorManager::DescriptorManager(StateArgs sa, Callbacks cb) :
             {"update_frame_samplers", opcast(Op::updateFrameSamplers)}
         }
     },
-    createFrameDescriptorSets{sa, 
-        {[this](){ activate(opcast(Op::initFrameUBOs));},
-        std::bind(&BranchState::addReport<DescriptorSetReport>, this, std::placeholders::_1, &reports)}},
-    descriptorSetLayoutMgr{sa, {std::bind(&DescriptorManager::activateDSetLayoutNeeding, this), nullptr, cb.gn}},
+    createFrameDescriptorSets{sa, {
+        [this](){ activate(opcast(Op::initFrameUBOs));},
+        [this](Report* r){ addReport(r, &descriptorSetReports); }}},
+    descriptorSetLayoutMgr{sa, {
+        [this](){ activate(opcast(Op::descriptorSetLayoutMgr));}},
+        [this](const DescriptorSetLayoutReport* r){ receiveDescriptorSetLayoutReport(r); }
+    },
     initFrameUbos{sa},
-    updateFrameSamplers{sa}
+    updateFrameSamplers{sa},
+    receivedDSLReportCb{dslrCb}
 {
     activate(opcast(Op::printReports));
     activate(opcast(Op::descriptorSetLayoutMgr));
@@ -109,7 +110,7 @@ void DescriptorManager::handleEvent(event::Event* event)
         auto cmdEvent = toCommandLine(event);
         auto option = extractCommand(cmdEvent);
         if (!option) return;
-        switch (opcast(*option))
+        switch (opcast<Op>(*option))
         {
             case Op::createFrameDescriptorSets: pushState(&createFrameDescriptorSets); deactivate(opcast(Op::createFrameDescriptorSets)); break;
             case Op::printReports: printReports(); break;
@@ -122,7 +123,7 @@ void DescriptorManager::handleEvent(event::Event* event)
 
 void DescriptorManager::printReports()
 {
-    for (const auto& report : reports) 
+    for (const auto& report : descriptorSetReports) 
     {
         std::invoke(*report);
     }
@@ -130,9 +131,18 @@ void DescriptorManager::printReports()
 
 void DescriptorManager::activateDSetLayoutNeeding()
 {
-    activate(opcast(Op::descriptorSetLayoutMgr));
     if (descriptorSetLayoutMgr.hasCreatedLayout())
         activate(opcast(Op::createFrameDescriptorSets));
+}
+
+void DescriptorManager::receiveDescriptorSetLayoutReport(const DescriptorSetLayoutReport* r)
+{
+    descriptorSetLayoutReports.push_back(r);
+    createFrameDescriptorSets.addToVocab(r->getObjectName());
+    if (descriptorSetLayoutReports.size() == 1) //pushed first one
+        activate(opcast(Op::createFrameDescriptorSets));
+    if (receivedDSLReportCb)
+        std::invoke(receivedDSLReportCb, r);
 }
 
 }; // namespace state

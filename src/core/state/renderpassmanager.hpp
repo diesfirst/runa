@@ -1,6 +1,8 @@
 #ifndef STATE_RENDERPASSMANAGER_HPP
 #define STATE_RENDERPASSMANAGER_HPP
 
+//imp: state/renderpassmanager.cpp
+
 #include <state/state.hpp>
 #include <command/rendercommands.hpp>
 
@@ -33,12 +35,13 @@ public:
     const char* getName() const override { return "rpass_manager"; }
     void handleEvent(event::Event*) override;
     virtual ~RenderPassManager() = default;
-    RenderPassManager(StateArgs sa, Callbacks cb);
+    RenderPassManager(StateArgs sa, Callbacks cb, ReportCallbackFn<RenderPassReport>);
     void activateCreateSwap();
 private:
-    enum class Op : Option {createSwapRpass, createOffscreenRpass};
+    enum class Op : Option {createSwapRpass, createOffscreenRpass, printReports};
     CreateRenderPass createRenderPass;
     void pushCreateRenderPass(RenderPassType);
+    void printReports();
 
     Reports<RenderPassReport> reports;
 };

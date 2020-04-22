@@ -85,6 +85,49 @@ void CreateOffscreenRenderpass::execute(Application* app)
 }
 
 
+//void AddAttachment::execute(Application* app)
+//{
+//        auto& attachment = app->renderer.createAttachment(attachmentName, dimensions, usage);
+//        if (usage & vk::ImageUsageFlagBits::eSampled)
+//            app->sampledImages.push_back(&attachment.getImage(0));
+//}
+//
+//void OpenWindow::execute(Application* app)
+//{
+//    app->window.open();
+//}
+
+
+void CreateGraphicsPipeline::execute(Application* app)
+{
+    auto& pipeline = app->renderer.createGraphicsPipeline(
+            name, pipelineLayout,
+            vertshader, fragshader,
+            renderpass, renderArea, is3d);
+    pipeline.create();
+}
+
+void CreateRenderpassInstance::execute(Application* app)
+{
+    app->renderer.addRenderPassInstance(attachment, renderpass, pipeline);
+}
+
+void RecordRenderCommand::execute(Application* app)
+{
+    app->renderer.recordRenderCommands(cmdBufferId, renderpassInstances);
+}
+
+void Render::execute(Application* app)
+{
+    app->renderer.render(renderCommandId, updateUBO);
+}
+
+
+void CreatePipelineLayout::execute(Application* app)
+{
+    app->renderer.createPipelineLayout(name, descriptorSetLayoutNames);
+}
+
 
 }; // namespace command
 

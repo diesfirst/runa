@@ -74,7 +74,7 @@ public:
     const char* getName() const override { return "DescriptorSetLayoutManager"; }
     void handleEvent(event::Event*) override;
     virtual ~DescriptorSetLayoutManager() = default;
-    DescriptorSetLayoutManager(StateArgs, Callbacks);
+    DescriptorSetLayoutManager(StateArgs, Callbacks, ReportCallbackFn<DescriptorSetLayoutReport>);
     bool hasCreatedLayout();
 private:
     enum class Op : Option {createBinding, createDescriptorSetLayout, printReports};

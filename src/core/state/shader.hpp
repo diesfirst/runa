@@ -1,6 +1,8 @@
 #ifndef STATE_SHADER_HPP
 #define STATE_SHADER_HPP
 
+//imp: state/shader.cpp
+
 #include <state/state.hpp>
 #include <types/map.hpp>
 #include <command/rendercommands.hpp>
@@ -74,7 +76,7 @@ public:
     const char* getName() const override { return "shader_manager"; }
     void handleEvent(event::Event*) override;
     virtual ~ShaderManager() = default;
-    ShaderManager(StateArgs, Callbacks);
+    ShaderManager(StateArgs, Callbacks, ReportCallbackFn<ShaderReport>);
     enum class SpecType : uint8_t {integer, floating};
 private:
     void printReports();

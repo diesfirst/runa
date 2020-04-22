@@ -15,16 +15,21 @@ RenderManager::RenderManager(StateArgs sa, Callbacks cb) :
         {"shader_manager", opcast(Op::shaderManager)},
         {"pipeline_manager", opcast(Op::pipelineManager)}
     }},
-    pipelineManager{sa, {[this](){activate(opcast(Op::pipelineManager));}, nullptr}},
-    rpassManager{sa, {[this](){activate(opcast(Op::renderPassManager));}, nullptr}},
-    descriptorManager{sa, {[this](){activate(opcast(Op::descriptorManager));}, nullptr, std::bind(&RenderManager::onDescriptorSetLayoutCreate, this)}},
-    shaderManager{sa, {[this](){activate(opcast(Op::shaderManager));}, nullptr}}
+    pipelineManager{sa, {[this](){activate(opcast(Op::pipelineManager));}}},
+    rpassManager{sa, {
+        [this](){activate(opcast(Op::renderPassManager));}},
+        [this](const RenderPassReport* r){ pipelineManager.receiveReport(r); }},
+    descriptorManager{sa, {
+        [this](){activate(opcast(Op::descriptorManager));}}, 
+        [this](const DescriptorSetLayoutReport* r){ receiveDescriptorSetLayoutReport(r); }},
+    shaderManager{sa, {
+        [this](){activate(opcast(Op::shaderManager));}},
+        [this](const ShaderReport* r){ pipelineManager.receiveReport(r); }}
 {   
     activate(opcast(Op::openWindow));
     activate(opcast(Op::shaderManager));
     activate(opcast(Op::prepRenderFrames));
     activate(opcast(Op::renderPassManager));
-    printMask();
 }
 void RenderManager::handleEvent(event::Event* event)
 {
@@ -62,9 +67,14 @@ void RenderManager::prepRenderFrames()
     updateVocab();
 }
 
-void RenderManager::onDescriptorSetLayoutCreate()
+void RenderManager::receiveDescriptorSetLayoutReport(const DescriptorSetLayoutReport* r)
 {
-    activate(opcast(Op::pipelineManager));
+    if (!createdDescSetLayout)
+    {
+        activate(opcast(Op::pipelineManager));
+        createdDescSetLayout = true;
+    }
+    pipelineManager.receiveReport(r); 
 }
 
 }; // namespace state
