@@ -39,6 +39,7 @@ class ReverseStack : public Stack<T>
 public:
     auto begin() const {return this->items.rbegin();}
     auto end() const {return this->items.rend();}
+    auto at(size_t i) const {return this->items.at(i); }
 };
 
 }; //sword

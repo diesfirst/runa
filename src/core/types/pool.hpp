@@ -55,8 +55,7 @@ public:
                         if (t->succeeded() && reportCb)
                         {
                             auto report = t->makeReport();
-                            if (report)
-                                std::invoke(reportCb, report);
+                            std::invoke(reportCb, report);
                         }
                         t->reset();
                     }};

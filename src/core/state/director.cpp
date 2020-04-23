@@ -8,6 +8,17 @@ namespace sword
 namespace state
 {
 
+QuickSetup::QuickSetup(StateArgs sa, Callbacks cb) :
+    BriefState{sa, cb}, sr{sa.rg}, cp{sa.cp}
+{}
+
+void QuickSetup::onEnterExt()
+{
+    pushCmd(cp.loadFragShader.request(sr.loadFragShaders->reportCallback(), "death.spv"));
+    pushCmd(cp.loadFragShader.request(sr.loadFragShaders->reportCallback(), "justice.spv"));
+    popSelf();
+}
+
 Director::Director(StateArgs sa, const StateStack& ss, render::Window& window) :
     BranchState{sa, Callbacks(), {
         {"render_manager", opcast(Op::pushRenderManager)},
@@ -17,8 +28,7 @@ Director::Director(StateArgs sa, const StateStack& ss, render::Window& window) :
     stateStack{ss},
     renderManager{sa, 
         {[this](){activate(opcast(Op::pushRenderManager));}, {}, {}}},
-    sr{sa.rg},
-    cp{sa.cp}
+    quickState{sa, {}}
 { 
     activate(opcast(Op::pushRenderManager));
     activate(opcast(Op::printHierarchy));
@@ -65,10 +75,8 @@ void Director::popTop()
 
 void Director::quickSetup()
 {
-    pushCmd(cp.loadFragShader.request(sr.loadFragShaders->reportCallback(), "death.spv"));
-    pushCmd(cp.loadFragShader.request(sr.loadFragShaders->reportCallback(), "justice.spv"));
+    pushState(&quickState);
     deactivate(opcast(Op::quickSetup));
-    updateVocab();
 }
 
 }; // namespace state

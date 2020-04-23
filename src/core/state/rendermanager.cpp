@@ -6,6 +6,28 @@ namespace sword
 namespace state
 {
 
+OpenWindow::OpenWindow(StateArgs sa, Callbacks cb) :
+    BriefState{sa, cb}, owPool{sa.cp.openWindow}
+{}
+
+void OpenWindow::onEnterExt()
+{
+    auto cmd = owPool.request(reportCallback());
+    pushCmd(std::move(cmd));
+    popSelf();
+}
+
+PrepareRenderFrames::PrepareRenderFrames(StateArgs sa, Callbacks cb) :
+    BriefState{sa, cb}, prfPool{sa.cp.prepareRenderFrames}
+{}
+
+void PrepareRenderFrames::onEnterExt()
+{
+    auto cmd = prfPool.request(reportCallback());
+    pushCmd(std::move(cmd));
+    popSelf();
+}
+
 RenderManager::RenderManager(StateArgs sa, Callbacks cb) :
     BranchState{sa, cb, {
         {"descriptor_manager", opcast(Op::descriptorManager)},
@@ -25,8 +47,8 @@ RenderManager::RenderManager(StateArgs sa, Callbacks cb) :
     shaderManager{sa, {
         [this](){activate(opcast(Op::shaderManager));}},
         [this](const ShaderReport* r){ pipelineManager.receiveReport(r); }},
-    owPool{sa.cp.openWindow},
-    prfPool{sa.cp.prepareRenderFrames}
+    openWindow{sa, {nullptr, [this](Report* report) { onOpenWindow(); }}},
+    prepRenderFrames{sa, {nullptr, [this](Report* report) { onPrepRenderFrames(); }}}
 {   
     activate(opcast(Op::openWindow));
     activate(opcast(Op::shaderManager));
@@ -41,8 +63,8 @@ void RenderManager::handleEvent(event::Event* event)
         if (!option) return;
         switch(opcast<Op>(*option))
         {
-            case Op::openWindow: openWindow(); break;
-            case Op::prepRenderFrames: prepRenderFrames(); break;
+            case Op::openWindow: pushState(&openWindow); break;
+            case Op::prepRenderFrames: pushState(&prepRenderFrames); break;
             case Op::shaderManager: pushState(&shaderManager); deactivate(opcast(Op::shaderManager)); break;
             case Op::descriptorManager: pushState(&descriptorManager); deactivate(opcast(Op::descriptorManager)); break;
             case Op::renderPassManager: pushState(&rpassManager); deactivate(opcast(Op::renderPassManager)); break;
@@ -51,22 +73,16 @@ void RenderManager::handleEvent(event::Event* event)
     }
 }
 
-void RenderManager::openWindow()
+void RenderManager::onPrepRenderFrames()
 {
-    auto cmd = owPool.request();
-    pushCmd(std::move(cmd));
-    deactivate(opcast(Op::openWindow));
-    updateVocab();
-}
-
-void RenderManager::prepRenderFrames()
-{
-    auto cmd = prfPool.request();
-    pushCmd(std::move(cmd));
     deactivate(opcast(Op::prepRenderFrames));
     activate(opcast(Op::descriptorManager));
     rpassManager.activateCreateSwap();
-    updateVocab();
+}
+
+void RenderManager::onOpenWindow()
+{
+    deactivate(opcast(Op::openWindow));
 }
 
 void RenderManager::receiveDescriptorSetLayoutReport(const DescriptorSetLayoutReport* r)

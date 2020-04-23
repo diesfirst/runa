@@ -49,18 +49,22 @@ constexpr Option opcast(T op) {return static_cast<Option>(op);}
 template<typename T>
 constexpr T opcast(Option op) {return static_cast<T>(op);}
 
-enum class StateType : uint8_t {leaf, branch};
+enum class StateType : uint8_t {leaf, branch, brief};
 
 //forward decs
 class LoadFragShaders;
 class LoadVertShaders;
 class SetSpec;
+class OpenWindow;
+class PrepareRenderFrames;
 
 struct Register
 {
     LoadFragShaders* loadFragShaders;
     LoadVertShaders* loadVertShaders;
     SetSpec* setSpec;
+    OpenWindow* openWindow;
+    PrepareRenderFrames* prepareRenderFrames;
 };
 
 struct StateArgs
@@ -178,8 +182,7 @@ private:
 class LeafState : public State
 {
 public:
-    ~LeafState() = default; //may not need this
-    StateType getType() const override final { return StateType::leaf; }
+    StateType getType() const override { return StateType::leaf; }
     void addToVocab(std::string word) { State::addToVocab(word); }
     const OwningReportCallbackFn reportCallback() const { return reportCallbackFn; }
 protected:
@@ -210,6 +213,17 @@ private:
     virtual void onEnterExt() override {}
     virtual void onExitExt() override {}
 
+};
+
+class BriefState : public LeafState
+{
+public:
+    StateType getType() const override { return StateType::brief; }
+    void handleEvent(event::Event*) override final {}; //no events for this guy
+protected:
+    BriefState(StateArgs sa, Callbacks cb) :
+        LeafState{sa, cb} 
+    {}
 };
 
 //TODO: make the exit callback a requirement for branch states

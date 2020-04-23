@@ -47,10 +47,8 @@ void CreatePipelineLayout::handleEvent(event::Event* event)
         ss >> name;
         while (ss >> layout)
             layouts.push_back(layout);
-        auto cmd = pool.request(name, layouts);
+        auto cmd = pool.request(reportCallback(), name, layouts);
         pushCmd(std::move(cmd));
-        auto report = new PipelineLayoutReport(name, layouts);
-        invokeReportCallback(report);
         popSelf();
         event->setHandled();
     }

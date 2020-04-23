@@ -25,10 +25,8 @@ void CreateFrameDescriptorSets::handleEvent(event::Event* event)
         std::string name;
         while (stream >> name)
             layoutNames.push_back(name);
-        auto cmd = cfdsPool.request(layoutNames);
+        auto cmd = cfdsPool.request(reportCallback(), layoutNames);
         pushCmd(std::move(cmd));
-        auto report = new DescriptorSetReport(layoutNames, DescriptorSetReport::Type::frameOwned);
-        invokeReportCallback(report);
         event->setHandled();
         popSelf();
     }

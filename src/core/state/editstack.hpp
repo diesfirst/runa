@@ -20,6 +20,7 @@ public:
     auto end() const { return stack.end(); }
     void clear() { stack.clear(); }
     void popState() { stack.push(nullptr); }
+    State* at(int i) const { return stack.at(i); }
     size_t size() const { return stack.size(); }
 private:
     ReverseStack<State*> stack;

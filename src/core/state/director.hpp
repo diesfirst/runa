@@ -15,12 +15,23 @@ namespace render { class Window; }
 namespace state
 {
 
+class QuickSetup : public BriefState
+{
+public:
+    const char* getName() const override { return "QuickSetup"; }
+    QuickSetup(StateArgs, Callbacks);
+private:
+    void onEnterExt() override;
+
+    state::Register& sr;
+    CommandPools& cp;
+};
+
 class Director final : public BranchState
 {
 public:
     const char* getName() const override { return "director"; }
     void handleEvent(event::Event*) override;
-    virtual ~Director() = default;
     Director(StateArgs, const StateStack& ss, render::Window& window);
 
 private:
@@ -32,9 +43,7 @@ private:
     void quickSetup();
 
     RenderManager renderManager;
-
-    state::Register& sr;
-    CommandPools& cp;
+    QuickSetup quickState;
 
     const StateStack& stateStack;
 };

@@ -38,7 +38,7 @@ void Application::popState()
 void Application::pushState(state::State* state)
 {
     stateStack.push(std::move(state));
-    if (state->getType() == state::StateType::branch)
+    if (state->getType() != state::StateType::leaf)
         state->onEnter();
 }
 
@@ -126,12 +126,15 @@ void Application::run()
             }
             if (stateEdits.size() > 0)
             {
-                for (auto state : stateEdits) 
+                int j = 0;
+                while (j < stateEdits.size())
                 {
+                    auto state = stateEdits.at(j);
                     if (state)
                         pushState(state);
                     else
                         popState();
+                    j++;
                 }
                 stateEdits.clear();
                 // this allows mutiple leaves to be pushed at once, and they get entered in order

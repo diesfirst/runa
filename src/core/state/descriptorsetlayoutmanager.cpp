@@ -113,15 +113,11 @@ void CreateDescriptorSetLayout::handleEvent(event::Event* event)
     {
         auto ce = toCommandLine(event);
         auto name = ce->getInput();
-        auto cmd = cdslPool.request(name, bindings);
+        auto cmd = cdslPool.request(reportCallback(), name, bindings);
         pushCmd(std::move(cmd));
         event->setHandled();
         popSelf();
         bindings.clear();
-        if (onCreate)
-            std::invoke(onCreate);
-        auto report = new DescriptorSetLayoutReport(name, bindings);
-        invokeReportCallback(report);
     }
 }
 
@@ -137,7 +133,7 @@ DescriptorSetLayoutManager::DescriptorSetLayoutManager(StateArgs sa, Callbacks c
     setShaderStageEntry{sa, {}, curBinding},
     createDescriptorSetLayout{
         sa, 
-        {nullptr, [this, dslr](Report* r){ addReport(r, &reports, dslr); }, cb.gn}, 
+        {nullptr, [this, dslr](Report* r){ addReport(r, &reports, dslr); }}, 
         bindings}
 {
     activate(opcast(Op::createBinding));

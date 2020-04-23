@@ -74,6 +74,11 @@ void LeafState::onExitImp()
     updateVocab();
 }
 
+void LeafState::pushCmd(CmdPtr cmd)
+{
+    cmdStack.push(std::move(cmd));
+}
+
 void BranchState::pushState(State* state)
 {
     editStack.pushState(state);
