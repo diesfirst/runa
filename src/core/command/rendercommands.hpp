@@ -101,6 +101,7 @@ public:
         name = n;
         bindings = b;
     }
+    state::Report* makeReport() const override;
 private:
     std::string name{"default"};
     std::vector<vk::DescriptorSetLayoutBinding> bindings;
@@ -110,11 +111,12 @@ class CreatePipelineLayout : public Command
 {
 public:
     CMD_BASE("createPipelineLayout")
-    inline void set( std::string n, std::vector<std::string> descSetLayoutNames)
+    void set( std::string n, std::vector<std::string> descSetLayoutNames)
     {
         name = n;
         descriptorSetLayoutNames = descSetLayoutNames;
     }
+    state::Report* makeReport() const override;
 private:
     std::string name{"default"};
     std::vector<std::string> descriptorSetLayoutNames;
@@ -148,6 +150,7 @@ public:
         renderArea = renderAreaSet;
         is3d = has3dGeo;
     }
+    state::Report* makeReport() const override;
 private:
     std::string name{"default"};
     std::string pipelineLayout{"default"};
@@ -162,7 +165,8 @@ class CreateSwapchainRenderpass : public Command
 {
 public:
     CMD_BASE("create_swapchain_render_pass");
-    inline void set(std::string name) {rpassName = name;}
+    void set(std::string name) {rpassName = name;}
+    state::Report* makeReport() const override;
 private:
     std::string rpassName;
 };
@@ -171,17 +175,18 @@ class CreateOffscreenRenderpass : public Command
 {
 public:
     CMD_BASE("create_offscreen_render_pass");
-    inline void set(std::string name, vk::AttachmentLoadOp op) {rpassName = name; loadOp = op;}
+    void set(std::string name, vk::AttachmentLoadOp op) {rpassName = name; loadOp = op;}
+    state::Report* makeReport() const override;
 private:
     std::string rpassName;
     vk::AttachmentLoadOp loadOp;
 };
 
-class CreateRenderpassInstance : public Command
+class CreateRenderLayer : public Command
 {
 public:
-    CMD_BASE("createRenderpassInstance");
-    inline void set(
+    CMD_BASE("createRenderLayer");
+    void set(
             std::string attachName,
             std::string renderpassName,
             std::string pipelineName) 
@@ -190,10 +195,12 @@ public:
         renderpass = renderpassName;
         pipeline = pipelineName;
     }
+    state::Report* makeReport() const override;
 private:
     std::string attachment;
     std::string renderpass;
     std::string pipeline;
+    inline static int id{0};
 };
 
 class RecordRenderCommand : public Command
@@ -215,6 +222,7 @@ class CreateFrameDescriptorSets : public Command
 public:
     CMD_BASE("createFrameDescriptorSets");
     inline void set(std::vector<std::string> layouts) {layoutnames = layouts;}
+    state::Report* makeReport() const override;
 private:
     std::vector<std::string> layoutnames;
 };

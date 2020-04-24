@@ -6,9 +6,54 @@ namespace sword
 namespace state
 {
 
+RecordRenderCommand::RecordRenderCommand(StateArgs sa, Callbacks cb) :
+    LeafState{sa, cb}
+{}
+
+void RecordRenderCommand::onEnterExt()
+{
+    std::cout << "Enter a command index, and an array of render layer ids to use." << std::endl;
+}
+
+void RecordRenderCommand::handleEvent(event::Event* event)
+{
+    if (event->getCategory() == event::Category::CommandLine)
+    {
+        auto ce = toCommandLine(event);       
+    }
+}
+
+CreateRenderLayer::CreateRenderLayer(StateArgs sa, Callbacks cb) :
+    LeafState{sa, cb}, crlPool{sa.cp.createRenderLayer}
+{
+    sa.rg.createRenderLayer = this;
+}
+
+void CreateRenderLayer::onEnterExt()
+{
+    std::cout << "Enter an attachment name (or swap), a render pass name, and a pipeline name" << std::endl;
+}
+
+void CreateRenderLayer::handleEvent(event::Event* event)
+{
+    if (event->getCategory() == event::Category::CommandLine)
+    {
+        auto ce = toCommandLine(event);
+        auto attachmentName = ce->getArg<std::string, 0>();
+        auto renderPassName = ce->getArg<std::string, 1>();
+        auto pipelineName = ce->getArg<std::string, 2>();
+        auto cmd = crlPool.request(reportCallback(), attachmentName, renderPassName, pipelineName);
+        pushCmd(std::move(cmd));
+        popSelf();
+        event->setHandled();
+    }
+}
+
 OpenWindow::OpenWindow(StateArgs sa, Callbacks cb) :
     BriefState{sa, cb}, owPool{sa.cp.openWindow}
-{}
+{
+    sa.rg.openWindow = this;
+}
 
 void OpenWindow::onEnterExt()
 {
@@ -19,7 +64,9 @@ void OpenWindow::onEnterExt()
 
 PrepareRenderFrames::PrepareRenderFrames(StateArgs sa, Callbacks cb) :
     BriefState{sa, cb}, prfPool{sa.cp.prepareRenderFrames}
-{}
+{
+    sa.rg.prepareRenderFrames = this;
+}
 
 void PrepareRenderFrames::onEnterExt()
 {
@@ -35,7 +82,10 @@ RenderManager::RenderManager(StateArgs sa, Callbacks cb) :
         {"render_pass_manager", opcast(Op::renderPassManager)},
         {"open_window", opcast(Op::openWindow)},
         {"shader_manager", opcast(Op::shaderManager)},
-        {"pipeline_manager", opcast(Op::pipelineManager)}
+        {"pipeline_manager", opcast(Op::pipelineManager)},
+        {"create_render_layer", opcast(Op::createRenderLayer)},
+        {"record_render_command", opcast(Op::recordRenderCommand)},
+        {"print_reports", opcast(Op::printReports)}
     }},
     pipelineManager{sa, {[this](){activate(opcast(Op::pipelineManager));}}},
     rpassManager{sa, {
@@ -47,14 +97,19 @@ RenderManager::RenderManager(StateArgs sa, Callbacks cb) :
     shaderManager{sa, {
         [this](){activate(opcast(Op::shaderManager));}},
         [this](const ShaderReport* r){ pipelineManager.receiveReport(r); }},
-    openWindow{sa, {nullptr, [this](Report* report) { onOpenWindow(); }}},
-    prepRenderFrames{sa, {nullptr, [this](Report* report) { onPrepRenderFrames(); }}}
+    openWindow{sa, {nullptr, [this](Report* report) { deactivate(opcast(Op::openWindow)); }}},
+    prepRenderFrames{sa, {nullptr, [this](Report* report) { onPrepRenderFrames(); }}},
+    createRenderLayer{sa, {nullptr, [this](Report* report) { addReport(report, &renderLayersReports); }}},
+    recordRenderCommand{sa, {nullptr, [this](Report* report) { addReport(report, &renderCommandReports); }}}
 {   
     activate(opcast(Op::openWindow));
     activate(opcast(Op::shaderManager));
     activate(opcast(Op::prepRenderFrames));
     activate(opcast(Op::renderPassManager));
+    activate(opcast(Op::printReports));
+    activate(opcast(Op::createRenderLayer));
 }
+
 void RenderManager::handleEvent(event::Event* event)
 {
     if (event->getCategory() == event::Category::CommandLine)
@@ -69,6 +124,9 @@ void RenderManager::handleEvent(event::Event* event)
             case Op::descriptorManager: pushState(&descriptorManager); deactivate(opcast(Op::descriptorManager)); break;
             case Op::renderPassManager: pushState(&rpassManager); deactivate(opcast(Op::renderPassManager)); break;
             case Op::pipelineManager: pushState(&pipelineManager); deactivate(opcast(Op::pipelineManager)); break;
+            case Op::createRenderLayer: pushState(&createRenderLayer); break;
+            case Op::recordRenderCommand: pushState(&recordRenderCommand); break;
+            case Op::printReports: printReports(); break;
         }
     }
 }
@@ -80,11 +138,6 @@ void RenderManager::onPrepRenderFrames()
     rpassManager.activateCreateSwap();
 }
 
-void RenderManager::onOpenWindow()
-{
-    deactivate(opcast(Op::openWindow));
-}
-
 void RenderManager::receiveDescriptorSetLayoutReport(const DescriptorSetLayoutReport* r)
 {
     if (!createdDescSetLayout)
@@ -93,6 +146,18 @@ void RenderManager::receiveDescriptorSetLayoutReport(const DescriptorSetLayoutRe
         createdDescSetLayout = true;
     }
     pipelineManager.receiveReport(r); 
+}
+
+void RenderManager::printReports() const
+{
+    for (const auto& r : renderLayersReports) 
+    {
+        std::invoke(*r);
+    }
+    for (const auto& r : renderCommandReports) 
+    {
+        std::invoke(*r);
+    }
 }
 
 }; // namespace state

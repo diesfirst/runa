@@ -26,7 +26,6 @@ public:
     template <typename... Args> Pointer<Base>
     request(Args... args)
     {
-        std::cout << "Called first pool request" << std::endl;
         for (int i = 0; i < size; i++) 
             if (pool[i].isAvailable())
             {

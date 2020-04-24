@@ -9,7 +9,9 @@ namespace state
 
 CreateFrameDescriptorSets::CreateFrameDescriptorSets(StateArgs sa, Callbacks cb) :
     LeafState{sa, cb}, cfdsPool{sa.cp.createFrameDescriptorSets} 
-{}
+{
+    sa.rg.createFrameDescriptorSets = this;
+}
 
 void CreateFrameDescriptorSets::onEnterExt()
 {
@@ -80,7 +82,7 @@ DescriptorManager::DescriptorManager(StateArgs sa, Callbacks cb, ReportCallbackF
     BranchState{sa, cb, 
         {
             {"create_frame_descriptor_sets", opcast(Op::createFrameDescriptorSets)},
-            {"print_report", opcast(Op::printReports)},
+            {"print_reports", opcast(Op::printReports)},
             {"descriptor_set_layout_manager", opcast(Op::descriptorSetLayoutMgr)},
             {"init_frame_ubos", opcast(Op::initFrameUBOs)},
             {"update_frame_samplers", opcast(Op::updateFrameSamplers)}

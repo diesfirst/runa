@@ -14,8 +14,19 @@ QuickSetup::QuickSetup(StateArgs sa, Callbacks cb) :
 
 void QuickSetup::onEnterExt()
 {
+    vk::DescriptorSetLayoutBinding binding;
+    binding.setDescriptorType(vk::DescriptorType::eUniformBuffer);
+    binding.setBinding(0);
+    binding.setStageFlags(vk::ShaderStageFlagBits::eFragment);
+    binding.setDescriptorCount(1);
+    std::vector<vk::DescriptorSetLayoutBinding> bindings;
+    bindings.push_back(binding);
     pushCmd(cp.loadFragShader.request(sr.loadFragShaders->reportCallback(), "death.spv"));
-    pushCmd(cp.loadFragShader.request(sr.loadFragShaders->reportCallback(), "justice.spv"));
+    pushCmd(cp.loadVertShader.request(sr.loadVertShaders->reportCallback(), "fullscreen_tri.spv"));
+    pushCmd(cp.prepareRenderFrames.request(sr.prepareRenderFrames->reportCallback()));
+    pushCmd(cp.createDescriptorSetLayout.request(sr.createDescriptorSetLayout->reportCallback(), "foo", bindings));
+    pushCmd(cp.createFrameDescriptorSets.request(sr.createFrameDescriptorSets->reportCallback(), std::vector<std::string>({"foo"})));
+    pushCmd(cp.createSwapchainRenderpass.request(sr.createRenderPass->reportCallback(), "swap"));
     popSelf();
 }
 

@@ -16,6 +16,28 @@ namespace sword
 namespace state
 {
 
+class RecordRenderCommand : public LeafState
+{
+public:
+    const char* getName() const override { return "RecordRenderCommand"; }
+    void handleEvent(event::Event*) override;
+    RecordRenderCommand(StateArgs, Callbacks);
+private:
+    void onEnterExt() override;
+    CommandPool<command::RecordRenderCommand> pool;
+};
+
+class CreateRenderLayer : public LeafState
+{
+public:
+    const char* getName() const override { return "CreateRenderLayer"; }
+    void handleEvent(event::Event*) override;
+    CreateRenderLayer(StateArgs, Callbacks);
+private:
+    void onEnterExt() override;
+    CommandPool<command::CreateRenderLayer>& crlPool;
+};
+
 class OpenWindow : public BriefState
 {
 public:
@@ -43,7 +65,7 @@ public:
     void handleEvent(event::Event*) override;
     RenderManager(StateArgs, Callbacks cb);
 private:
-    enum class Op : Option {openWindow, prepRenderFrames, shaderManager, descriptorManager, renderPassManager, pipelineManager};
+    enum class Op : Option {printReports, openWindow, prepRenderFrames, shaderManager, descriptorManager, renderPassManager, pipelineManager, createRenderLayer, recordRenderCommand};
 
     PipelineManager pipelineManager;
     RenderPassManager rpassManager;
@@ -51,12 +73,18 @@ private:
     ShaderManager shaderManager;
     OpenWindow openWindow;
     PrepareRenderFrames prepRenderFrames;
+    CreateRenderLayer createRenderLayer;
+    RecordRenderCommand recordRenderCommand;
+
+    Reports<RenderLayerReport> renderLayersReports;
+    Reports<RenderCommandReport> renderCommandReports;
 
     bool createdDescSetLayout{false};
 
     void onPrepRenderFrames();
     void onOpenWindow();
     void receiveDescriptorSetLayoutReport(const DescriptorSetLayoutReport*);
+    void printReports() const;
 };
 
 }; // namespace state

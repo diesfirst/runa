@@ -108,11 +108,14 @@ void Application::readEvents(std::ifstream& is, int eventPops)
 void Application::run()
 {
     dispatcher.pollEvents();
+    int i;
+    int j;
+    int k;
 
     while (1)
     {
         size_t eventCount = dispatcher.eventQueue.size();
-        int i = 0;
+        i = 0;
         while (i < dispatcher.eventQueue.size())
         {
             std::cout << "got events" << std::endl;
@@ -126,7 +129,7 @@ void Application::run()
             }
             if (stateEdits.size() > 0)
             {
-                int j = 0;
+                j = 0;
                 while (j < stateEdits.size())
                 {
                     auto state = stateEdits.at(j);
@@ -144,8 +147,14 @@ void Application::run()
             i++;
         }
         dispatcher.eventQueue.items.clear();
-        for (auto& cmd : cmdStack.items)
+        // see below
+        if (!cmdStack.empty())
         {
+            cmdStack.reverse();
+        }
+        while (!cmdStack.empty())
+        {
+            auto cmd = cmdStack.topPtr();
             if (cmd)
             {
                 cmd->execute(this);
@@ -153,11 +162,19 @@ void Application::run()
             }
             else
                 std::cout << "Recieved null cmd" << std::endl;
+            cmdStack.pop();
         }
         cmdStack.items.clear();
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 }
+
+// in case you forget. we need to be able to handle cmdPtrs that end up pushing 
+// new commands to the stack when they get destructed (returned the pool). so using a stack for the commands
+// makes sense. but we also want the execution order to match the order in which the
+// commands were pushed. so we need to reverse the stack before we start iterating over it
+// this will be interesting to profile. i don't know yet how big the cmdStack is likely to get in practice.
+// and whether iteraticing over it effectively twice will make a difference ultimately.
 
 
 }; // namespace sword

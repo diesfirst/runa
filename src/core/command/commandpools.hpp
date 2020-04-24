@@ -23,7 +23,7 @@ struct CommandPools
     CommandPool<command::CreateGraphicsPipeline> createGraphicsPipeline;
     CommandPool<command::CreateSwapchainRenderpass> createSwapchainRenderpass;
     CommandPool<command::CreateOffscreenRenderpass> createOffscreenRenderpass;
-    CommandPool<command::CreateRenderpassInstance> createRenderpassInstance;
+    CommandPool<command::CreateRenderLayer> createRenderLayer;
     CommandPool<command::RecordRenderCommand> recordRenderCommand;
     CommandPool<command::CreateFrameDescriptorSets> createFrameDescriptorSets;
     CommandPool<command::InitFrameUbos> initFrameUbos;

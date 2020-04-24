@@ -20,6 +20,7 @@ public:
     virtual ~CreateGraphicsPipeline() = default;   
     CreateGraphicsPipeline(StateArgs, Callbacks);
 private:
+    CommandPool<command::CreateGraphicsPipeline>& pool;
     void onEnterExt() override;
 };
 

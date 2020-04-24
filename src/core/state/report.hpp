@@ -164,10 +164,10 @@ private:
     vk::AttachmentLoadOp loadOp;
 };
 
-class RenderpassInstanceReport : public Report
+class RenderLayerReport : public Report
 {
 public:
-    inline RenderpassInstanceReport(
+    RenderLayerReport(
             std::string attachName,
             std::string rpassName,
             std::string pipeName,
@@ -176,7 +176,7 @@ public:
         renderpassName{rpassName},
         pipelineName{pipeName},
         id{id} {}
-    inline void operator()() const override
+    void operator()() const override
     {
         std::cout << "============== Renderpass Instance Report =============" << std::endl;
         std::cout << "Index:           " << id << std::endl;
@@ -184,8 +184,8 @@ public:
         std::cout << "Renderpass Name: " << renderpassName << std::endl;
         std::cout << "Pipeline Name:   " << pipelineName << std::endl;
     }
-    inline ReportType getType() const override {return ReportType::RenderpassInstance;}
-    inline const std::string getObjectName() const override {return std::to_string(id);}
+    ReportType getType() const override {return ReportType::RenderpassInstance;}
+    const std::string getObjectName() const override {return std::to_string(id);}
 private:
     std::string attachmentName;
     std::string renderpassName;

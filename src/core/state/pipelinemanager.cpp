@@ -7,8 +7,10 @@ namespace state
 {
 
 CreateGraphicsPipeline::CreateGraphicsPipeline(StateArgs sa, Callbacks cb) :
-    LeafState{sa, cb}
-{}
+    LeafState{sa, cb}, pool{sa.cp.createGraphicsPipeline}
+{
+    sa.rg.createGraphicsPipeline = this;
+}
 
 void CreateGraphicsPipeline::onEnterExt()
 {
@@ -22,13 +24,29 @@ void CreateGraphicsPipeline::handleEvent(event::Event* event)
 {
     if (event->getCategory() == event::Category::CommandLine)
     {
-        std::cout << "Meh" << std::endl;       
+        auto ce = toCommandLine(event);
+        auto name = ce->getArg<std::string, 0>();
+        auto pipelineLayout = ce->getArg<std::string, 1>();
+        auto vertshader = ce->getArg<std::string, 2>();
+        auto fragshader = ce->getArg<std::string, 3>();
+        auto renderpass = ce->getArg<std::string, 4>();
+        vk::Rect2D area{
+            {ce->getArg<int, 5>(), ce->getArg<int, 6>()},
+            {ce->getArg<uint32_t, 7>(), ce->getArg<uint32_t, 8>()}};
+        auto is3d = ce->getArg<bool, 9>();
+        auto cmd = pool.request(reportCallback(), name, pipelineLayout,
+                vertshader, fragshader, renderpass, area, is3d);
+        pushCmd(std::move(cmd));
+        popSelf();
+        event->setHandled();
     }
 }
 
 CreatePipelineLayout::CreatePipelineLayout(StateArgs sa, Callbacks cb) :
     LeafState{sa, cb}, pool{sa.cp.createPipelineLayout}
-{}
+{
+    sa.rg.createPipelineLayout = this;
+}
 
 void CreatePipelineLayout::onEnterExt()
 {

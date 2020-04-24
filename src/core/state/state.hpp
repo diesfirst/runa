@@ -57,6 +57,12 @@ class LoadVertShaders;
 class SetSpec;
 class OpenWindow;
 class PrepareRenderFrames;
+class CreateFrameDescriptorSets;
+class CreateDescriptorSetLayout;
+class CreateRenderPass;
+class CreatePipelineLayout;
+class CreateGraphicsPipeline;
+class CreateRenderLayer;
 
 struct Register
 {
@@ -65,6 +71,12 @@ struct Register
     SetSpec* setSpec;
     OpenWindow* openWindow;
     PrepareRenderFrames* prepareRenderFrames;
+    CreateFrameDescriptorSets* createFrameDescriptorSets;
+    CreateDescriptorSetLayout* createDescriptorSetLayout;
+    CreateRenderPass* createRenderPass;
+    CreatePipelineLayout* createPipelineLayout;
+    CreateGraphicsPipeline* createGraphicsPipeline;
+    CreateRenderLayer* createRenderLayer;
 };
 
 struct StateArgs
@@ -165,7 +177,7 @@ protected:
     void setVocabMask(OptionMask* mask) { vocab.setMaskPtr(mask); }
     std::vector<std::string> getVocab();
 private:
-    CommandPool<command::UpdateVocab> uvPool{1};
+    CommandPool<command::UpdateVocab> uvPool{3};
     CommandPool<command::PopVocab> pvPool{1};
     CommandPool<command::AddVocab> avPool{1};
     Vocab vocab;

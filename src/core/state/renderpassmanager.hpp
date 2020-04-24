@@ -19,7 +19,6 @@ class CreateRenderPass : public LeafState
 public:
     const char* getName() const override { return "CreateRenderPass"; }
     void handleEvent(event::Event*) override;
-    virtual ~CreateRenderPass() = default;   
     CreateRenderPass(StateArgs, Callbacks);
     void setType(RenderPassType);
 private:
@@ -34,7 +33,6 @@ class RenderPassManager final : public BranchState
 public:
     const char* getName() const override { return "rpass_manager"; }
     void handleEvent(event::Event*) override;
-    virtual ~RenderPassManager() = default;
     RenderPassManager(StateArgs sa, Callbacks cb, ReportCallbackFn<RenderPassReport>);
     void activateCreateSwap();
 private:

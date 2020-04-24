@@ -22,8 +22,7 @@ void LoadFragShader::execute(Application* app)
 
 state::Report* LoadFragShader::makeReport() const
 {
-    auto report = new state::ShaderReport(shaderName, "f", 0, 0, 0, 0);
-    return report;
+    return new state::ShaderReport(shaderName, "f", 0, 0, 0, 0);
 }
 
 void LoadVertShader::execute(Application* app)
@@ -34,8 +33,7 @@ void LoadVertShader::execute(Application* app)
 
 state::Report* LoadVertShader::makeReport() const
 {
-    auto report = new state::ShaderReport(shaderName, "v", 0, 0, 0, 0);
-    return report;
+    return new state::ShaderReport(shaderName, "v", 0, 0, 0, 0);
 }
 
 void SetSpecFloat::execute(Application* app)
@@ -90,10 +88,20 @@ void CreateFrameDescriptorSets::execute(Application* app)
     success();
 }
 
+state::Report* CreateFrameDescriptorSets::makeReport() const
+{
+    return new state::DescriptorSetReport(layoutnames, state::DescriptorSetReport::Type::frameOwned);
+}
+
 void CreateDescriptorSetLayout::execute(Application* app)
 {
     app->renderer.createDescriptorSetLayout(name, bindings);
     success();
+}
+
+state::Report* CreateDescriptorSetLayout::makeReport() const
+{
+    return new state::DescriptorSetLayoutReport(name, bindings);
 }
 
 void InitFrameUbos::execute(Application* app)
@@ -115,11 +123,21 @@ void CreateSwapchainRenderpass::execute(Application* app)
     success();
 }
 
+state::Report* CreateSwapchainRenderpass::makeReport() const
+{
+    return new state::RenderPassReport(rpassName, state::RenderPassReport::Type::swapchain);
+}
+
 void CreateOffscreenRenderpass::execute(Application* app)
 {
     auto& rpass = app->renderer.createRenderPass(rpassName);
     app->renderer.prepareAsOffscreenPass(rpass, loadOp);
     success();
+}
+
+state::Report* CreateOffscreenRenderpass::makeReport() const
+{
+    return new state::RenderPassReport(rpassName, state::RenderPassReport::Type::offscreen, loadOp);
 }
 
 
@@ -130,10 +148,11 @@ void CreateOffscreenRenderpass::execute(Application* app)
 //            app->sampledImages.push_back(&attachment.getImage(0));
 //}
 //
-//void OpenWindow::execute(Application* app)
-//{
-//    app->window.open();
-//}
+void OpenWindow::execute(Application* app)
+{
+    app->window.open();
+    success();
+}
 
 
 void CreateGraphicsPipeline::execute(Application* app)
@@ -146,10 +165,24 @@ void CreateGraphicsPipeline::execute(Application* app)
     success();
 }
 
-void CreateRenderpassInstance::execute(Application* app)
+state::Report* CreateGraphicsPipeline::makeReport() const
+{
+    return new state::GraphicsPipelineReport(name, pipelineLayout, vertshader, fragshader, renderpass, 
+            renderArea.offset.x, renderArea.offset.y, renderArea.extent.width, renderArea.extent.height, is3d);
+}
+
+void CreateRenderLayer::execute(Application* app)
 {
     app->renderer.addRenderPassInstance(attachment, renderpass, pipeline);
     success();
+}
+
+state::Report* CreateRenderLayer::makeReport() const
+{
+
+    auto report = new state::RenderLayerReport(attachment, renderpass, pipeline, id);
+    id++;
+    return report;
 }
 
 void RecordRenderCommand::execute(Application* app)
@@ -169,6 +202,11 @@ void CreatePipelineLayout::execute(Application* app)
 {
     app->renderer.createPipelineLayout(name, descriptorSetLayoutNames);
     success();
+}
+
+state::Report* CreatePipelineLayout::makeReport() const
+{
+    return new state::PipelineLayoutReport(name, descriptorSetLayoutNames);
 }
 
 

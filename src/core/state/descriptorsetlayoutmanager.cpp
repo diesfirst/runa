@@ -100,7 +100,9 @@ CreateDescriptorSetLayout::CreateDescriptorSetLayout(StateArgs sa,
     bindings{bindings},
     onCreate{cb.gn},
     cdslPool{sa.cp.createDescriptorSetLayout}
-{}
+{
+    sa.rg.createDescriptorSetLayout = this;
+}
 
 void CreateDescriptorSetLayout::onEnterExt()
 {

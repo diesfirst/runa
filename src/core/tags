@@ -31,7 +31,6 @@ C	event/event.hpp	/^    C = 54,$/;"	m	class:sword::event::symbol::Key
 CMD_BASE	command/command.hpp	4;"	d
 COMMAND_COMMANDPOOLS_HPP	command/commandpools.hpp	2;"	d
 COMMAND_COMMAND_H_	command/command.hpp	2;"	d
-COMMAND_OPENWINDOW_HPP	command/openwindow.hpp	2;"	d
 COMMAND_VOCAB_HPP	command/vocab.hpp	2;"	d
 CONTEXT_H	render/context.hpp	2;"	d
 Callbacks	state/state.hpp	/^struct Callbacks$/;"	s	namespace:sword::state
@@ -61,9 +60,11 @@ CreateGraphicsPipeline	state/pipelinemanager.hpp	/^class CreateGraphicsPipeline 
 CreateOffscreenRenderpass	command/rendercommands.hpp	/^class CreateOffscreenRenderpass : public Command$/;"	c	namespace:sword::command
 CreatePipelineLayout	command/rendercommands.hpp	/^class CreatePipelineLayout : public Command$/;"	c	namespace:sword::command
 CreatePipelineLayout	state/pipelinemanager.cpp	/^CreatePipelineLayout::CreatePipelineLayout(StateArgs sa, Callbacks cb) :$/;"	f	class:sword::state::CreatePipelineLayout
+CreateRenderLayer	command/rendercommands.hpp	/^class CreateRenderLayer : public Command$/;"	c	namespace:sword::command
+CreateRenderLayer	state/rendermanager.cpp	/^CreateRenderLayer::CreateRenderLayer(StateArgs sa, Callbacks cb) :$/;"	f	class:sword::state::CreateRenderLayer
+CreateRenderLayer	state/rendermanager.hpp	/^class CreateRenderLayer : public LeafState$/;"	c	namespace:sword::state
 CreateRenderPass	state/renderpassmanager.cpp	/^CreateRenderPass::CreateRenderPass(StateArgs sa, Callbacks cb) :$/;"	f	class:sword::state::CreateRenderPass
 CreateRenderPass	state/renderpassmanager.hpp	/^class CreateRenderPass : public LeafState$/;"	c	namespace:sword::state
-CreateRenderpassInstance	command/rendercommands.hpp	/^class CreateRenderpassInstance : public Command$/;"	c	namespace:sword::command
 CreateSwapchainRenderpass	command/rendercommands.hpp	/^class CreateSwapchainRenderpass : public Command$/;"	c	namespace:sword::command
 DescriptorManager	state/descriptormanager.cpp	/^DescriptorManager::DescriptorManager(StateArgs sa, Callbacks cb, ReportCallbackFn<DescriptorSetLayoutReport> dslrCb) :$/;"	f	class:sword::state::DescriptorManager
 DescriptorSet	state/report.hpp	/^    DescriptorSet,$/;"	m	class:sword::state::ReportType
@@ -125,10 +126,9 @@ Op	state/descriptormanager.hpp	/^    enum class Op : Option {createFrameDescript
 Op	state/descriptorsetlayoutmanager.hpp	/^    enum class Op : Option {createBinding, createDescriptorSetLayout, printReports};$/;"	c	class:sword::state::final
 Op	state/director.hpp	/^    enum class Op : Option {pushRenderManager, printHierarchy, quickSetup};$/;"	c	class:sword::state::final
 Op	state/pipelinemanager.hpp	/^    enum class Op : Option {createPipelineLayout, createGraphicsPipeline, printReports};$/;"	c	class:sword::state::final
-Op	state/rendermanager.hpp	/^    enum class Op : Option {openWindow, prepRenderFrames, shaderManager, descriptorManager, renderPassManager, pipelineManager};$/;"	c	class:sword::state::final
+Op	state/rendermanager.hpp	/^    enum class Op : Option {printReports, openWindow, prepRenderFrames, shaderManager, descriptorManager, renderPassManager, pipelineManager, createRenderLayer, recordRenderCommand};$/;"	c	class:sword::state::final
 Op	state/renderpassmanager.hpp	/^    enum class Op : Option {createSwapRpass, createOffscreenRpass, printReports};$/;"	c	class:sword::state::final
 Op	state/shader.hpp	/^    enum class Op : Option {loadFrag, loadVert, setSpecInt, setSpecFloat, printReports};$/;"	c	class:sword::state::final
-OpenWindow	command/openwindow.hpp	/^class OpenWindow : public Command$/;"	c	namespace:sword::command
 OpenWindow	command/rendercommands.hpp	/^class OpenWindow : public Command$/;"	c	namespace:sword::command
 OpenWindow	state/rendermanager.cpp	/^OpenWindow::OpenWindow(StateArgs sa, Callbacks cb) :$/;"	f	class:sword::state::OpenWindow
 OpenWindow	state/rendermanager.hpp	/^class OpenWindow : public BriefState$/;"	c	namespace:sword::state
@@ -167,6 +167,8 @@ REPORT_HPP_	state/report.hpp	2;"	d
 RL_DELAY	event/event.cpp	/^constexpr uint32_t RL_DELAY = 100;$/;"	m	namespace:sword::event	file:
 RecordRenderCommand	command/recordrendercommand.hpp	/^class RecordRenderCommand : public Command$/;"	c	namespace:sword::command
 RecordRenderCommand	command/rendercommands.hpp	/^class RecordRenderCommand : public Command$/;"	c	namespace:sword::command
+RecordRenderCommand	state/rendermanager.cpp	/^RecordRenderCommand::RecordRenderCommand(StateArgs sa, Callbacks cb) :$/;"	f	class:sword::state::RecordRenderCommand
+RecordRenderCommand	state/rendermanager.hpp	/^class RecordRenderCommand : public LeafState$/;"	c	namespace:sword::state
 RecordRenderCommandState	command/recordrendercommand.hpp	/^    RecordRenderCommandState(EditStack& es, CommandStack& cs, RendererManager& parent) :$/;"	f	class:sword::state::RecordRenderCommandState
 RecordRenderCommandState	command/recordrendercommand.hpp	/^class RecordRenderCommandState : public LeafState$/;"	c	namespace:sword::state
 Register	state/state.hpp	/^struct Register$/;"	s	namespace:sword::state
@@ -180,6 +182,8 @@ RenderFrame	render/renderframe.hpp	/^class RenderFrame$/;"	c	namespace:sword::re
 RenderLayer	render/renderlayer.cpp	/^RenderLayer::RenderLayer($/;"	f	class:sword::render::RenderLayer
 RenderLayer	render/renderlayer.cpp	/^RenderLayer::RenderLayer(RenderLayer&& other) :$/;"	f	class:sword::render::RenderLayer
 RenderLayer	render/renderlayer.hpp	/^class RenderLayer$/;"	c	namespace:sword::render
+RenderLayerReport	state/report.hpp	/^    RenderLayerReport($/;"	f	class:sword::state::RenderLayerReport
+RenderLayerReport	state/report.hpp	/^class RenderLayerReport : public Report$/;"	c	namespace:sword::state
 RenderManager	state/rendermanager.cpp	/^RenderManager::RenderManager(StateArgs sa, Callbacks cb) :$/;"	f	class:sword::state::RenderManager
 RenderPass	render/renderpass.cpp	/^RenderPass::RenderPass(RenderPass&& other) :$/;"	f	class:sword::render::RenderPass
 RenderPass	render/renderpass.cpp	/^RenderPass::RenderPass(const vk::Device& device, const std::string name) :$/;"	f	class:sword::render::RenderPass
@@ -193,8 +197,6 @@ RenderPassType	state/renderpassmanager.hpp	/^enum class RenderPassType : uint8_t
 Renderer	render/renderer.cpp	/^Renderer::Renderer(Context& context) :$/;"	f	class:sword::render::Renderer
 Renderer	render/renderer.hpp	/^class Renderer$/;"	c	namespace:sword::render
 RenderpassInstance	state/report.hpp	/^    RenderpassInstance,$/;"	m	class:sword::state::ReportType
-RenderpassInstanceReport	state/report.hpp	/^    inline RenderpassInstanceReport($/;"	f	class:sword::state::RenderpassInstanceReport
-RenderpassInstanceReport	state/report.hpp	/^class RenderpassInstanceReport : public Report$/;"	c	namespace:sword::state
 Report	state/report.hpp	/^class Report$/;"	c	namespace:sword::state
 ReportType	state/report.hpp	/^enum class ReportType : uint8_t$/;"	c	namespace:sword::state
 ReportUsage	state/report.hpp	/^enum class ReportUsage : uint8_t$/;"	c	namespace:sword::state
@@ -292,10 +294,11 @@ appName	render/surface/window.hpp	/^	std::string appName = "aurora";$/;"	m	class
 areaX	state/report.hpp	/^    uint32_t areaX;$/;"	m	class:sword::state::GraphicsPipelineReport
 areaY	state/report.hpp	/^    uint32_t areaY;$/;"	m	class:sword::state::GraphicsPipelineReport
 at	state/editstack.hpp	/^    State* at(int i) const { return stack.at(i); }$/;"	f	class:sword::state::EditStack
-at	types/stack.hpp	/^    auto at(size_t i) const {return this->items.at(i); }$/;"	f	class:sword::ReverseStack
-attachment	command/rendercommands.hpp	/^    std::string attachment;$/;"	m	class:sword::command::CreateRenderpassInstance
+at	types/stack.hpp	/^    auto& at(size_t i) const {return this->items.at(i); }$/;"	f	class:sword::ForwardStack
+at	types/stack.hpp	/^    auto& at(size_t i) const {return this->items.at(i); }$/;"	f	class:sword::ReverseStack
+attachment	command/rendercommands.hpp	/^    std::string attachment;$/;"	m	class:sword::command::CreateRenderLayer
 attachmentName	command/rendercommands.hpp	/^    std::string attachmentName;$/;"	m	class:sword::command::AddAttachment
-attachmentName	state/report.hpp	/^    std::string attachmentName;$/;"	m	class:sword::state::RenderpassInstanceReport
+attachmentName	state/report.hpp	/^    std::string attachmentName;$/;"	m	class:sword::state::RenderLayerReport
 attachmentStates	render/pipeline.hpp	/^    std::vector<vk::PipelineColorBlendAttachmentState> attachmentStates;$/;"	m	class:sword::render::GraphicsPipeline
 attachments	render/renderer.hpp	/^    std::unordered_map<std::string, std::unique_ptr<Attachment>> attachments;$/;"	m	class:sword::render::Renderer
 attachments	render/renderpass.hpp	/^    std::vector<vk::AttachmentDescription> attachments;$/;"	m	class:sword::render::RenderPass
@@ -348,8 +351,6 @@ colorBlendState	render/pipeline.hpp	/^    vk::PipelineColorBlendStateCreateInfo 
 colorFormat	render/swapchain.hpp	/^	vk::Format colorFormat;$/;"	m	class:sword::render::Swapchain
 colorSpace	render/swapchain.hpp	/^	vk::ColorSpaceKHR colorSpace;$/;"	m	class:sword::render::Swapchain
 command	command/command.hpp	/^namespace command $/;"	n	namespace:sword
-command	command/openwindow.cpp	/^namespace command$/;"	n	namespace:sword	file:
-command	command/openwindow.hpp	/^namespace command$/;"	n	namespace:sword
 command	command/recordrendercommand.hpp	/^namespace command$/;"	n	namespace:sword
 command	command/rendercommands.cpp	/^namespace command$/;"	n	namespace:sword	file:
 command	command/rendercommands.hpp	/^namespace command$/;"	n	namespace:sword
@@ -391,16 +392,19 @@ createDescriptorSetLayout	command/commandpools.hpp	/^    CommandPool<command::Cr
 createDescriptorSetLayout	render/renderer.cpp	/^const std::string Renderer::createDescriptorSetLayout(const std::string name, const std::vector<vk::DescriptorSetLayoutBinding> bindings)$/;"	f	class:sword::render::Renderer
 createDescriptorSetLayout	state/descriptorsetlayoutmanager.hpp	/^    CreateDescriptorSetLayout createDescriptorSetLayout;$/;"	m	class:sword::state::final
 createDescriptorSetLayout	state/descriptorsetlayoutmanager.hpp	/^    enum class Op : Option {createBinding, createDescriptorSetLayout, printReports};$/;"	m	class:sword::state::final::Op
+createDescriptorSetLayout	state/state.hpp	/^    CreateDescriptorSetLayout* createDescriptorSetLayout;$/;"	m	struct:sword::state::Register
 createDescriptorSets	render/renderframe.cpp	/^void RenderFrame::createDescriptorSets($/;"	f	class:sword::render::RenderFrame
 createDevice	render/context.cpp	/^void Context::createDevice()$/;"	f	class:sword::render::Context
 createFrameDescriptorSets	command/commandpools.hpp	/^    CommandPool<command::CreateFrameDescriptorSets> createFrameDescriptorSets;$/;"	m	struct:sword::CommandPools
 createFrameDescriptorSets	render/renderer.cpp	/^void Renderer::createFrameDescriptorSets(const std::vector<std::string>setLayoutNames)$/;"	f	class:sword::render::Renderer
 createFrameDescriptorSets	state/descriptormanager.hpp	/^    CreateFrameDescriptorSets createFrameDescriptorSets;$/;"	m	class:sword::state::final
 createFrameDescriptorSets	state/descriptormanager.hpp	/^    enum class Op : Option {createFrameDescriptorSets, printReports, descriptorSetLayoutMgr, initFrameUBOs, updateFrameSamplers};$/;"	m	class:sword::state::final::Op
+createFrameDescriptorSets	state/state.hpp	/^    CreateFrameDescriptorSets* createFrameDescriptorSets;$/;"	m	struct:sword::state::Register
 createGraphicsPipeline	command/commandpools.hpp	/^    CommandPool<command::CreateGraphicsPipeline> createGraphicsPipeline;$/;"	m	struct:sword::CommandPools
 createGraphicsPipeline	render/renderer.cpp	/^GraphicsPipeline& Renderer::createGraphicsPipeline($/;"	f	class:sword::render::Renderer
 createGraphicsPipeline	state/pipelinemanager.hpp	/^    CreateGraphicsPipeline createGraphicsPipeline;$/;"	m	class:sword::state::final
 createGraphicsPipeline	state/pipelinemanager.hpp	/^    enum class Op : Option {createPipelineLayout, createGraphicsPipeline, printReports};$/;"	m	class:sword::state::final::Op
+createGraphicsPipeline	state/state.hpp	/^    CreateGraphicsPipeline* createGraphicsPipeline;$/;"	m	struct:sword::state::Register
 createImageViews	render/swapchain.cpp	/^void Swapchain::createImageViews()$/;"	f	class:sword::render::Swapchain
 createInputAssemblyState	render/pipeline.cpp	/^vk::PipelineInputAssemblyStateCreateInfo GraphicsPipeline::createInputAssemblyState()$/;"	f	class:sword::render::GraphicsPipeline
 createInstance	render/context.cpp	/^void Context::createInstance()$/;"	f	class:sword::render::Context
@@ -415,10 +419,15 @@ createPipelineLayout	command/commandpools.hpp	/^    CommandPool<command::CreateP
 createPipelineLayout	render/renderer.cpp	/^const std::string Renderer::createPipelineLayout(const std::string name, const std::vector<std::string> setLayoutNames)$/;"	f	class:sword::render::Renderer
 createPipelineLayout	state/pipelinemanager.hpp	/^    CreatePipelineLayout createPipelineLayout;$/;"	m	class:sword::state::final
 createPipelineLayout	state/pipelinemanager.hpp	/^    enum class Op : Option {createPipelineLayout, createGraphicsPipeline, printReports};$/;"	m	class:sword::state::final::Op
+createPipelineLayout	state/state.hpp	/^    CreatePipelineLayout* createPipelineLayout;$/;"	m	struct:sword::state::Register
 createRasterizationState	render/pipeline.cpp	/^vk::PipelineRasterizationStateCreateInfo GraphicsPipeline::createRasterizationState()$/;"	f	class:sword::render::GraphicsPipeline
+createRenderLayer	command/commandpools.hpp	/^    CommandPool<command::CreateRenderLayer> createRenderLayer;$/;"	m	struct:sword::CommandPools
+createRenderLayer	state/rendermanager.hpp	/^    CreateRenderLayer createRenderLayer;$/;"	m	class:sword::state::final
+createRenderLayer	state/rendermanager.hpp	/^    enum class Op : Option {printReports, openWindow, prepRenderFrames, shaderManager, descriptorManager, renderPassManager, pipelineManager, createRenderLayer, recordRenderCommand};$/;"	m	class:sword::state::final::Op
+createRenderLayer	state/state.hpp	/^    CreateRenderLayer* createRenderLayer;$/;"	m	struct:sword::state::Register
 createRenderPass	render/renderer.cpp	/^RenderPass& Renderer::createRenderPass(std::string name)$/;"	f	class:sword::render::Renderer
 createRenderPass	state/renderpassmanager.hpp	/^    CreateRenderPass createRenderPass;$/;"	m	class:sword::state::final
-createRenderpassInstance	command/commandpools.hpp	/^    CommandPool<command::CreateRenderpassInstance> createRenderpassInstance;$/;"	m	struct:sword::CommandPools
+createRenderPass	state/state.hpp	/^    CreateRenderPass* createRenderPass;$/;"	m	struct:sword::state::Register
 createSubpass	render/renderpass.cpp	/^void RenderPass::createSubpass()$/;"	f	class:sword::render::RenderPass
 createSurface	render/swapchain.cpp	/^void Swapchain::createSurface()$/;"	f	class:sword::render::Swapchain
 createSwapRpass	state/renderpassmanager.hpp	/^    enum class Op : Option {createSwapRpass, createOffscreenRpass, printReports};$/;"	m	class:sword::state::final::Op
@@ -428,6 +437,7 @@ createVertexInputState	render/pipeline.cpp	/^vk::PipelineVertexInputStateCreateI
 createViewport	render/pipeline.cpp	/^vk::Viewport GraphicsPipeline::createViewport(const vk::Rect2D& renderArea)$/;"	f	class:sword::render::GraphicsPipeline
 createViewportState	render/pipeline.cpp	/^vk::PipelineViewportStateCreateInfo GraphicsPipeline::createViewportState()$/;"	f	class:sword::render::GraphicsPipeline
 createWindow	render/surface/window.cpp	/^void Window::createWindow(const int width, const int height)$/;"	f	class:sword::render::Window
+crlPool	state/rendermanager.hpp	/^    CommandPool<command::CreateRenderLayer>& crlPool;$/;"	m	class:sword::state::CreateRenderLayer
 cs	state/state.hpp	/^    CommandStack& cs;$/;"	m	struct:sword::state::StateArgs
 csrpPool	state/renderpassmanager.hpp	/^    CommandPool<command::CreateSwapchainRenderpass>& csrpPool;$/;"	m	class:sword::state::CreateRenderPass
 curBinding	state/descriptorsetlayoutmanager.hpp	/^    vk::DescriptorSetLayoutBinding* curBinding;$/;"	m	class:sword::state::final
@@ -440,7 +450,7 @@ descSetLayoutNames	state/report.hpp	/^    const std::vector<std::string> descSet
 descriptionIsBound	render/renderer.hpp	/^    bool descriptionIsBound;$/;"	m	class:sword::render::Renderer
 descriptorBuffer	render/renderer.hpp	/^    std::unique_ptr<Buffer> descriptorBuffer;$/;"	m	class:sword::render::Renderer
 descriptorManager	state/rendermanager.hpp	/^    DescriptorManager descriptorManager;$/;"	m	class:sword::state::final
-descriptorManager	state/rendermanager.hpp	/^    enum class Op : Option {openWindow, prepRenderFrames, shaderManager, descriptorManager, renderPassManager, pipelineManager};$/;"	m	class:sword::state::final::Op
+descriptorManager	state/rendermanager.hpp	/^    enum class Op : Option {printReports, openWindow, prepRenderFrames, shaderManager, descriptorManager, renderPassManager, pipelineManager, createRenderLayer, recordRenderCommand};$/;"	m	class:sword::state::final::Op
 descriptorPool	render/renderer.hpp	/^    vk::DescriptorPool descriptorPool;$/;"	m	class:sword::render::Renderer
 descriptorPool	render/renderframe.hpp	/^    vk::DescriptorPool descriptorPool;$/;"	m	class:sword::render::RenderFrame
 descriptorSetLayoutMgr	state/descriptormanager.hpp	/^    DescriptorSetLayoutManager descriptorSetLayoutMgr;$/;"	m	class:sword::state::final
@@ -493,17 +503,17 @@ event	event/event.hpp	/^namespace event$/;"	n	namespace:sword
 event	render/surface/window.hpp	/^	xcb_generic_event_t* event;$/;"	m	class:sword::render::Window
 eventQueue	event/event.hpp	/^    EventQueue eventQueue;$/;"	m	class:sword::event::symbol::EventDispatcher
 eventType	event/event.hpp	/^    WindowEventType eventType;$/;"	m	struct:sword::event::symbol::WindowInput
-execute	command/openwindow.cpp	/^void OpenWindow::execute(Application* app)$/;"	f	class:sword::command::OpenWindow
 execute	command/rendercommands.cpp	/^void CreateDescriptorSetLayout::execute(Application* app)$/;"	f	class:sword::command::CreateDescriptorSetLayout
 execute	command/rendercommands.cpp	/^void CreateFrameDescriptorSets::execute(Application* app)$/;"	f	class:sword::command::CreateFrameDescriptorSets
 execute	command/rendercommands.cpp	/^void CreateGraphicsPipeline::execute(Application* app)$/;"	f	class:sword::command::CreateGraphicsPipeline
 execute	command/rendercommands.cpp	/^void CreateOffscreenRenderpass::execute(Application* app)$/;"	f	class:sword::command::CreateOffscreenRenderpass
 execute	command/rendercommands.cpp	/^void CreatePipelineLayout::execute(Application* app)$/;"	f	class:sword::command::CreatePipelineLayout
-execute	command/rendercommands.cpp	/^void CreateRenderpassInstance::execute(Application* app)$/;"	f	class:sword::command::CreateRenderpassInstance
+execute	command/rendercommands.cpp	/^void CreateRenderLayer::execute(Application* app)$/;"	f	class:sword::command::CreateRenderLayer
 execute	command/rendercommands.cpp	/^void CreateSwapchainRenderpass::execute(Application* app)$/;"	f	class:sword::command::CreateSwapchainRenderpass
 execute	command/rendercommands.cpp	/^void InitFrameUbos::execute(Application* app)$/;"	f	class:sword::command::InitFrameUbos
 execute	command/rendercommands.cpp	/^void LoadFragShader::execute(Application* app)$/;"	f	class:sword::command::LoadFragShader
 execute	command/rendercommands.cpp	/^void LoadVertShader::execute(Application* app)$/;"	f	class:sword::command::LoadVertShader
+execute	command/rendercommands.cpp	/^void OpenWindow::execute(Application* app)$/;"	f	class:sword::command::OpenWindow
 execute	command/rendercommands.cpp	/^void PrepareRenderFrames::execute(Application* app)$/;"	f	class:sword::command::PrepareRenderFrames
 execute	command/rendercommands.cpp	/^void RecordRenderCommand::execute(Application* app)$/;"	f	class:sword::command::RecordRenderCommand
 execute	command/rendercommands.cpp	/^void Render::execute(Application* app)$/;"	f	class:sword::command::Render
@@ -625,6 +635,8 @@ handleEvent	state/director.cpp	/^void Director::handleEvent(event::Event* event)
 handleEvent	state/pipelinemanager.cpp	/^void CreateGraphicsPipeline::handleEvent(event::Event* event)$/;"	f	class:sword::state::CreateGraphicsPipeline
 handleEvent	state/pipelinemanager.cpp	/^void CreatePipelineLayout::handleEvent(event::Event* event)$/;"	f	class:sword::state::CreatePipelineLayout
 handleEvent	state/pipelinemanager.cpp	/^void PipelineManager::handleEvent(event::Event* event)$/;"	f	class:sword::state::PipelineManager
+handleEvent	state/rendermanager.cpp	/^void CreateRenderLayer::handleEvent(event::Event* event)$/;"	f	class:sword::state::CreateRenderLayer
+handleEvent	state/rendermanager.cpp	/^void RecordRenderCommand::handleEvent(event::Event* event)$/;"	f	class:sword::state::RecordRenderCommand
 handleEvent	state/rendermanager.cpp	/^void RenderManager::handleEvent(event::Event* event)$/;"	f	class:sword::state::RenderManager
 handleEvent	state/renderpassmanager.cpp	/^void CreateRenderPass::handleEvent(event::Event* event)$/;"	f	class:sword::state::CreateRenderPass
 handleEvent	state/renderpassmanager.cpp	/^void RenderPassManager::handleEvent(event::Event* event)$/;"	f	class:sword::state::RenderPassManager
@@ -636,7 +648,7 @@ hasCreatedLayout	state/descriptorsetlayoutmanager.cpp	/^bool DescriptorSetLayout
 height	render/renderframe.hpp	/^    uint32_t height;$/;"	m	class:sword::render::RenderFrame
 height	render/surface/window.hpp	/^    uint16_t width, height;$/;"	m	class:sword::render::Window
 height	state/report.hpp	/^    const int width, height;$/;"	m	class:sword::state::AttachmentReport
-id	state/report.hpp	/^    int id;$/;"	m	class:sword::state::RenderpassInstanceReport
+id	state/report.hpp	/^    int id;$/;"	m	class:sword::state::RenderLayerReport
 imageAcquiredSemaphore	render/renderer.hpp	/^    vk::Semaphore imageAcquiredSemaphore;$/;"	m	class:sword::render::Renderer
 imageCount	render/swapchain.hpp	/^	uint8_t imageCount;$/;"	m	class:sword::render::Swapchain
 imageViews	render/swapchain.hpp	/^	std::vector<vk::ImageView> imageViews;$/;"	m	class:sword::render::Swapchain
@@ -694,6 +706,13 @@ loadVertShaders	state/state.hpp	/^    LoadVertShaders* loadVertShaders;$/;"	m	st
 lvPool	state/shader.hpp	/^    CommandPool<command::LoadVertShader>& lvPool;$/;"	m	class:sword::state::LoadVertShaders
 makeHeader	util/stringutil.hpp	/^inline std::string makeHeader(const std::string text, const char e = '=')$/;"	f	namespace:sword::util
 makeReport	command/command.hpp	/^    virtual state::Report* makeReport() const { return nullptr; };$/;"	f	class:sword::command::Command
+makeReport	command/rendercommands.cpp	/^state::Report* CreateDescriptorSetLayout::makeReport() const$/;"	f	class:sword::command::CreateDescriptorSetLayout
+makeReport	command/rendercommands.cpp	/^state::Report* CreateFrameDescriptorSets::makeReport() const$/;"	f	class:sword::command::CreateFrameDescriptorSets
+makeReport	command/rendercommands.cpp	/^state::Report* CreateGraphicsPipeline::makeReport() const$/;"	f	class:sword::command::CreateGraphicsPipeline
+makeReport	command/rendercommands.cpp	/^state::Report* CreateOffscreenRenderpass::makeReport() const$/;"	f	class:sword::command::CreateOffscreenRenderpass
+makeReport	command/rendercommands.cpp	/^state::Report* CreatePipelineLayout::makeReport() const$/;"	f	class:sword::command::CreatePipelineLayout
+makeReport	command/rendercommands.cpp	/^state::Report* CreateRenderLayer::makeReport() const$/;"	f	class:sword::command::CreateRenderLayer
+makeReport	command/rendercommands.cpp	/^state::Report* CreateSwapchainRenderpass::makeReport() const$/;"	f	class:sword::command::CreateSwapchainRenderpass
 makeReport	command/rendercommands.cpp	/^state::Report* LoadFragShader::makeReport() const$/;"	f	class:sword::command::LoadFragShader
 makeReport	command/rendercommands.cpp	/^state::Report* LoadVertShader::makeReport() const$/;"	f	class:sword::command::LoadVertShader
 makeReport	command/rendercommands.cpp	/^state::Report* SetSpecFloat::makeReport() const$/;"	f	class:sword::command::SetSpecFloat
@@ -727,8 +746,10 @@ onEnterExt	state/descriptorsetlayoutmanager.cpp	/^void SetStateType::onEnterExt(
 onEnterExt	state/director.cpp	/^void QuickSetup::onEnterExt()$/;"	f	class:sword::state::QuickSetup
 onEnterExt	state/pipelinemanager.cpp	/^void CreateGraphicsPipeline::onEnterExt()$/;"	f	class:sword::state::CreateGraphicsPipeline
 onEnterExt	state/pipelinemanager.cpp	/^void CreatePipelineLayout::onEnterExt()$/;"	f	class:sword::state::CreatePipelineLayout
+onEnterExt	state/rendermanager.cpp	/^void CreateRenderLayer::onEnterExt()$/;"	f	class:sword::state::CreateRenderLayer
 onEnterExt	state/rendermanager.cpp	/^void OpenWindow::onEnterExt()$/;"	f	class:sword::state::OpenWindow
 onEnterExt	state/rendermanager.cpp	/^void PrepareRenderFrames::onEnterExt()$/;"	f	class:sword::state::PrepareRenderFrames
+onEnterExt	state/rendermanager.cpp	/^void RecordRenderCommand::onEnterExt()$/;"	f	class:sword::state::RecordRenderCommand
 onEnterExt	state/renderpassmanager.cpp	/^void CreateRenderPass::onEnterExt()$/;"	f	class:sword::state::CreateRenderPass
 onEnterExt	state/shader.cpp	/^void LoadFragShaders::onEnterExt()$/;"	f	class:sword::state::LoadFragShaders
 onEnterExt	state/shader.cpp	/^void LoadVertShaders::onEnterExt()$/;"	f	class:sword::state::LoadVertShaders
@@ -740,7 +761,6 @@ onExit	state/state.cpp	/^void State::onExit()$/;"	f	class:sword::state::State
 onExitExt	state/state.hpp	/^    virtual void onExitExt() {}$/;"	f	class:sword::state::State
 onExitImp	state/state.cpp	/^void LeafState::onExitImp()$/;"	f	class:sword::state::LeafState
 onExitImp	state/state.cpp	/^void State::onExitImp()$/;"	f	class:sword::state::State
-onOpenWindow	state/rendermanager.cpp	/^void RenderManager::onOpenWindow()$/;"	f	class:sword::state::RenderManager
 onPrepRenderFrames	state/rendermanager.cpp	/^void RenderManager::onPrepRenderFrames()$/;"	f	class:sword::state::RenderManager
 opcast	state/shader.hpp	/^    constexpr Op opcast(Option op) {return static_cast<Op>(op);}$/;"	f	class:sword::state::final
 opcast	state/shader.hpp	/^    constexpr Option opcast(Op op) {return static_cast<Option>(op);}$/;"	f	class:sword::state::final
@@ -749,7 +769,7 @@ opcast	state/state.hpp	/^constexpr T opcast(Option op) {return static_cast<T>(op
 open	render/surface/window.cpp	/^void Window::open()$/;"	f	class:sword::render::Window
 openWindow	command/commandpools.hpp	/^    CommandPool<command::OpenWindow> openWindow;$/;"	m	struct:sword::CommandPools
 openWindow	state/rendermanager.hpp	/^    OpenWindow openWindow;$/;"	m	class:sword::state::final
-openWindow	state/rendermanager.hpp	/^    enum class Op : Option {openWindow, prepRenderFrames, shaderManager, descriptorManager, renderPassManager, pipelineManager};$/;"	m	class:sword::state::final::Op
+openWindow	state/rendermanager.hpp	/^    enum class Op : Option {printReports, openWindow, prepRenderFrames, shaderManager, descriptorManager, renderPassManager, pipelineManager, createRenderLayer, recordRenderCommand};$/;"	m	class:sword::state::final::Op
 openWindow	state/state.hpp	/^    OpenWindow* openWindow;$/;"	m	struct:sword::state::Register
 operator ()	state/report.hpp	/^    void operator()() const $/;"	f	class:sword::state::PipelineLayoutReport
 operator <	render/renderpass.cpp	/^bool RenderPass::operator<(const RenderPass& rhs)$/;"	f	class:sword::render::RenderPass
@@ -764,7 +784,13 @@ other	render/renderframe.hpp	/^    RenderFrame& operator=(RenderFrame&& other) =
 other	render/shader.hpp	/^    Shader& operator=(Shader& other) = delete; \/\/no copy assignment$/;"	m	class:sword::render::Shader
 other	render/shader.hpp	/^    Shader& operator=(Shader&& other) = delete; \/\/no move assignment$/;"	m	class:sword::render::Shader
 other	render/shader.hpp	/^    Shader(Shader&& other) = delete;$/;"	m	class:sword::render::Shader
-override	command/openwindow.hpp	/^    void execute(Application* app) override;$/;"	m	class:sword::command::OpenWindow
+override	command/rendercommands.hpp	/^    state::Report* makeReport() const override;$/;"	m	class:sword::command::CreateDescriptorSetLayout
+override	command/rendercommands.hpp	/^    state::Report* makeReport() const override;$/;"	m	class:sword::command::CreateFrameDescriptorSets
+override	command/rendercommands.hpp	/^    state::Report* makeReport() const override;$/;"	m	class:sword::command::CreateGraphicsPipeline
+override	command/rendercommands.hpp	/^    state::Report* makeReport() const override;$/;"	m	class:sword::command::CreateOffscreenRenderpass
+override	command/rendercommands.hpp	/^    state::Report* makeReport() const override;$/;"	m	class:sword::command::CreatePipelineLayout
+override	command/rendercommands.hpp	/^    state::Report* makeReport() const override;$/;"	m	class:sword::command::CreateRenderLayer
+override	command/rendercommands.hpp	/^    state::Report* makeReport() const override;$/;"	m	class:sword::command::CreateSwapchainRenderpass
 override	command/rendercommands.hpp	/^    state::Report* makeReport() const override;$/;"	m	class:sword::command::LoadFragShader
 override	command/rendercommands.hpp	/^    state::Report* makeReport() const override;$/;"	m	class:sword::command::LoadVertShader
 override	command/rendercommands.hpp	/^    state::Report* makeReport() const override;$/;"	m	class:sword::command::SetSpecFloat
@@ -795,9 +821,13 @@ override	state/pipelinemanager.hpp	/^    void handleEvent(event::Event*) overrid
 override	state/pipelinemanager.hpp	/^    void handleEvent(event::Event*) override;$/;"	m	class:sword::state::final
 override	state/pipelinemanager.hpp	/^    void onEnterExt() override;$/;"	m	class:sword::state::CreateGraphicsPipeline
 override	state/pipelinemanager.hpp	/^    void onEnterExt() override;$/;"	m	class:sword::state::final
+override	state/rendermanager.hpp	/^    void handleEvent(event::Event*) override;$/;"	m	class:sword::state::CreateRenderLayer
+override	state/rendermanager.hpp	/^    void handleEvent(event::Event*) override;$/;"	m	class:sword::state::RecordRenderCommand
 override	state/rendermanager.hpp	/^    void handleEvent(event::Event*) override;$/;"	m	class:sword::state::final
+override	state/rendermanager.hpp	/^    void onEnterExt() override;$/;"	m	class:sword::state::CreateRenderLayer
 override	state/rendermanager.hpp	/^    void onEnterExt() override;$/;"	m	class:sword::state::OpenWindow
 override	state/rendermanager.hpp	/^    void onEnterExt() override;$/;"	m	class:sword::state::PrepareRenderFrames
+override	state/rendermanager.hpp	/^    void onEnterExt() override;$/;"	m	class:sword::state::RecordRenderCommand
 override	state/renderpassmanager.hpp	/^    void handleEvent(event::Event*) override;$/;"	m	class:sword::state::CreateRenderPass
 override	state/renderpassmanager.hpp	/^    void handleEvent(event::Event*) override;$/;"	m	class:sword::state::final
 override	state/renderpassmanager.hpp	/^    void onEnterExt() override;$/;"	m	class:sword::state::CreateRenderPass
@@ -817,17 +847,20 @@ physicalDeviceMemoryProperties	render/context.hpp	/^    vk::PhysicalDeviceMemory
 physicalDeviceProperties	render/context.hpp	/^    vk::PhysicalDeviceProperties physicalDeviceProperties;$/;"	m	class:sword::render::Context
 pickQueueFamilyIndex	render/context.cpp	/^uint32_t Context::pickQueueFamilyIndex(vk::SurfaceKHR surface) const$/;"	f	class:sword::render::Context
 pipeLayoutReports	state/pipelinemanager.hpp	/^    Reports<PipelineLayoutReport> pipeLayoutReports;$/;"	m	class:sword::state::final
-pipeline	command/rendercommands.hpp	/^    std::string pipeline;$/;"	m	class:sword::command::CreateRenderpassInstance
+pipeline	command/rendercommands.hpp	/^    std::string pipeline;$/;"	m	class:sword::command::CreateRenderLayer
 pipeline	render/renderlayer.hpp	/^    const GraphicsPipeline& pipeline;$/;"	m	class:sword::render::RenderLayer
 pipelineLayouts	render/renderer.hpp	/^    std::unordered_map<std::string, vk::PipelineLayout> pipelineLayouts;$/;"	m	class:sword::render::Renderer
 pipelineManager	state/rendermanager.hpp	/^    PipelineManager pipelineManager;$/;"	m	class:sword::state::final
-pipelineName	state/report.hpp	/^    std::string pipelineName;$/;"	m	class:sword::state::RenderpassInstanceReport
+pipelineManager	state/rendermanager.hpp	/^    enum class Op : Option {printReports, openWindow, prepRenderFrames, shaderManager, descriptorManager, renderPassManager, pipelineManager, createRenderLayer, recordRenderCommand};$/;"	m	class:sword::state::final::Op
+pipelineName	state/report.hpp	/^    std::string pipelineName;$/;"	m	class:sword::state::RenderLayerReport
 pollEvents	event/event.cpp	/^void EventDispatcher::pollEvents()$/;"	f	class:sword::event::EventDispatcher
 pollEvents	render/surface/window.cpp	/^xcb_generic_event_t* Window::pollEvents() const$/;"	f	class:sword::render::Window
 pool	render/command.hpp	/^    CommandPool& pool;$/;"	m	class:sword::render::CommandBuffer
 pool	state/descriptormanager.hpp	/^    CommandPool<command::InitFrameUbos>& pool;$/;"	m	class:sword::state::InitFrameUbos
 pool	state/descriptormanager.hpp	/^    CommandPool<command::UpdateFrameSamplers>& pool;$/;"	m	class:sword::state::UpdateFrameSamplers
+pool	state/pipelinemanager.hpp	/^    CommandPool<command::CreateGraphicsPipeline>& pool;$/;"	m	class:sword::state::CreateGraphicsPipeline
 pool	state/pipelinemanager.hpp	/^    CommandPool<command::CreatePipelineLayout>& pool;$/;"	m	class:sword::state::final
+pool	state/rendermanager.hpp	/^    CommandPool<command::RecordRenderCommand> pool;$/;"	m	class:sword::state::RecordRenderCommand
 pool	types/pool.hpp	/^    Pool() : size{POOL_DEFAULT_SIZE}, pool(size) {}$/;"	f	class:sword::Pool
 pool	types/pool.hpp	/^    Pool(size_t size) : size{size}, pool(size) {}$/;"	f	class:sword::Pool
 pool	types/pool.hpp	/^    std::vector<T> pool;$/;"	m	class:sword::Pool
@@ -840,7 +873,7 @@ popState	state/editstack.hpp	/^    void popState() { stack.push(nullptr); }$/;"	
 popTop	state/director.cpp	/^void Director::popTop()$/;"	f	class:sword::state::Director
 popVocab	event/event.cpp	/^void EventDispatcher::popVocab()$/;"	f	class:sword::event::EventDispatcher
 prepRenderFrames	state/rendermanager.hpp	/^    PrepareRenderFrames prepRenderFrames;$/;"	m	class:sword::state::final
-prepRenderFrames	state/rendermanager.hpp	/^    enum class Op : Option {openWindow, prepRenderFrames, shaderManager, descriptorManager, renderPassManager, pipelineManager};$/;"	m	class:sword::state::final::Op
+prepRenderFrames	state/rendermanager.hpp	/^    enum class Op : Option {printReports, openWindow, prepRenderFrames, shaderManager, descriptorManager, renderPassManager, pipelineManager, createRenderLayer, recordRenderCommand};$/;"	m	class:sword::state::final::Op
 prepareAsOffscreenPass	render/renderer.cpp	/^void Renderer::prepareAsOffscreenPass($/;"	f	class:sword::render::Renderer
 prepareAsSwapchainPass	render/renderer.cpp	/^void Renderer::prepareAsSwapchainPass(RenderPass& rpSwap)$/;"	f	class:sword::render::Renderer
 prepareRenderFrames	command/commandpools.hpp	/^    CommandPool<command::PrepareRenderFrames> prepareRenderFrames;$/;"	m	struct:sword::CommandPools
@@ -864,6 +897,8 @@ printReports	state/descriptormanager.cpp	/^void DescriptorManager::printReports(
 printReports	state/descriptormanager.hpp	/^    enum class Op : Option {createFrameDescriptorSets, printReports, descriptorSetLayoutMgr, initFrameUBOs, updateFrameSamplers};$/;"	m	class:sword::state::final::Op
 printReports	state/descriptorsetlayoutmanager.cpp	/^void DescriptorSetLayoutManager::printReports()$/;"	f	class:sword::state::DescriptorSetLayoutManager
 printReports	state/pipelinemanager.cpp	/^void PipelineManager::printReports()$/;"	f	class:sword::state::PipelineManager
+printReports	state/rendermanager.cpp	/^void RenderManager::printReports() const$/;"	f	class:sword::state::RenderManager
+printReports	state/rendermanager.hpp	/^    enum class Op : Option {printReports, openWindow, prepRenderFrames, shaderManager, descriptorManager, renderPassManager, pipelineManager, createRenderLayer, recordRenderCommand};$/;"	m	class:sword::state::final::Op
 printReports	state/renderpassmanager.cpp	/^void RenderPassManager::printReports()$/;"	f	class:sword::state::RenderPassManager
 printReports	state/shader.cpp	/^void ShaderManager::printReports()$/;"	f	class:sword::state::ShaderManager
 printStateHierarchy	state/director.cpp	/^void Director::printStateHierarchy()$/;"	f	class:sword::state::Director
@@ -896,6 +931,7 @@ receiveReport	state/pipelinemanager.cpp	/^void PipelineManager::receiveReport(co
 receivedDSLReportCb	state/descriptormanager.hpp	/^    ReportCallbackFn<DescriptorSetLayoutReport> receivedDSLReportCb;$/;"	m	class:sword::state::final
 recordEvent	application.cpp	/^void Application::recordEvent(event::Event* event, std::ofstream& os)$/;"	f	class:sword::Application
 recordRenderCommand	command/commandpools.hpp	/^    CommandPool<command::RecordRenderCommand> recordRenderCommand;$/;"	m	struct:sword::CommandPools
+recordRenderCommand	state/rendermanager.hpp	/^    RecordRenderCommand recordRenderCommand;$/;"	m	class:sword::state::final
 recordRenderCommands	render/renderer.cpp	/^void Renderer::recordRenderCommands(uint32_t id, std::vector<uint32_t> fbIds)$/;"	f	class:sword::render::Renderer
 references	render/renderpass.hpp	/^    std::vector<vk::AttachmentReference> references;$/;"	m	class:sword::render::RenderPass
 regionX	state/report.hpp	/^    int regionX;$/;"	m	class:sword::state::GraphicsPipelineReport
@@ -934,18 +970,20 @@ render	render/swapchain.hpp	/^namespace render$/;"	n	namespace:sword
 render	render/ubotypes.hpp	/^namespace render$/;"	n	namespace:sword
 render	state/director.hpp	/^namespace render { class Window; }$/;"	n	namespace:sword
 renderArea	render/pipeline.hpp	/^    vk::Rect2D renderArea;$/;"	m	class:sword::render::GraphicsPipeline
+renderCommandReports	state/rendermanager.hpp	/^    Reports<RenderCommandReport> renderCommandReports;$/;"	m	class:sword::state::final
 renderLayers	render/renderframe.hpp	/^    std::vector<RenderLayer> renderLayers;$/;"	m	class:sword::render::RenderFrame
+renderLayersReports	state/rendermanager.hpp	/^    Reports<RenderLayerReport> renderLayersReports;$/;"	m	class:sword::state::final
 renderManager	state/director.hpp	/^    RenderManager renderManager;$/;"	m	class:sword::state::final
 renderPass	render/pipeline.hpp	/^    const RenderPass& renderPass;$/;"	m	class:sword::render::GraphicsPipeline
 renderPass	render/renderlayer.hpp	/^    const RenderPass& renderPass;$/;"	m	class:sword::render::RenderLayer
-renderPassManager	state/rendermanager.hpp	/^    enum class Op : Option {openWindow, prepRenderFrames, shaderManager, descriptorManager, renderPassManager, pipelineManager};$/;"	m	class:sword::state::final::Op
+renderPassManager	state/rendermanager.hpp	/^    enum class Op : Option {printReports, openWindow, prepRenderFrames, shaderManager, descriptorManager, renderPassManager, pipelineManager, createRenderLayer, recordRenderCommand};$/;"	m	class:sword::state::final::Op
 renderPasses	render/renderer.hpp	/^    std::unordered_map<std::string, RenderPass> renderPasses;$/;"	m	class:sword::render::Renderer
 renderTarget	render/renderlayer.hpp	/^    const Attachment& renderTarget;$/;"	m	class:sword::render::RenderLayer
 renderer	application.hpp	/^    render::Renderer renderer;$/;"	m	class:sword::Application
-renderpass	command/rendercommands.hpp	/^    std::string renderpass;$/;"	m	class:sword::command::CreateRenderpassInstance
+renderpass	command/rendercommands.hpp	/^    std::string renderpass;$/;"	m	class:sword::command::CreateRenderLayer
 renderpassInstances	command/recordrendercommand.hpp	/^    std::vector<uint32_t> renderpassInstances;$/;"	m	class:sword::command::RecordRenderCommand
 renderpassInstances	command/rendercommands.hpp	/^    std::vector<uint32_t> renderpassInstances;$/;"	m	class:sword::command::RecordRenderCommand
-renderpassName	state/report.hpp	/^    std::string renderpassName;$/;"	m	class:sword::state::RenderpassInstanceReport
+renderpassName	state/report.hpp	/^    std::string renderpassName;$/;"	m	class:sword::state::RenderLayerReport
 reportCallback	state/state.hpp	/^    const OwningReportCallbackFn reportCallback() const { return reportCallbackFn; }$/;"	f	class:sword::state::LeafState
 reports	state/descriptorsetlayoutmanager.hpp	/^    Reports<DescriptorSetLayoutReport> reports;$/;"	m	class:sword::state::final
 reports	state/pipelinemanager.hpp	/^    std::vector<const Report*> reports;$/;"	m	class:sword::state::final
@@ -962,6 +1000,7 @@ reset	command/command.hpp	/^    void reset() {inUse = false; success_status = fa
 reset	event/event.hpp	/^    void reset() {inUse = false; handled = false;}$/;"	f	class:sword::event::symbol::Event
 reset	render/command.cpp	/^void CommandBuffer::reset()$/;"	f	class:sword::render::CommandBuffer
 resetPool	render/command.cpp	/^void CommandPool::resetPool()$/;"	f	class:sword::render::CommandPool
+reverse	types/stack.hpp	/^    void reverse() { std::reverse(items.begin(), items.end()); }$/;"	f	class:sword::Stack
 rg	state/state.hpp	/^    Register& rg;$/;"	m	struct:sword::state::StateArgs
 rpassManager	state/rendermanager.hpp	/^    RenderPassManager rpassManager;$/;"	m	class:sword::state::final
 rpassName	command/rendercommands.hpp	/^    std::string rpassName;$/;"	m	class:sword::command::CreateOffscreenRenderpass
@@ -981,20 +1020,20 @@ serialize	event/event.hpp	/^   inline void serialize(std::ofstream& os) $/;"	f	c
 set	command/command.hpp	/^    template <typename... Args> void set(Args... args) {}$/;"	f	class:sword::command::Command
 set	command/recordrendercommand.hpp	/^    inline void set(int index, std::vector<uint32_t> renderpassInstances)$/;"	f	class:sword::command::RecordRenderCommand
 set	command/render.hpp	/^    void set() {}$/;"	f	class:render
-set	command/rendercommands.hpp	/^    inline void set( std::string n, std::vector<std::string> descSetLayoutNames)$/;"	f	class:sword::command::CreatePipelineLayout
 set	command/rendercommands.hpp	/^    inline void set($/;"	f	class:sword::command::CreateGraphicsPipeline
-set	command/rendercommands.hpp	/^    inline void set($/;"	f	class:sword::command::CreateRenderpassInstance
 set	command/rendercommands.hpp	/^    inline void set(int index, std::vector<uint32_t> renderpassInstances)$/;"	f	class:sword::command::RecordRenderCommand
 set	command/rendercommands.hpp	/^    inline void set(int renderCommandId, bool updateUBO)$/;"	f	class:sword::command::Render
 set	command/rendercommands.hpp	/^    inline void set(std::string n, std::vector<vk::DescriptorSetLayoutBinding> b) $/;"	f	class:sword::command::CreateDescriptorSetLayout
-set	command/rendercommands.hpp	/^    inline void set(std::string name) {rpassName = name;}$/;"	f	class:sword::command::CreateSwapchainRenderpass
 set	command/rendercommands.hpp	/^    inline void set(std::string name, int x, int y, vk::ImageUsageFlags usage)$/;"	f	class:sword::command::AddAttachment
 set	command/rendercommands.hpp	/^    inline void set(std::string name, std::string t, int first, int second) {$/;"	f	class:sword::command::SetSpecInt
-set	command/rendercommands.hpp	/^    inline void set(std::string name, vk::AttachmentLoadOp op) {rpassName = name; loadOp = op;}$/;"	f	class:sword::command::CreateOffscreenRenderpass
 set	command/rendercommands.hpp	/^    inline void set(std::vector<std::string> layouts) {layoutnames = layouts;}$/;"	f	class:sword::command::CreateFrameDescriptorSets
+set	command/rendercommands.hpp	/^    void set( std::string n, std::vector<std::string> descSetLayoutNames)$/;"	f	class:sword::command::CreatePipelineLayout
+set	command/rendercommands.hpp	/^    void set($/;"	f	class:sword::command::CreateRenderLayer
+set	command/rendercommands.hpp	/^    void set(std::string name) {rpassName = name;}$/;"	f	class:sword::command::CreateSwapchainRenderpass
 set	command/rendercommands.hpp	/^    void set(std::string name) {shaderName = name;}$/;"	f	class:sword::command::LoadFragShader
 set	command/rendercommands.hpp	/^    void set(std::string name) {shaderName = name;}$/;"	f	class:sword::command::LoadVertShader
 set	command/rendercommands.hpp	/^    void set(std::string name, std::string t, float first, float second) {$/;"	f	class:sword::command::SetSpecFloat
+set	command/rendercommands.hpp	/^    void set(std::string name, vk::AttachmentLoadOp op) {rpassName = name; loadOp = op;}$/;"	f	class:sword::command::CreateOffscreenRenderpass
 set	command/rendercommands.hpp	/^    void set(uint32_t b) {binding = b;}$/;"	f	class:sword::command::InitFrameUbos
 set	command/rendercommands.hpp	/^    void set(uint32_t b) {binding = b;}$/;"	f	class:sword::command::UpdateFrameSamplers
 set	command/template.hpp	/^    void set() {}$/;"	f	class:sword::command::Name
@@ -1045,7 +1084,7 @@ setupDebugMessenger2	render/context.cpp	/^void Context::setupDebugMessenger2()$/
 shader	state/shader.hpp	/^namespace shader$/;"	n	namespace:sword::state
 shaderCode	render/shader.hpp	/^    std::vector<char> shaderCode;$/;"	m	class:sword::render::Shader
 shaderManager	state/rendermanager.hpp	/^    ShaderManager shaderManager;$/;"	m	class:sword::state::final
-shaderManager	state/rendermanager.hpp	/^    enum class Op : Option {openWindow, prepRenderFrames, shaderManager, descriptorManager, renderPassManager, pipelineManager};$/;"	m	class:sword::state::final::Op
+shaderManager	state/rendermanager.hpp	/^    enum class Op : Option {printReports, openWindow, prepRenderFrames, shaderManager, descriptorManager, renderPassManager, pipelineManager, createRenderLayer, recordRenderCommand};$/;"	m	class:sword::state::final::Op
 shaderName	command/rendercommands.hpp	/^    std::string shaderName;$/;"	m	class:sword::command::LoadFragShader
 shaderName	command/rendercommands.hpp	/^    std::string shaderName;$/;"	m	class:sword::command::LoadVertShader
 shaderName	command/rendercommands.hpp	/^    std::string shaderName;$/;"	m	class:sword::command::SetSpecFloat
@@ -1118,8 +1157,6 @@ sword	application.cpp	/^namespace sword$/;"	n	file:
 sword	application.hpp	/^namespace sword$/;"	n
 sword	command/command.hpp	/^namespace sword$/;"	n
 sword	command/commandpools.hpp	/^namespace sword$/;"	n
-sword	command/openwindow.cpp	/^namespace sword$/;"	n	file:
-sword	command/openwindow.hpp	/^namespace sword$/;"	n
 sword	command/recordrendercommand.hpp	/^namespace sword$/;"	n
 sword	command/rendercommands.cpp	/^namespace sword$/;"	n	file:
 sword	command/rendercommands.hpp	/^namespace sword$/;"	n
@@ -1183,6 +1220,7 @@ time	render/ubotypes.hpp	/^    float time;$/;"	m	struct:sword::render::FragmentI
 toCommandLine	state/state.hpp	/^constexpr event::CommandLine* toCommandLine(event::Event* event) { return static_cast<event::CommandLine*>(event);}$/;"	f	namespace:sword::state
 top	types/stack.hpp	/^    T top() const {return items.back();}$/;"	f	class:sword::Stack
 topMask	state/state.hpp	/^    OptionMask topMask;$/;"	m	class:sword::state::BranchState
+topPtr	types/stack.hpp	/^    auto topPtr() const {return items.back().get();}$/;"	f	class:sword::Stack
 type	command/rendercommands.hpp	/^    std::string type;$/;"	m	class:sword::command::SetSpecFloat
 type	command/rendercommands.hpp	/^    std::string type;$/;"	m	class:sword::command::SetSpecInt
 type	state/renderpassmanager.hpp	/^    RenderPassType type;$/;"	m	class:sword::state::CreateRenderPass
