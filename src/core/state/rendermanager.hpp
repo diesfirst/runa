@@ -16,6 +16,17 @@ namespace sword
 namespace state
 {
 
+class Render : public LeafState
+{
+public:
+    const char* getName() const override { return "Render"; }
+    void handleEvent(event::Event*) override;
+    Render(StateArgs, Callbacks);
+private:
+    void onEnterExt() override;
+    CommandPool<command::Render>& pool;
+};
+
 class RecordRenderCommand : public LeafState
 {
 public:
@@ -65,7 +76,8 @@ public:
     void handleEvent(event::Event*) override;
     RenderManager(StateArgs, Callbacks cb);
 private:
-    enum class Op : Option {printReports, openWindow, prepRenderFrames, shaderManager, descriptorManager, renderPassManager, pipelineManager, createRenderLayer, recordRenderCommand};
+    enum class Op : Option {printReports, render, openWindow, prepRenderFrames, shaderManager, 
+        descriptorManager, renderPassManager, pipelineManager, createRenderLayer, recordRenderCommand};
 
     PipelineManager pipelineManager;
     RenderPassManager rpassManager;
@@ -75,6 +87,7 @@ private:
     PrepareRenderFrames prepRenderFrames;
     CreateRenderLayer createRenderLayer;
     RecordRenderCommand recordRenderCommand;
+    Render render;
 
     Reports<RenderLayerReport> renderLayersReports;
     Reports<RenderCommandReport> renderCommandReports;

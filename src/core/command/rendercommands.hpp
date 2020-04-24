@@ -207,14 +207,15 @@ class RecordRenderCommand : public Command
 {
 public:
     CMD_BASE("recordRenderCommand");
-    inline void set(int index, std::vector<uint32_t> renderpassInstances)
+    inline void set(int index, std::vector<uint32_t> renderLayers)
     {
         this->cmdBufferId = index;
-        this->renderpassInstances = renderpassInstances;
+        this->renderLayers = renderLayers;
     }
+    state::Report* makeReport() const override;
 private:
     int cmdBufferId;
-    std::vector<uint32_t> renderpassInstances;
+    std::vector<uint32_t> renderLayers;
 };
 
 class CreateFrameDescriptorSets : public Command

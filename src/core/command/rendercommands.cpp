@@ -187,8 +187,13 @@ state::Report* CreateRenderLayer::makeReport() const
 
 void RecordRenderCommand::execute(Application* app)
 {
-    app->renderer.recordRenderCommands(cmdBufferId, renderpassInstances);
+    app->renderer.recordRenderCommands(cmdBufferId, renderLayers);
     success();
+}
+
+state::Report* RecordRenderCommand::makeReport() const
+{
+    return new state::RenderCommandReport(cmdBufferId, renderLayers);
 }
 
 void Render::execute(Application* app)

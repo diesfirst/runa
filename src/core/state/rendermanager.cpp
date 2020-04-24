@@ -6,6 +6,15 @@ namespace sword
 namespace state
 {
 
+Render::Render(StateArgs sa, Callbacks cb) :
+    LeafState{sa, cb}, pool{sa.cp.render}
+{}
+
+void Render::onEnterExt()
+{
+    std::cout << "Enter a render command index and 0 or 1 based on whether or not to update ubo" << std::endl;
+}
+
 RecordRenderCommand::RecordRenderCommand(StateArgs sa, Callbacks cb) :
     LeafState{sa, cb}
 {}
@@ -15,11 +24,36 @@ void RecordRenderCommand::onEnterExt()
     std::cout << "Enter a command index, and an array of render layer ids to use." << std::endl;
 }
 
+void Render::handleEvent(event::Event* event)
+{
+    if (event->getCategory() == event::Category::CommandLine)
+    {
+        auto ce = toCommandLine(event);
+        auto commandIndex = ce->getArg<int, 0>();
+        auto updateUbo = ce->getArg<bool, 1>();
+        auto cmd = pool.request(reportCallback(), commandIndex, updateUbo);
+        pushCmd(std::move(cmd));
+        popSelf();
+        event->setHandled();
+    }
+}
+
 void RecordRenderCommand::handleEvent(event::Event* event)
 {
     if (event->getCategory() == event::Category::CommandLine)
     {
         auto ce = toCommandLine(event);       
+        auto ss = ce->getStream();
+        int cmdBufferId;
+        uint32_t holder;
+        std::vector<uint32_t> renderLayerIds;
+        ss >> cmdBufferId;
+        while (ss >> holder)
+            renderLayerIds.push_back(holder);
+        auto cmd = pool.request(reportCallback(), cmdBufferId, renderLayerIds);
+        pushCmd(std::move(cmd));
+        popSelf();
+        event->setHandled();
     }
 }
 
@@ -85,6 +119,7 @@ RenderManager::RenderManager(StateArgs sa, Callbacks cb) :
         {"pipeline_manager", opcast(Op::pipelineManager)},
         {"create_render_layer", opcast(Op::createRenderLayer)},
         {"record_render_command", opcast(Op::recordRenderCommand)},
+        {"render", opcast(Op::render)},
         {"print_reports", opcast(Op::printReports)}
     }},
     pipelineManager{sa, {[this](){activate(opcast(Op::pipelineManager));}}},
@@ -100,7 +135,8 @@ RenderManager::RenderManager(StateArgs sa, Callbacks cb) :
     openWindow{sa, {nullptr, [this](Report* report) { deactivate(opcast(Op::openWindow)); }}},
     prepRenderFrames{sa, {nullptr, [this](Report* report) { onPrepRenderFrames(); }}},
     createRenderLayer{sa, {nullptr, [this](Report* report) { addReport(report, &renderLayersReports); }}},
-    recordRenderCommand{sa, {nullptr, [this](Report* report) { addReport(report, &renderCommandReports); }}}
+    recordRenderCommand{sa, {nullptr, [this](Report* report) { addReport(report, &renderCommandReports); }}},
+    render{sa, {}}
 {   
     activate(opcast(Op::openWindow));
     activate(opcast(Op::shaderManager));
@@ -108,6 +144,8 @@ RenderManager::RenderManager(StateArgs sa, Callbacks cb) :
     activate(opcast(Op::renderPassManager));
     activate(opcast(Op::printReports));
     activate(opcast(Op::createRenderLayer));
+    activate(opcast(Op::recordRenderCommand));
+    activate(opcast(Op::render));
 }
 
 void RenderManager::handleEvent(event::Event* event)
@@ -127,6 +165,7 @@ void RenderManager::handleEvent(event::Event* event)
             case Op::createRenderLayer: pushState(&createRenderLayer); break;
             case Op::recordRenderCommand: pushState(&recordRenderCommand); break;
             case Op::printReports: printReports(); break;
+            case Op::render: pushState(&render); break;
         }
     }
 }
