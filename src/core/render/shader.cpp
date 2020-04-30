@@ -74,6 +74,7 @@ void Shader::reload(std::vector<uint32_t>&& code)
 	ci.setPCode(code.data());
 	ci.setCodeSize(codeSize);
 	module = device.createShaderModule(ci);
+    initialize();
 }
 
 //movement is tricky. going to disallow it for now

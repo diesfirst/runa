@@ -7,14 +7,15 @@
 namespace sword
 {
 
-Application::Application(uint16_t w, uint16_t h, const std::string logfile, int eventPops) :
+Application::Application(uint16_t w, uint16_t h, const std::string logfile, int event_reads) :
     window{w, h},
     dispatcher{window},
     renderer{context},
     offscreenDim{{w, h}},
     swapDim{{w, h}},
     readlog{logfile},
-    dirState{{stateEdits, cmdStack, cmdPools, stateRegister}, stateStack, window}
+    dirState{{stateEdits, cmdStack, cmdPools, stateRegister}, stateStack, window},
+    maxEventReads{event_reads}
 {
     stateStack.push(&dirState);
     stateStack.top()->onEnter();
@@ -25,7 +26,7 @@ Application::Application(uint16_t w, uint16_t h, const std::string logfile, int 
         recordevents = true;
         readevents = true;
     }
-    if (readevents) readEvents(is, eventPops);
+    //if (readevents) readEvents(is, eventPops);
     if (recordevents) std::remove(writelog.data());
 }
 
@@ -113,9 +114,17 @@ void Application::run()
     int j;
     int k;
 
+    if (readevents)
+        is.open(readlog, std::ios::binary);
+
     while (1)
     {
         i = 0;
+        if (readevents && eventsRead < maxEventReads)
+        {
+            dispatcher.readEvent(is);
+            eventsRead++;
+        }
         while (i < dispatcher.eventQueue.size())
         {
             auto& event = dispatcher.eventQueue.items[i];
@@ -173,6 +182,8 @@ void Application::run()
         cmdStack.items.clear();
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
+    if (readevents)
+        is.close();
 }
 
 // in case you forget. we need to be able to handle cmdPtrs that end up pushing 

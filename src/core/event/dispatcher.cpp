@@ -265,6 +265,31 @@ void EventDispatcher::readEvents(std::ifstream& is, int eventPops)
     }
 }
 
+void EventDispatcher::readEvent(std::ifstream& is)
+{
+    if (is.peek() != EOF)
+    {
+        Category ec = Event::unserializeCategory(is);
+        if (ec == Category::CommandLine)
+        {
+            auto event = clPool.request("foo");
+            auto cmdevent = static_cast<CommandLine*>(event.get());
+            cmdevent->unserialize(is);
+            eventQueue.push(std::move(event));
+            clCount++;
+            std::cout << "pushed commandline event" << std::endl;
+            std::cout << "Cl count: " << clCount << std::endl;
+            std::cout << "Cl content: " << cmdevent->getInput() << '\n';
+        }
+        if (ec == Category::Abort)
+        {
+            auto abrt = aPool.request();
+            eventQueue.push(std::move(abrt));
+            std::cout << "pushed abort event" << std::endl;
+        }
+    }
+}
+
 
 }; // namespace event
 

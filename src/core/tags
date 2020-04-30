@@ -11,7 +11,7 @@ Abort	event/event.hpp	/^class Abort : public Event$/;"	c	namespace:sword::event:
 AddAttachment	command/rendercommands.hpp	/^class AddAttachment: public Command$/;"	c	namespace:sword::command
 AddVocab	command/vocab.hpp	/^class AddVocab : public Command$/;"	c	namespace:sword::command
 Alt	event/event.hpp	/^    Alt = 64,$/;"	m	class:sword::event::symbol::Key
-Application	application.cpp	/^Application::Application(uint16_t w, uint16_t h, const std::string logfile, int eventPops) :$/;"	f	class:sword::Application
+Application	application.cpp	/^Application::Application(uint16_t w, uint16_t h, const std::string logfile, int event_reads) :$/;"	f	class:sword::Application
 Application	application.hpp	/^class Application$/;"	c	namespace:sword
 Attachment	render/attachment.cpp	/^Attachment::Attachment($/;"	f	class:sword::render::Attachment
 Attachment	render/attachment.cpp	/^Attachment::Attachment(const vk::Device& device, std::unique_ptr<Image> swapimage) :$/;"	f	class:sword::render::Attachment
@@ -981,6 +981,7 @@ queueFamilies	render/context.hpp	/^    std::vector<vk::QueueFamilyProperties> qu
 quickSetup	state/director.cpp	/^void Director::quickSetup()$/;"	f	class:sword::state::Director
 quickState	state/director.hpp	/^    QuickSetup quickState;$/;"	m	class:sword::state::final
 rasterizationState	render/pipeline.hpp	/^    vk::PipelineRasterizationStateCreateInfo rasterizationState;$/;"	m	class:sword::render::GraphicsPipeline
+readEvent	event/dispatcher.cpp	/^void EventDispatcher::readEvent(std::ifstream& is)$/;"	f	class:sword::event::EventDispatcher
 readEvents	application.cpp	/^void Application::readEvents(std::ifstream& is, int eventPops)$/;"	f	class:sword::Application
 readEvents	event/dispatcher.cpp	/^void EventDispatcher::readEvents(std::ifstream& is, int eventPops)$/;"	f	class:sword::event::EventDispatcher
 readlog	application.hpp	/^    std::string readlog;$/;"	m	class:sword::Application

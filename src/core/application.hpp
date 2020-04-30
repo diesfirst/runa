@@ -57,6 +57,9 @@ private:
     CommandStack cmdStack;
 
     state::Director dirState;
+
+    int maxEventReads{0};
+    int eventsRead{0};
 };
 
 }; // namespace sword

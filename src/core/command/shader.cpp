@@ -34,9 +34,11 @@ void CompileShader::set(const std::string_view rel_path, const std::string_view 
 
 void CompileShader::execute(Application* app)
 {
-    auto f = std::ifstream(src_path);
+    std::ifstream f;
     std::stringstream ss;
-    if (f.is_open())
+    std::cout << "SRC PATH: " << src_path << '\n';
+    f.open(src_path);
+    if (!f.fail())
         ss << f.rdbuf();
     else
     {
@@ -57,7 +59,7 @@ void CompileShader::execute(Application* app)
             case ShaderType::vert: app->renderer.loadVertShader(std::move(code), name); success(); break;
         }
     }
-    f.close();
+    src_path = SHADER_SRC; //must reset this path so we don't reappend to it
 }
 
 state::Report* CompileShader::makeReport() const
