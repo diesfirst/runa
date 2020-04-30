@@ -1,6 +1,7 @@
 #include <state/shader.hpp>
 #include <filesystem>
 #include <sstream>
+#include <util/file.hpp>
 
 namespace sword
 {
@@ -8,6 +9,63 @@ namespace sword
 namespace state
 {
 
+PrintShader::PrintShader(StateArgs sa, Callbacks cb) :
+    LeafState{sa, cb}
+{}
+
+void PrintShader::onEnterExt()
+{
+    setVocab(getPaths(shader_dir::src, true));
+    std::cout << "Enter a shader path." << '\n';
+}
+
+void PrintShader::handleEvent(event::Event* event)
+{
+    if (event->getCategory() == event::Category::CommandLine)
+    {
+        auto ce = toCommandLine(event);
+        auto input = ce->getArg<std::string, 0>();
+        auto path = std::string(shader_dir::src) + "/" + input;
+
+        std::ifstream f(path);
+
+        if (f.is_open())
+        {
+            std::cout << '\n';
+            std::cout << f.rdbuf() << '\n';
+            std::cout << '\n';
+            f.close();
+        }
+        else
+            std::cout << "Could not open file" << '\n';
+        popSelf();
+        event->setHandled();
+    }
+}
+
+CompileShader::CompileShader(StateArgs sa, Callbacks cb) :
+    LeafState{sa, cb}, pool{sa.cp.compileShader}
+{}
+
+void CompileShader::onEnterExt()
+{
+    setVocab(getPaths(SHADER_SRC, true));
+    std::cout << "Enter a shader path and name." << '\n';
+}
+
+void CompileShader::handleEvent(event::Event* event)
+{
+    if (event->getCategory() == event::Category::CommandLine)
+    {
+        auto ce = toCommandLine(event);       
+        auto path = ce->getArg<std::string, 0>();
+        auto name = ce->getArg<std::string, 1>();
+        auto cmd = pool.request(reportCallback(), path, name);
+        pushCmd(std::move(cmd));
+        event->setHandled();
+        popSelf();
+    }
+}
 
 LoadFragShaders::LoadFragShaders(StateArgs sa, Callbacks cb) :
     LeafState{sa, cb}, lfPool{sa.cp.loadFragShader} 
@@ -17,11 +75,7 @@ LoadFragShaders::LoadFragShaders(StateArgs sa, Callbacks cb) :
 
 void LoadFragShaders::onEnterExt()
 {
-    std::vector<std::string> words;
-    auto dir = std::filesystem::directory_iterator(SHADER_DIR);
-    for (const auto& entry : dir) 
-        words.push_back(entry.path().filename());
-    setVocab(words);
+    setVocab(getPaths(frag_dir));
     std::cout << "Enter the names of the fragment shaders to load." << std::endl;
 }
 
@@ -34,7 +88,8 @@ void LoadFragShaders::handleEvent(event::Event* event)
         std::string reciever;
         while (stream >> reciever)
         {
-            auto cmd = lfPool.request(reportCallback(), reciever);
+            auto spv = toSpv(reciever);
+            auto cmd = lfPool.request(reportCallback(), spv);
             pushCmd(std::move(cmd));
         }
         event->setHandled();
@@ -50,12 +105,26 @@ LoadVertShaders::LoadVertShaders(StateArgs sa, Callbacks cb) :
 
 void LoadVertShaders::onEnterExt()
 {
-    std::vector<std::string> words;
-    auto dir = std::filesystem::directory_iterator(SHADER_DIR);
-    for (const auto& entry : dir) 
-        words.push_back(entry.path().filename());
-    setVocab(words);
+    setVocab(getPaths(vert_dir));
     std::cout << "Enter the names of the vert shaders to load." << std::endl;
+}
+
+void LoadVertShaders::handleEvent(event::Event* event)
+{
+    if (event->getCategory() == event::Category::CommandLine)
+    {
+        auto cmdevent = static_cast<event::CommandLine*>(event);
+        auto stream = cmdevent->getStream();
+        std::string reciever;
+        while (stream >> reciever)
+        {
+            auto spv = toSpv(reciever);
+            auto cmd = lvPool.request(reportCallback(), spv);
+            pushCmd(std::move(cmd));
+        }
+        event->setHandled();
+        popSelf();
+    }
 }
 
 SetSpec::SetSpec(StateArgs sa, Callbacks cb, shader::SpecType t, ShaderReports& reports) :
@@ -80,8 +149,13 @@ void SetSpec::handleEvent(event::Event* event)
     if (event->getCategory() == event::Category::CommandLine)
     {
         auto stream = toCommandLine(event)->getStream();
-        int first; int second; std::string type; std::string name;
-        stream >> first >> second >> type;
+        int first; int second; char type_char; std::string name;
+        ShaderType type;
+        stream >> first >> second >> type_char;
+        if (type_char == 'f')
+            type = ShaderType::frag;
+        else if (type_char == 'v')
+            type = ShaderType::vert;
         while (stream >> name)
         {
             CmdPtr cmd;
@@ -105,41 +179,30 @@ void SetSpec::handleEvent(event::Event* event)
     }
 }
 
-void LoadVertShaders::handleEvent(event::Event* event)
-{
-    if (event->getCategory() == event::Category::CommandLine)
-    {
-        auto cmdevent = static_cast<event::CommandLine*>(event);
-        auto stream = cmdevent->getStream();
-        std::string reciever;
-        while (stream >> reciever)
-        {
-            auto cmd = lvPool.request(reportCallback(), reciever);
-            pushCmd(std::move(cmd));
-        }
-        event->setHandled();
-        popSelf();
-    }
-}
-
 ShaderManager::ShaderManager(StateArgs sa, Callbacks cb, ReportCallbackFn<ShaderReport> srcb)  : 
     BranchState{sa, cb, {
         {"load_frag_shaders", opcast(Op::loadFrag)},
         {"load_vert_shaders", opcast(Op::loadVert)},
         {"print_reports", opcast(Op::printReports)},
         {"set_spec_int", opcast(Op::setSpecInt)},
-        {"set_spec_float", opcast(Op::setSpecFloat)}
+        {"set_spec_float", opcast(Op::setSpecFloat)},
+        {"print_shader", opcast(Op::printShader)},
+        {"compile_shader", opcast(Op::compileShader)}
     }},
     loadFragShaders{sa, {nullptr, [this, srcb](Report* report){ addReport(report, &shaderReports, srcb); }}},
     loadVertShaders{sa, {nullptr, [this, srcb](Report* report){ addReport(report, &shaderReports, srcb); }}},
+    compileShader{sa, {nullptr, [this, srcb](Report* report){ addReport(report, &shaderReports, srcb); }}},
     setSpecInt{sa, {}, shader::SpecType::integer, shaderReports},
-    setSpecFloat{sa, {}, shader::SpecType::floating, shaderReports}
+    setSpecFloat{sa, {}, shader::SpecType::floating, shaderReports},
+    printShader{sa, {}}
 {   
     activate(opcast(Op::loadFrag));
     activate(opcast(Op::loadVert));
     activate(opcast(Op::printReports));
     activate(opcast(Op::setSpecFloat));
     activate(opcast(Op::setSpecFloat));
+    activate(opcast(Op::printShader));
+    activate(opcast(Op::compileShader));
 }
 
 void ShaderManager::handleEvent(event::Event* event)
@@ -148,13 +211,15 @@ void ShaderManager::handleEvent(event::Event* event)
     {
         Optional option = extractCommand(event);
         if (!option) return;
-        switch(opcast(*option))
+        switch(opcast<Op>(*option))
         {
             case Op::loadFrag: pushState(&loadFragShaders); break;
             case Op::loadVert: pushState(&loadVertShaders); break;
             case Op::printReports: printReports(); break;
             case Op::setSpecInt: pushState(&setSpecInt); break;
             case Op::setSpecFloat: pushState(&setSpecFloat); break;
+            case Op::printShader: pushState(&printShader); break;
+            case Op::compileShader: pushState(&compileShader); break;
         }
     }
 }
@@ -166,7 +231,6 @@ void ShaderManager::printReports()
         std::invoke(*report);
     }
 }
-
 
 }; // namespace state
 

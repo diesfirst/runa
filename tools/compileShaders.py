@@ -1,23 +1,26 @@
 import subprocess
 import os
 
-BASEDIR = os.path.join( os.path.dirname(__file__), '..')
-SHADER_DIRS = [BASEDIR + '/src/shaders/basic/', BASEDIR + '/src/shaders/tarot/']
-OUTDIR = BASEDIR + '/build/shaders/'
-GLSLC_PATH = '/home/michaelb/dev/Vulkan/1.1.126.0/x86_64/bin/glslc'
+base_dir = os.path.join( os.path.dirname(__file__), '..')
+shaders_dir = os.path.join(base_dir, "src", "shaders")
+out_dir = os.path.join(base_dir, "build", "shaders")
+glslc_path = '/home/michaelb/dev/Vulkan/1.1.126.0/x86_64/bin/glslc'
 
-def compileShaders(shader_dir):
+
+def compileShaders(shader_dir, out_dir, glslc_path):
     shaders = []
     files = os.listdir(shader_dir)
     for f in files:
         ext = str.split(f, '.')[-1]
         name = str.split(f, '.')[0]
         if ext == 'frag' or ext == 'vert':
-            shaders.append((shader_dir+f, OUTDIR + name + '.spv'))
+#            shaders.append((shader_dir+f, out_dir + name + '.spv'))
+            shaders.append((os.path.join(shader_dir, f), 
+                os.path.join(out_dir, name + '.spv')))
             
-    print(shaders)
     for shader in shaders:
-        subprocess.run([GLSLC_PATH, shader[0], '-o', shader[1]])
+        subprocess.run([glslc_path, shader[0], '-o', shader[1]])
 
-for directory in SHADER_DIRS:
-    compileShaders(directory)
+dirs = [d[0] for d in os.walk(shaders_dir)]
+for d in dirs:
+    compileShaders(d, out_dir, glslc_path)

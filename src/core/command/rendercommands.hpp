@@ -5,6 +5,7 @@
 
 #include "command.hpp"
 #include <vulkan/vulkan.hpp>
+#include <util/enum.hpp>
 
 namespace sword
 {
@@ -36,12 +37,12 @@ class SetSpecFloat: public Command
 {
 public:
     CMD_BASE("setSpecFloat");
-    void set(std::string name, std::string t, float first, float second) {
+    void set(std::string name, ShaderType t, float first, float second) {
         shaderName = name; type = t; x = first; y = second;}
     state::Report* makeReport() const override;
 private:
     std::string shaderName;
-    std::string type;
+    ShaderType type;
     float x{0};
     float y{0};
 };
@@ -50,12 +51,12 @@ class SetSpecInt: public Command
 {
 public:
     CMD_BASE("setSpecInt");
-    inline void set(std::string name, std::string t, int first, int second) {
+    inline void set(std::string name, ShaderType t, int first, int second) {
         shaderName = name; type = t; x = first; y = second;}
     state::Report* makeReport() const override;
 private:
     std::string shaderName;
-    std::string type;
+    ShaderType type;
     int x{0};
     int y{0};
 };
@@ -134,19 +135,19 @@ class CreateGraphicsPipeline : public Command
 public:
     CMD_BASE("createGraphicsPipeline");
     inline void set(
-            std::string parm1,
-            std::string parm2,
-            std::string parm3,
-            std::string parm4,
-            std::string parm5,
+            std::string name,
+            std::string pipelineLayout,
+            std::string vertShader,
+            std::string fragShader,
+            std::string renderPass,
             vk::Rect2D renderAreaSet,
             bool has3dGeo) 
     {
-        name = parm1;
-        pipelineLayout = parm2;
-        vertshader = parm3;
-        fragshader = parm4;
-        renderpass = parm5;
+        this->name = name;
+        this->pipelineLayout = pipelineLayout;
+        vertshader = vertShader;
+        fragshader = fragShader;
+        renderpass = renderPass;
         renderArea = renderAreaSet;
         is3d = has3dGeo;
     }

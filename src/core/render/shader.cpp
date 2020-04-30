@@ -13,6 +13,28 @@ Shader::Shader(const vk::Device& device, std::string filepath) :
 {
 	loadFile(filepath);
 	createModule();
+    initialize();
+}
+
+Shader::Shader(const vk::Device& device, std::vector<uint32_t>&& code) :
+    device{device}
+{
+	vk::ShaderModuleCreateInfo ci;
+    codeSize = code.size() * 4; //to get size in bytes
+	ci.setPCode(code.data());
+	ci.setCodeSize(codeSize);
+	module = device.createShaderModule(ci);
+    initialize();
+}
+
+Shader::~Shader()
+{
+	if (module)
+		device.destroyShaderModule(module);
+}
+
+void Shader::initialize()
+{
 	stageInfo.setPName("main");
 	stageInfo.setModule(module);
 
@@ -43,10 +65,15 @@ Shader::Shader(const vk::Device& device, std::string filepath) :
 	std::cout << "Shader constructed" << std::endl;
 }
 
-Shader::~Shader()
+void Shader::reload(std::vector<uint32_t>&& code)
 {
-	if (module)
-		device.destroyShaderModule(module);
+    assert (module); //otherwise we should not be reloading
+    device.destroyShaderModule(module);
+	vk::ShaderModuleCreateInfo ci;
+    codeSize = code.size() * 4; //to get size in bytes
+	ci.setPCode(code.data());
+	ci.setCodeSize(codeSize);
+	module = device.createShaderModule(ci);
 }
 
 //movement is tricky. going to disallow it for now
@@ -79,17 +106,17 @@ void Shader::loadFile(std::string filepath)
 	//binary: read the file as binary file
 	assert(file.is_open() && "Failed to load shader file");
 	codeSize = (size_t) file.tellg();
-	shaderCode.resize(codeSize);
+	shaderCode.resize(codeSize / 4); //must divide by 4 to make it byte sized
 
 	file.seekg(0);
-	file.read(shaderCode.data(), codeSize);
+	file.read(reinterpret_cast<char*>(shaderCode.data()), codeSize);
 	file.close();
 }
 
 void Shader::createModule()
 {
 	vk::ShaderModuleCreateInfo ci;
-	ci.setPCode(reinterpret_cast<const uint32_t*>(shaderCode.data()));
+	ci.setPCode(shaderCode.data());
 	ci.setCodeSize(codeSize);
 	module = device.createShaderModule(ci);
 }
@@ -106,8 +133,20 @@ VertShader::VertShader(const vk::Device& device, std::string filepath) :
 	stageInfo.setStage(vk::ShaderStageFlagBits::eVertex);
 }
 
+VertShader::VertShader(const vk::Device& device, std::vector<uint32_t>&& code) :
+	Shader(device, std::move(code))
+{
+	stageInfo.setStage(vk::ShaderStageFlagBits::eVertex);
+}
+
 FragShader::FragShader(const vk::Device& device, std::string filepath) :
 	Shader(device, filepath)
+{
+	stageInfo.setStage(vk::ShaderStageFlagBits::eFragment);
+}
+
+FragShader::FragShader(const vk::Device& device, std::vector<uint32_t>&& code) :
+	Shader(device, std::move(code))
 {
 	stageInfo.setStage(vk::ShaderStageFlagBits::eFragment);
 }

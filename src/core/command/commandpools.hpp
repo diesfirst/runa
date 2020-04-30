@@ -2,6 +2,7 @@
 #define COMMAND_COMMANDPOOLS_HPP
 
 #include <command/rendercommands.hpp>
+#include <command/shader.hpp>
 #include <command/commandtypes.hpp>
 
 namespace sword
@@ -29,6 +30,7 @@ struct CommandPools
     CommandPool<command::InitFrameUbos> initFrameUbos;
     CommandPool<command::UpdateFrameSamplers> updateFrameSamplers;
     CommandPool<command::Render> render;
+    CommandPool<command::CompileShader> compileShader;
 };
 
 }; // namespace sword

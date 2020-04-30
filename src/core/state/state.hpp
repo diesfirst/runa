@@ -1,5 +1,5 @@
-#ifndef STATE_HPP_
-#define STATE_HPP_
+#ifndef STATE_STATE_HPP
+#define STATE_STATE_HPP
 
 #include <command/commandtypes.hpp>
 #include <command/commandpools.hpp>
@@ -7,10 +7,10 @@
 #include <state/editstack.hpp>
 #include <types/stack.hpp>
 #include <types/map.hpp>
-#include <functional>
-#include <bitset>
 #include <event/event.hpp>
 #include <command/vocab.hpp>
+#include "option.hpp"
+#include "vocab.hpp"
 
 #define STATE_BASE(name) \
     void handleEvent(Event* event) override;\
@@ -33,21 +33,12 @@ using ReportCallbacks = std::vector<ReportCallbackFn<R>>;
 using OwningReportCallbackFn = std::function<void(Report*)>;
 using ExitCallbackFn = std::function<void()>;
 using GenericCallbackFn = std::function<void()>;
-using OptionMask = std::bitset<32>;
-using Option = uint8_t;
-using Optional = std::optional<Option>;
 
 template <typename T>
 using Reports = std::vector<std::unique_ptr<T>>;
 
 //constexpr bool isCommandLine(event::Event* event) { return event->getCategory() == event::Category::CommandLine;}
 constexpr event::CommandLine* toCommandLine(event::Event* event) { return static_cast<event::CommandLine*>(event);}
-
-template<typename T>
-constexpr Option opcast(T op) {return static_cast<Option>(op);}
-
-template<typename T>
-constexpr T opcast(Option op) {return static_cast<T>(op);}
 
 enum class StateType : uint8_t {leaf, branch, brief};
 
@@ -94,44 +85,6 @@ struct Callbacks
     GenericCallbackFn gn{nullptr};
 };
 
-class Vocab
-{
-public:
-    void clear() { words.clear(); }
-    void push_back(std::string word) { words.push_back(word); }
-    void set( std::vector<std::string> strings) { words = strings; }
-    void setMaskPtr( OptionMask* ptr ) { mask = ptr; }
-    std::vector<std::string> getWords() const 
-    {
-        if (mask)
-        {
-            std::vector<std::string> wordsReturn;
-            for (int i = 0; i < words.size(); i++) 
-                if ((*mask)[i])
-                    wordsReturn.push_back(words.at(i));
-            return wordsReturn;
-        }
-        return words;
-    }
-    void print()
-    {
-        if (mask)
-        {
-            for (int i = 0; i < words.size(); i++) 
-                if ((*mask)[i])
-                    std::cout << words.at(i) << " ";
-        }
-        else
-        {
-            for (int i = 0; i < words.size(); i++) 
-                std::cout << words.at(i) << " ";
-        }
-        std::cout << std::endl;
-    }
-private:
-    OptionMask* mask{nullptr};
-    std::vector<std::string> words;
-};
 
 class OptionMap
 {
@@ -292,4 +245,4 @@ private:
 
 }; //sword
 
-#endif /* end of include guard: STATE_HPP_ */
+#endif /* end of include guard: STATE_STATE_HPP */

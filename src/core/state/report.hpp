@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <vulkan/vulkan.hpp>
+#include <util/enum.hpp>
 
 namespace sword
 {
@@ -48,13 +49,13 @@ private:
 class ShaderReport final : public Report
 {
 public:
-    ShaderReport(std::string n, const char* t, int i0, int i1, float f0, float f1) :
+    ShaderReport(std::string n, ShaderType t, int i0, int i1, float f0, float f1) :
         name{n}, type{t}, specint0{i0}, specint1{i1}, specfloat0{f0}, specfloat1{f1} {}
     void operator()() const  override
     {
         std::cout << "================== Shader Report ==================" << std::endl;
         std::cout << "Name:                  " << name << std::endl;
-        std::cout << "Type:                  " << type << std::endl;
+        std::cout << "Type:                  " << string_type() << std::endl;
         std::cout << "Spec Constant Int 0:   " << specint0 << std::endl;
         std::cout << "Spec Constant Int 1:   " << specint1 << std::endl;
         std::cout << "Spec Constant Float 0: " << specfloat0 << std::endl;
@@ -73,8 +74,18 @@ public:
         if (index == 1) specint1 = val;
     }
 private:
+    constexpr std::string_view string_type() const
+    {
+        switch (type)
+        {
+            case ShaderType::frag: return "Fragment";
+            case ShaderType::vert: return "Vertex";
+        }
+        return "";
+    }
     const std::string name{"unitilialized"};
-    const char* type{"uninilialized"};
+    const char* type_string{"uninilialized"};
+    ShaderType type;
     int specint0{0};
     int specint1{0};
     float specfloat0{0};

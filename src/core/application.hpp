@@ -11,6 +11,7 @@
 #include <render/renderer.hpp>
 #include <string>
 #include <command/commandpools.hpp>
+#include <event/dispatcher.hpp>
 
 namespace sword
 {

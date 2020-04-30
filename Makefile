@@ -23,7 +23,7 @@ INC_DIRS := -I$(CORE) -I/usr/include -I./include/thirdparty
 
 WFLAGS = -Wall -W -Wno-parentheses -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-uninitialized -Wno-unused-parameter -Wno-unused-local-typedefs
 CPPFLAGS = $(DEPFLAGS) -g -std=c++17 $(WFLAGS) $(INC_DIRS) -fPIC 
-LDFLAGS = -lpthread -lxcb -lvulkan -lX11 -lreadline -ldl
+LDFLAGS = -lpthread -lxcb -lvulkan -lX11 -lreadline -ldl -lshaderc_combined
 LIB = ./lib
 LDIRS = -L$(LIB) #-L$(LIB)/loader 
 LINK = $(LDIRS) $(LDFLAGS)

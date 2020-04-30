@@ -48,15 +48,17 @@ public:
     Renderer& operator=(Renderer&) = delete;
     Renderer& operator=(Renderer&&) = delete;
     Renderer(Renderer&&) = delete;
-    FragShader& loadFragShader(const std::string path, const std::string name);
-    VertShader& loadVertShader(const std::string path, const std::string name);
+    bool loadFragShader(const std::string path, const std::string name);
+    bool loadFragShader(std::vector<uint32_t>&& code, const std::string name);
+    bool loadVertShader(const std::string path, const std::string name);
+    bool loadVertShader(std::vector<uint32_t>&& code, const std::string name);
     RenderPass& createRenderPass(std::string name);
     const std::string createDescriptorSetLayout(
-        const std::string name, 
-        const std::vector<vk::DescriptorSetLayoutBinding>);
+    const std::string name, 
+    const std::vector<vk::DescriptorSetLayoutBinding>);
     const std::string createPipelineLayout(
-        const std::string name, 
-        const std::vector<std::string> setLayouts);
+    const std::string name, 
+    const std::vector<std::string> setLayouts);
     void prepareRenderFrames(Window& window);
     void createFrameDescriptorSets(const std::vector<std::string>setLayoutNames);
     void createOwnDescriptorSets(const std::vector<std::string>setLayoutNames);
@@ -66,15 +68,15 @@ public:
     void prepareAsSwapchainPass(RenderPass&);
     void prepareAsOffscreenPass(RenderPass&, vk::AttachmentLoadOp);
     Attachment& createAttachment(
-        const std::string name, const vk::Extent2D, const vk::ImageUsageFlags);
+    const std::string name, const vk::Extent2D, const vk::ImageUsageFlags);
     GraphicsPipeline& createGraphicsPipeline(
-        const std::string name, 
-        const std::string pipelineLayout,
+    const std::string name, 
+    const std::string pipelineLayout,
 	const std::string vertshader,
 	const std::string fragshader,
 	const std::string renderpass,
-        const vk::Rect2D renderArea,
-        const bool geometric);
+    const vk::Rect2D renderArea,
+    const bool geometric);
     void bindUboData(void* dataPointer, uint32_t size, uint32_t index);
     //in the future we should disect this function
     //to allow for the renderpasses and 

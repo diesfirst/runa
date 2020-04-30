@@ -2,6 +2,7 @@
 #include <state/director.hpp>
 #include <event/event.hpp>
 #include <state/state.hpp>
+#include <thread>
 
 namespace sword
 {
@@ -114,15 +115,20 @@ void Application::run()
 
     while (1)
     {
-        size_t eventCount = dispatcher.eventQueue.size();
         i = 0;
         while (i < dispatcher.eventQueue.size())
         {
-            std::cout << "got events" << std::endl;
             auto& event = dispatcher.eventQueue.items[i];
             if (event)
             {
+                std::cout << "Got event: " << event->getName() << '\n';
                 if (recordevents) recordEvent(event.get(), os);
+                if (event->getCategory() == event::Category::CommandLine)
+                {
+                    auto ce = state::toCommandLine(event.get());
+                    std::cout << ce->getInput() << '\n';
+                }
+
                 for (auto state : stateStack) 
                     if (!event->isHandled())
                         state->handleEvent(event.get());

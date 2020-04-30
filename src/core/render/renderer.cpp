@@ -297,26 +297,65 @@ GraphicsPipeline& Renderer::createGraphicsPipeline(
     return graphicsPipelines.at(name);
 }
 
-VertShader& Renderer::loadVertShader(
+bool Renderer::loadVertShader(
         const std::string path, const std::string name)
 {
-    assert(vertexShaders.find(name) == vertexShaders.end() && "Shader name is not unique");
-    vertexShaders.emplace(
+    if (vertexShaders.find(name) == vertexShaders.end())
+    {
+        vertexShaders.emplace(
             std::piecewise_construct,
             std::forward_as_tuple(name),
             std::forward_as_tuple(device, path));
-    return vertexShaders.at(name);
+        return true;
+    }
+    return false;
 }
 
-FragShader& Renderer::loadFragShader(
-		const std::string path, const std::string name)
+bool Renderer::loadVertShader(
+        std::vector<uint32_t>&& code, const std::string name)
 {
-    assert(fragmentShaders.find(name) == fragmentShaders.end() && "Shader name is not unique");
-    fragmentShaders.emplace(
+    if (vertexShaders.find(name) == vertexShaders.end())
+    {
+        vertexShaders.emplace(
             std::piecewise_construct, 
             std::forward_as_tuple(name), 
-            std::forward_as_tuple(device, path));
-    return fragmentShaders.at(name);
+            std::forward_as_tuple(device, std::move(code)));
+        return true;
+    }
+    return false;
+}
+
+bool Renderer::loadFragShader(
+		const std::string path, const std::string name)
+{
+    if (fragmentShaders.find(name) == fragmentShaders.end())
+    {
+        fragmentShaders.emplace(
+                std::piecewise_construct, 
+                std::forward_as_tuple(name), 
+                std::forward_as_tuple(device, path));
+        return true;
+    }
+    return false;
+}
+
+bool Renderer::loadFragShader(
+        std::vector<uint32_t>&& code, const std::string name)
+{
+    if (fragmentShaders.find(name) == fragmentShaders.end())
+    {
+        fragmentShaders.emplace(
+            std::piecewise_construct, 
+            std::forward_as_tuple(name), 
+            std::forward_as_tuple(device, std::move(code)));
+        return true;
+    }
+    else
+    {
+        auto& shader = fragmentShaders.at(name);
+        shader.reload(std::move(code));
+        return true;
+    }
 }
 
 void Renderer::recordRenderCommands(uint32_t id, std::vector<uint32_t> fbIds)

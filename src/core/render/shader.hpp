@@ -1,6 +1,8 @@
 #ifndef RENDER_SHADER_HPP_
 #define RENDER_SHADER_HPP_
 
+//imp: shader.cpp
+
 #include <vulkan/vulkan.hpp>
 
 namespace sword
@@ -8,6 +10,7 @@ namespace sword
 
 namespace render
 {
+
 
 struct SpecData
 {
@@ -28,35 +31,40 @@ public:
 
     const vk::PipelineShaderStageCreateInfo& getStageInfo() const;
     void setWindowResolution(const uint32_t w, const uint32_t h);
+    void reload(std::vector<uint32_t>&& code);
 
     SpecData specData;
 
 protected:
     Shader(const vk::Device&, std::string filepath);
+    Shader(const vk::Device&, std::vector<uint32_t>&& code);
     vk::PipelineShaderStageCreateInfo stageInfo;
     std::vector<vk::SpecializationMapEntry> mapEntries;
     vk::SpecializationInfo specInfo;
 
 private:
     const vk::Device& device;
-    std::vector<char> shaderCode;
+    std::vector<uint32_t> shaderCode;
     size_t codeSize;
     vk::ShaderModule module{nullptr};
 
     void loadFile(std::string filepath);
     void createModule();
+    void initialize();
 };
 
 class VertShader : public Shader
 {
 public:
     VertShader(const vk::Device&, std::string);
+    VertShader(const vk::Device&, std::vector<uint32_t>&& code);
 };
 
 class FragShader : public Shader
 {
 public:
     FragShader(const vk::Device&, std::string);
+    FragShader(const vk::Device&, std::vector<uint32_t>&& code);
 };
 
 

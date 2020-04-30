@@ -1,6 +1,7 @@
 #include <command/rendercommands.hpp>
 #include <application.hpp>
 #include <state/report.hpp>
+#include <util/defs.hpp>
 
 namespace sword
 {
@@ -16,34 +17,34 @@ void PrepareRenderFrames::execute(Application* app)
 
 void LoadFragShader::execute(Application* app)
 {
-    app->renderer.loadFragShader(state::SHADER_DIR + shaderName, shaderName);
+    app->renderer.loadFragShader(SHADER_DIR + std::string("/") + shaderName, shaderName);
     success();
 }
 
 state::Report* LoadFragShader::makeReport() const
 {
-    return new state::ShaderReport(shaderName, "f", 0, 0, 0, 0);
+    return new state::ShaderReport(shaderName, ShaderType::frag, 0, 0, 0, 0);
 }
 
 void LoadVertShader::execute(Application* app)
 {
-    app->renderer.loadVertShader(state::SHADER_DIR + shaderName, shaderName);
+    app->renderer.loadVertShader(SHADER_DIR + std::string("/") + shaderName, shaderName);
     success();
 }
 
 state::Report* LoadVertShader::makeReport() const
 {
-    return new state::ShaderReport(shaderName, "v", 0, 0, 0, 0);
+    return new state::ShaderReport(shaderName, ShaderType::vert, 0, 0, 0, 0);
 }
 
 void SetSpecFloat::execute(Application* app)
 {
-    if (type == "f")
+    if (type == ShaderType::frag)
     {
         render::FragShader& fs = app->renderer.fragShaderAt(shaderName);
         fs.setWindowResolution(x, y);
     }
-    if (type == "v")
+    if (type == ShaderType::vert)
     {
         render::VertShader& vs = app->renderer.vertShaderAt(shaderName);
         vs.setWindowResolution(x, y);
@@ -53,20 +54,20 @@ void SetSpecFloat::execute(Application* app)
 
 state::Report* SetSpecFloat::makeReport() const
 {
-    auto report = new state::ShaderReport(shaderName, type.c_str(), 0, 0, x, y);
+    auto report = new state::ShaderReport(shaderName, type, 0, 0, x, y);
     report->setUsage(state::ReportUsage::merge);
     return report;
 }
 
 void SetSpecInt::execute(Application* app)
 {
-    if (type == "f")
+    if (type == ShaderType::frag)
     {
         render::FragShader& fs = app->renderer.fragShaderAt(shaderName);
         fs.specData.integer0 = x;
         fs.specData.integer1 = y;
     }
-    if (type == "v")
+    if (type == ShaderType::vert)
     {
         render::VertShader& vs = app->renderer.vertShaderAt(shaderName);
         vs.specData.integer0 = x;
@@ -77,7 +78,7 @@ void SetSpecInt::execute(Application* app)
 
 state::Report* SetSpecInt::makeReport() const
 {
-    auto report = new state::ShaderReport(shaderName, type.c_str(), x, y, 0, 0);
+    auto report = new state::ShaderReport(shaderName, type, x, y, 0, 0);
     report->setUsage(state::ReportUsage::merge);
     return report;
 }

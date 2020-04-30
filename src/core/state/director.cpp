@@ -1,6 +1,7 @@
 #include <state/director.hpp>
 #include <event/event.hpp>
 #include <util/stringutil.hpp>
+#include <thread>
 
 namespace sword
 {
@@ -15,18 +16,25 @@ QuickSetup::QuickSetup(StateArgs sa, Callbacks cb) :
 void QuickSetup::onEnterExt()
 {
     vk::DescriptorSetLayoutBinding binding;
+    std::vector<vk::DescriptorSetLayoutBinding> bindings;
     binding.setDescriptorType(vk::DescriptorType::eUniformBuffer);
     binding.setBinding(0);
     binding.setStageFlags(vk::ShaderStageFlagBits::eFragment);
     binding.setDescriptorCount(1);
-    std::vector<vk::DescriptorSetLayoutBinding> bindings;
     bindings.push_back(binding);
-    pushCmd(cp.loadFragShader.request(sr.loadFragShaders->reportCallback(), "death.spv"));
-    pushCmd(cp.loadVertShader.request(sr.loadVertShaders->reportCallback(), "fullscreen_tri.spv"));
+    pushCmd(cp.openWindow.request());
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    pushCmd(cp.loadFragShader.request(sr.loadFragShaders->reportCallback(), "simpleFrag.spv"));
+    pushCmd(cp.loadVertShader.request(sr.loadVertShaders->reportCallback(), "triangle.spv"));
     pushCmd(cp.prepareRenderFrames.request(sr.prepareRenderFrames->reportCallback()));
     pushCmd(cp.createDescriptorSetLayout.request(sr.createDescriptorSetLayout->reportCallback(), "foo", bindings));
     pushCmd(cp.createFrameDescriptorSets.request(sr.createFrameDescriptorSets->reportCallback(), std::vector<std::string>({"foo"})));
     pushCmd(cp.createSwapchainRenderpass.request(sr.createRenderPass->reportCallback(), "swap"));
+    pushCmd(cp.createPipelineLayout.request(sr.createPipelineLayout->reportCallback(), "layout", std::vector<std::string> ({"foo"})));
+    pushCmd(cp.createGraphicsPipeline.request(sr.createGraphicsPipeline->reportCallback(), "pipe", "layout", "triangle.spv", "simpleFrag.spv", "swap", vk::Rect2D({0, 0}, {500, 500}), false));
+    pushCmd(cp.createRenderLayer.request(sr.createRenderLayer->reportCallback(), "swap", "swap", "pipe"));
+    pushCmd(cp.recordRenderCommand.request(0, std::vector<uint32_t>({0})));
+    pushCmd(cp.render.request(0, 0));
     popSelf();
 }
 
