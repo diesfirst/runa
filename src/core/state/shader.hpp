@@ -87,7 +87,18 @@ public:
     CompileShader(StateArgs, Callbacks);
 private:
     void onEnterExt() override;
-    CommandPool<command::CompileShader> pool;
+    CommandPool<command::CompileShader>& pool;
+};
+
+class WatchFile : public LeafState
+{
+public:
+    const char* getName() const override { return "WatchFile"; }
+    void handleEvent(event::Event*) override;
+    WatchFile(StateArgs, Callbacks);
+private:
+    void onEnterExt() override;
+    CommandPool<command::WatchFile>& pool;
 };
 
 class ShaderManager final : public BranchState
@@ -97,7 +108,7 @@ public:
     void handleEvent(event::Event*) override;
     ShaderManager(StateArgs, Callbacks, ReportCallbackFn<ShaderReport>);
 private:
-    enum class Op : Option {compileShader, printShader, loadFrag, loadVert, setSpecInt, setSpecFloat, printReports};
+    enum class Op : Option {watchFile, compileShader, printShader, loadFrag, loadVert, setSpecInt, setSpecFloat, printReports};
     enum class SpecType : uint8_t {integer, floating};
 
     void printReports();
@@ -108,8 +119,11 @@ private:
     SetSpec setSpecFloat;
     PrintShader printShader;
     CompileShader compileShader;
+    WatchFile watchFile;
 
     ShaderReports shaderReports;
+
+    CommandPool<command::CompileShader>& csPool;
 };
 
 }; // namespace state

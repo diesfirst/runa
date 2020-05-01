@@ -11,13 +11,13 @@ build/state/director.o: src/core/state/director.cpp \
  include/thirdparty/shaderc/shaderc.hpp \
  include/thirdparty/shaderc/shaderc.h include/thirdparty/shaderc/env.h \
  include/thirdparty/shaderc/status.h \
- include/thirdparty/shaderc/visibility.h src/core/state/report.hpp \
- src/core/state/editstack.hpp src/core/types/map.hpp \
- src/core/event/event.hpp src/core/render/surface/window.hpp \
- src/core/command/vocab.hpp src/core/state/option.hpp \
- src/core/state/vocab.hpp src/core/state/statetypes.hpp \
- src/core/state/rendermanager.hpp src/core/state/pipelinemanager.hpp \
- src/core/state/descriptormanager.hpp \
+ include/thirdparty/shaderc/visibility.h src/core/command/watcher.hpp \
+ src/core/state/report.hpp src/core/state/editstack.hpp \
+ src/core/types/map.hpp src/core/event/event.hpp \
+ src/core/render/surface/window.hpp src/core/command/vocab.hpp \
+ src/core/state/option.hpp src/core/state/vocab.hpp \
+ src/core/state/statetypes.hpp src/core/state/rendermanager.hpp \
+ src/core/state/pipelinemanager.hpp src/core/state/descriptormanager.hpp \
  src/core/state/descriptorsetlayoutmanager.hpp \
  src/core/state/renderpassmanager.hpp src/core/state/shader.hpp \
  src/core/util/stringutil.hpp
@@ -63,6 +63,8 @@ include/thirdparty/shaderc/env.h:
 include/thirdparty/shaderc/status.h:
 
 include/thirdparty/shaderc/visibility.h:
+
+src/core/command/watcher.hpp:
 
 src/core/state/report.hpp:
 

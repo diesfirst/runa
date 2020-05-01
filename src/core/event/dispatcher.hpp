@@ -2,20 +2,14 @@
 #define DISPATCHER_HPP
 
 #include "event.hpp"
-#include <types/pool.hpp>
-#include <types/stack.hpp>
+#include "types.hpp"
+#include "filewatcher.hpp"
 
 namespace sword
 {
 
 namespace event
 {
-
-template <typename T>
-using EventPool = Pool<T, Event>;
-using EventPtr = std::unique_ptr<Event, std::function<void(Event*)>>;
-
-using EventQueue = ForwardStack<EventPtr>;
 
 //this class is not thread safe at all
 class EventDispatcher
@@ -46,6 +40,7 @@ public:
     inline void setInputMode(InputMode mode) {inputMode = mode;}
 
     EventQueue eventQueue;
+    FileWatcher fileWatcher;
 
 private:
     const render::Window& window;

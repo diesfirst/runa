@@ -4,6 +4,7 @@
 #include <command/rendercommands.hpp>
 #include <command/shader.hpp>
 #include <command/commandtypes.hpp>
+#include "watcher.hpp"
 
 namespace sword
 {
@@ -31,6 +32,7 @@ struct CommandPools
     CommandPool<command::UpdateFrameSamplers> updateFrameSamplers;
     CommandPool<command::Render> render;
     CommandPool<command::CompileShader> compileShader;
+    CommandPool<command::WatchFile> watchFile;
 };
 
 }; // namespace sword

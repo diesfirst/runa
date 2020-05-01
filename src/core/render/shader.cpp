@@ -25,6 +25,7 @@ Shader::Shader(const vk::Device& device, std::vector<uint32_t>&& code) :
 	ci.setCodeSize(codeSize);
 	module = device.createShaderModule(ci);
     initialize();
+	std::cout << "Shader constructed" << '\n';
 }
 
 Shader::~Shader()
@@ -61,8 +62,6 @@ void Shader::initialize()
 	specInfo.setDataSize(sizeof(SpecData));
 
 	stageInfo.setPSpecializationInfo(&specInfo);
-
-	std::cout << "Shader constructed" << std::endl;
 }
 
 void Shader::reload(std::vector<uint32_t>&& code)
@@ -75,6 +74,7 @@ void Shader::reload(std::vector<uint32_t>&& code)
 	ci.setCodeSize(codeSize);
 	module = device.createShaderModule(ci);
     initialize();
+    std::cout << "Shader reloaded" << '\n';
 }
 
 //movement is tricky. going to disallow it for now

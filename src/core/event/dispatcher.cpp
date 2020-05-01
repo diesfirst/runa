@@ -4,6 +4,7 @@
 #include <cassert>
 #include <state/vocab.hpp>
 #include <thread>
+#include <util/outformat.hpp>
 
 namespace sword
 {
@@ -29,7 +30,7 @@ int abortHelper(int count, int key)
 }
 
 EventDispatcher::EventDispatcher(const render::Window& window):
-	window{window}
+	window{window}, fileWatcher{eventQueue}
 {
     std::cout << "event dispatcher ctor called" << std::endl;
     rl_attempted_completion_function = completer;
@@ -122,6 +123,7 @@ void EventDispatcher::fetchCommandLineInput()
 
     if (input == "quit")
     {
+        fileWatcher.stop();
         keepCommandThread = false;   
     }
 
@@ -208,28 +210,32 @@ void EventDispatcher::fetchWindowInput()
 
 void EventDispatcher::runCommandLineLoop()
 {
+    SWD_THREAD_MSG("Commandline thread started.");
     while (keepCommandThread)
     {
         fetchCommandLineInput();
     }
-    std::cout << "Commandline thread exitted." << std::endl;
+    SWD_THREAD_MSG("Commandline thread exitted.");
 }
 
 void EventDispatcher::runWindowInputLoop()
 {
+    SWD_THREAD_MSG("Window thread started.");
     while(keepWindowThread)
     {
         fetchWindowInput();
     }
-    std::cout << "Window thread exitted." << std::endl;
+    SWD_THREAD_MSG("Window thread exitted.");
 }
 
 void EventDispatcher::pollEvents()
 {
     std::thread t0(&EventDispatcher::runCommandLineLoop, this);
     std::thread t1(&EventDispatcher::runWindowInputLoop, this);
+    std::thread t2(&FileWatcher::run, &fileWatcher);
     t0.detach();
     t1.detach();
+    t2.detach();
 }
 
 static int clCount = 0;

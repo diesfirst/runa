@@ -67,6 +67,31 @@ void CompileShader::handleEvent(event::Event* event)
     }
 }
 
+WatchFile::WatchFile(StateArgs sa, Callbacks cb) :
+    LeafState{sa, cb}, pool{sa.cp.watchFile}
+{}
+
+void WatchFile::onEnterExt()
+{
+    setVocab(getPaths(SHADER_SRC, true));
+    std::cout << "Enter a file to watch." << '\n';
+}
+
+void WatchFile::handleEvent(event::Event* event)
+{
+    if (event->getCategory() == event::Category::CommandLine)
+    {
+        auto ce = toCommandLine(event);
+        auto rel_path = ce->getFirstWord();
+        std::string path = std::string(SHADER_SRC) + "/" + rel_path;
+        std::cout << "Setting watch on " << path << '\n';
+        auto cmd = pool.request(reportCallback(), path);
+        pushCmd(std::move(cmd));
+        event->setHandled();
+        popSelf();
+    }
+}
+
 LoadFragShaders::LoadFragShaders(StateArgs sa, Callbacks cb) :
     LeafState{sa, cb}, lfPool{sa.cp.loadFragShader} 
 {
@@ -187,14 +212,17 @@ ShaderManager::ShaderManager(StateArgs sa, Callbacks cb, ReportCallbackFn<Shader
         {"set_spec_int", opcast(Op::setSpecInt)},
         {"set_spec_float", opcast(Op::setSpecFloat)},
         {"print_shader", opcast(Op::printShader)},
-        {"compile_shader", opcast(Op::compileShader)}
+        {"compile_shader", opcast(Op::compileShader)},
+        {"watch_file", opcast(Op::watchFile)}
     }},
     loadFragShaders{sa, {nullptr, [this, srcb](Report* report){ addReport(report, &shaderReports, srcb); }}},
     loadVertShaders{sa, {nullptr, [this, srcb](Report* report){ addReport(report, &shaderReports, srcb); }}},
     compileShader{sa, {nullptr, [this, srcb](Report* report){ addReport(report, &shaderReports, srcb); }}},
+    watchFile{sa, {}},
     setSpecInt{sa, {}, shader::SpecType::integer, shaderReports},
     setSpecFloat{sa, {}, shader::SpecType::floating, shaderReports},
-    printShader{sa, {}}
+    printShader{sa, {}},
+    csPool{sa.cp.compileShader}
 {   
     activate(opcast(Op::loadFrag));
     activate(opcast(Op::loadVert));
@@ -203,6 +231,7 @@ ShaderManager::ShaderManager(StateArgs sa, Callbacks cb, ReportCallbackFn<Shader
     activate(opcast(Op::setSpecFloat));
     activate(opcast(Op::printShader));
     activate(opcast(Op::compileShader));
+    activate(opcast(Op::watchFile));
 }
 
 void ShaderManager::handleEvent(event::Event* event)
@@ -220,7 +249,23 @@ void ShaderManager::handleEvent(event::Event* event)
             case Op::setSpecFloat: pushState(&setSpecFloat); break;
             case Op::printShader: pushState(&printShader); break;
             case Op::compileShader: pushState(&compileShader); break;
+            case Op::watchFile: pushState(&watchFile); break;
         }
+    }
+    if (event->getCategory() == event::Category::File)
+    {
+        auto fe = static_cast<event::File*>(event);
+        auto file = fe->getFile();
+        std::string path = std::string(SHADER_SRC) + "/fragment/" + file;
+        int pos = file.find_first_of('.');
+        auto name = file.substr(0, pos);
+        ShaderReport* rep{nullptr};
+        for (const auto& report : shaderReports) 
+            if (report->getObjectName() == name)
+                rep = report.get();
+        auto cmd = csPool.request(path, name, rep);
+        pushCmd(std::move(cmd));
+        event->setHandled();
     }
 }
 

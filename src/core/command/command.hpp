@@ -19,8 +19,8 @@ class Command
 {
 public:
     virtual ~Command() = default;
-//    Command(const Command&) = delete;
-//    Command& operator=(const Command&) = delete;
+    Command(const Command&) = delete;
+    Command& operator=(const Command&) = delete;
 
     virtual void execute(Application*) = 0;
     virtual const char* getName() const = 0;

@@ -14,6 +14,7 @@ class SmallMap
 {
 public:
     using Element = std::pair<S, T>;
+    SmallMap() = default;
     SmallMap(std::initializer_list<Element> avail) : options{avail} {}
 //    inline std::optional<T> findOption(CommandLineEvent* event) const
 //    {
@@ -36,6 +37,14 @@ public:
         for (int i = 0; i < options.size(); i++) 
             if (mask[options[i].second] && options[i].first == s)
                 return options[i].second;
+        return {};
+    }
+
+    std::optional<Element> findElement(const S& s, const T& t)
+    {
+        for (const auto& item : options) 
+            if (item.first == s && item.second == t)
+                return item;
         return {};
     }
 

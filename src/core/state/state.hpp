@@ -127,6 +127,7 @@ protected:
     void addToVocab(std::string word) { vocab.push_back(word); }
     void updateVocab();
     void printVocab();
+    void pushCmd(CmdPtr ptr);
     void setVocabMask(OptionMask* mask) { vocab.setMaskPtr(mask); }
     std::vector<std::string> getVocab();
 private:
@@ -136,7 +137,6 @@ private:
     Vocab vocab;
     CommandStack& cmdStack;
     ExitCallbackFn onExitCallback{nullptr};
-    void pushCmd(CmdPtr ptr);
     virtual void onEnterImp();
     virtual void onExitImp();
     virtual void onEnterExt() {}

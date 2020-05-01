@@ -65,12 +65,14 @@ enum class Category : uint8_t
     CommandLine,
     Window,
     Abort,
+    File,
     Nothing,
 };
 
 class Event
 {
 public:
+    virtual ~Event() = default;
     virtual Category getCategory() const = 0;
     virtual std::string getName() const = 0;
     template <typename... Args> void set(Args... args) {}
@@ -97,13 +99,26 @@ protected:
     bool inUse{false};
 };
 
+class File : public Event
+{
+public:
+    Category getCategory() const override { return Category::File; }
+    std::string getName() const override { return "File"; }
+    void set(int wd, std::string file) { this->wd = wd; this->file = file; }
+    std::string getFile() const { return file; }
+    int getWd() const { return wd; }
+private:
+    int wd;
+    std::string file;
+};
+
 class Abort : public Event
 {
 public:
-   inline Category getCategory() const override {return Category::Abort;} 
-   inline std::string getName() const override {return "Abort";}
+   Category getCategory() const override {return Category::Abort;} 
+   std::string getName() const override {return "Abort";}
    void set() {}
-   inline void serialize(std::ofstream& os) 
+   void serialize(std::ofstream& os) 
    {
        auto cat = getCategory();
        os.write((char*)&cat, sizeof(Category));
@@ -239,7 +254,6 @@ public:
     inline WindowEventType getType() const override {return WindowEventType::Motion;}
     inline std::string getName() const override {return "MouseMotionEvent";};
 };
-
 
 enum class InputMode : uint8_t
 {
