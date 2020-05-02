@@ -250,7 +250,7 @@ Attachment& Renderer::createAttachment(
     return *attachments.at(name);
 }
 
-GraphicsPipeline& Renderer::createGraphicsPipeline(
+bool Renderer::createGraphicsPipeline(
 		const std::string name, 
         const std::string pipelineLayout,
 		const std::string vertShader,
@@ -259,42 +259,61 @@ GraphicsPipeline& Renderer::createGraphicsPipeline(
         const vk::Rect2D renderArea,
 		const bool geometric)
 {
-    assert(graphicsPipelines.find(name) == graphicsPipelines.end() && "Duplicate name for graphics pipeline");
+    if (graphicsPipelines.find(name) == graphicsPipelines.end())
+    {
+        std::vector<const Shader*> shaderPointers = 
+            {&vertexShaders.at(vertShader), &fragShaderAt(fragShader)};
 
-	std::vector<const Shader*> shaderPointers = 
-        {&vertexShaders.at(vertShader), &fragShaderAt(fragShader)};
+        vk::PipelineLayout layout = pipelineLayouts.at(pipelineLayout);
 
-	vk::PipelineLayout layout = pipelineLayouts.at(pipelineLayout);
+        vk::PipelineVertexInputStateCreateInfo vertexState;
+        if (geometric)
+        {
+            std::cerr << "Geometry pipelines not supported right now" << '\n';
+            return false;
+        }
 
-    vk::PipelineVertexInputStateCreateInfo vertexState;
-	if (geometric)
-	{
-		assert(descriptionIsBound);
-//		auto attributeDescriptions = pDescription->getAttributeDescriptions();
-//		auto vertexBindingDescriptions = pDescription->getBindingDescriptions();
-//		vertexState = GraphicsPipeline::createVertexInputState(
-//				attributeDescriptions, vertexBindingDescriptions);
-	}
+        else 
+        {
+            vertexState.setPVertexBindingDescriptions(nullptr);
+            vertexState.setPVertexAttributeDescriptions(nullptr);
+            vertexState.setVertexBindingDescriptionCount(0);
+            vertexState.setVertexAttributeDescriptionCount(0);
+        }
 
-	else 
-	{
-		vertexState.setPVertexBindingDescriptions(nullptr);
-		vertexState.setPVertexAttributeDescriptions(nullptr);
-		vertexState.setVertexBindingDescriptionCount(0);
-		vertexState.setVertexAttributeDescriptionCount(0);
-	}
+        graphicsPipelines.emplace(name, GraphicsPipeline(
+                    name,
+                    device,
+                    layout,
+                    renderPasses.at(renderPass),
+                    0,
+                    renderArea,
+                    shaderPointers,
+                    vertexState));
 
-	graphicsPipelines.emplace(name, GraphicsPipeline(
-                name,
-				device,
-				layout,
-				renderPasses.at(renderPass),
-				0,
-				renderArea,
-				shaderPointers,
-				vertexState));
+        return true;
+    }
+    else
+    {
+        std::cerr << "Graphics Pipeline with that name already exists." << '\n';
+        return false;
+    }
+}
 
-    return graphicsPipelines.at(name);
+bool Renderer::recreateGraphicsPipeline(const std::string name)
+{
+    if (graphicsPipelines.find(name) == graphicsPipelines.end())
+    {
+        auto& gp = graphicsPipelines.at(name);
+        std::cout << "Renderer: calling recreate..." << '\n';
+        gp.recreate();
+        return true;
+    }
+    else
+    {
+        std::cerr << "Graphics pipeline by that name does not exist." << '\n';
+        return false;
+    }
 }
 
 bool Renderer::loadVertShader(

@@ -134,7 +134,7 @@ class CreateGraphicsPipeline : public Command
 {
 public:
     CMD_BASE("createGraphicsPipeline");
-    inline void set(
+    void set(
             std::string name,
             std::string pipelineLayout,
             std::string vertShader,
@@ -151,6 +151,12 @@ public:
         renderArea = renderAreaSet;
         is3d = has3dGeo;
     }
+
+    void set(state::GraphicsPipelineReport* report)
+    {
+        this->report = report;
+    }
+
     state::Report* makeReport() const override;
 private:
     std::string name{"default"};
@@ -159,6 +165,7 @@ private:
     std::string fragshader{"default"};
     std::string renderpass{"default"};
     vk::Rect2D renderArea{{0, 0}, {100, 100}};
+    state::GraphicsPipelineReport* report{nullptr};
     bool is3d{false};
 };
 

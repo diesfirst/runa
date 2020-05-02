@@ -1,7 +1,7 @@
+//imp: state/pipelinemanager.cpp
 #ifndef STATE_PIPELINEMANAGER_HPP
 #define STATE_PIPELINEMANAGER_HPP
 
-//imp: state/pipelinemanager.cpp
 
 #include <state/state.hpp>
 #include <command/rendercommands.hpp>
@@ -56,7 +56,11 @@ private:
 
     std::vector<const Report*> reports;
 
+    CommandPool<command::CreateGraphicsPipeline>& cgpPool;
+
     void printReports();
+    void handleShaderReport(const ShaderReport* pReport);
+    void recreateGraphicsPipeline(GraphicsPipelineReport*);
 };
 
 }; // namespace state

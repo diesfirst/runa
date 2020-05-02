@@ -97,3 +97,11 @@ Sat Mar 21 18:58:01 EDT 2020
     get handled by the pipeline manager but then turns the event into a 
     renderpassinstance update event (with the appropriate name)
     so it can be handled by the renderer manager.
+
+Fri May  1 21:39:16 EDT 2020
+    Having a function in the destructor of CmdPtr that can push to the very container it
+    is in is likely causeing issues. What we can do instead is turn the report call back
+    into a "success" function. Same thing from the callers perspective, but instead of
+    Pool::request() taking the function argument we have Command::set() take it. Then
+    we just making calling that function part of the success function that all the commands
+    should already be calling. With any luck, we can just slip this into place...

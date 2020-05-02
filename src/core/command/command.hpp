@@ -10,7 +10,7 @@ namespace sword
 
 class Application;
 
-namespace state { class Report; }
+namespace state { class Report; class GraphicsPipelineReport; }
 
 namespace command 
 {

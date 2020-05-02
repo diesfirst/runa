@@ -1,6 +1,7 @@
 #include <render/pipeline.hpp>
 #include <render/renderpass.hpp>
 #include <render/shader.hpp>
+#include <iostream>
 
 namespace sword
 {
@@ -36,6 +37,7 @@ GraphicsPipeline::GraphicsPipeline(
     inputAssemblySate = createInputAssemblyState();
     depthStencilState = createDepthStencilState(); //not ready yet
     multisampleState = createMultisampleState();
+    create();
 }
 
 GraphicsPipeline::~GraphicsPipeline()
@@ -95,6 +97,14 @@ void GraphicsPipeline::create()
 	ci.setPInputAssemblyState(&inputAssemblySate);
     handle = device.createGraphicsPipeline({}, ci);
     created = true;
+}
+
+void GraphicsPipeline::recreate()
+{
+    device.destroy(handle);
+    std::cout << "GraphicsPipeline: destroyed handle, calling create..." << '\n';
+    create();
+    std::cout << "GraphicsPipeline: recreation successful" << '\n';
 }
 
 const vk::Pipeline& GraphicsPipeline::getHandle() const

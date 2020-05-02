@@ -158,16 +158,22 @@ void OpenWindow::execute(Application* app)
 
 void CreateGraphicsPipeline::execute(Application* app)
 {
-    auto& pipeline = app->renderer.createGraphicsPipeline(
+    bool res;
+    if (report)
+        res = app->renderer.recreateGraphicsPipeline(report->getObjectName());
+    else 
+        res = app->renderer.createGraphicsPipeline(
             name, pipelineLayout,
             vertshader, fragshader,
             renderpass, renderArea, is3d);
-    pipeline.create();
-    success();
+    if (res)
+        success();
 }
 
 state::Report* CreateGraphicsPipeline::makeReport() const
 {
+    if (report)
+        return report;
     return new state::GraphicsPipelineReport(name, pipelineLayout, vertshader, fragshader, renderpass, 
             renderArea.offset.x, renderArea.offset.y, renderArea.extent.width, renderArea.extent.height, is3d);
 }
@@ -214,6 +220,8 @@ state::Report* CreatePipelineLayout::makeReport() const
 {
     return new state::PipelineLayoutReport(name, descriptorSetLayoutNames);
 }
+
+
 
 
 }; // namespace command

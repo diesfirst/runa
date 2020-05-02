@@ -95,7 +95,7 @@ private:
 class GraphicsPipelineReport : public Report
 {
 public:
-    inline GraphicsPipelineReport(
+    GraphicsPipelineReport(
             std::string parm1,
             std::string parm2,
             std::string parm3,
@@ -108,7 +108,7 @@ public:
             bool is3d) :
         name{parm1}, pipelineLayout{parm2}, vertshader{parm3}, fragshader{parm4},
         renderpass{parm5}, regionX{i1}, regionY{i2}, areaX{ui1}, areaY{ui2}, is3d{is3d} {}
-    inline void operator()() const override
+    void operator()() const override
     {
         std::cout << "================== Graphics Pipeline Report ==================" << std::endl;
         std::cout << "Name:            " << name << std::endl;
@@ -120,8 +120,10 @@ public:
         std::cout << "Area:           (" << areaX << ", " << areaY << ")" << std::endl;
         std::cout << "Is it 3d?        " << is3d << std::endl;
     }
-    inline const std::string getObjectName() const override {return name;}
-    inline ReportType getType() const override {return ReportType::Pipeline;}
+    const std::string getObjectName() const override {return name;}
+    ReportType getType() const override {return ReportType::Pipeline;}
+    const std::string_view getFragShader() const { return fragshader; }
+    const std::string_view getVertShader() const { return vertshader; }
 private:
     std::string name{"default"};
     std::string pipelineLayout{"default"};

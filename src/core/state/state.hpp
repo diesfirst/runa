@@ -118,6 +118,7 @@ public:
     virtual ~State() = default;
     void onEnter();
     void onExit();
+    std::vector<std::string> getVocab();
 //    virtual std::vector<const Report*> getReports() const {return {};};
 protected:
     State(CommandStack& cs) : cmdStack{cs} {}
@@ -129,7 +130,6 @@ protected:
     void printVocab();
     void pushCmd(CmdPtr ptr);
     void setVocabMask(OptionMask* mask) { vocab.setMaskPtr(mask); }
-    std::vector<std::string> getVocab();
 private:
     CommandPool<command::UpdateVocab> uvPool{3};
     CommandPool<command::PopVocab> pvPool{1};

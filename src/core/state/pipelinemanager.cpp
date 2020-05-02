@@ -87,7 +87,8 @@ PipelineManager::PipelineManager(StateArgs sa, Callbacks cb) :
         //must be explicit on function type because we are passing in a lambda in place of the std::function
     createGraphicsPipeline{sa, {
         nullptr,
-        [this](Report* report){ addReport(report, &graphicsPipeReports); }}}
+        [this](Report* report){ addReport(report, &graphicsPipeReports); }}},
+    cgpPool{sa.cp.createGraphicsPipeline}
 {
     activate(opcast(Op::createGraphicsPipeline));
     activate(opcast(Op::createPipelineLayout));
@@ -116,7 +117,7 @@ void PipelineManager::receiveReport(const Report* pReport)
     if (pReport->getType() == ReportType::DescriptorSetLayout)
         createPipelineLayout.addToVocab(pReport->getObjectName());
     if (pReport->getType() == ReportType::Shader)
-        createGraphicsPipeline.addToVocab(pReport->getObjectName());
+        handleShaderReport(static_cast<const ShaderReport*>(pReport));
     if (pReport->getType() == ReportType::RenderPass)
         createGraphicsPipeline.addToVocab(pReport->getObjectName());
     if (pReport->getType() == ReportType::PipelineLayout)
@@ -134,6 +135,37 @@ void PipelineManager::printReports()
     {
         std::invoke(*r);
     }
+}
+
+void PipelineManager::handleShaderReport(const ShaderReport* report)
+{
+    for (const auto& r : graphicsPipeReports) 
+    {
+        if (r->getFragShader() == report->getObjectName())
+        {
+            recreateGraphicsPipeline(r.get());
+            return;
+        }
+        if (r->getVertShader() == report->getObjectName())
+        {
+            recreateGraphicsPipeline(r.get());
+            return;
+        }
+    }
+    auto vocab = createGraphicsPipeline.getVocab();
+    for (const auto& s : vocab) 
+    {
+        if (s == report->getObjectName())
+            return;
+    }
+    createGraphicsPipeline.addToVocab(report->getObjectName());
+}
+
+void PipelineManager::recreateGraphicsPipeline(GraphicsPipelineReport* report)
+{
+    auto cmd = cgpPool.request(report);
+    pushCmd(std::move(cmd));
+    std::cout << "Pushed recreation command." << '\n';
 }
 
 }; // namespace state

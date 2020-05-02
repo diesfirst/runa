@@ -1,6 +1,8 @@
 #ifndef RENDER_PIPELINE_HPP
 #define RENDER_PIPELINE_HPP
 
+//imp: "pipeline.cpp"
+
 #include <vulkan/vulkan.hpp>
 
 namespace sword
@@ -17,13 +19,13 @@ class GraphicsPipeline
 public:
     GraphicsPipeline(
         const std::string name,
-	const vk::Device&, 
-	const vk::PipelineLayout&, 
-	const RenderPass&,
-	const uint32_t subpassIndex,
-	const vk::Rect2D, //we could choose to make this dynamic
-	const std::vector<const Shader*>,
-	const vk::PipelineVertexInputStateCreateInfo);
+        const vk::Device&, 
+        const vk::PipelineLayout&, 
+        const RenderPass&,
+        const uint32_t subpassIndex,
+        const vk::Rect2D, //we could choose to make this dynamic
+        const std::vector<const Shader*>,
+        const vk::PipelineVertexInputStateCreateInfo);
     ~GraphicsPipeline();
     GraphicsPipeline(const GraphicsPipeline&) = delete;
     GraphicsPipeline& operator=(GraphicsPipeline&) = delete;
@@ -31,6 +33,7 @@ public:
     GraphicsPipeline(GraphicsPipeline&&);
 
     void create();
+    void recreate();
     vk::Viewport createViewport(const vk::Rect2D&);
     const vk::Pipeline& getHandle() const;
     const vk::PipelineLayout& getLayout() const;

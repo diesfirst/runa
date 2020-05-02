@@ -26,16 +26,12 @@ struct Ubo
     uint32_t size;
 };
 
-class VertShader;
-class FragShader;
-class RenderPass;
 class Window;
 class Image;
 class BufferBlock;
 class RenderFrame;
 class Attachment;
 class Swapchain;
-class GraphicsPipeline;
 class Context;
 class Buffer;
 
@@ -69,14 +65,16 @@ public:
     void prepareAsOffscreenPass(RenderPass&, vk::AttachmentLoadOp);
     Attachment& createAttachment(
     const std::string name, const vk::Extent2D, const vk::ImageUsageFlags);
-    GraphicsPipeline& createGraphicsPipeline(
-    const std::string name, 
-    const std::string pipelineLayout,
-	const std::string vertshader,
-	const std::string fragshader,
-	const std::string renderpass,
-    const vk::Rect2D renderArea,
-    const bool geometric);
+    bool createGraphicsPipeline(
+        const std::string name, 
+        const std::string pipelineLayout,
+        const std::string vertshader,
+        const std::string fragshader,
+        const std::string renderpass,
+        const vk::Rect2D renderArea,
+        const bool geometric);
+    bool recreateGraphicsPipeline(
+        const std::string name);
     void bindUboData(void* dataPointer, uint32_t size, uint32_t index);
     //in the future we should disect this function
     //to allow for the renderpasses and 
