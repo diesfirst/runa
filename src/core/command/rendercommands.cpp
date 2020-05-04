@@ -173,7 +173,9 @@ void CreateGraphicsPipeline::execute(Application* app)
 state::Report* CreateGraphicsPipeline::makeReport() const
 {
     if (report)
+    {
         return report;
+    }
     return new state::GraphicsPipelineReport(name, pipelineLayout, vertshader, fragshader, renderpass, 
             renderArea.offset.x, renderArea.offset.y, renderArea.extent.width, renderArea.extent.height, is3d);
 }

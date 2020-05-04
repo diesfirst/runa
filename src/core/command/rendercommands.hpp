@@ -6,6 +6,8 @@
 #include "command.hpp"
 #include <vulkan/vulkan.hpp>
 #include <util/enum.hpp>
+#include <iostream>
+#include <state/report.hpp>
 
 namespace sword
 {
@@ -154,7 +156,7 @@ public:
 
     void set(state::GraphicsPipelineReport* report)
     {
-        this->report = report;
+        this->report = static_cast<state::Report*>(report);
     }
 
     state::Report* makeReport() const override;
@@ -165,7 +167,7 @@ private:
     std::string fragshader{"default"};
     std::string renderpass{"default"};
     vk::Rect2D renderArea{{0, 0}, {100, 100}};
-    state::GraphicsPipelineReport* report{nullptr};
+//    state::GraphicsPipelineReport* pipeReport{nullptr};
     bool is3d{false};
 };
 

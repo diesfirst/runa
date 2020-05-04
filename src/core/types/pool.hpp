@@ -26,6 +26,7 @@ public:
     template <typename... Args> Pointer<Base>
     request(Args... args)
     {
+        std::cout << "Called first pool" << '\n';
         for (int i = 0; i < size; i++) 
             if (pool[i].isAvailable())
             {
@@ -47,15 +48,11 @@ public:
         for (int i = 0; i < size; i++) 
             if (pool[i].isAvailable())
             {
+                pool[i].setSuccessFn(reportCb);
                 pool[i].set(args...);
                 pool[i].activate();
-                Pointer<Base> ptr{&pool[i], [reportCb](Base* t)
+                Pointer<Base> ptr{&pool[i], [](Base* t)
                     {
-                        if (t->succeeded() && reportCb)
-                        {
-                            auto report = t->makeReport();
-                            std::invoke(reportCb, report);
-                        }
                         t->reset();
                     }};
                 return ptr; //tentatively may need to be std::move? copy should be ellided tho

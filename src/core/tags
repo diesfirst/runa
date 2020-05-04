@@ -28,7 +28,7 @@ Buffer	render/resource.cpp	/^Buffer::Buffer($/;"	f	class:sword::render::Buffer
 Buffer	render/resource.hpp	/^class Buffer$/;"	c	namespace:sword::render
 BufferBlock	render/resource.hpp	/^struct BufferBlock$/;"	s	namespace:sword::render
 C	event/event.hpp	/^    C = 54,$/;"	m	class:sword::event::symbol::Key
-CMD_BASE	command/command.hpp	4;"	d
+CMD_BASE	command/command.hpp	6;"	d
 COMMAND_COMMANDPOOLS_HPP	command/commandpools.hpp	2;"	d
 COMMAND_COMMAND_H_	command/command.hpp	2;"	d
 COMMAND_SHADER_HPP	command/shader.hpp	2;"	d
@@ -1106,7 +1106,7 @@ requestBlock	render/resource.cpp	/^BufferBlock* Buffer::requestBlock(uint32_t bl
 requestCommandBuffer	render/command.cpp	/^CommandBuffer& CommandPool::requestCommandBuffer(vk::CommandBufferLevel level)$/;"	f	class:sword::render::CommandPool
 requestRenderBuffer	render/renderframe.cpp	/^CommandBuffer& RenderFrame::requestRenderBuffer(uint32_t bufferId)$/;"	f	class:sword::render::RenderFrame
 requestSemaphore	render/renderframe.cpp	/^vk::Semaphore RenderFrame::requestSemaphore()$/;"	f	class:sword::render::RenderFrame
-reset	command/command.hpp	/^    void reset() {inUse = false; success_status = false;}$/;"	f	class:sword::command::Command
+reset	command/command.hpp	/^    void reset() {inUse = false; success_status = false; report = nullptr; successFn = nullptr; }$/;"	f	class:sword::command::Command
 reset	event/event.hpp	/^    void reset() {inUse = false; handled = false;}$/;"	f	class:sword::event::symbol::Event
 reset	render/command.cpp	/^void CommandBuffer::reset()$/;"	f	class:sword::render::CommandBuffer
 resetPool	render/command.cpp	/^void CommandPool::resetPool()$/;"	f	class:sword::render::CommandPool
@@ -1186,6 +1186,7 @@ setSpecInt	state/report.hpp	/^    void setSpecInt(int index, int val)$/;"	f	clas
 setSpecInt	state/shader.hpp	/^    SetSpec setSpecInt;$/;"	m	class:sword::state::final
 setSpecInt	state/shader.hpp	/^    enum class Op : Option {watchFile, compileShader, printShader, loadFrag, loadVert, setSpecInt, setSpecFloat, printReports};$/;"	m	class:sword::state::final::Op
 setStateType	state/descriptorsetlayoutmanager.hpp	/^    SetStateType setStateType;$/;"	m	class:sword::state::final
+setSuccessFn	command/command.hpp	/^    void setSuccessFn(SuccessFn fn) { successFn = fn; }$/;"	f	class:sword::command::Command
 setSurfaceCapabilities	render/swapchain.cpp	/^void Swapchain::setSurfaceCapabilities()$/;"	f	class:sword::render::Swapchain
 setSwapExtent	render/swapchain.cpp	/^void Swapchain::setSwapExtent()$/;"	f	class:sword::render::Swapchain
 setType	state/renderpassmanager.cpp	/^void CreateRenderPass::setType(RenderPassType t)$/;"	f	class:sword::state::CreateRenderPass
@@ -1265,7 +1266,7 @@ submit	render/command.cpp	/^void CommandBuffer::submit()$/;"	f	class:sword::rend
 subpassDependencies	render/renderpass.hpp	/^    std::vector<vk::SubpassDependency> subpassDependencies;$/;"	m	class:sword::render::RenderPass
 subpasses	render/renderpass.hpp	/^    std::vector<vk::SubpassDescription> subpasses;$/;"	m	class:sword::render::RenderPass
 succeeded	command/command.hpp	/^    bool succeeded() {return success_status;}$/;"	f	class:sword::command::Command
-success	command/command.hpp	/^    void success() {success_status = true;}$/;"	f	class:sword::command::Command
+success	command/command.hpp	/^    void success() {$/;"	f	class:sword::command::Command
 surfCaps	render/swapchain.hpp	/^	vk::SurfaceCapabilitiesKHR surfCaps;$/;"	m	class:sword::render::Swapchain
 surface	render/swapchain.hpp	/^	vk::SurfaceKHR surface;$/;"	m	class:sword::render::Swapchain
 swapDim	application.hpp	/^    vk::Extent2D swapDim;;$/;"	m	class:sword::Application
