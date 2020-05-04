@@ -152,11 +152,12 @@ public:
         renderpass = renderPass;
         renderArea = renderAreaSet;
         is3d = has3dGeo;
+        this->report = nullptr;
     }
 
     void set(state::GraphicsPipelineReport* report)
     {
-        this->report = static_cast<state::Report*>(report);
+        this->report = report;
     }
 
     state::Report* makeReport() const override;
@@ -167,7 +168,7 @@ private:
     std::string fragshader{"default"};
     std::string renderpass{"default"};
     vk::Rect2D renderArea{{0, 0}, {100, 100}};
-//    state::GraphicsPipelineReport* pipeReport{nullptr};
+    state::GraphicsPipelineReport* report{nullptr};
     bool is3d{false};
 };
 

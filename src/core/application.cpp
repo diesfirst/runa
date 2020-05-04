@@ -178,6 +178,8 @@ void Application::run()
             else
                 std::cout << "Recieved null cmd" << std::endl;
             cmdStack.pop();
+            if (cmd && cmd->succeeded())
+                cmd->onSuccess();
         }
         cmdStack.items.clear();
         std::this_thread::sleep_for(std::chrono::milliseconds(1));

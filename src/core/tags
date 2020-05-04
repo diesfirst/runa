@@ -848,6 +848,7 @@ onExitExt	state/state.hpp	/^    virtual void onExitExt() {}$/;"	f	class:sword::s
 onExitImp	state/state.cpp	/^void LeafState::onExitImp()$/;"	f	class:sword::state::LeafState
 onExitImp	state/state.cpp	/^void State::onExitImp()$/;"	f	class:sword::state::State
 onPrepRenderFrames	state/rendermanager.cpp	/^void RenderManager::onPrepRenderFrames()$/;"	f	class:sword::state::RenderManager
+onSuccess	command/command.hpp	/^    void onSuccess() {$/;"	f	class:sword::command::Command
 opcast	state/option.hpp	/^constexpr Option opcast(T op) {return static_cast<Option>(op);}$/;"	f	namespace:sword::state
 opcast	state/option.hpp	/^constexpr T opcast(Option op) {return static_cast<T>(op);}$/;"	f	namespace:sword::state
 open	render/surface/window.cpp	/^void Window::open()$/;"	f	class:sword::render::Window
@@ -1106,7 +1107,7 @@ requestBlock	render/resource.cpp	/^BufferBlock* Buffer::requestBlock(uint32_t bl
 requestCommandBuffer	render/command.cpp	/^CommandBuffer& CommandPool::requestCommandBuffer(vk::CommandBufferLevel level)$/;"	f	class:sword::render::CommandPool
 requestRenderBuffer	render/renderframe.cpp	/^CommandBuffer& RenderFrame::requestRenderBuffer(uint32_t bufferId)$/;"	f	class:sword::render::RenderFrame
 requestSemaphore	render/renderframe.cpp	/^vk::Semaphore RenderFrame::requestSemaphore()$/;"	f	class:sword::render::RenderFrame
-reset	command/command.hpp	/^    void reset() {inUse = false; success_status = false; report = nullptr; successFn = nullptr; }$/;"	f	class:sword::command::Command
+reset	command/command.hpp	/^    void reset() {inUse = false; }$/;"	f	class:sword::command::Command
 reset	event/event.hpp	/^    void reset() {inUse = false; handled = false;}$/;"	f	class:sword::event::symbol::Event
 reset	render/command.cpp	/^void CommandBuffer::reset()$/;"	f	class:sword::render::CommandBuffer
 resetPool	render/command.cpp	/^void CommandPool::resetPool()$/;"	f	class:sword::render::CommandPool
@@ -1265,7 +1266,7 @@ submit	render/command.cpp	/^vk::Semaphore CommandBuffer::submit(vk::Semaphore& w
 submit	render/command.cpp	/^void CommandBuffer::submit()$/;"	f	class:sword::render::CommandBuffer
 subpassDependencies	render/renderpass.hpp	/^    std::vector<vk::SubpassDependency> subpassDependencies;$/;"	m	class:sword::render::RenderPass
 subpasses	render/renderpass.hpp	/^    std::vector<vk::SubpassDescription> subpasses;$/;"	m	class:sword::render::RenderPass
-succeeded	command/command.hpp	/^    bool succeeded() {return success_status;}$/;"	f	class:sword::command::Command
+succeeded	command/command.hpp	/^    constexpr bool succeeded() {return success_status;}$/;"	f	class:sword::command::Command
 success	command/command.hpp	/^    void success() {$/;"	f	class:sword::command::Command
 surfCaps	render/swapchain.hpp	/^	vk::SurfaceCapabilitiesKHR surfCaps;$/;"	m	class:sword::render::Swapchain
 surface	render/swapchain.hpp	/^	vk::SurfaceKHR surface;$/;"	m	class:sword::render::Swapchain

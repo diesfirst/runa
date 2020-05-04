@@ -117,7 +117,10 @@ void PipelineManager::receiveReport(const Report* pReport)
     if (pReport->getType() == ReportType::DescriptorSetLayout)
         createPipelineLayout.addToVocab(pReport->getObjectName());
     if (pReport->getType() == ReportType::Shader)
+    {
+        std::cerr << "PipelineManager::receiveReport: got shader report" << '\n';
         handleShaderReport(static_cast<const ShaderReport*>(pReport));
+    }
     if (pReport->getType() == ReportType::RenderPass)
         createGraphicsPipeline.addToVocab(pReport->getObjectName());
     if (pReport->getType() == ReportType::PipelineLayout)
@@ -143,6 +146,10 @@ void PipelineManager::handleShaderReport(const ShaderReport* report)
     {
         if (r->getFragShader() == report->getObjectName())
         {
+            std::cerr << "PipelineManager::handleShaderReport:" << '\n';
+            std::cerr << "r->getFragShader() " << r->getFragShader() << '\n';
+            std::cerr << "report->getObjectName() " << report->getObjectName() << '\n';
+
             recreateGraphicsPipeline(r.get());
             return;
         }

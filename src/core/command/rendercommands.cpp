@@ -160,7 +160,10 @@ void CreateGraphicsPipeline::execute(Application* app)
 {
     bool res;
     if (report)
+    {
+        std::cout << "commaned::CreateGraphicsPipeline: Found report. Name is: " << report->getObjectName() << '\n';
         res = app->renderer.recreateGraphicsPipeline(report->getObjectName());
+    }
     else 
         res = app->renderer.createGraphicsPipeline(
             name, pipelineLayout,

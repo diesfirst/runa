@@ -203,6 +203,11 @@ public:
     template<typename R>
     static void addReport(Report* ptr, std::vector<std::unique_ptr<R>>* derivedReports, ReportCallbackFn<R> callback = {})
     {
+        if (!ptr)
+        {
+            std::cout << "BranchState::addReport: null ptr passed, returning immediately." << '\n';
+            return;
+        }
         auto derivedPtr = dynamic_cast<R*>(ptr); 
         if (derivedPtr)
         {

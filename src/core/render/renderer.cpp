@@ -302,16 +302,16 @@ bool Renderer::createGraphicsPipeline(
 
 bool Renderer::recreateGraphicsPipeline(const std::string name)
 {
-    if (graphicsPipelines.find(name) == graphicsPipelines.end())
+    if (graphicsPipelines.find(name) != graphicsPipelines.end())
     {
         auto& gp = graphicsPipelines.at(name);
-        std::cout << "Renderer: calling recreate..." << '\n';
+        std::cout << "Renderer::recreateGraphicsPipeline: calling recreate..." << '\n';
         gp.recreate();
         return true;
     }
     else
     {
-        std::cerr << "Graphics pipeline by that name does not exist." << '\n';
+        std::cerr << "Renderer::recreateGraphicsPipeline: Graphics pipeline by that name does not exist." << '\n';
         return false;
     }
 }
