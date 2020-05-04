@@ -35,7 +35,7 @@ public:
     RecordRenderCommand(StateArgs, Callbacks);
 private:
     void onEnterExt() override;
-    CommandPool<command::RecordRenderCommand> pool;
+    CommandPool<command::RecordRenderCommand>& pool;
 };
 
 class CreateRenderLayer : public LeafState
@@ -92,12 +92,16 @@ private:
     Reports<RenderLayerReport> renderLayersReports;
     Reports<RenderCommandReport> renderCommandReports;
 
+    CommandPool<command::RecordRenderCommand>& rrcPool;
+
     bool createdDescSetLayout{false};
 
     void onPrepRenderFrames();
     void onOpenWindow();
     void receiveDescriptorSetLayoutReport(const DescriptorSetLayoutReport*);
     void printReports() const;
+    void rerecordRenderCommand(RenderCommandReport*);
+    void receiveGraphicsPipelineReport(const GraphicsPipelineReport*);
 };
 
 }; // namespace state

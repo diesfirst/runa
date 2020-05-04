@@ -199,6 +199,10 @@ public:
     }
     ReportType getType() const override {return ReportType::RenderpassInstance;}
     const std::string getObjectName() const override {return std::to_string(id);}
+    const std::string_view getPipelineName() { return pipelineName; }
+    const std::string_view getRendePassName() { return renderpassName; }
+    const std::string_view getAttachmentName() { return attachmentName; }
+    constexpr int getId() { return id; }
 private:
     std::string attachmentName;
     std::string renderpassName;
@@ -209,9 +213,9 @@ private:
 class RenderCommandReport : public Report
 {
 public:
-    inline RenderCommandReport(int cmdIndex, std::vector<uint32_t> rpiIndices) :
+    RenderCommandReport(int cmdIndex, std::vector<uint32_t> rpiIndices) :
         cmdIndex{cmdIndex}, rpiIndices{rpiIndices} {}
-    inline void operator()() const override
+    void operator()() const override
     {
         std::cout << "============= Render Commmand Report =============" << std::endl;
         std::cout << "Command Index:        " << cmdIndex << std::endl;
@@ -222,8 +226,19 @@ public:
         }
         std::cout << std::endl;
     }
-    inline ReportType getType() const override {return ReportType::RenderCommand;}
-    inline const std::string getObjectName() const override {return std::to_string(cmdIndex);}
+    ReportType getType() const override {return ReportType::RenderCommand;}
+    const std::string getObjectName() const override {return std::to_string(cmdIndex);}
+    constexpr int getCmdIndex() const { return cmdIndex; }
+    std::vector<uint32_t> getRenderLayerIndices() const { return rpiIndices; }
+    bool containsRenderLayer(int i) const 
+    {
+        for (int index : rpiIndices) 
+        {
+            if (i == index)
+                return true;
+        }
+        return false;
+    }
 private:
     int cmdIndex;
     std::vector<uint32_t> rpiIndices;

@@ -222,7 +222,8 @@ ShaderManager::ShaderManager(StateArgs sa, Callbacks cb, ReportCallbackFn<Shader
     setSpecInt{sa, {}, shader::SpecType::integer, shaderReports},
     setSpecFloat{sa, {}, shader::SpecType::floating, shaderReports},
     printShader{sa, {}},
-    csPool{sa.cp.compileShader}
+    csPool{sa.cp.compileShader},
+    srCallback{srcb}
 {   
     activate(opcast(Op::loadFrag));
     activate(opcast(Op::loadVert));
@@ -263,7 +264,12 @@ void ShaderManager::handleEvent(event::Event* event)
         for (const auto& report : shaderReports) 
             if (report->getObjectName() == name)
                 rep = report.get();
-        auto cmd = csPool.request(path, name, rep);
+        auto cmd = csPool.request(
+                OwningReportCallbackFn([this](Report* r) {
+                    auto rep = static_cast<ShaderReport*>(r);
+                    std::invoke(srCallback, rep);
+                    }),
+                path, name, rep);
         pushCmd(std::move(cmd));
         event->setHandled();
     }

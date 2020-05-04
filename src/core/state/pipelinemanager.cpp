@@ -72,7 +72,7 @@ void CreatePipelineLayout::handleEvent(event::Event* event)
     }
 }
 
-PipelineManager::PipelineManager(StateArgs sa, Callbacks cb) :
+PipelineManager::PipelineManager(StateArgs sa, Callbacks cb, ReportCallbackFn<GraphicsPipelineReport> rpcb) :
     BranchState{sa, cb, 
         {
             {"create_graphics_pipeline", opcast(Op::createGraphicsPipeline)},
@@ -88,7 +88,8 @@ PipelineManager::PipelineManager(StateArgs sa, Callbacks cb) :
     createGraphicsPipeline{sa, {
         nullptr,
         [this](Report* report){ addReport(report, &graphicsPipeReports); }}},
-    cgpPool{sa.cp.createGraphicsPipeline}
+    cgpPool{sa.cp.createGraphicsPipeline},
+    gpReportCallback{rpcb}
 {
     activate(opcast(Op::createGraphicsPipeline));
     activate(opcast(Op::createPipelineLayout));
@@ -170,7 +171,12 @@ void PipelineManager::handleShaderReport(const ShaderReport* report)
 
 void PipelineManager::recreateGraphicsPipeline(GraphicsPipelineReport* report)
 {
-    auto cmd = cgpPool.request(report);
+    auto cmd = cgpPool.request(
+            OwningReportCallbackFn([this](Report* r) { 
+                auto rep = static_cast<GraphicsPipelineReport*>(r);
+                gpReportCallback(rep);
+                }),
+            report);
     pushCmd(std::move(cmd));
     std::cout << "Pushed recreation command." << '\n';
 }

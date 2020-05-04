@@ -306,14 +306,18 @@ bool Renderer::recreateGraphicsPipeline(const std::string name)
     {
         device.waitIdle();
         auto& gp = graphicsPipelines.at(name);
-        for (const auto& frame : frames) 
-        {
-            for (const auto& cmdbuffer : frame.commandBuffers) 
-            {
-                if (cmdbuffer->isRecorded() && cmdbuffer->boundPipeline == &gp.getHandle())
-                    cmdbuffer->reset();
-            }
-        }
+//        for (const auto& frame : frames) 
+//        {
+//            int id = 0;
+//            for (const auto& cmdbuffer : frame.commandBuffers) 
+//            {
+//                if (cmdbuffer->isRecorded() && cmdbuffer->boundPipeline == &gp.getHandle())
+//                {
+//                    cmdbuffer->reset();
+//                }
+//                id++;
+//            }
+//        }
         std::cout << "Renderer::recreateGraphicsPipeline: calling recreate..." << '\n';
         gp.recreate();
         return true;

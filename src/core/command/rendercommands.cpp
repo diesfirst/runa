@@ -205,6 +205,10 @@ void RecordRenderCommand::execute(Application* app)
 
 state::Report* RecordRenderCommand::makeReport() const
 {
+    if (report)
+    {
+        return report;
+    }
     return new state::RenderCommandReport(cmdBufferId, renderLayers);
 }
 

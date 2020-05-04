@@ -16,7 +16,7 @@ void Render::onEnterExt()
 }
 
 RecordRenderCommand::RecordRenderCommand(StateArgs sa, Callbacks cb) :
-    LeafState{sa, cb}
+    LeafState{sa, cb}, pool{sa.cp.recordRenderCommand}
 {}
 
 void RecordRenderCommand::onEnterExt()
@@ -122,7 +122,9 @@ RenderManager::RenderManager(StateArgs sa, Callbacks cb) :
         {"render", opcast(Op::render)},
         {"print_reports", opcast(Op::printReports)}
     }},
-    pipelineManager{sa, {[this](){activate(opcast(Op::pipelineManager));}}},
+    pipelineManager{sa, {
+        [this](){activate(opcast(Op::pipelineManager));}},
+        [this](const GraphicsPipelineReport* r) { receiveGraphicsPipelineReport(r); }},
     rpassManager{sa, {
         [this](){activate(opcast(Op::renderPassManager));}},
         [this](const RenderPassReport* r){ pipelineManager.receiveReport(r); }},
@@ -136,7 +138,8 @@ RenderManager::RenderManager(StateArgs sa, Callbacks cb) :
     prepRenderFrames{sa, {nullptr, [this](Report* report) { onPrepRenderFrames(); }}},
     createRenderLayer{sa, {nullptr, [this](Report* report) { addReport(report, &renderLayersReports); }}},
     recordRenderCommand{sa, {nullptr, [this](Report* report) { addReport(report, &renderCommandReports); }}},
-    render{sa, {}}
+    render{sa, {}},
+    rrcPool{sa.cp.recordRenderCommand}
 {   
     activate(opcast(Op::openWindow));
     activate(opcast(Op::shaderManager));
@@ -185,6 +188,29 @@ void RenderManager::receiveDescriptorSetLayoutReport(const DescriptorSetLayoutRe
         createdDescSetLayout = true;
     }
     pipelineManager.receiveReport(r); 
+}
+
+void RenderManager::receiveGraphicsPipelineReport(const GraphicsPipelineReport* r)
+{
+    for (const auto& renderLayerReport : renderLayersReports) 
+    {
+        if (renderLayerReport->getPipelineName() == r->getObjectName())
+        {
+            auto id = renderLayerReport->getId();
+            for (const auto& renderCommandReport : renderCommandReports) 
+            {
+                if (renderCommandReport->containsRenderLayer(id))
+                    rerecordRenderCommand(renderCommandReport.get());
+            }
+        }
+    }
+}
+
+void RenderManager::rerecordRenderCommand(RenderCommandReport* report)
+{
+    auto cmd = rrcPool.request(report);
+    pushCmd(std::move(cmd));
+    std::cerr << "RenderManager::rerecordRenderCommand: pushed command" << '\n';
 }
 
 void RenderManager::printReports() const

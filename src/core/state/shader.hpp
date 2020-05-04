@@ -121,6 +121,8 @@ private:
     CompileShader compileShader;
     WatchFile watchFile;
 
+    ReportCallbackFn<ShaderReport> srCallback{nullptr};
+
     ShaderReports shaderReports;
 
     CommandPool<command::CompileShader>& csPool;

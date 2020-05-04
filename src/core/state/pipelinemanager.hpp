@@ -43,7 +43,7 @@ public:
     const char* getName() const override { return "pipeline_manager"; }
     void handleEvent(event::Event*) override;
     virtual ~PipelineManager () = default;
-    PipelineManager (StateArgs, Callbacks);
+    PipelineManager (StateArgs, Callbacks, ReportCallbackFn<GraphicsPipelineReport>);
     void receiveReport(const Report*);
 private:
     enum class Op : Option {createPipelineLayout, createGraphicsPipeline, printReports};
@@ -57,6 +57,8 @@ private:
     std::vector<const Report*> reports;
 
     CommandPool<command::CreateGraphicsPipeline>& cgpPool;
+
+    ReportCallbackFn<GraphicsPipelineReport> gpReportCallback{nullptr};
 
     void printReports();
     void handleShaderReport(const ShaderReport* pReport);
