@@ -304,7 +304,16 @@ bool Renderer::recreateGraphicsPipeline(const std::string name)
 {
     if (graphicsPipelines.find(name) != graphicsPipelines.end())
     {
+        device.waitIdle();
         auto& gp = graphicsPipelines.at(name);
+        for (const auto& frame : frames) 
+        {
+            for (const auto& cmdbuffer : frame.commandBuffers) 
+            {
+                if (cmdbuffer->isRecorded() && cmdbuffer->boundPipeline == &gp.getHandle())
+                    cmdbuffer->reset();
+            }
+        }
         std::cout << "Renderer::recreateGraphicsPipeline: calling recreate..." << '\n';
         gp.recreate();
         return true;
@@ -313,6 +322,18 @@ bool Renderer::recreateGraphicsPipeline(const std::string name)
     {
         std::cerr << "Renderer::recreateGraphicsPipeline: Graphics pipeline by that name does not exist." << '\n';
         return false;
+    }
+}
+
+void Renderer::resetCommandBuffers()
+{
+    for (const auto& frame : frames) 
+    {
+        for (const auto& cmdbuffer : frame.commandBuffers) 
+        {
+            if (cmdbuffer->isRecorded())
+                cmdbuffer->reset();
+        }
     }
 }
 
@@ -412,7 +433,7 @@ void Renderer::recordRenderCommands(uint32_t id, std::vector<uint32_t> fbIds)
 	}
 }
 
-void Renderer::addRenderPassInstance(
+void Renderer::addRenderLayer(
         std::string attachmentName,
         std::string renderPassName,
         std::string pipeline)
@@ -422,16 +443,16 @@ void Renderer::addRenderPassInstance(
     for (auto& frame : frames) 
     {
         if (attachmentName.compare("swap") == 0)
-            frame.addRenderPassInstance(rpass, pipe);
+            frame.addRenderLayer(rpass, pipe);
         else 
         {
             auto& attachment = *attachments.at(attachmentName);
-            frame.addRenderPassInstance(attachment, rpass, pipe);
+            frame.addRenderLayer(attachment, rpass, pipe);
         }
     }
 }
 
-void Renderer::clearRenderPassInstances()
+void Renderer::clearRenderLayers()
 {
     for (auto& frame : frames) 
     {

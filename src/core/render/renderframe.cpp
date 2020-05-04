@@ -62,7 +62,7 @@ RenderFrame::RenderFrame(RenderFrame&& other) :
     other.renderLayers.clear();
 }
 
-void RenderFrame::addRenderPassInstance(
+void RenderFrame::addRenderLayer(
         Attachment& target, 
         const RenderPass& pass, 
         const GraphicsPipeline& pipe)
@@ -75,7 +75,7 @@ void RenderFrame::addRenderPassInstance(
                 pipe);
 }
 
-void RenderFrame::addRenderPassInstance(
+void RenderFrame::addRenderLayer(
         const RenderPass& pass, 
         const GraphicsPipeline& pipe)
 {

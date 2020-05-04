@@ -82,12 +82,13 @@ public:
     //having only 1 pipeline per commandbuffer is doomed
     void recordRenderCommands(uint32_t bufferId, std::vector<uint32_t> renderPassIds);
     void prepare(const std::string tarotPath);
-    void addRenderPassInstance(
+    void addRenderLayer(
     const std::string attachment, const std::string renderpass,
     const std::string pipeline);
-    void clearRenderPassInstances();
+    void clearRenderLayers();
     void render(uint32_t cmdId, bool updateUbo);
     void popBufferBlock();
+    void resetCommandBuffers();
     void listAttachments() const;
     void listVertShaders() const;
     void listFragShaders() const;

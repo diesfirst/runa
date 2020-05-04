@@ -39,10 +39,11 @@ public:
     CommandBuffer& requestRenderBuffer(uint32_t bufferId); //will reset if exists
     CommandBuffer& getRenderBuffer(uint32_t bufferId);  //will fetch existing
     RenderLayer& getRenderLayer(int id) { return renderLayers.at(id);}
-    void addRenderPassInstance(Attachment&, const RenderPass&, const GraphicsPipeline&);
-    void addRenderPassInstance(const RenderPass&, const GraphicsPipeline&);
+    void addRenderLayer(Attachment&, const RenderPass&, const GraphicsPipeline&);
+    void addRenderLayer(const RenderPass&, const GraphicsPipeline&);
     void clearRenderPassInstances();
     BufferBlock* bufferBlock;
+    std::vector<CommandBuffer*> commandBuffers;
     
 
 private:
@@ -51,7 +52,6 @@ private:
     const Context& context;
     const vk::Device& device;
     CommandPool commandPool;
-    std::vector<CommandBuffer*> commandBuffers;
 //	CommandBuffer* renderBuffer{nullptr};
     vk::DescriptorPool descriptorPool;
     std::vector<vk::DescriptorSet> descriptorSets;

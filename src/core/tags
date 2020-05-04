@@ -318,8 +318,8 @@ activateDSetLayoutNeeding	state/descriptormanager.cpp	/^void DescriptorManager::
 activePrimaryCommandBufferCount	render/command.hpp	/^    uint32_t activePrimaryCommandBufferCount;$/;"	m	class:sword::render::CommandPool
 activeTarget	render/renderer.hpp	/^    Attachment* activeTarget;$/;"	m	class:sword::render::Renderer
 add	state/report.hpp	/^    add,$/;"	m	class:sword::state::ReportUsage
-addRenderPassInstance	render/renderer.cpp	/^void Renderer::addRenderPassInstance($/;"	f	class:sword::render::Renderer
-addRenderPassInstance	render/renderframe.cpp	/^void RenderFrame::addRenderPassInstance($/;"	f	class:sword::render::RenderFrame
+addRenderLayer	render/renderer.cpp	/^void Renderer::addRenderLayer($/;"	f	class:sword::render::Renderer
+addRenderLayer	render/renderframe.cpp	/^void RenderFrame::addRenderLayer($/;"	f	class:sword::render::RenderFrame
 addReport	state/state.hpp	/^    static void addReport(Report* ptr, std::vector<std::unique_ptr<R>>* derivedReports, ReportCallbackFn<R> callback = {})$/;"	f	class:sword::state::BranchState
 addSubpassDependency	render/renderpass.cpp	/^void RenderPass::addSubpassDependency(vk::SubpassDependency d)$/;"	f	class:sword::render::RenderPass
 addToVocab	state/state.hpp	/^    void addToVocab(std::string word) { State::addToVocab(word); }$/;"	f	class:sword::state::LeafState
@@ -372,7 +372,7 @@ clCount	event/dispatcher.cpp	/^static int clCount = 0;$/;"	m	namespace:sword::ev
 clear	state/editstack.hpp	/^    void clear() { stack.clear(); }$/;"	f	class:sword::state::EditStack
 clear	state/vocab.hpp	/^    void clear() { words.clear(); }$/;"	f	class:sword::state::Vocab
 clear	types/stack.hpp	/^    void clear() { items.clear(); }$/;"	f	class:sword::Stack
-clearRenderPassInstances	render/renderer.cpp	/^void Renderer::clearRenderPassInstances()$/;"	f	class:sword::render::Renderer
+clearRenderLayers	render/renderer.cpp	/^void Renderer::clearRenderLayers()$/;"	f	class:sword::render::Renderer
 clearRenderPassInstances	render/renderframe.cpp	/^void RenderFrame::clearRenderPassInstances()$/;"	f	class:sword::render::RenderFrame
 clearValue	render/renderpass.hpp	/^    vk::ClearValue clearValue;$/;"	m	class:sword::render::RenderPass
 clearVocab	state/state.hpp	/^    void clearVocab() { vocab.clear(); }$/;"	f	class:sword::state::State
@@ -1110,6 +1110,7 @@ requestSemaphore	render/renderframe.cpp	/^vk::Semaphore RenderFrame::requestSema
 reset	command/command.hpp	/^    void reset() {inUse = false; }$/;"	f	class:sword::command::Command
 reset	event/event.hpp	/^    void reset() {inUse = false; handled = false;}$/;"	f	class:sword::event::symbol::Event
 reset	render/command.cpp	/^void CommandBuffer::reset()$/;"	f	class:sword::render::CommandBuffer
+resetCommandBuffers	render/renderer.cpp	/^void Renderer::resetCommandBuffers()$/;"	f	class:sword::render::Renderer
 resetPool	render/command.cpp	/^void CommandPool::resetPool()$/;"	f	class:sword::render::CommandPool
 reverse	types/stack.hpp	/^    void reverse() { std::reverse(items.begin(), items.end()); }$/;"	f	class:sword::Stack
 rg	state/state.hpp	/^    Register& rg;$/;"	m	struct:sword::state::StateArgs

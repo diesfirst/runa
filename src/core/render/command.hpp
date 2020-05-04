@@ -69,6 +69,7 @@ public:
     bool isRecorded() const;
     void waitForFence() const;
     void reset();
+    const vk::Pipeline* boundPipeline{nullptr};
 private:
     CommandPool& pool;
     const vk::Device& device;
