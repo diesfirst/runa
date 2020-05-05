@@ -35,15 +35,20 @@ public:
     Director(StateArgs, const StateStack& ss, render::Window& window);
 
 private:
-    enum class Op : Option {pushRenderManager, printHierarchy, quickSetup};
+    enum class Op : Option {pushRenderManager, printHierarchy, quickSetup, quickSetup2, quickSetup3};
 
     void pushRenderManager();
     void printStateHierarchy();
     void popTop();
     void quickSetup();
+    void quickSetup2();
+    void quickSetup3();
 
     RenderManager renderManager;
     QuickSetup quickState;
+
+    CommandPools& cp;
+    state::Register& sr;
 
     const StateStack& stateStack;
 };

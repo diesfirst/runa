@@ -45,7 +45,9 @@ void PrintShader::handleEvent(event::Event* event)
 
 CompileShader::CompileShader(StateArgs sa, Callbacks cb) :
     LeafState{sa, cb}, pool{sa.cp.compileShader}
-{}
+{
+    sa.rg.compileShader = this;
+}
 
 void CompileShader::onEnterExt()
 {
@@ -255,22 +257,27 @@ void ShaderManager::handleEvent(event::Event* event)
     }
     if (event->getCategory() == event::Category::File)
     {
+        //this algorithm ONLY works for fragment shaders currently... it should be fixed
         auto fe = static_cast<event::File*>(event);
         auto file = fe->getFile();
         std::string path = std::string(SHADER_SRC) + "/fragment/" + file;
         int pos = file.find_first_of('.');
         auto name = file.substr(0, pos);
-        ShaderReport* rep{nullptr};
         for (const auto& report : shaderReports) 
+        {
             if (report->getObjectName() == name)
-                rep = report.get();
-        auto cmd = csPool.request(
-                OwningReportCallbackFn([this](Report* r) {
-                    auto rep = static_cast<ShaderReport*>(r);
-                    std::invoke(srCallback, rep);
-                    }),
-                path, name, rep);
-        pushCmd(std::move(cmd));
+            {
+                auto rep = report.get();
+                auto cmd = csPool.request(
+                        OwningReportCallbackFn([this](Report* r) {
+                            auto rep = static_cast<ShaderReport*>(r);
+                            std::invoke(srCallback, rep);
+                            }),
+                        path, name, rep);
+                pushCmd(std::move(cmd));
+                break;
+            }
+        }
         event->setHandled();
     }
 }

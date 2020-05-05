@@ -54,6 +54,8 @@ class CreateRenderPass;
 class CreatePipelineLayout;
 class CreateGraphicsPipeline;
 class CreateRenderLayer;
+class CompileShader;
+class RecordRenderCommand;
 
 struct Register
 {
@@ -68,6 +70,8 @@ struct Register
     CreatePipelineLayout* createPipelineLayout;
     CreateGraphicsPipeline* createGraphicsPipeline;
     CreateRenderLayer* createRenderLayer;
+    CompileShader* compileShader;
+    RecordRenderCommand* recordRenderCommand;
 };
 
 struct StateArgs

@@ -93,6 +93,7 @@ private:
     Reports<RenderCommandReport> renderCommandReports;
 
     CommandPool<command::RecordRenderCommand>& rrcPool;
+    CommandPool<command::Render>& renderPool;
 
     bool createdDescSetLayout{false};
 
@@ -102,6 +103,7 @@ private:
     void printReports() const;
     void rerecordRenderCommand(RenderCommandReport*);
     void receiveGraphicsPipelineReport(const GraphicsPipelineReport*);
+    void renderCmd(int cmdIndex, bool updateUbo);
 };
 
 }; // namespace state

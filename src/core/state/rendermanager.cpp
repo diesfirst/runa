@@ -17,7 +17,9 @@ void Render::onEnterExt()
 
 RecordRenderCommand::RecordRenderCommand(StateArgs sa, Callbacks cb) :
     LeafState{sa, cb}, pool{sa.cp.recordRenderCommand}
-{}
+{
+    sa.rg.recordRenderCommand = this;
+}
 
 void RecordRenderCommand::onEnterExt()
 {
@@ -139,7 +141,8 @@ RenderManager::RenderManager(StateArgs sa, Callbacks cb) :
     createRenderLayer{sa, {nullptr, [this](Report* report) { addReport(report, &renderLayersReports); }}},
     recordRenderCommand{sa, {nullptr, [this](Report* report) { addReport(report, &renderCommandReports); }}},
     render{sa, {}},
-    rrcPool{sa.cp.recordRenderCommand}
+    rrcPool{sa.cp.recordRenderCommand},
+    renderPool{sa.cp.render}
 {   
     activate(opcast(Op::openWindow));
     activate(opcast(Op::shaderManager));
@@ -208,9 +211,20 @@ void RenderManager::receiveGraphicsPipelineReport(const GraphicsPipelineReport* 
 
 void RenderManager::rerecordRenderCommand(RenderCommandReport* report)
 {
-    auto cmd = rrcPool.request(report);
+    auto cmd = rrcPool.request(
+            OwningReportCallbackFn([this, report](Report* r) {
+                auto cmdIndex = report->getCmdIndex();
+                renderCmd(cmdIndex, false);
+                }),
+            report);
     pushCmd(std::move(cmd));
     std::cerr << "RenderManager::rerecordRenderCommand: pushed command" << '\n';
+}
+
+void RenderManager::renderCmd(int cmdIndex, bool updateUbo)
+{
+    auto cmd = renderPool.request(cmdIndex, updateUbo);
+    pushCmd(std::move(cmd));
 }
 
 void RenderManager::printReports() const

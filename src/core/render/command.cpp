@@ -101,8 +101,7 @@ CommandBuffer::CommandBuffer(CommandBuffer&& other) :
     buffers{std::move(other.buffers)},
     handle{buffers.at(0)},
     signalSemaphore{other.signalSemaphore},
-    fence{other.fence},
-    boundPipeline{other.boundPipeline}
+    fence{other.fence}
 {
     other.fence = nullptr;
     other.signalSemaphore = nullptr;
@@ -212,7 +211,6 @@ void CommandBuffer::waitForFence() const
 void CommandBuffer::reset()
 {
     handle.reset({});
-    boundPipeline = nullptr;
 }
 
 bool CommandBuffer::isRecorded() const
@@ -223,7 +221,6 @@ bool CommandBuffer::isRecorded() const
 void CommandBuffer::bindGraphicsPipeline(const vk::Pipeline& pipeline)
 {
     handle.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
-    boundPipeline = &pipeline;
 }
 
 

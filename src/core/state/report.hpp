@@ -352,7 +352,6 @@ private:
     std::vector<std::string> descriptorSetLayouts;
 };
 
-
 }; //state
 
 }; //sword

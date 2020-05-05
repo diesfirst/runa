@@ -152,12 +152,10 @@ void PipelineManager::handleShaderReport(const ShaderReport* report)
             std::cerr << "report->getObjectName() " << report->getObjectName() << '\n';
 
             recreateGraphicsPipeline(r.get());
-            return;
         }
         if (r->getVertShader() == report->getObjectName())
         {
             recreateGraphicsPipeline(r.get());
-            return;
         }
     }
     auto vocab = createGraphicsPipeline.getVocab();
