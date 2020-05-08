@@ -110,3 +110,14 @@ Mon May  4 23:38:05 EDT 2020
     Got dependencies set up so for interactive shader writing. Need to fix some things,
     currently you can give shaders names independent of their file name when you compile 
     them, but the file watcher always takes the name from the file path.
+
+Tue May  5 22:44:11 EDT 2020
+    Currently shader file inclusions aren't happening. We should be able to rip the inlcuder from 
+    the glslc source. Just will have to compile the source, get the dependencies right and check the license.
+    Next, we can start looking back to getting the painting portion working. Well start
+    by reimplementing the paint states of master in the new format. 
+    Where to put the UBO date will be a question. 
+
+Thu May  7 22:51:28 EDT 2020
+    Recompiling different shaders with the same name is awesome... allows swapping out shaders at run time. 
+    Need to fix the issue though where it keeps adding a new report each time.

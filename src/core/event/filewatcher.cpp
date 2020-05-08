@@ -14,7 +14,6 @@ namespace event
 FileWatcher::FileWatcher(EventQueue& queue) :
     eventQueue{queue}
 {
-    curName.reserve(name_max_len);
 }
 
 // due to the way vim operates, we cannot watch the file itself.
@@ -27,12 +26,12 @@ bool FileWatcher::addWatch(const char* path_str)
 {
     std::filesystem::path path{path_str};
     auto parent = path.parent_path();
+    std::cerr << "FileWatcher::addWatch: Adding watch to dir:" << parent.c_str() << '\n';
     int watch = inotify_add_watch(fd, parent.c_str(), IN_CLOSE_WRITE);
     if (watch == -1)
         return false;
-    std::string name = path.stem();
-    name.append(path.extension());
-    watches.push(std::pair(watch, name));
+    std::string name = path.filename();
+    watches.push_back({watch, path_str, name});
     std::cout << "watching " << name << '\n';
     return true;
 }
@@ -49,14 +48,20 @@ void FileWatcher::run()
         if (numRead < 1)
             std::cerr << "Did not read anything" << '\n';
         auto in_event = reinterpret_cast<inotify_event*>(buffer);
-        int wd = in_event->wd;
-        curName = in_event->name;
-        auto res = watches.findElement(wd, curName);
-        if (res) 
+        std::cerr << "FileWatcher::run: read something..." << '\n';
+        for (const auto& w : watches) 
         {
-            auto event = eventPool.request(wd, curName);
-            eventQueue.push(std::move(event));
-            std::cout << "Rustle in " << curName<< " detected." << '\n';
+            std::cerr << "w.wd: " << w.wd << '\n';
+            std::cerr << "in_event->wd: " << in_event->wd << '\n';
+            std::cerr << "w.filename: " << w.filename << '\n';
+            std::cerr << "in_event->name: " << in_event->name  << '\n';
+
+            if (w.wd == in_event->wd && w.filename == in_event->name)
+            {
+                auto event = eventPool.request(w.wd, w.fullpath);
+                eventQueue.push(std::move(event));
+                std::cout << "Rustle in " << w.filename << " detected." << '\n';
+            }
         }
     }
     SWD_THREAD_MSG("File watcher thread exitted.");

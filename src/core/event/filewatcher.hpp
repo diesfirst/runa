@@ -12,6 +12,13 @@ namespace sword
 namespace event
 {
 
+struct WatchTicket
+{
+    int wd;
+    const char* fullpath;
+    std::string filename;
+};
+
 class FileWatcher
 {
 public:
@@ -21,12 +28,11 @@ public:
     bool addWatch(const char* path); //all watchers will be modify for now
 
 private:
-    static constexpr int name_max_len{30}; //wont be a name
+    static constexpr int name_max_len{30}; //no shader filename can be longer than this
     int fd;
     bool shouldStop{false};
     EventQueue& eventQueue;
-    SmallMap<int, std::string> watches;
-    std::string curName;
+    std::vector<WatchTicket> watches;
 
     EventPool<File> eventPool;
 };

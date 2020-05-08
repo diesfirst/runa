@@ -104,12 +104,12 @@ class File : public Event
 public:
     Category getCategory() const override { return Category::File; }
     std::string getName() const override { return "File"; }
-    void set(int wd, std::string file) { this->wd = wd; this->file = file; }
-    std::string getFile() const { return file; }
+    void set(int wd, std::string path) { this->wd = wd; this->path = path; }
+    std::string getPath() const { return path; }
     int getWd() const { return wd; }
 private:
     int wd;
-    std::string file;
+    std::string path;
 };
 
 class Abort : public Event

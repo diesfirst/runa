@@ -49,19 +49,21 @@ private:
 class ShaderReport final : public Report
 {
 public:
-    ShaderReport(std::string n, ShaderType t, int i0, int i1, float f0, float f1) :
-        name{n}, type{t}, specint0{i0}, specint1{i1}, specfloat0{f0}, specfloat1{f1} {}
+    ShaderReport(std::string n, ShaderType t, int i0, int i1, float f0, float f1, std::string path = "unknown") :
+        name{n}, type{t}, specint0{i0}, specint1{i1}, specfloat0{f0}, specfloat1{f1}, source_path{path} {}
     void operator()() const  override
     {
-        std::cout << "================== Shader Report ==================" << std::endl;
-        std::cout << "Name:                  " << name << std::endl;
-        std::cout << "Type:                  " << string_type() << std::endl;
-        std::cout << "Spec Constant Int 0:   " << specint0 << std::endl;
-        std::cout << "Spec Constant Int 1:   " << specint1 << std::endl;
-        std::cout << "Spec Constant Float 0: " << specfloat0 << std::endl;
-        std::cout << "Spec Constant Float 1: " << specfloat1 << std::endl;
+        std::cout << "================== Shader Report ==================" << '\n';
+        std::cout << "Name:                  " << name << '\n';
+        std::cout << "Type:                  " << string_type() << '\n';
+        std::cout << "Source:                " << source_path << '\n';
+        std::cout << "Spec Constant Int 0:   " << specint0 << '\n';
+        std::cout << "Spec Constant Int 1:   " << specint1 << '\n';
+        std::cout << "Spec Constant Float 0: " << specfloat0 << '\n';
+        std::cout << "Spec Constant Float 1: " << specfloat1 << '\n';
     }
     const std::string getObjectName() const override {return name;};
+    const std::string_view getSourcePath() const {return source_path;}
     ReportType getType() const override {return ReportType::Shader;}
     void setSpecFloat(int index, float val)
     {
@@ -85,6 +87,7 @@ private:
     }
     const std::string name{"unitilialized"};
     const char* type_string{"uninilialized"};
+    std::string source_path{"unknown"};
     ShaderType type;
     int specint0{0};
     int specint1{0};
@@ -110,15 +113,15 @@ public:
         renderpass{parm5}, regionX{i1}, regionY{i2}, areaX{ui1}, areaY{ui2}, is3d{is3d} {}
     void operator()() const override
     {
-        std::cout << "================== Graphics Pipeline Report ==================" << std::endl;
-        std::cout << "Name:            " << name << std::endl;
-        std::cout << "Pipeline layout: " << pipelineLayout << std::endl;
-        std::cout << "Vert Shader:     " << vertshader << std::endl;
-        std::cout << "Frag Shader:     " << fragshader << std::endl;
-        std::cout << "Renderpass:      " << renderpass << std::endl;
-        std::cout << "Coords:         (" << regionX << ", " << regionY << ")" << std::endl;
-        std::cout << "Area:           (" << areaX << ", " << areaY << ")" << std::endl;
-        std::cout << "Is it 3d?        " << is3d << std::endl;
+        std::cout << "================== Graphics Pipeline Report ==================" << '\n';
+        std::cout << "Name:            " << name << '\n';
+        std::cout << "Pipeline layout: " << pipelineLayout << '\n';
+        std::cout << "Vert Shader:     " << vertshader << '\n';
+        std::cout << "Frag Shader:     " << fragshader << '\n';
+        std::cout << "Renderpass:      " << renderpass << '\n';
+        std::cout << "Coords:         (" << regionX << ", " << regionY << ")" << '\n';
+        std::cout << "Area:           (" << areaX << ", " << areaY << ")" << '\n';
+        std::cout << "Is it 3d?        " << is3d << '\n';
     }
     const std::string getObjectName() const override {return name;}
     ReportType getType() const override {return ReportType::Pipeline;}
@@ -147,10 +150,10 @@ public:
         name{n}, type{t}, loadOp{loadOp} {}
     inline void operator()() const override
     {
-        std::cout << "================== RenderPass Report ==================" << std::endl;
-        std::cout << "Name:                  " << name << std::endl;
-        std::cout << "Type:                  " << typeToString() << std::endl;
-        std::cout << "Attachment Load Op:    " << vk::to_string(loadOp) << std::endl;
+        std::cout << "================== RenderPass Report ==================" << '\n';
+        std::cout << "Name:                  " << name << '\n';
+        std::cout << "Type:                  " << typeToString() << '\n';
+        std::cout << "Attachment Load Op:    " << vk::to_string(loadOp) << '\n';
     }
     inline const std::string getObjectName() const override {return name;}
     inline ReportType getType() const override {return ReportType::RenderPass;}
@@ -191,11 +194,11 @@ public:
         id{id} {}
     void operator()() const override
     {
-        std::cout << "============== Renderpass Instance Report =============" << std::endl;
-        std::cout << "Index:           " << id << std::endl;
-        std::cout << "Attachment Name: " << attachmentName << std::endl;
-        std::cout << "Renderpass Name: " << renderpassName << std::endl;
-        std::cout << "Pipeline Name:   " << pipelineName << std::endl;
+        std::cout << "============== Renderpass Instance Report =============" << '\n';
+        std::cout << "Index:           " << id << '\n';
+        std::cout << "Attachment Name: " << attachmentName << '\n';
+        std::cout << "Renderpass Name: " << renderpassName << '\n';
+        std::cout << "Pipeline Name:   " << pipelineName << '\n';
     }
     ReportType getType() const override {return ReportType::RenderpassInstance;}
     const std::string getObjectName() const override {return std::to_string(id);}
@@ -217,14 +220,14 @@ public:
         cmdIndex{cmdIndex}, rpiIndices{rpiIndices} {}
     void operator()() const override
     {
-        std::cout << "============= Render Commmand Report =============" << std::endl;
-        std::cout << "Command Index:        " << cmdIndex << std::endl;
+        std::cout << "============= Render Commmand Report =============" << '\n';
+        std::cout << "Command Index:        " << cmdIndex << '\n';
         std::cout << "Renderpass Instances: ";
         for (const auto& i : rpiIndices) 
         {
             std::cout << i << ", ";
         }
-        std::cout << std::endl;
+        std::cout << '\n';
     }
     ReportType getType() const override {return ReportType::RenderCommand;}
     const std::string getObjectName() const override {return std::to_string(cmdIndex);}
@@ -252,17 +255,17 @@ public:
    name{name}, bindings{bindings} {}
     inline void operator()() const override
     {
-        std::cout << "============= Descriptor Set Layout Report =============" << std::endl;
-        std::cout << "Name:                " << name << std::endl;
+        std::cout << "============= Descriptor Set Layout Report =============" << '\n';
+        std::cout << "Name:                " << name << '\n';
         auto bcount = bindings.size();
-        std::cout << "Binding count:       " << bcount << std::endl;
+        std::cout << "Binding count:       " << bcount << '\n';
         for (int i = 0; i < bcount; i++) 
         {
-        std::cout << "-----------------------------------" << std::endl;
-        std::cout << "Binding " << i << std::endl;
-        std::cout << "Descriptor Type:    " << vk::to_string(bindings[i].descriptorType) << std::endl;
-        std::cout << "Descriptor Count:   " << bindings[i].descriptorCount << std::endl;
-        std::cout << "Shader Stage Flags: " << vk::to_string(bindings[i].stageFlags) << std::endl;
+        std::cout << "-----------------------------------" << '\n';
+        std::cout << "Binding " << i << '\n';
+        std::cout << "Descriptor Type:    " << vk::to_string(bindings[i].descriptorType) << '\n';
+        std::cout << "Descriptor Count:   " << bindings[i].descriptorCount << '\n';
+        std::cout << "Shader Stage Flags: " << vk::to_string(bindings[i].stageFlags) << '\n';
         }
     }
     inline ReportType getType() const override {return ReportType::DescriptorSetLayout;}
@@ -286,15 +289,15 @@ public:
         descSetLayoutNames{descSetLayoutNames}, type{t} {}
     inline void operator()() const override
     {
-        std::cout << "================ Descriptor Set Report ==============" << std::endl;
+        std::cout << "================ Descriptor Set Report ==============" << '\n';
         auto s = (type == Type::frameOwned) ? "Frame Owned" : "Renderer Owneded";
-        std::cout << "Descriptor Set Type: " << s << std::endl;
+        std::cout << "Descriptor Set Type: " << s << '\n';
         std::cout << "Descriptor Set Layout Names: ";
         for (const auto& i : descSetLayoutNames) 
         {
-            std::cout << i << ", " << std::endl;
+            std::cout << i << ", " << '\n';
         }
-        std::cout << std::endl;
+        std::cout << '\n';
     }
     //not currently useful
     inline const std::string getObjectName() const override {return "0";} 
@@ -311,10 +314,10 @@ public:
         name{n}, width{w}, height{h}, usageFlags{f} {}
     void operator()() const override
     {
-        std::cout << "========= Attachment Report ============" << std::endl;
-        std::cout << "Name:        " << name << std::endl;
-        std::cout << "Dimensions:  " << width << " " << height << std::endl;
-        std::cout << "Usage Flags: " << vk::to_string(usageFlags) << std::endl;
+        std::cout << "========= Attachment Report ============" << '\n';
+        std::cout << "Name:        " << name << '\n';
+        std::cout << "Dimensions:  " << width << " " << height << '\n';
+        std::cout << "Usage Flags: " << vk::to_string(usageFlags) << '\n';
     }
     const std::string getObjectName() const override
     {
@@ -336,14 +339,14 @@ public:
     PipelineLayoutReport(std::string name, std::vector<std::string> dlnames) : name{name}, descriptorSetLayouts{dlnames} {}
     void operator()() const 
     {
-        std::cout << "============== Pipeline Layout Report ============== " << std::endl;
-        std::cout << "Name:     " << name << std::endl;
+        std::cout << "============== Pipeline Layout Report ============== " << '\n';
+        std::cout << "Name:     " << name << '\n';
         std::cout << "Descriptor set layouts: ";
         for (const auto& i : descriptorSetLayouts) 
         {
             std::cout << i << "   ";
         }
-        std::cout << std::endl;
+        std::cout << '\n';
     }
     const std::string getObjectName() const {return name;}
     ReportType getType() const {return ReportType::PipelineLayout;}

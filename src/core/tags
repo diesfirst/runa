@@ -48,6 +48,7 @@ CommandPool	render/command.cpp	/^CommandPool::CommandPool($/;"	f	class:sword::re
 CommandPool	render/command.cpp	/^CommandPool::CommandPool(CommandPool&& other) :$/;"	f	class:sword::render::CommandPool
 CommandPool	render/command.hpp	/^class CommandPool$/;"	c	namespace:sword::render
 CommandPools	command/commandpools.hpp	/^struct CommandPools$/;"	s	namespace:sword
+CompileShader	command/shader.cpp	/^CompileShader::CompileShader()$/;"	f	class:sword::command::CompileShader
 CompileShader	command/shader.hpp	/^class CompileShader : public Command$/;"	c	namespace:sword::command
 CompileShader	state/shader.cpp	/^CompileShader::CompileShader(StateArgs sa, Callbacks cb) :$/;"	f	class:sword::state::CompileShader
 CompileShader	state/shader.hpp	/^class CompileShader : public LeafState$/;"	c	namespace:sword::state
@@ -238,6 +239,7 @@ STATE_SHADER_HPP	state/shader.hpp	2;"	d
 STATE_STATETYPES_HPP_	state/statetypes.hpp	2;"	d
 STATE_STATE_HPP	state/state.hpp	2;"	d
 STATE_VOCAB_HPP	state/vocab.hpp	2;"	d
+SWD_DEBUG_MSG	util/debug.hpp	4;"	d
 SWD_THREAD_MSG	util/outformat.hpp	7;"	d
 SWORD	util/defs.hpp	4;"	d
 SYMBOL	command/template.hpp	2;"	d
@@ -258,7 +260,7 @@ Shader	render/shader.cpp	/^Shader::Shader(const vk::Device& device, std::vector<
 Shader	render/shader.hpp	/^class Shader$/;"	c	namespace:sword::render
 Shader	state/report.hpp	/^    Shader,$/;"	m	class:sword::state::ReportType
 ShaderManager	state/shader.cpp	/^ShaderManager::ShaderManager(StateArgs sa, Callbacks cb, ReportCallbackFn<ShaderReport> srcb)  : $/;"	f	class:sword::state::ShaderManager
-ShaderReport	state/report.hpp	/^    ShaderReport(std::string n, ShaderType t, int i0, int i1, float f0, float f1) :$/;"	f	class:sword::state::final
+ShaderReport	state/report.hpp	/^    ShaderReport(std::string n, ShaderType t, int i0, int i1, float f0, float f1, std::string path = "unknown") :$/;"	f	class:sword::state::final
 ShaderType	render/renderer.hpp	/^enum class ShaderType {vert, frag};$/;"	c	namespace:sword::render
 ShaderType	util/enum.hpp	/^enum class ShaderType : uint8_t {frag, vert};$/;"	c	namespace:sword
 Shift_L	event/event.hpp	/^    Shift_L = 50,$/;"	m	class:sword::event::symbol::Key
@@ -284,6 +286,7 @@ TargetType	render/renderer.hpp	/^enum class TargetType {offscreen, swapchain};$/
 Timer	util.hpp	/^class Timer$/;"	c	namespace:sword
 Type	state/report.hpp	/^    enum class Type : uint8_t {frameOwned, rendererOwned};$/;"	c	class:sword::state::DescriptorSetReport
 Type	state/report.hpp	/^    enum class Type : uint8_t {swapchain, offscreen}; $/;"	c	class:sword::state::RenderPassReport
+UTIL_DEBUG_HPP	util/debug.hpp	2;"	d
 UTIL_DEFS_HPP	util/defs.hpp	2;"	d
 UTIL_ENUM_HPP	util/enum.hpp	2;"	d
 UTIL_FILE_HPP	util/file.hpp	2;"	d
@@ -303,6 +306,7 @@ Vocab	state/vocab.hpp	/^class Vocab$/;"	c	namespace:sword::state
 WatchFile	command/watcher.hpp	/^class WatchFile : public Command$/;"	c	namespace:sword::command
 WatchFile	state/shader.cpp	/^WatchFile::WatchFile(StateArgs sa, Callbacks cb) :$/;"	f	class:sword::state::WatchFile
 WatchFile	state/shader.hpp	/^class WatchFile : public LeafState$/;"	c	namespace:sword::state
+WatchTicket	event/filewatcher.hpp	/^struct WatchTicket$/;"	s	namespace:sword::event
 Window	event/event.hpp	/^    Window,$/;"	m	class:sword::event::symbol::Category
 Window	event/event.hpp	/^    Window,$/;"	m	class:sword::event::symbol::InputMode
 Window	event/event.hpp	/^class Window: public Event$/;"	c	namespace:sword::event::symbol
@@ -407,6 +411,7 @@ commandBuffers	render/renderframe.hpp	/^    std::vector<CommandBuffer*> commandB
 commandLineInput	event/dispatcher.hpp	/^    std::string commandLineInput;$/;"	m	class:sword::event::EventDispatcher
 commandPool	render/renderer.hpp	/^    CommandPool commandPool;$/;"	m	class:sword::render::Renderer
 commandPool	render/renderframe.hpp	/^    CommandPool commandPool;$/;"	m	class:sword::render::RenderFrame
+compileOptions	command/shader.hpp	/^    shaderc::CompileOptions compileOptions;$/;"	m	class:sword::command::CompileShader
 compileShader	command/commandpools.hpp	/^    CommandPool<command::CompileShader> compileShader;$/;"	m	struct:sword::CommandPools
 compileShader	state/shader.hpp	/^    CompileShader compileShader;$/;"	m	class:sword::state::final
 compileShader	state/shader.hpp	/^    enum class Op : Option {watchFile, compileShader, printShader, loadFrag, loadVert, setSpecInt, setSpecFloat, printReports};$/;"	m	class:sword::state::final::Op
@@ -494,7 +499,6 @@ cs	state/state.hpp	/^    CommandStack& cs;$/;"	m	struct:sword::state::StateArgs
 csPool	state/shader.hpp	/^    CommandPool<command::CompileShader>& csPool;$/;"	m	class:sword::state::final
 csrpPool	state/renderpassmanager.hpp	/^    CommandPool<command::CreateSwapchainRenderpass>& csrpPool;$/;"	m	class:sword::state::CreateRenderPass
 curBinding	state/descriptorsetlayoutmanager.hpp	/^    vk::DescriptorSetLayoutBinding* curBinding;$/;"	m	class:sword::state::final
-curName	event/filewatcher.hpp	/^    std::string curName;$/;"	m	class:sword::event::FileWatcher
 data	render/renderer.hpp	/^    void* data;$/;"	m	struct:sword::render::Ubo
 deactivate	state/state.hpp	/^    void deactivate(Option op) { topMask.reset(op); }$/;"	f	class:sword::state::BranchState
 debugCallback	render/context.cpp	/^static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback($/;"	f	namespace:sword::render
@@ -598,8 +602,9 @@ fence	render/command.hpp	/^    vk::Fence fence;$/;"	m	class:sword::render::Comma
 fence	render/renderframe.hpp	/^    vk::Fence fence;$/;"	m	class:sword::render::RenderFrame
 fetchCommandLineInput	event/dispatcher.cpp	/^void EventDispatcher::fetchCommandLineInput()$/;"	f	class:sword::event::EventDispatcher
 fetchWindowInput	event/dispatcher.cpp	/^void EventDispatcher::fetchWindowInput()$/;"	f	class:sword::event::EventDispatcher
-file	event/event.hpp	/^    std::string file;$/;"	m	class:sword::event::symbol::File
 fileWatcher	event/dispatcher.hpp	/^    FileWatcher fileWatcher;$/;"	m	class:sword::event::EventDispatcher
+file_finder	command/shader.hpp	/^    shaderc_util::FileFinder file_finder;$/;"	m	class:sword::command::CompileShader
+filename	event/filewatcher.hpp	/^    std::string filename;$/;"	m	struct:sword::event::WatchTicket
 final	event/event.hpp	/^class KeyPress final : public Keyboard$/;"	c	namespace:sword::event::symbol
 final	event/event.hpp	/^class KeyRelease final : public Keyboard$/;"	c	namespace:sword::event::symbol
 final	event/event.hpp	/^class MouseMotion final : public Window$/;"	c	namespace:sword::event::symbol
@@ -633,6 +638,7 @@ fragmentShaders	render/renderer.hpp	/^    std::unordered_map<std::string, FragSh
 frameOwned	state/report.hpp	/^    enum class Type : uint8_t {frameOwned, rendererOwned};$/;"	m	class:sword::state::DescriptorSetReport::Type
 framebuffer	render/renderlayer.hpp	/^    vk::Framebuffer framebuffer;$/;"	m	class:sword::render::RenderLayer
 frames	render/renderer.hpp	/^    std::vector<RenderFrame> frames;$/;"	m	class:sword::render::Renderer
+fullpath	event/filewatcher.hpp	/^    const char* fullpath;$/;"	m	struct:sword::event::WatchTicket
 getArg	event/event.hpp	/^    T getArg()$/;"	f	class:sword::event::symbol::CommandLine
 getAttachmentName	state/report.hpp	/^    const std::string_view getAttachmentName() { return attachmentName; }$/;"	f	class:sword::state::RenderLayerReport
 getClearValue	render/renderpass.cpp	/^const vk::ClearValue* RenderPass::getClearValue() const$/;"	f	class:sword::render::RenderPass
@@ -645,7 +651,6 @@ getExtent	render/attachment.cpp	/^vk::Extent2D Attachment::getExtent() const$/;"
 getExtent2D	render/resource.cpp	/^const vk::Extent2D Image::getExtent2D() const $/;"	f	class:sword::render::Image
 getExtent2D	render/swapchain.cpp	/^vk::Extent2D Swapchain::getExtent2D()$/;"	f	class:sword::render::Swapchain
 getExtent3D	render/swapchain.cpp	/^vk::Extent3D Swapchain::getExtent3D()$/;"	f	class:sword::render::Swapchain
-getFile	event/event.hpp	/^    std::string getFile() const { return file; }$/;"	f	class:sword::event::symbol::File
 getFirst	event/event.hpp	/^    T getFirst() const$/;"	f	class:sword::event::symbol::CommandLine
 getFirstWord	event/event.hpp	/^    std::string getFirstWord() const $/;"	f	class:sword::event::symbol::CommandLine
 getFormat	render/attachment.cpp	/^vk::Format Attachment::getFormat() const$/;"	f	class:sword::render::Attachment
@@ -670,6 +675,7 @@ getKeys	types/map.hpp	/^    std::vector<S> getKeys(std::bitset<N> mask) const$/;
 getLayout	render/pipeline.cpp	/^const vk::PipelineLayout& GraphicsPipeline::getLayout() const$/;"	f	class:sword::render::GraphicsPipeline
 getMouseButton	event/event.hpp	/^    symbol::MouseButton getMouseButton() const {return button;}$/;"	f	class:sword::event::symbol::MouseButton
 getObjectName	state/report.hpp	/^    const std::string getObjectName() const {return name;}$/;"	f	class:sword::state::PipelineLayoutReport
+getPath	event/event.hpp	/^    std::string getPath() const { return path; }$/;"	f	class:sword::event::symbol::File
 getPaths	util/file.cpp	/^const std::vector<std::string> getPaths(std::string_view root, bool inc_ext)$/;"	f	namespace:sword
 getPipeline	render/renderlayer.cpp	/^const GraphicsPipeline& RenderLayer::getPipeline() const$/;"	f	class:sword::render::RenderLayer
 getPipelineName	state/report.hpp	/^    const std::string_view getPipelineName() { return pipelineName; }$/;"	f	class:sword::state::RenderLayerReport
@@ -681,6 +687,7 @@ getRenderLayerIndices	state/report.hpp	/^    std::vector<uint32_t> getRenderLaye
 getRenderPass	render/pipeline.cpp	/^const RenderPass& GraphicsPipeline::getRenderPass() const$/;"	f	class:sword::render::GraphicsPipeline
 getRenderPass	render/renderlayer.cpp	/^const RenderPass& RenderLayer::getRenderPass() const$/;"	f	class:sword::render::RenderLayer
 getSampler	render/resource.cpp	/^const vk::Sampler& Image::getSampler() const$/;"	f	class:sword::render::Image
+getSourcePath	state/report.hpp	/^    const std::string_view getSourcePath() const {return source_path;}$/;"	f	class:sword::state::final
 getStageInfo	render/shader.cpp	/^const vk::PipelineShaderStageCreateInfo& Shader::getStageInfo() const$/;"	f	class:sword::render::Shader
 getStream	event/event.hpp	/^    std::stringstream getStream() const$/;"	f	class:sword::event::symbol::CommandLine
 getStrings	state/state.hpp	/^    std::vector<std::string> getStrings()$/;"	f	class:sword::state::OptionMap
@@ -951,6 +958,7 @@ owPool	state/rendermanager.hpp	/^    CommandPool<command::OpenWindow>& owPool;$/
 pEventFunc	event/dispatcher.cpp	/^typedef void (EventDispatcher::*pEventFunc)(xcb_generic_event_t* event);$/;"	t	namespace:sword::event	file:
 parent	command/recordrendercommand.hpp	/^    RendererManager& parent;$/;"	m	class:sword::state::RecordRenderCommandState
 path	command/watcher.hpp	/^    std::string path;$/;"	m	class:sword::command::WatchFile
+path	event/event.hpp	/^    std::string path;$/;"	m	class:sword::event::symbol::File
 physicalDevice	render/context.hpp	/^    vk::PhysicalDevice physicalDevice;$/;"	m	class:sword::render::Context
 physicalDeviceFeatures	render/context.hpp	/^    vk::PhysicalDeviceFeatures physicalDeviceFeatures;$/;"	m	class:sword::render::Context
 physicalDeviceMemoryProperties	render/context.hpp	/^    vk::PhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;$/;"	m	class:sword::render::Context
@@ -1179,7 +1187,7 @@ set	command/vocab.hpp	/^    void set(const state::Vocab* vPtr) { this->vocabPtr 
 set	command/vocab.hpp	/^    void set(const std::vector<std::string> v) { this->vocab = v; }$/;"	f	class:sword::command::SetVocab
 set	command/watcher.hpp	/^    void set(std::string path) {this->path = path;}$/;"	f	class:sword::command::WatchFile
 set	event/event.hpp	/^    template <typename... Args> void set(Args... args) {}$/;"	f	class:sword::event::symbol::Event
-set	event/event.hpp	/^    void set(int wd, std::string file) { this->wd = wd; this->file = file; }$/;"	f	class:sword::event::symbol::File
+set	event/event.hpp	/^    void set(int wd, std::string path) { this->wd = wd; this->path = path; }$/;"	f	class:sword::event::symbol::File
 set	event/event.hpp	/^    void set(int16_t x, int16_t y) {xPos = x; yPos = y;}$/;"	f	class:sword::event::symbol::final
 set	event/event.hpp	/^    void set(int16_t x, int16_t y, symbol::Key key) {xPos = x; yPos = y; this->key = key;}$/;"	f	class:sword::event::symbol::final
 set	event/event.hpp	/^    void set(int16_t x, int16_t y, symbol::MouseButton button) {xPos = x; yPos = y; this->button = button;}$/;"	f	class:sword::event::symbol::final
@@ -1437,8 +1445,9 @@ waitForFence	render/command.cpp	/^void CommandBuffer::waitForFence() const$/;"	f
 watchFile	command/commandpools.hpp	/^    CommandPool<command::WatchFile> watchFile;$/;"	m	struct:sword::CommandPools
 watchFile	state/shader.hpp	/^    WatchFile watchFile;$/;"	m	class:sword::state::final
 watchFile	state/shader.hpp	/^    enum class Op : Option {watchFile, compileShader, printShader, loadFrag, loadVert, setSpecInt, setSpecFloat, printReports};$/;"	m	class:sword::state::final::Op
-watches	event/filewatcher.hpp	/^    SmallMap<int, std::string> watches;$/;"	m	class:sword::event::FileWatcher
+watches	event/filewatcher.hpp	/^    std::vector<WatchTicket> watches;$/;"	m	class:sword::event::FileWatcher
 wd	event/event.hpp	/^    int wd;$/;"	m	class:sword::event::symbol::File
+wd	event/filewatcher.hpp	/^    int wd;$/;"	m	struct:sword::event::WatchTicket
 width	render/renderframe.hpp	/^    uint32_t width;$/;"	m	class:sword::render::RenderFrame
 width	render/surface/window.hpp	/^    uint16_t width, height;$/;"	m	class:sword::render::Window
 width	state/report.hpp	/^    const int width, height;$/;"	m	class:sword::state::AttachmentReport

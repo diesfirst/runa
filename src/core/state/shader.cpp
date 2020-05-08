@@ -259,13 +259,11 @@ void ShaderManager::handleEvent(event::Event* event)
     {
         //this algorithm ONLY works for fragment shaders currently... it should be fixed
         auto fe = static_cast<event::File*>(event);
-        auto file = fe->getFile();
-        std::string path = std::string(SHADER_SRC) + "/fragment/" + file;
-        int pos = file.find_first_of('.');
-        auto name = file.substr(0, pos);
+        auto path = fe->getPath();
         for (const auto& report : shaderReports) 
         {
-            if (report->getObjectName() == name)
+            std::invoke(*report);
+            if (report->getSourcePath() == path)
             {
                 auto rep = report.get();
                 auto cmd = csPool.request(
@@ -273,7 +271,7 @@ void ShaderManager::handleEvent(event::Event* event)
                             auto rep = static_cast<ShaderReport*>(r);
                             std::invoke(srCallback, rep);
                             }),
-                        path, name, rep);
+                        path, rep->getObjectName(), rep);
                 pushCmd(std::move(cmd));
                 break;
             }

@@ -1,5 +1,7 @@
-layout (constant_id = 0) const float WIDTH = 400;
-layout (constant_id = 1) const float HEIGHT = 100;
+//layout (constant_id = 0) const float WIDTH = 800;
+//layout (constant_id = 1) const float HEIGHT = 800;
+const float WIDTH = 800;
+const float HEIGHT = 800;
 
 layout(location = 0) out vec4 outColor;
 

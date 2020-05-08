@@ -250,6 +250,8 @@ private:
     EditStack& editStack;
 };
 
+
+
 }; //state
 
 }; //sword

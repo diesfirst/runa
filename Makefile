@@ -23,7 +23,7 @@ INC_DIRS := -I$(CORE) -I/usr/include -I./include/thirdparty
 
 WFLAGS = -Wall -W -Wno-parentheses -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-uninitialized -Wno-unused-parameter -Wno-unused-local-typedefs
 CPPFLAGS = $(DEPFLAGS) -g -std=c++17 $(WFLAGS) $(INC_DIRS) -fPIC 
-LDFLAGS = -lpthread -lxcb -lvulkan -lX11 -lreadline -ldl -lshaderc_combined
+LDFLAGS = -lpthread -lxcb -lvulkan -lX11 -lreadline -ldl -lshaderc_combined -lglslc -lshaderc_util
 LIB = ./lib
 LDIRS = -L$(LIB) #-L$(LIB)/loader 
 LINK = $(LDIRS) $(LDFLAGS)
@@ -31,7 +31,7 @@ SPV = ./build/shadersstar
 THIRD = ./src/thirdparty
 
 $(TARGET) : $(OBJS) 
-	$(CC) $(OBJS) -o $@ $(LDFLAGS) ; ctags -R . ; cd $(CORE) ; ctags -R . 
+	$(CC) $(OBJS) -o $@ $(LINK) ; ctags -R . ; cd $(CORE) ; ctags -R . 
 
 $(BUILD)/%.o : $(CORE)/%.cpp $(DEPDIR)/%.d | $(DEPDIR)
 	$(CC) $(CPPFLAGS) -c $< -o $@
