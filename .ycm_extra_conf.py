@@ -38,9 +38,9 @@ flags = [
     'c++',
     '-I/home/michaelb/dev/sword/src/core',
     '-I/home/michaelb/dev/sword/include/thirdparty',
-    '-std=c++17',
+    '-std=c++20',
 ]
 
 def Settings( **kwargs ):
-    return {'flags' : flags}
+    return {'flags' : flags, 'do_cache' : True}
 

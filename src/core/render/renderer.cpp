@@ -1,3 +1,4 @@
+#include "vulkan/vulkan.hpp"
 #include <render/context.hpp>
 #include <render/resource.hpp>
 #include <render/swapchain.hpp>
@@ -658,10 +659,11 @@ VertShader& Renderer::vertShaderAt(const std::string name)
 }
 
 
-BufferBlock* Renderer::copySwapToHost(const vk::Rect2D region)
+BufferBlock* Renderer::copySwapToHost()
 {
+    auto extent = swapchain->getExtent2D();
     auto block = descriptorBuffer->requestBlock(
-            region.extent.width * region.extent.height * 4);
+            extent.width * extent.height * 4);
 
     auto& commandBuffer = commandPool.requestCommandBuffer();
 
@@ -689,8 +691,8 @@ BufferBlock* Renderer::copySwapToHost(const vk::Rect2D region)
             imb);
 
     vk::BufferImageCopy copyRegion;
-    copyRegion.setImageExtent({region.extent.width, region.extent.height, 1});
-    copyRegion.setImageOffset({region.offset.x, region.offset.y, 0});
+    copyRegion.setImageExtent({extent.width, extent.height, 1});
+    copyRegion.setImageOffset({0, 0, 0});
     copyRegion.setBufferOffset(block->offset);
     copyRegion.setImageSubresource({vk::ImageAspectFlagBits::eColor, 0, 0, 1});
     copyRegion.setBufferRowLength(0);
@@ -759,6 +761,10 @@ BufferBlock* Renderer::copyAttachmentToHost(
     return block;
 }
 
+vk::Extent2D Renderer::getSwapExtent()
+{
+    return swapchain->getExtent2D();
+}
 
 
 }; // namespace render

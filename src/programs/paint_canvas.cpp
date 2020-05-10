@@ -387,7 +387,7 @@ int main(int argc, char *argv[])
                         case PressAction::Save:
                             {
                                 std::cout << "Copying to buffer" << std::endl;
-                                vk::Rect2D region;
+                                vk::Rect2D regiokn;
                                 region.offset.x = 0;
                                 region.offset.y = 0;
                                 region.extent.setWidth(C_WIDTH);

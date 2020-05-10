@@ -59,19 +59,19 @@ class RecordRenderCommand;
 
 struct Register
 {
-    LoadFragShaders* loadFragShaders;
-    LoadVertShaders* loadVertShaders;
-    SetSpec* setSpec;
-    OpenWindow* openWindow;
-    PrepareRenderFrames* prepareRenderFrames;
-    CreateFrameDescriptorSets* createFrameDescriptorSets;
-    CreateDescriptorSetLayout* createDescriptorSetLayout;
-    CreateRenderPass* createRenderPass;
-    CreatePipelineLayout* createPipelineLayout;
-    CreateGraphicsPipeline* createGraphicsPipeline;
-    CreateRenderLayer* createRenderLayer;
-    CompileShader* compileShader;
-    RecordRenderCommand* recordRenderCommand;
+    const LoadFragShaders* loadFragShaders;
+    const LoadVertShaders* loadVertShaders;
+    const SetSpec* setSpec;
+    const OpenWindow* openWindow;
+    const PrepareRenderFrames* prepareRenderFrames;
+    const CreateFrameDescriptorSets* createFrameDescriptorSets;
+    const CreateDescriptorSetLayout* createDescriptorSetLayout;
+    const CreateRenderPass* createRenderPass;
+    const CreatePipelineLayout* createPipelineLayout;
+    const CreateGraphicsPipeline* createGraphicsPipeline;
+    const CreateRenderLayer* createRenderLayer;
+    const CompileShader* compileShader;
+    const RecordRenderCommand* recordRenderCommand;
 };
 
 struct StateArgs

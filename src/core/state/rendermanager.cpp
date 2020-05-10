@@ -6,6 +6,35 @@ namespace sword
 namespace state
 {
 
+SaveSwapImage::SaveSwapImage(StateArgs sa, Callbacks cb) : 
+    LeafState{sa, cb}, pool{sa.cp.saveSwapToPng}
+{}
+
+void SaveSwapImage::onEnterExt()
+{
+    std::cout << "Enter a name for the file." << '\n';
+}
+
+void SaveSwapImage::handleEvent(event::Event* event)
+{
+    if (event->getCategory() == event::Category::CommandLine)
+    {
+        auto ce = toCommandLine(event);
+        auto name = ce->getArg<std::string, 0>();
+        if (name == "")
+        {
+            std::cout << "Name cannot be empty." << '\n';
+            event->setHandled();
+            popSelf();
+            return;
+        }
+        auto cmd = pool.request(reportCallback(), name);
+        pushCmd(std::move(cmd));
+        event->setHandled();
+        popSelf();
+    }
+}
+
 Render::Render(StateArgs sa, Callbacks cb) :
     LeafState{sa, cb}, pool{sa.cp.render}
 {}
@@ -13,17 +42,6 @@ Render::Render(StateArgs sa, Callbacks cb) :
 void Render::onEnterExt()
 {
     std::cout << "Enter a render command index and 0 or 1 based on whether or not to update ubo" << std::endl;
-}
-
-RecordRenderCommand::RecordRenderCommand(StateArgs sa, Callbacks cb) :
-    LeafState{sa, cb}, pool{sa.cp.recordRenderCommand}
-{
-    sa.rg.recordRenderCommand = this;
-}
-
-void RecordRenderCommand::onEnterExt()
-{
-    std::cout << "Enter a command index, and an array of render layer ids to use." << std::endl;
 }
 
 void Render::handleEvent(event::Event* event)
@@ -38,6 +56,17 @@ void Render::handleEvent(event::Event* event)
         popSelf();
         event->setHandled();
     }
+}
+
+RecordRenderCommand::RecordRenderCommand(StateArgs sa, Callbacks cb) :
+    LeafState{sa, cb}, pool{sa.cp.recordRenderCommand}
+{
+    sa.rg.recordRenderCommand = this;
+}
+
+void RecordRenderCommand::onEnterExt()
+{
+    std::cout << "Enter a command index, and an array of render layer ids to use." << std::endl;
 }
 
 void RecordRenderCommand::handleEvent(event::Event* event)
@@ -122,7 +151,8 @@ RenderManager::RenderManager(StateArgs sa, Callbacks cb) :
         {"create_render_layer", opcast(Op::createRenderLayer)},
         {"record_render_command", opcast(Op::recordRenderCommand)},
         {"render", opcast(Op::render)},
-        {"print_reports", opcast(Op::printReports)}
+        {"print_reports", opcast(Op::printReports)},
+        {"save_swap_image", opcast(Op::saveSwapImage)}
     }},
     pipelineManager{sa, {
         [this](){activate(opcast(Op::pipelineManager));}},
@@ -141,6 +171,7 @@ RenderManager::RenderManager(StateArgs sa, Callbacks cb) :
     createRenderLayer{sa, {nullptr, [this](Report* report) { addReport(report, &renderLayersReports); }}},
     recordRenderCommand{sa, {nullptr, [this](Report* report) { addReport(report, &renderCommandReports); }}},
     render{sa, {}},
+    saveSwapImage{sa, {}},
     rrcPool{sa.cp.recordRenderCommand},
     renderPool{sa.cp.render}
 {   
@@ -152,6 +183,7 @@ RenderManager::RenderManager(StateArgs sa, Callbacks cb) :
     activate(opcast(Op::createRenderLayer));
     activate(opcast(Op::recordRenderCommand));
     activate(opcast(Op::render));
+    activate(opcast(Op::saveSwapImage));
 }
 
 void RenderManager::handleEvent(event::Event* event)
@@ -172,6 +204,7 @@ void RenderManager::handleEvent(event::Event* event)
             case Op::recordRenderCommand: pushState(&recordRenderCommand); break;
             case Op::printReports: printReports(); break;
             case Op::render: pushState(&render); break;
+            case Op::saveSwapImage: pushState(&saveSwapImage); break;
         }
     }
 }

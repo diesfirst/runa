@@ -44,11 +44,14 @@ Director::Director(StateArgs sa, const StateStack& ss, render::Window& window) :
         {"print_state_hierarchy", opcast(Op::printHierarchy)},
         {"quick_setup", opcast(Op::quickSetup)},
         {"quick_setup2", opcast(Op::quickSetup2)},
-        {"quick_setup3", opcast(Op::quickSetup3)}
+        {"quick_setup3", opcast(Op::quickSetup3)},
+        {"painter", opcast(Op::painter)}
     }}, 
     stateStack{ss},
     renderManager{sa, 
         {[this](){activate(opcast(Op::pushRenderManager));}, {}, {}}},
+    painter{sa,
+        {[this](){activate(opcast(Op::painter));}, {}, {}}},
     quickState{sa, {}},
     cp{sa.cp},
     sr{sa.rg}
@@ -58,6 +61,7 @@ Director::Director(StateArgs sa, const StateStack& ss, render::Window& window) :
     activate(opcast(Op::quickSetup));
     activate(opcast(Op::quickSetup2));
     activate(opcast(Op::quickSetup3));
+    activate(opcast(Op::painter));
 }
 
 void Director::handleEvent(event::Event* event)
@@ -70,6 +74,7 @@ void Director::handleEvent(event::Event* event)
         {
             case Op::printHierarchy: printStateHierarchy(); break;
             case Op::pushRenderManager: pushRenderManager(); break;
+            case Op::painter: pushState(&painter); deactivate(opcast(Op::painter)); break;
             case Op::quickSetup: quickSetup(); break;
             case Op::quickSetup2: quickSetup2(); break;
             case Op::quickSetup3: quickSetup3(); break;

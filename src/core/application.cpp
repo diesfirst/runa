@@ -1,4 +1,5 @@
 #include <application.hpp>
+#include <cstdint>
 #include <state/director.hpp>
 #include <event/event.hpp>
 #include <state/state.hpp>
@@ -14,8 +15,7 @@ Application::Application(uint16_t w, uint16_t h, const std::string logfile, int 
     offscreenDim{{w, h}},
     swapDim{{w, h}},
     readlog{logfile},
-    dirState{{stateEdits, cmdStack, cmdPools, stateRegister}, stateStack, window},
-    maxEventReads{event_reads}
+    dirState{{stateEdits, cmdStack, cmdPools, stateRegister}, stateStack, window}
 {
     stateStack.push(&dirState);
     stateStack.top()->onEnter();
@@ -28,13 +28,18 @@ Application::Application(uint16_t w, uint16_t h, const std::string logfile, int 
     }
     //if (readevents) readEvents(is, eventPops);
     if (recordevents) std::remove(writelog.data());
+
+    if (event_reads == 0)
+        maxEventReads = INT32_MAX;
+    else 
+        maxEventReads = event_reads;
+
 }
 
 void Application::popState()
 {
     stateStack.top()->onExit();
     stateStack.pop();
-
 }
 
 void Application::pushState(state::State* state)

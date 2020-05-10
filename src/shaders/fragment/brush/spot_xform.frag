@@ -28,7 +28,7 @@ void main()
 	vec4 color = vec4(0.);
 	vec2 st = gl_FragCoord.xy / vec2(WIDTH, HEIGHT);
     vec2 mCoords = vec2(ubo.mouseX, ubo.mouseY);
-    color += fill_aa(circleNormSDF(st - mCoords), ubo.brushSize * .01);
+    color += fill_aa(circleNormSDF(st - mCoords), ubo.brushSize * .01, 0.01);
     color.rgb *= vec3(ubo.r, ubo.g, ubo.b);
     color *= ubo.a; //premultiplying
 	outColor = color;

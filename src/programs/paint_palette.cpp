@@ -309,6 +309,9 @@ int main(int argc, char *argv[])
                         std::cout << "size: " << C_WIDTH * C_HEIGHT * 4 << std::endl;
                         auto block = renderer.copyAttachmentToHost("paint0", region);
                         const unsigned char* blockPtr = static_cast<const unsigned char*>(block->pHostMemory);
+
+                        // swap image stored in BGR8 format, so met must swizze
+                        int 
                         std::vector<unsigned char> pngBuffer;
                         lodepng::encode(
                                 pngBuffer, 

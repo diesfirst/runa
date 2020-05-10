@@ -1,6 +1,7 @@
 #ifndef RENDER_RENDERER_HPP_
 #define RENDER_RENDERER_HPP_
 
+#include "vulkan/vulkan.hpp"
 #include <memory>
 #include <tuple>
 #include <unordered_map>
@@ -102,8 +103,10 @@ public:
     void removeGraphicsPipeline(const std::string name) {graphicsPipelines.erase(name);}
     void removeRenderpassInstance(int index);
 
-    BufferBlock* copySwapToHost(const vk::Rect2D region);
+    BufferBlock* copySwapToHost();
     BufferBlock* copyAttachmentToHost(const std::string, const vk::Rect2D region);
+
+    vk::Extent2D getSwapExtent();
 
 private:
     const Context& context;

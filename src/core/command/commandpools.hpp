@@ -1,9 +1,10 @@
 #ifndef COMMAND_COMMANDPOOLS_HPP
 #define COMMAND_COMMANDPOOLS_HPP
 
-#include <command/rendercommands.hpp>
-#include <command/shader.hpp>
-#include <command/commandtypes.hpp>
+#include "rendercommands.hpp"
+#include "shader.hpp"
+#include "saveimage.hpp"
+#include "commandtypes.hpp"
 #include "watcher.hpp"
 
 namespace sword
@@ -33,6 +34,7 @@ struct CommandPools
     CommandPool<command::Render> render;
     CommandPool<command::CompileShader> compileShader;
     CommandPool<command::WatchFile> watchFile;
+    CommandPool<command::SaveSwapToPng> saveSwapToPng;
 };
 
 }; // namespace sword

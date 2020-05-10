@@ -14,7 +14,8 @@ build/state/state.o: src/core/state/state.cpp src/core/state/state.hpp \
  include/thirdparty/shaderc/visibility.h \
  include/thirdparty/file_includer.h \
  include/thirdparty/libshaderc_util/file_finder.h \
- include/thirdparty/shaderc/shaderc.hpp src/core/command/watcher.hpp \
+ include/thirdparty/shaderc/shaderc.hpp src/core/command/saveimage.hpp \
+ src/core/command/commandtypes.hpp src/core/command/watcher.hpp \
  src/core/state/editstack.hpp src/core/types/map.hpp \
  src/core/event/event.hpp src/core/render/surface/window.hpp \
  src/core/command/vocab.hpp src/core/state/option.hpp \
@@ -69,6 +70,10 @@ include/thirdparty/file_includer.h:
 include/thirdparty/libshaderc_util/file_finder.h:
 
 include/thirdparty/shaderc/shaderc.hpp:
+
+src/core/command/saveimage.hpp:
+
+src/core/command/commandtypes.hpp:
 
 src/core/command/watcher.hpp:
 

@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <sstream>
 #include <util/file.hpp>
+#include <util/debug.hpp>
 
 namespace sword
 {
@@ -62,6 +63,13 @@ void CompileShader::handleEvent(event::Event* event)
         auto ce = toCommandLine(event);       
         auto path = ce->getArg<std::string, 0>();
         auto name = ce->getArg<std::string, 1>();
+        if (name.empty())
+        {
+            std::cout << "Must specify a shader name." << '\n';
+            event->setHandled();
+            popSelf();
+            return;
+        }
         auto cmd = pool.request(reportCallback(), path, name);
         pushCmd(std::move(cmd));
         event->setHandled();

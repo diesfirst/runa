@@ -17,13 +17,17 @@ build/command/vocab.o: src/core/command/vocab.cpp \
  include/thirdparty/shaderc/visibility.h \
  include/thirdparty/file_includer.h \
  include/thirdparty/libshaderc_util/file_finder.h \
- include/thirdparty/shaderc/shaderc.hpp src/core/command/watcher.hpp \
+ include/thirdparty/shaderc/shaderc.hpp src/core/command/saveimage.hpp \
+ src/core/command/commandtypes.hpp src/core/command/watcher.hpp \
  src/core/state/editstack.hpp src/core/types/map.hpp \
  src/core/state/option.hpp src/core/state/vocab.hpp \
  src/core/state/statetypes.hpp src/core/state/rendermanager.hpp \
- src/core/state/pipelinemanager.hpp src/core/state/descriptormanager.hpp \
+ src/core/state/pipelinemanager.hpp src/core/command/rendercommands.hpp \
+ src/core/state/descriptormanager.hpp \
  src/core/state/descriptorsetlayoutmanager.hpp \
  src/core/state/renderpassmanager.hpp src/core/state/shader.hpp \
+ src/core/command/shader.hpp src/core/command/saveimage.hpp \
+ src/core/state/painter.hpp src/core/state/state.hpp \
  src/core/render/ubotypes.hpp src/core/render/context.hpp \
  src/core/render/renderer.hpp src/core/render/command.hpp \
  src/core/render/shader.hpp src/core/render/pipeline.hpp \
@@ -91,6 +95,10 @@ include/thirdparty/libshaderc_util/file_finder.h:
 
 include/thirdparty/shaderc/shaderc.hpp:
 
+src/core/command/saveimage.hpp:
+
+src/core/command/commandtypes.hpp:
+
 src/core/command/watcher.hpp:
 
 src/core/state/editstack.hpp:
@@ -107,6 +115,8 @@ src/core/state/rendermanager.hpp:
 
 src/core/state/pipelinemanager.hpp:
 
+src/core/command/rendercommands.hpp:
+
 src/core/state/descriptormanager.hpp:
 
 src/core/state/descriptorsetlayoutmanager.hpp:
@@ -114,6 +124,14 @@ src/core/state/descriptorsetlayoutmanager.hpp:
 src/core/state/renderpassmanager.hpp:
 
 src/core/state/shader.hpp:
+
+src/core/command/shader.hpp:
+
+src/core/command/saveimage.hpp:
+
+src/core/state/painter.hpp:
+
+src/core/state/state.hpp:
 
 src/core/render/ubotypes.hpp:
 

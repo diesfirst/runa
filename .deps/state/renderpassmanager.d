@@ -15,11 +15,12 @@ build/state/renderpassmanager.o: src/core/state/renderpassmanager.cpp \
  include/thirdparty/shaderc/visibility.h \
  include/thirdparty/file_includer.h \
  include/thirdparty/libshaderc_util/file_finder.h \
- include/thirdparty/shaderc/shaderc.hpp src/core/command/watcher.hpp \
+ include/thirdparty/shaderc/shaderc.hpp src/core/command/saveimage.hpp \
+ src/core/command/commandtypes.hpp src/core/command/watcher.hpp \
  src/core/state/editstack.hpp src/core/types/map.hpp \
  src/core/event/event.hpp src/core/render/surface/window.hpp \
  src/core/command/vocab.hpp src/core/state/option.hpp \
- src/core/state/vocab.hpp
+ src/core/state/vocab.hpp src/core/command/rendercommands.hpp
 
 src/core/state/renderpassmanager.hpp:
 
@@ -73,6 +74,10 @@ include/thirdparty/libshaderc_util/file_finder.h:
 
 include/thirdparty/shaderc/shaderc.hpp:
 
+src/core/command/saveimage.hpp:
+
+src/core/command/commandtypes.hpp:
+
 src/core/command/watcher.hpp:
 
 src/core/state/editstack.hpp:
@@ -88,3 +93,5 @@ src/core/command/vocab.hpp:
 src/core/state/option.hpp:
 
 src/core/state/vocab.hpp:
+
+src/core/command/rendercommands.hpp:

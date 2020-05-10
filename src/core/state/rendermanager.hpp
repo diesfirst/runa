@@ -9,12 +9,24 @@
 #include <state/renderpassmanager.hpp>
 #include <state/shader.hpp>
 #include <command/rendercommands.hpp>
+#include <command/saveimage.hpp>
 
 namespace sword
 {
 
 namespace state
 {
+
+class SaveSwapImage : public LeafState
+{
+public:
+    const char* getName() const override { return "SaveSwapImage"; }
+    void handleEvent(event::Event*) override;
+    SaveSwapImage(StateArgs, Callbacks);
+private:
+    void onEnterExt() override;
+    CommandPool<command::SaveSwapToPng>& pool;
+};
 
 class Render : public LeafState
 {
@@ -76,7 +88,7 @@ public:
     void handleEvent(event::Event*) override;
     RenderManager(StateArgs, Callbacks cb);
 private:
-    enum class Op : Option {printReports, render, openWindow, prepRenderFrames, shaderManager, 
+    enum class Op : Option {saveSwapImage, printReports, render, openWindow, prepRenderFrames, shaderManager, 
         descriptorManager, renderPassManager, pipelineManager, createRenderLayer, recordRenderCommand};
 
     PipelineManager pipelineManager;
@@ -88,6 +100,7 @@ private:
     CreateRenderLayer createRenderLayer;
     RecordRenderCommand recordRenderCommand;
     Render render;
+    SaveSwapImage saveSwapImage;
 
     Reports<RenderLayerReport> renderLayersReports;
     Reports<RenderCommandReport> renderCommandReports;
