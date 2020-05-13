@@ -256,6 +256,18 @@ private:
     uint32_t binding;
 };
 
+class BindUboData : public Command
+{
+public:
+    void execute(Application* app) override;
+    const char* getName() const override {return "BindUboData";};
+    void set(void* address, int size) { this->address = address, this->size = size; }
+    state::Report* makeReport() const override {return nullptr;}
+private:
+    void* address;
+    int size;
+};
+
 class UpdateFrameSamplers : public Command
 {
 public:

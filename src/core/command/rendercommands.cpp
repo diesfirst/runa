@@ -230,7 +230,10 @@ state::Report* CreatePipelineLayout::makeReport() const
     return new state::PipelineLayoutReport(name, descriptorSetLayoutNames);
 }
 
-
+void BindUboData::execute(Application* app)
+{
+    app->renderer.bindUboData(address, size, 0);
+}
 
 
 }; // namespace command

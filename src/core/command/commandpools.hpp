@@ -35,6 +35,7 @@ struct CommandPools
     CommandPool<command::CompileShader> compileShader;
     CommandPool<command::WatchFile> watchFile;
     CommandPool<command::SaveSwapToPng> saveSwapToPng;
+    CommandPool<command::BindUboData> bindUboData;
 };
 
 }; // namespace sword
