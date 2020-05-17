@@ -235,7 +235,6 @@ RenderpassInstance	state/report.hpp	/^    RenderpassInstance,$/;"	m	class:sword:
 Report	state/report.hpp	/^class Report$/;"	c	namespace:sword::state
 ReportType	state/report.hpp	/^enum class ReportType : uint8_t$/;"	c	namespace:sword::state
 ReportUsage	state/report.hpp	/^enum class ReportUsage : uint8_t$/;"	c	namespace:sword::state
-ResizeBrush	state/painter.cpp	/^    ResizeBrush = static_cast<uint8_t>(event::symbol::Key::Alt),$/;"	m	class:sword::state::painter::Input	file:
 ResizeBrush	state/painter.cpp	/^ResizeBrush::ResizeBrush(StateArgs sa, Callbacks cb, PainterVars& vars) :$/;"	f	class:sword::state::painter::Input::ResizeBrush	file:
 ResizeBrush	state/painter.hpp	/^class ResizeBrush : public LeafState$/;"	c	namespace:sword::state::painter
 ReverseStack	types/stack.hpp	/^class ReverseStack : public Stack<T>$/;"	c	namespace:sword
@@ -307,7 +306,6 @@ TYPES_SPIRV_HPP	types/spirv.hpp	2;"	d
 TYPES_STACK_HPP_	types/stack.hpp	2;"	d
 TargetType	render/renderer.hpp	/^enum class TargetType {offscreen, swapchain};$/;"	c	namespace:sword::render
 Timer	util.hpp	/^class Timer$/;"	c	namespace:sword
-Translate	state/painter.cpp	/^    Translate = static_cast<uint8_t>(event::symbol::MouseButton::Middle)$/;"	m	class:sword::state::painter::Input	file:
 Translate	state/painter.cpp	/^Translate::Translate(StateArgs sa, Callbacks cb, PainterVars& vars) : $/;"	f	class:sword::state::painter::Input::Translate	file:
 Translate	state/painter.hpp	/^class Translate : public LeafState$/;"	c	namespace:sword::state::painter
 Type	state/report.hpp	/^    enum class Type : uint8_t {frameOwned, rendererOwned};$/;"	c	class:sword::state::DescriptorSetReport
@@ -1033,6 +1031,7 @@ override	state/shader.hpp	/^    void onEnterExt() override;$/;"	m	class:sword::s
 override	state/shader.hpp	/^    void onEnterExt() override;$/;"	m	class:sword::state::WatchFile
 owPool	state/rendermanager.hpp	/^    CommandPool<command::OpenWindow>& owPool;$/;"	m	class:sword::state::OpenWindow
 pEventFunc	event/dispatcher.cpp	/^typedef void (EventDispatcher::*pEventFunc)(xcb_generic_event_t* event);$/;"	t	namespace:sword::event	file:
+paint	state/painter.cpp	/^    paint = static_cast<uint8_t>(event::symbol::MouseButton::Left)$/;"	m	class:sword::state::painter::Input	file:
 paint	state/painter.hpp	/^    Paint paint;$/;"	m	class:sword::state::painter::final
 paint	state/painter.hpp	/^    enum class Op : Option {initBasic, paint, brushResize};$/;"	m	class:sword::state::painter::final::Op
 painter	state/director.hpp	/^    enum class Op : Option {painter, pushRenderManager, printHierarchy, quickSetup, quickSetup2, quickSetup3};$/;"	m	class:sword::state::final::Op
@@ -1230,6 +1229,7 @@ reset	event/event.hpp	/^    void reset() {inUse = false; handled = false;}$/;"	f
 reset	render/command.cpp	/^void CommandBuffer::reset()$/;"	f	class:sword::render::CommandBuffer
 resetCommandBuffers	render/renderer.cpp	/^void Renderer::resetCommandBuffers()$/;"	f	class:sword::render::Renderer
 resetPool	render/command.cpp	/^void CommandPool::resetPool()$/;"	f	class:sword::render::CommandPool
+resizeBrush	state/painter.cpp	/^    resizeBrush = static_cast<uint8_t>(event::symbol::Key::Alt),$/;"	m	class:sword::state::painter::Input	file:
 resizeBrush	state/painter.hpp	/^    ResizeBrush resizeBrush;$/;"	m	class:sword::state::painter::final
 reverse	types/stack.hpp	/^    void reverse() { std::reverse(items.begin(), items.end()); }$/;"	f	class:sword::Stack
 rg	state/state.hpp	/^    Register& rg;$/;"	m	struct:sword::state::StateArgs
@@ -1507,6 +1507,7 @@ top	types/stack.hpp	/^    T top() const {return items.back();}$/;"	f	class:sword
 topMask	state/state.hpp	/^    OptionMask topMask;$/;"	m	class:sword::state::BranchState
 topPtr	types/stack.hpp	/^    auto topPtr() const {return items.back().get();}$/;"	f	class:sword::Stack
 tranlatePrevious	state/painter.hpp	/^    glm::mat4 tranlatePrevious;$/;"	m	class:sword::state::painter::Translate
+translate	state/painter.cpp	/^    translate = static_cast<uint8_t>(event::symbol::MouseButton::Middle),$/;"	m	class:sword::state::painter::Input	file:
 translate	state/painter.hpp	/^    Translate translate;$/;"	m	class:sword::state::painter::final
 translate	state/painter.hpp	/^    glm::mat4& translate;$/;"	m	class:sword::state::painter::Translate
 type	command/rendercommands.hpp	/^    ShaderType type;$/;"	m	class:sword::command::SetSpecFloat

@@ -165,7 +165,6 @@ private:
 
 }; // namespace Painter
 
-
 }; // namespace state
 
 }; // namespace sword

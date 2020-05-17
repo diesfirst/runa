@@ -16,8 +16,9 @@ namespace painter
 
 enum class Input : uint8_t
 {
-    ResizeBrush = static_cast<uint8_t>(event::symbol::Key::Alt),
-    Translate = static_cast<uint8_t>(event::symbol::MouseButton::Middle)
+    resizeBrush = static_cast<uint8_t>(event::symbol::Key::Alt),
+    translate = static_cast<uint8_t>(event::symbol::MouseButton::Middle),
+    paint = static_cast<uint8_t>(event::symbol::MouseButton::Left)
 };
 
 constexpr Input inputCast(event::symbol::Key key) { return static_cast<Input>(key); }
@@ -115,7 +116,7 @@ void ResizeBrush::handleEvent(event::Event* event)
         if (we->getType() == event::WindowEventType::Keyrelease)
         {
             auto kr = static_cast<event::KeyRelease*>(event);
-            if (inputCast(kr->getKey()) == Input::ResizeBrush)
+            if (inputCast(kr->getKey()) == Input::resizeBrush)
             {
                 if (begin)
                     begin = false;
@@ -165,14 +166,20 @@ void Paint::handleEvent(event::Event* event)
         }
         if (we->getType() == event::WindowEventType::MousePress)
         {
-            auto input = static_cast<event::MouseMotion*>(we);
-            brushPosX = input->getX() / canvasWidth;
-            brushPosY = input->getY() / canvasHeight;
-            auto cmd = pool.request(0, 1);
-            pushCmd(std::move(cmd));
-            event->isHandled();
-            mouseDown = true;
-            return;
+            if (inputCast(static_cast<event::MousePress*>(we)->getMouseButton()) == Input::paint)
+            {
+                auto input = static_cast<event::MouseMotion*>(we);
+                pos.x = input->getX() / canvasWidth;
+                pos.y = input->getY() / canvasHeight;
+                pos = vars.fragInput.xform * pos;
+                brushPosX = pos.x;
+                brushPosY = pos.y;
+                auto cmd = pool.request(0, 1);
+                pushCmd(std::move(cmd));
+                event->isHandled();
+                mouseDown = true;
+                return;
+            }
         }
         if (we->getType() == event::WindowEventType::MouseRelease)
         {
@@ -225,7 +232,7 @@ void Painter::handleEvent(event::Event* event)
         if (we->getType() == event::WindowEventType::Keypress)
         {
             auto kp = static_cast<event::KeyPress*>(we);
-            if (inputCast(kp->getKey()) == Input::ResizeBrush)
+            if (inputCast(kp->getKey()) == Input::resizeBrush)
             {
                 // TODO: need to make sure its active
                 SWD_DEBUG_MSG("pushing resize");
@@ -237,8 +244,11 @@ void Painter::handleEvent(event::Event* event)
         if (we->getType() == event::WindowEventType::MousePress)
         {
             auto kp = static_cast<event::MousePress*>(we);
-            if (inputCast(kp->getMouseButton()) == Input::Translate)
+            if (inputCast(kp->getMouseButton()) == Input::translate)
             {
+                auto input = static_cast<event::MouseMotion*>(we);
+                painterVars.fragInput.mouseX = input->getX() / painterVars.canvasWidthFloat;
+                painterVars.fragInput.mouseY = input->getY() / painterVars.canvasHeightFloat;
                 SWD_DEBUG_MSG("pushing translate")
                 pushState(&translate);
                 event->setHandled();
