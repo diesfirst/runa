@@ -14,6 +14,8 @@ namespace event
 FileWatcher::FileWatcher(EventQueue& queue) :
     eventQueue{queue}
 {
+    fd = inotify_init();
+    std::cout << "Inotify init called" << '\n';
 }
 
 // due to the way vim operates, we cannot watch the file itself.
@@ -38,13 +40,12 @@ bool FileWatcher::addWatch(const char* path_str)
 
 void FileWatcher::run()
 {
-    fd = inotify_init();
     SWD_THREAD_MSG("File watcher thread started.");
     while (!shouldStop)
     {
-        constexpr int buffer_len{sizeof(inotify_event) + name_max_len + 1};
-        char buffer[buffer_len];
-        size_t numRead = read(fd, buffer, sizeof(buffer));
+//        constexpr int buffer_len{sizeof(inotify_event) + name_max_len + 1};
+        char buffer[1024];
+        size_t numRead = read(fd, buffer, 1024);
         if (numRead < 1)
             std::cerr << "Did not read anything" << '\n';
         auto in_event = reinterpret_cast<inotify_event*>(buffer);

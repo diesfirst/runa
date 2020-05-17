@@ -79,12 +79,6 @@ void Application::loadDefaultShaders()
     renderer.prepareAsOffscreenPass(offScreenClearPass, vk::AttachmentLoadOp::eClear);
 }
 
-void Application::initUBO()
-{
-    renderer.initFrameUBOs(sizeof(render::FragmentInput), 0); //should be a vector
-    renderer.bindUboData(static_cast<void*>(&fragInput), sizeof(render::FragmentInput), 0);
-}
-
 void Application::recordEvent(event::Event* event, std::ofstream& os)
 {
     if (event->getCategory() == event::Category::CommandLine)

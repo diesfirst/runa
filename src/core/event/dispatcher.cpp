@@ -5,6 +5,7 @@
 #include <state/vocab.hpp>
 #include <thread>
 #include <util/outformat.hpp>
+#include <util/debug.hpp>
 
 namespace sword
 {
@@ -153,6 +154,7 @@ void EventDispatcher::fetchWindowInput()
     auto* event = window.waitForEvent();
     assert (event);
     EventPtr curEvent;
+    SWD_DEBUG_MSG("XCB key response_type: " << uint32_t(event->response_type));
 	switch (static_cast<WindowEventType>(event->response_type))
 	{
         case WindowEventType::Motion: 
@@ -188,9 +190,9 @@ void EventDispatcher::fetchWindowInput()
 		}
         case WindowEventType::Keyrelease:
         {
-            xcb_button_release_event_t* keyRelease = 
-                (xcb_button_release_event_t*)event;
-            curEvent = kpPool.request(keyRelease->event_x, keyRelease->event_y, static_cast<symbol::Key>(keyRelease->detail));
+            xcb_key_release_event_t* keyRelease = 
+                (xcb_key_release_event_t*)event;
+            curEvent = krPool.request(keyRelease->event_x, keyRelease->event_y, static_cast<symbol::Key>(keyRelease->detail));
             break;
         }
         case WindowEventType::EnterWindow:
@@ -200,7 +202,8 @@ void EventDispatcher::fetchWindowInput()
         }
         case WindowEventType::LeaveWindow:
         {
-            std::cout << "Left window!" << std::endl;
+            xcb_leave_notify_event_t* leaveEvent = (xcb_leave_notify_event_t*)event;
+            curEvent = lwPool.request();
             break;
         }
 	}

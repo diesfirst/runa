@@ -2,6 +2,7 @@
 #include <application.hpp>
 #include <state/report.hpp>
 #include <util/defs.hpp>
+#include <render/attachment.hpp>
 
 namespace sword
 {
@@ -107,14 +108,17 @@ state::Report* CreateDescriptorSetLayout::makeReport() const
 
 void InitFrameUbos::execute(Application* app)
 {
-    app->renderer.initFrameUBOs(sizeof(app->fragInput), binding);
+    app->renderer.initFrameUBOs(size, binding);
     success();
 }
 
 void UpdateFrameSamplers::execute(Application* app)
 {
-    app->renderer.updateFrameSamplers(app->sampledImages, binding);
-    success();
+    if (!attachmentNames.empty())
+    {
+        app->renderer.updateFrameSamplers(attachmentNames, binding);
+        success();
+    }
 }
 
 void CreateSwapchainRenderpass::execute(Application* app)
@@ -142,13 +146,14 @@ state::Report* CreateOffscreenRenderpass::makeReport() const
 }
 
 
-//void AddAttachment::execute(Application* app)
-//{
-//        auto& attachment = app->renderer.createAttachment(attachmentName, dimensions, usage);
-//        if (usage & vk::ImageUsageFlagBits::eSampled)
-//            app->sampledImages.push_back(&attachment.getImage(0));
-//}
-//
+void AddAttachment::execute(Application* app)
+{
+        auto& attachment = app->renderer.createAttachment(attachmentName, dimensions, usage);
+        if (usage & vk::ImageUsageFlagBits::eSampled)
+            app->sampledImages.push_back(&attachment.getImage(0));
+        success();
+}
+
 void OpenWindow::execute(Application* app)
 {
     app->window.open();

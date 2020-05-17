@@ -17,7 +17,7 @@ struct CommandPools
     CommandPool<command::LoadVertShader> loadVertShader;
     CommandPool<command::SetSpecFloat> setSpecFloat;
     CommandPool<command::SetSpecInt> setSpecInt;
-//    CommandPool<command::AddAttachment> addAttachment; not implememnted yet
+    CommandPool<command::AddAttachment> addAttachment; 
     CommandPool<command::OpenWindow> openWindow;
 //    CommandPool<command::SetOffscreenDim> setOffscreenDim; not implemented yet
     CommandPool<command::CreateDescriptorSetLayout> createDescriptorSetLayout;

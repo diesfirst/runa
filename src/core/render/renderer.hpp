@@ -62,6 +62,7 @@ public:
     void initFrameUBOs(size_t size, uint32_t binding);
     void updateFrameSamplers(const vk::ImageView*, const vk::Sampler*, uint32_t binding);
     void updateFrameSamplers(const std::vector<const Image*>&, uint32_t binding);
+    void updateFrameSamplers(const std::vector<std::string>& attachmentNames, uint32_t binding);
     void prepareAsSwapchainPass(RenderPass&);
     void prepareAsOffscreenPass(RenderPass&, vk::AttachmentLoadOp);
     Attachment& createAttachment(

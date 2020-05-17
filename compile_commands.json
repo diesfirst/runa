@@ -1,0 +1,28 @@
+[
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "-g",
+            "-std=c++17",
+            "-Wall",
+            "-W",
+            "-Wno-parentheses",
+            "-Wno-unused-variable",
+            "-Wno-sign-compare",
+            "-Wno-reorder",
+            "-Wno-uninitialized",
+            "-Wno-unused-parameter",
+            "-Wno-unused-local-typedefs",
+            "-Isrc/core",
+            "-I/usr/include",
+            "-I./include/thirdparty",
+            "-fPIC",
+            "-o",
+            "build/state/painter.o",
+            "src/core/state/painter.cpp"
+        ],
+        "directory": "/home/michaelb/dev/sword",
+        "file": "src/core/state/painter.cpp"
+    }
+]

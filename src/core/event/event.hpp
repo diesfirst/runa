@@ -38,7 +38,7 @@ enum class Key : uint8_t
     P = 33
 };
 
-}
+} // symbol
 
 enum class WindowEventType : uint8_t
 {
@@ -195,7 +195,13 @@ public:
     inline int16_t getX() const {return xPos;}
     inline int16_t getY() const {return yPos;}
 protected:
-    int16_t xPos, yPos;
+    int16_t xPos{0}, yPos{0};
+};
+
+class LeaveWindow : public Window
+{
+    WindowEventType getType() const override {return WindowEventType::LeaveWindow;}
+    std::string getName() const override {return "LeaveWindow";};
 };
 
 class Keyboard : public Window
@@ -211,15 +217,15 @@ class KeyPress final : public Keyboard
 {
 public:
     void set(int16_t x, int16_t y, symbol::Key key) {xPos = x; yPos = y; this->key = key;}
-    inline WindowEventType getType() const override {return WindowEventType::Keypress;}
-    inline std::string getName() const override {return "KeyPressEvent";};
+    WindowEventType getType() const override {return WindowEventType::Keypress;}
+    std::string getName() const override {return "KeyPressEvent";};
 };
 
 class KeyRelease final : public Keyboard
 {
 public:
     void set(int16_t x, int16_t y, symbol::Key key) {xPos = x; yPos = y; this->key = key;}
-    inline WindowEventType getType() const override {return WindowEventType::Keypress;}
+    inline WindowEventType getType() const override {return WindowEventType::Keyrelease;}
     inline std::string getName() const override {return "KeyReleaseEvent";};
 };
 

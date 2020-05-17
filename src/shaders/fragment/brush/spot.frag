@@ -10,6 +10,6 @@ void main()
     vec2 mCoords = getMouseCoords();
     color += fill_aa(circleNormSDF(st - mCoords), ubo.brushSize * .01);
     color.rgb *= vec3(ubo.r, ubo.g, ubo.b);
-    color *= ubo.a; //premultiplying
+    color *= ubo.a; //premultiplyinggg
 	outColor = color;
 }

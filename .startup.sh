@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-cd $CORE ; vim . ;
+cd $CORE ; nvim . ;

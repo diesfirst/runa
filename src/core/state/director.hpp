@@ -47,7 +47,7 @@ private:
 
     RenderManager renderManager;
     QuickSetup quickState;
-    Painter painter;
+    painter::Painter painter;
 
     CommandPools& cp;
     const state::Register& sr;

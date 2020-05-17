@@ -48,8 +48,9 @@ void InitFrameUbos::handleEvent(event::Event* event)
     if (event->getCategory() == event::Category::CommandLine)
     {
         auto ce = toCommandLine(event);
-        auto binding = ce->getFirst<int>();
-        auto cmd = pool.request(binding);
+        auto size = ce->getArg<size_t, 0>();
+        auto binding = ce->getArg<int, 1>();
+        auto cmd = pool.request(size, binding);
         pushCmd(std::move(cmd));
         event->setHandled();
         popSelf();
@@ -69,10 +70,11 @@ void UpdateFrameSamplers::handleEvent(event::Event* event)
 {
     if (event->getCategory() == event::Category::CommandLine)
     {
-        auto ce = toCommandLine(event);
-        auto binding = ce->getFirst<int>();
-        auto cmd = pool.request(binding);
-        pushCmd(std::move(cmd));
+//        auto ce = toCommandLine(event);
+//        auto binding = ce->getFirst<int>();
+//        auto cmd = pool.request(binding);
+//        pushCmd(std::move(cmd));
+//        Need to disable this until we figure out how to pass it a vector of image addresses
         event->setHandled();
         popSelf();
     }

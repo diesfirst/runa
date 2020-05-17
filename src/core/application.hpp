@@ -26,7 +26,6 @@ public:
     void createPipelineLayout();
     void loadDefaultShaders();
     void createDefaultRenderPasses();
-    void initUBO();
 
     void readEvents(std::ifstream&, int eventPops);
     void recordEvent(event::Event* event, std::ofstream& os);
@@ -43,7 +42,6 @@ public:
     CommandPools cmdPools;
     state::Register stateRegister;
    
-    render::FragmentInput fragInput;
     std::vector<const render::Image*> sampledImages;
 
 private:

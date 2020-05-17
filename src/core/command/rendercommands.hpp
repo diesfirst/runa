@@ -67,7 +67,7 @@ class AddAttachment: public Command
 {
 public:
     CMD_BASE("addAttachment");
-    inline void set(std::string name, int x, int y, vk::ImageUsageFlags usage)
+    void set(std::string name, int x, int y, vk::ImageUsageFlags usage)
     {
         assert(x > 0 && y > 0 && "Bad attachment size");
         attachmentName = name;
@@ -251,8 +251,9 @@ class InitFrameUbos : public Command
 {
 public:
     CMD_BASE("initFrameUbos");
-    void set(uint32_t b) {binding = b;}
+    void set(size_t size, uint32_t b) {this->size = size; binding = b;}
 private:
+    size_t size;
     uint32_t binding;
 };
 
@@ -272,8 +273,11 @@ class UpdateFrameSamplers : public Command
 {
 public:
     CMD_BASE("updateFrameSamplers");
-    void set(uint32_t b) {binding = b;}
+    void set(std::vector<const vk::Image*> imagePtrs, uint32_t b) { this->imagePtrs = imagePtrs; binding = b;}
+    void set(std::vector<std::string> attachmentsNamesArg, uint32_t b) { this->attachmentNames = attachmentsNamesArg; binding = b;}
 private:
+    std::vector<const vk::Image*> imagePtrs;
+    std::vector<std::string> attachmentNames;
     uint32_t binding;
 };
 

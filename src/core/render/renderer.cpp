@@ -193,6 +193,33 @@ void Renderer::updateFrameSamplers(const std::vector<const Image*>& images, uint
     }
 }
 
+void Renderer::updateFrameSamplers(const std::vector<std::string>& attachmentNames, uint32_t binding)
+{
+    for (auto& frame : frames) 
+    {
+        uint32_t count = attachmentNames.size();
+        assert(count && "Number of images must be greater than 0");
+        std::vector<vk::DescriptorImageInfo> imageInfos{count};
+        for (uint32_t i = 0; i < count; i++) 
+        {
+            // TODO: we should check flags here
+            auto& attachment = attachments.at(attachmentNames[i]);
+            imageInfos[i].setImageView(attachment->getImage(0).getView());
+            imageInfos[i].setSampler(attachment->getImage(0).getSampler());
+            imageInfos[i].setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+        }
+        vk::WriteDescriptorSet iw;
+        iw.setDescriptorType(vk::DescriptorType::eCombinedImageSampler);
+        iw.setDstArrayElement(0);
+        iw.setDstSet(frame.getDescriptorSets().at(0)); //assuming a single set
+        iw.setDstBinding(binding);
+        iw.setPImageInfo(imageInfos.data());
+        iw.setDescriptorCount(imageInfos.size());
+        device.updateDescriptorSets(iw, nullptr);
+        std::cout << "Updated descrtiptor sets" << std::endl;
+    }
+}
+
 void Renderer::prepareAsSwapchainPass(RenderPass& rpSwap)
 {
     vk::ClearColorValue cv;

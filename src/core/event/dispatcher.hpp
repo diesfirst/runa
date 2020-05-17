@@ -61,6 +61,7 @@ private:
     EventPool<MouseRelease> mrPool{20};
     EventPool<MouseMotion> mmPool{100};
     EventPool<Abort> aPool{50};
+    EventPool<LeaveWindow> lwPool{3};
 };
 
 }; // namespace event
