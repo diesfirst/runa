@@ -4,6 +4,7 @@
 #include "vulkan/vulkan.hpp"
 #include <util/debug.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <glm/gtx/matrix_transform_2d.hpp>
 
 namespace sword
 {
@@ -23,12 +24,31 @@ enum class Input : uint8_t
 
 constexpr Input inputCast(event::symbol::Key key) { return static_cast<Input>(key); }
 constexpr Input inputCast(event::symbol::MouseButton button) { return static_cast<Input>(button); }
+constexpr event::Window* toWindowEvent(event::Event* event) { return static_cast<event::Window*>(event); }
 
 void updateXform(glm::mat4& xform, const Matrices& mats)
 {
     xform = glm::inverse(mats.pivot) * mats.scaleRotate * mats.translate * mats.pivot * mats.toCanvasSpace;
 }
 
+Scale::Scale(StateArgs sa, Callbacks cb, PainterVars& vars) :
+    LeafState{sa, cb}, vars{vars}
+{}
+
+void Scale::onEnterExt()
+{
+    initPos.x = vars.fragInput.mouseX;
+    initPos.y = vars.fragInput.mouseY;
+}
+
+void Scale::handleEvent(event::Event *event)
+{
+    auto we = toWindowEvent(event);
+    if (we->getType() == event::WindowEventType::Motion)
+    {
+        
+    }
+}
 
 Translate::Translate(StateArgs sa, Callbacks cb, PainterVars& vars) : 
     LeafState{sa, cb}, translate{vars.matrices.translate}, xform{vars.fragInput.xform}, vars{vars},
@@ -141,7 +161,7 @@ void ResizeBrush::setRenderCommand(int cmdIndex)
 }
 
 Paint::Paint(StateArgs sa, Callbacks cb, PainterVars& vars) :
-    LeafState{sa, cb}, pool{sa.cp.render}, brushPosX{vars.fragInput.mouseX}, brushPosY{vars.fragInput.mouseY},
+    LeafState{sa, cb}, pool{sa.cp.render}, brushPosX{vars.fragInput.brushX}, brushPosY{vars.fragInput.brushY},
     canvasWidth{vars.canvasWidthFloat}, canvasHeight{vars.canvasHeightFloat}, vars{vars}
 {
 }

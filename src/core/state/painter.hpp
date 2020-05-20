@@ -26,6 +26,7 @@ constexpr uint32_t C_HEIGHT = 800;
 constexpr float cMapX = float(S_WIDTH) / float(C_WIDTH);
 constexpr float cMapY = float(S_HEIGHT) / float(C_HEIGHT);
 
+// seems that bad things happen when sizeof(FragmentInput) is not a multiple of 4
 struct FragmentInput
 {
     float time{0};
@@ -36,6 +37,10 @@ struct FragmentInput
     float b{1.};
     float a{1.};
     float brushSize{1.};
+    float brushX; //mouseX in canvas space
+    float brushY; //mouseY in canvas space
+    float null1;
+    float null2;
     glm::mat4 xform{1.};
 };
 
@@ -67,7 +72,7 @@ class Rotate : public LeafState
 public:
     const char* getName() const override { return "Rotate"; }
     void handleEvent(event::Event*) override;
-    Rotate(StateArgs, Callbacks);
+    Rotate(StateArgs, Callbacks, PainterVars&);
 private:
     void onEnterExt() override;
 };
@@ -77,9 +82,11 @@ class Scale : public LeafState
 public:
     const char* getName() const override { return "Scale"; }
     void handleEvent(event::Event*) override;
-    Scale(StateArgs, Callbacks);
+    Scale(StateArgs, Callbacks, PainterVars&);
 private:
     void onEnterExt() override;
+    const PainterVars& vars;
+    glm::vec2 initPos{0, 0};
 };
 
 class Translate : public LeafState

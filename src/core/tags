@@ -264,6 +264,7 @@ S_WIDTH	state/painter.hpp	/^constexpr uint32_t S_WIDTH = 800;$/;"	m	namespace:sw
 SaveSwapImage	state/rendermanager.cpp	/^SaveSwapImage::SaveSwapImage(StateArgs sa, Callbacks cb) : $/;"	f	class:sword::state::SaveSwapImage
 SaveSwapImage	state/rendermanager.hpp	/^class SaveSwapImage : public LeafState$/;"	c	namespace:sword::state
 SaveSwapToPng	command/saveimage.hpp	/^class SaveSwapToPng : public Command$/;"	c	namespace:sword::command
+Scale	state/painter.cpp	/^Scale::Scale(StateArgs sa, Callbacks cb, PainterVars& vars) :$/;"	f	class:sword::state::painter::Input::Scale	file:
 Scale	state/painter.hpp	/^class Scale : public LeafState$/;"	c	namespace:sword::state::painter
 SetDescriptorCount	state/descriptorsetlayoutmanager.cpp	/^SetDescriptorCount::SetDescriptorCount(StateArgs sa, Callbacks cb, vk::DescriptorSetLayoutBinding* const & binding) :$/;"	f	class:sword::state::SetDescriptorCount
 SetDescriptorCount	state/descriptorsetlayoutmanager.hpp	/^class SetDescriptorCount : public LeafState$/;"	c	namespace:sword::state
@@ -397,6 +398,8 @@ branch	state/state.hpp	/^enum class StateType : uint8_t {leaf, branch, brief};$/
 brushPosX	state/painter.hpp	/^    float& brushPosX;$/;"	m	class:sword::state::painter::Paint
 brushPosY	state/painter.hpp	/^    float& brushPosY;$/;"	m	class:sword::state::painter::Paint
 brushSize	state/painter.hpp	/^    float& brushSize;$/;"	m	class:sword::state::painter::ResizeBrush
+brushX	state/painter.hpp	/^    float brushX; \/\/mouseX in canvas space$/;"	m	struct:sword::state::painter::FragmentInput
+brushY	state/painter.hpp	/^    float brushY; \/\/mouseY in canvas space$/;"	m	struct:sword::state::painter::FragmentInput
 bufferBlock	render/renderframe.hpp	/^    BufferBlock* bufferBlock;$/;"	m	class:sword::render::RenderFrame
 bufferBlocks	render/resource.hpp	/^    std::vector<std::unique_ptr<BufferBlock>> bufferBlocks;$/;"	m	class:sword::render::Buffer
 buffers	render/command.hpp	/^    std::vector<vk::CommandBuffer> buffers;$/;"	m	class:sword::render::CommandBuffer
@@ -770,6 +773,7 @@ handleEvent	state/director.cpp	/^void Director::handleEvent(event::Event* event)
 handleEvent	state/painter.cpp	/^void Paint::handleEvent(event::Event* event)$/;"	f	class:sword::state::painter::Input::Paint	file:
 handleEvent	state/painter.cpp	/^void Painter::handleEvent(event::Event* event)$/;"	f	class:sword::state::painter::Input::Painter	file:
 handleEvent	state/painter.cpp	/^void ResizeBrush::handleEvent(event::Event* event)$/;"	f	class:sword::state::painter::Input::ResizeBrush	file:
+handleEvent	state/painter.cpp	/^void Scale::handleEvent(event::Event *event)$/;"	f	class:sword::state::painter::Input::Scale	file:
 handleEvent	state/painter.cpp	/^void Translate::handleEvent(event::Event *event)$/;"	f	class:sword::state::painter::Input::Translate	file:
 handleEvent	state/pipelinemanager.cpp	/^void CreateGraphicsPipeline::handleEvent(event::Event* event)$/;"	f	class:sword::state::CreateGraphicsPipeline
 handleEvent	state/pipelinemanager.cpp	/^void CreatePipelineLayout::handleEvent(event::Event* event)$/;"	f	class:sword::state::CreatePipelineLayout
@@ -891,6 +895,8 @@ name	state/report.hpp	/^    const std::string name;$/;"	m	class:sword::state::At
 name	state/report.hpp	/^    const std::string name;$/;"	m	class:sword::state::DescriptorSetLayoutReport
 name	state/report.hpp	/^    std::string name;$/;"	m	class:sword::state::PipelineLayoutReport
 normCoords	event/dispatcher.cpp	/^float normCoords(int16_t windowCoord, int16_t extent)$/;"	f	namespace:sword::event
+null1	state/painter.hpp	/^    float null1;$/;"	m	struct:sword::state::painter::FragmentInput
+null2	state/painter.hpp	/^    float null2;$/;"	m	struct:sword::state::painter::FragmentInput
 offscreen	render/renderer.hpp	/^enum class TargetType {offscreen, swapchain};$/;"	m	class:sword::render::TargetType
 offscreenDim	application.hpp	/^    vk::Extent2D offscreenDim;$/;"	m	class:sword::Application
 onEnter	state/state.cpp	/^void State::onEnter()$/;"	f	class:sword::state::State
@@ -903,6 +909,7 @@ onEnterExt	state/descriptorsetlayoutmanager.cpp	/^void SetShaderStageEntry::onEn
 onEnterExt	state/descriptorsetlayoutmanager.cpp	/^void SetStateType::onEnterExt()$/;"	f	class:sword::state::SetStateType
 onEnterExt	state/director.cpp	/^void QuickSetup::onEnterExt()$/;"	f	class:sword::state::QuickSetup
 onEnterExt	state/painter.cpp	/^void ResizeBrush::onEnterExt()$/;"	f	class:sword::state::painter::Input::ResizeBrush	file:
+onEnterExt	state/painter.cpp	/^void Scale::onEnterExt()$/;"	f	class:sword::state::painter::Input::Scale	file:
 onEnterExt	state/painter.cpp	/^void Translate::onEnterExt()$/;"	f	class:sword::state::painter::Input::Translate	file:
 onEnterExt	state/pipelinemanager.cpp	/^void CreateGraphicsPipeline::onEnterExt()$/;"	f	class:sword::state::CreateGraphicsPipeline
 onEnterExt	state/pipelinemanager.cpp	/^void CreatePipelineLayout::onEnterExt()$/;"	f	class:sword::state::CreatePipelineLayout
@@ -1503,6 +1510,7 @@ toCanvasSpace	state/painter.hpp	/^    glm::mat4 toCanvasSpace = glm::scale(glm::
 toCommandLine	state/state.hpp	/^constexpr event::CommandLine* toCommandLine(event::Event* event) { return static_cast<event::CommandLine*>(event);}$/;"	f	namespace:sword::state
 toRel	util/file.cpp	/^const std::string toRel(const std::filesystem::path p, const std::filesystem::path root, bool inc_ext)$/;"	f	namespace:sword
 toSpv	util/file.cpp	/^const std::string toSpv(const std::string_view path, bool has_ext)$/;"	f	namespace:sword
+toWindowEvent	state/painter.cpp	/^constexpr event::Window* toWindowEvent(event::Event* event) { return static_cast<event::Window*>(event); }$/;"	f	class:sword::state::painter::Input	file:
 top	types/stack.hpp	/^    T top() const {return items.back();}$/;"	f	class:sword::Stack
 topMask	state/state.hpp	/^    OptionMask topMask;$/;"	m	class:sword::state::BranchState
 topPtr	types/stack.hpp	/^    auto topPtr() const {return items.back().get();}$/;"	f	class:sword::Stack
@@ -1542,6 +1550,7 @@ util	util/stringutil.hpp	/^namespace util$/;"	n	namespace:sword
 valueAt	types/map.hpp	/^    T valueAt(int i) const { return options.at(i).second; }$/;"	f	class:sword::SmallMap
 values	render/surface/window.hpp	/^	uint32_t values[2];$/;"	m	class:sword::render::Window
 vars	state/painter.hpp	/^    const PainterVars& vars;$/;"	m	class:sword::state::painter::Paint
+vars	state/painter.hpp	/^    const PainterVars& vars;$/;"	m	class:sword::state::painter::Scale
 vars	state/painter.hpp	/^    const PainterVars& vars;$/;"	m	class:sword::state::painter::Translate
 vert	render/renderer.hpp	/^enum class ShaderType {vert, frag};$/;"	m	class:sword::render::ShaderType
 vert	state/shader.hpp	/^    constexpr const char* vert = SWORD"\/src\/shaders\/vertex";$/;"	m	namespace:sword::state::shader_dir
