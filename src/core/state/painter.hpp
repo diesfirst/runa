@@ -39,7 +39,7 @@ struct FragmentInput
     float brushSize{1.};
     float brushX; //mouseX in canvas space
     float brushY; //mouseY in canvas space
-    float null1;
+    int sampleIndex{0};
     float null2;
     glm::mat4 xform{1.};
 };
@@ -65,6 +65,7 @@ struct PainterVars
     Matrices matrices;
     FragmentInput fragInput;
     int viewCmdId;
+    int brushStaticCmd;
 };
 
 class Rotate : public LeafState
@@ -75,6 +76,7 @@ public:
     Rotate(StateArgs, Callbacks, PainterVars&);
 private:
     void onEnterExt() override;
+    const PainterVars& vars;
 };
 
 class Scale : public LeafState
@@ -86,7 +88,11 @@ public:
 private:
     void onEnterExt() override;
     const PainterVars& vars;
-    glm::vec2 initPos{0, 0};
+    float initX, initY;
+    glm::mat4 scaleRotCache;
+    glm::mat4& scaleRot;
+    glm::mat4& xform;
+    CommandPool<command::Render>& renderPool;
 };
 
 class Translate : public LeafState
@@ -120,11 +126,12 @@ private:
     CommandPool<command::Render>& renderPool;
     uint32_t& swapWidth;
     uint32_t& swapHeight;
-    float& mPosX;
-    float& mPosY;
+    float& brushPosX;
+    float& brushPosY;
     float startingDist{0};
     float initBrushSize{1};
     bool begin{false};
+    const PainterVars& vars;
 
     float& brushSize;
     int renderCmdId{0};
@@ -159,6 +166,7 @@ private:
     Paint paint;
     ResizeBrush resizeBrush;
     Translate translate;
+    Scale scale;
 
     void initBasic();
     void displayCanvas();

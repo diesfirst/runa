@@ -4,7 +4,6 @@
 #include "vulkan/vulkan.hpp"
 #include <util/debug.hpp>
 #include <glm/gtx/string_cast.hpp>
-#include <glm/gtx/matrix_transform_2d.hpp>
 
 namespace sword
 {
@@ -19,7 +18,8 @@ enum class Input : uint8_t
 {
     resizeBrush = static_cast<uint8_t>(event::symbol::Key::Alt),
     translate = static_cast<uint8_t>(event::symbol::MouseButton::Middle),
-    paint = static_cast<uint8_t>(event::symbol::MouseButton::Left)
+    paint = static_cast<uint8_t>(event::symbol::MouseButton::Left),
+    scale = static_cast<uint8_t>(event::symbol::MouseButton::Right),
 };
 
 constexpr Input inputCast(event::symbol::Key key) { return static_cast<Input>(key); }
@@ -32,21 +32,41 @@ void updateXform(glm::mat4& xform, const Matrices& mats)
 }
 
 Scale::Scale(StateArgs sa, Callbacks cb, PainterVars& vars) :
-    LeafState{sa, cb}, vars{vars}
+    LeafState{sa, cb}, vars{vars}, xform{vars.fragInput.xform}, scaleRot{vars.matrices.scaleRotate},
+    renderPool{sa.cp.render}
 {}
 
 void Scale::onEnterExt()
 {
-    initPos.x = vars.fragInput.mouseX;
-    initPos.y = vars.fragInput.mouseY;
+    initX = vars.fragInput.mouseX;
+    initY = vars.fragInput.mouseY;
+    scaleRotCache = vars.matrices.scaleRotate;
 }
 
 void Scale::handleEvent(event::Event *event)
 {
-    auto we = toWindowEvent(event);
-    if (we->getType() == event::WindowEventType::Motion)
+    if (event->getCategory() == event::Category::Window)
     {
-        
+        auto we = toWindowEvent(event);
+        if (we->getType() == event::WindowEventType::Motion)
+        {
+            auto x = we->getX() / vars.swapWidthFloat;
+            auto y = we->getY() / vars.swapHeightFloat;
+            auto scale = x - initX + y - initY + 1.;
+            glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.), glm::vec3(scale, scale, 1.));
+            scaleRot = scaleRotCache * vars.matrices.translate * scaleMatrix * glm::inverse(vars.matrices.translate);
+            updateXform(xform, vars.matrices);
+            auto cmd = renderPool.request(vars.viewCmdId, 1);
+            pushCmd(std::move(cmd));
+            event->setHandled();
+            return;
+        }
+        if (we->getType() == event::WindowEventType::MouseRelease)
+        {
+            SWD_DEBUG_MSG("popping")
+            event->setHandled();
+            popSelf();
+        }
     }
 }
 
@@ -95,7 +115,8 @@ void Translate::handleEvent(event::Event *event)
 
 ResizeBrush::ResizeBrush(StateArgs sa, Callbacks cb, PainterVars& vars) :
     LeafState{sa, cb}, renderPool{sa.cp.render}, swapHeight{vars.swapHeight}, swapWidth{vars.swapWidth},
-    brushSize{vars.fragInput.brushSize}, mPosX{vars.fragInput.mouseX}, mPosY{vars.fragInput.mouseY}
+    brushSize{vars.fragInput.brushSize}, brushPosX{vars.fragInput.brushX}, brushPosY{vars.fragInput.brushY},
+    vars{vars}
 {}
 
 void ResizeBrush::onEnterExt()
@@ -112,22 +133,23 @@ void ResizeBrush::handleEvent(event::Event* event)
         if (we->getType() == event::WindowEventType::Motion)
         {
             auto input = static_cast<event::MouseMotion*>(we);
-            glm::vec2 pos = glm::vec2(input->getX() / float(swapWidth), input->getY() / float(swapHeight));
+            glm::vec4 pos = glm::vec4(input->getX() / float(swapWidth), input->getY() / float(swapHeight), 1, 1);
             if (begin)
             {
-                mPosX = pos.x;
-                mPosY = pos.y;
-                startingDist = glm::distance(pos, glm::vec2(0, 0));
+                pos = vars.fragInput.xform * pos;
+                brushPosX = pos.x;
+                brushPosY = pos.y;
+                startingDist = glm::distance(pos, glm::vec4(0));
                 begin = false;
                 event->setHandled();
                 return;
             }
 
-            float diff = glm::distance(pos, glm::vec2(0, 0)) - startingDist;
+            float diff = glm::distance(pos, glm::vec4(0)) - startingDist;
             diff *= 20;
             brushSize = initBrushSize + diff;
 
-            auto cmd = renderPool.request(renderCmdId, 1);
+            auto cmd = renderPool.request(vars.brushStaticCmd, 1);
             pushCmd(std::move(cmd));
 
             event->setHandled();
@@ -226,6 +248,7 @@ Painter::Painter(StateArgs sa, Callbacks cb) :
         [this](){ displayCanvas(); }
     }, painterVars},
     translate{sa, {}, painterVars},
+    scale{sa, {}, painterVars},
     cp{sa.cp},
     sr{sa.rg}
 {
@@ -258,19 +281,28 @@ void Painter::handleEvent(event::Event* event)
                 SWD_DEBUG_MSG("pushing resize");
                 pushState(&resizeBrush);
                 event->setHandled();
+                painterVars.fragInput.sampleIndex = 1;
                 return;
             }
         }
         if (we->getType() == event::WindowEventType::MousePress)
         {
-            auto kp = static_cast<event::MousePress*>(we);
-            if (inputCast(kp->getMouseButton()) == Input::translate)
+            auto mp = static_cast<event::MousePress*>(we);
+            if (inputCast(mp->getMouseButton()) == Input::translate)
             {
-                auto input = static_cast<event::MouseMotion*>(we);
-                painterVars.fragInput.mouseX = input->getX() / painterVars.canvasWidthFloat;
-                painterVars.fragInput.mouseY = input->getY() / painterVars.canvasHeightFloat;
+                painterVars.fragInput.mouseX = mp->getX() / painterVars.swapWidthFloat;
+                painterVars.fragInput.mouseY = mp->getY() / painterVars.swapWidthFloat;
                 SWD_DEBUG_MSG("pushing translate")
                 pushState(&translate);
+                event->setHandled();
+                return;
+            }
+            if (inputCast(mp->getMouseButton()) == Input::scale)
+            {
+                painterVars.fragInput.mouseX = mp->getX() / painterVars.swapWidthFloat;
+                painterVars.fragInput.mouseY = mp->getY() / painterVars.swapWidthFloat;
+                SWD_DEBUG_MSG("pushing translate")
+                pushState(&scale);
                 event->setHandled();
                 return;
             }
@@ -287,10 +319,11 @@ void Painter::initBasic()
     bindings[0].setDescriptorCount(1);
     bindings[1].setBinding(1);
     bindings[1].setDescriptorType(vk::DescriptorType::eCombinedImageSampler);
-    bindings[1].setDescriptorCount(1);
+    bindings[1].setDescriptorCount(2);
     bindings[1].setStageFlags(vk::ShaderStageFlagBits::eFragment);
 
     pushCmd(cp.addAttachment.request("paint", 800, 800, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled));
+    pushCmd(cp.addAttachment.request("paint_clear", 800, 800, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled));
     pushCmd(cp.loadVertShader.request(sr.loadVertShaders->reportCallback(), "fullscreen_tri.spv"));
     pushCmd(cp.compileShader.request(sr.compileShader->reportCallback(), "fragment/brush/simple.frag", "spot"));
     pushCmd(cp.compileShader.request(sr.compileShader->reportCallback(), "fragment/simple_comp.frag", "comp"));
@@ -299,24 +332,30 @@ void Painter::initBasic()
     pushCmd(cp.createFrameDescriptorSets.request(sr.createFrameDescriptorSets->reportCallback(), std::vector<std::string>({"foo"})));
     pushCmd(cp.createSwapchainRenderpass.request(sr.createRenderPass->reportCallback(), "swap"));
     pushCmd(cp.createOffscreenRenderpass.request(sr.createRenderPass->reportCallback(), "paint", vk::AttachmentLoadOp::eLoad));
+    pushCmd(cp.createOffscreenRenderpass.request(sr.createRenderPass->reportCallback(), "paint_clear", vk::AttachmentLoadOp::eClear));
     pushCmd(cp.createPipelineLayout.request(sr.createPipelineLayout->reportCallback(), "layout", std::vector<std::string> ({"foo"})));
     pushCmd(cp.createGraphicsPipeline.request(sr.createGraphicsPipeline->reportCallback(), "brush", "layout", "fullscreen_tri.spv", "spot", "paint", vk::Rect2D({0, 0}, {800, 800}), false));
-    pushCmd(cp.createGraphicsPipeline.request(sr.createGraphicsPipeline->reportCallback(), "brush_static", "layout", "fullscreen_tri.spv", "spot", "swap", vk::Rect2D({0, 0}, {800, 800}), false));
+    pushCmd(cp.createGraphicsPipeline.request(sr.createGraphicsPipeline->reportCallback(), "brush_static", "layout", "fullscreen_tri.spv", "spot", "paint_clear", vk::Rect2D({0, 0}, {800, 800}), false));
     pushCmd(cp.createGraphicsPipeline.request(sr.createGraphicsPipeline->reportCallback(), "comp", "layout", "fullscreen_tri.spv", "comp", "swap", vk::Rect2D({0, 0}, {800, 800}), false));
     pushCmd(cp.createRenderLayer.request(sr.createRenderLayer->reportCallback(), "paint", "paint", "brush"));
     pushCmd(cp.createRenderLayer.request(sr.createRenderLayer->reportCallback(), "swap", "swap", "comp"));
-    pushCmd(cp.createRenderLayer.request(sr.createRenderLayer->reportCallback(), "swap", "swap", "brush_static"));
+    pushCmd(cp.createRenderLayer.request(sr.createRenderLayer->reportCallback(), "paint_clear", "paint_clear", "brush_static"));
     pushCmd(cp.initFrameUbos.request(sizeof(FragmentInput), 0));
-    pushCmd(cp.updateFrameSamplers.request(std::vector<std::string>{"paint"}, 1));
+    pushCmd(cp.updateFrameSamplers.request(std::vector<std::string>{"paint", "paint_clear"}, 1));
     pushCmd(cp.bindUboData.request(&painterVars.fragInput, sizeof(FragmentInput)));
     pushCmd(cp.recordRenderCommand.request(sr.recordRenderCommand->reportCallback(), 0, std::vector<uint32_t>{0, 1}));
-    pushCmd(cp.recordRenderCommand.request(sr.recordRenderCommand->reportCallback(), 1, std::vector<uint32_t>{2}));
+    pushCmd(cp.recordRenderCommand.request(sr.recordRenderCommand->reportCallback(), 1, std::vector<uint32_t>{2, 1}));
     pushCmd(cp.recordRenderCommand.request(sr.recordRenderCommand->reportCallback(), 2, std::vector<uint32_t>{1}));
     pushCmd(cp.openWindow.request(sr.openWindow->reportCallback()));
     pushCmd(cp.watchFile.request("fragment/brush/simple.frag"));
 
+    pushCmd(cp.render.request(0, 0));
+    pushCmd(cp.render.request(0, 0));
+    pushCmd(cp.render.request(0, 0));
+
     resizeBrush.setRenderCommand(1);
     painterVars.viewCmdId = 2;
+    painterVars.brushStaticCmd = 1;
     deactivate(opcast(Op::initBasic));
     activate(opcast(Op::paint));
     activate(opcast(Op::brushResize));
@@ -325,7 +364,8 @@ void Painter::initBasic()
 
 void Painter::displayCanvas()
 {
-    auto cmd = cp.render.request(2, 0);
+    painterVars.fragInput.sampleIndex = 0;
+    auto cmd = cp.render.request(2, 1);
     pushCmd(std::move(cmd));
 }
 

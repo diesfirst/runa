@@ -16,6 +16,6 @@ void main()
     vec2 mCoords = vec2(ubo.brushX, ubo.brushY);
     color += fill_aa(circleNormSDF(st - mCoords), ubo.brushSize * .0025, 0.01);
     color.rgb *= vec3(.2, .7, .7);
-    color *= ubo.a; //premultiplyin
+//    color.rgb *= color.a;
 	outColor = color;
 }

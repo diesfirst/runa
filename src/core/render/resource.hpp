@@ -69,8 +69,7 @@ public:
         const vk::Extent3D,
         const vk::Format,
         const vk::ImageUsageFlags,
-        const vk::ImageLayout,
-        const vk::Filter = vk::Filter::eLinear);
+        const vk::ImageLayout);
     Image(
         const vk::Device& device, 
         const vk::Image, 

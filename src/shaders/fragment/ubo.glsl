@@ -11,7 +11,7 @@ layout(set = 0, binding = 0) uniform uboBuf
     float brushSize;
     float brushX;
     float brushY;
-    float null1;
-    float null2;
+    int sampleId;
+    int null2;
     mat4 xform;
 } ubo;
