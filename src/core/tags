@@ -411,8 +411,6 @@ build	state/shader.hpp	/^    constexpr const char* build = SHADER_DIR;$/;"	m	nam
 button	event/event.hpp	/^    symbol::MouseButton button;$/;"	m	class:sword::event::symbol::MouseButton
 cMapX	state/painter.hpp	/^constexpr float cMapX = float(S_WIDTH) \/ float(C_WIDTH);$/;"	m	namespace:sword::state::painter
 cMapY	state/painter.hpp	/^constexpr float cMapY = float(S_HEIGHT) \/ float(C_HEIGHT);$/;"	m	namespace:sword::state::painter
-canvasHeight	state/painter.hpp	/^    const float& canvasHeight;$/;"	m	class:sword::state::painter::Paint
-canvasWidth	state/painter.hpp	/^    const float& canvasWidth;$/;"	m	class:sword::state::painter::Paint
 cdslPool	state/descriptorsetlayoutmanager.hpp	/^    CommandPool<command::CreateDescriptorSetLayout>& cdslPool;$/;"	m	class:sword::state::CreateDescriptorSetLayout
 cfdsPool	state/descriptormanager.hpp	/^    CommandPool<command::CreateFrameDescriptorSets>& cfdsPool;$/;"	m	class:sword::state::CreateFrameDescriptorSets
 cgpPool	state/pipelinemanager.hpp	/^    CommandPool<command::CreateGraphicsPipeline>& cgpPool;$/;"	m	class:sword::state::final
@@ -1328,7 +1326,6 @@ setName	render/surface/window.cpp	/^void Window::setName()$/;"	f	class:sword::re
 setPresentMode	render/swapchain.cpp	/^void Swapchain::setPresentMode()$/;"	f	class:sword::render::Swapchain
 setQueue	render/context.cpp	/^void Context::setQueue()$/;"	f	class:sword::render::Context
 setQueueFamilyIndex	render/swapchain.cpp	/^void Swapchain::setQueueFamilyIndex()$/;"	f	class:sword::render::Swapchain
-setRenderCommand	state/painter.cpp	/^void ResizeBrush::setRenderCommand(int cmdIndex)$/;"	f	class:sword::state::painter::Input::ResizeBrush	file:
 setShaderStageEntry	state/descriptorsetlayoutmanager.hpp	/^    SetShaderStageEntry setShaderStageEntry;$/;"	m	class:sword::state::final
 setSpec	state/state.hpp	/^    const SetSpec* setSpec;$/;"	m	struct:sword::state::Register
 setSpecFloat	command/commandpools.hpp	/^    CommandPool<command::SetSpecFloat> setSpecFloat;$/;"	m	struct:sword::CommandPools
@@ -1430,8 +1427,6 @@ success	command/command.hpp	/^    void success() {$/;"	f	class:sword::command::C
 surfCaps	render/swapchain.hpp	/^	vk::SurfaceCapabilitiesKHR surfCaps;$/;"	m	class:sword::render::Swapchain
 surface	render/swapchain.hpp	/^	vk::SurfaceKHR surface;$/;"	m	class:sword::render::Swapchain
 swapDim	application.hpp	/^    vk::Extent2D swapDim;;$/;"	m	class:sword::Application
-swapHeight	state/painter.hpp	/^    uint32_t& swapHeight;$/;"	m	class:sword::state::painter::ResizeBrush
-swapWidth	state/painter.hpp	/^    uint32_t& swapWidth;$/;"	m	class:sword::state::painter::ResizeBrush
 swapchain	render/renderer.hpp	/^    std::unique_ptr<Swapchain> swapchain;$/;"	m	class:sword::render::Renderer
 swapchain	render/swapchain.hpp	/^	vk::SwapchainKHR swapchain;$/;"	m	class:sword::render::Swapchain
 swapchain	state/renderpassmanager.hpp	/^enum class RenderPassType : uint8_t {swapchain, offscreen};$/;"	m	class:sword::state::RenderPassType

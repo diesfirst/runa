@@ -157,7 +157,7 @@ void Translate::handleEvent(event::Event *event)
 }
 
 ResizeBrush::ResizeBrush(StateArgs sa, Callbacks cb, PainterVars& vars) :
-    LeafState{sa, cb}, renderPool{sa.cp.render}, swapHeight{vars.swapHeight}, swapWidth{vars.swapWidth},
+    LeafState{sa, cb}, renderPool{sa.cp.render}, 
     brushSize{vars.fragInput.brushSize}, brushPosX{vars.fragInput.brushX}, brushPosY{vars.fragInput.brushY},
     vars{vars}
 {}
@@ -166,7 +166,7 @@ void ResizeBrush::onEnterExt()
 {
     begin = true;
     initBrushSize = brushSize;
-    glm::vec4 startPos = glm::vec4(vars.fragInput.mouseX, vars.fragInput.mouseY, 0, 0);
+    glm::vec4 startPos = glm::vec4(vars.fragInput.mouseX, vars.fragInput.mouseY, 1, 1);
     startingDist = glm::length(startPos);
     startPos = vars.fragInput.xform * startPos;
     brushPosX = startPos.x;
@@ -181,17 +181,7 @@ void ResizeBrush::handleEvent(event::Event* event)
         auto we = static_cast<event::Window*>(event);
         if (we->getType() == event::WindowEventType::Motion)
         {
-            glm::vec2 pos = glm::vec2(we->getX() / vars.swapWidthFloat, we->getY() / vars.swapHeightFloat);
-//            if (begin)
-//            {
-//                pos = vars.fragInput.xform * pos;
-//                brushPosX = pos.x;
-//                brushPosY = pos.y;
-//                startingDist = glm::distance(pos, glm::vec4(0));
-//                begin = false;
-//                event->setHandled();
-//                return;
-//            }
+            glm::vec4 pos = glm::vec4(we->getX() / vars.swapWidthFloat, we->getY() / vars.swapHeightFloat, 1, 1);
 
             float diff = glm::length(pos) - startingDist;
             diff *= 20;
@@ -225,14 +215,9 @@ void ResizeBrush::handleEvent(event::Event* event)
     }
 }
 
-void ResizeBrush::setRenderCommand(int cmdIndex)
-{
-    renderCmdId = cmdIndex;
-}
-
 Paint::Paint(StateArgs sa, Callbacks cb, PainterVars& vars) :
     LeafState{sa, cb}, pool{sa.cp.render}, brushPosX{vars.fragInput.brushX}, brushPosY{vars.fragInput.brushY},
-    canvasWidth{vars.canvasWidthFloat}, canvasHeight{vars.canvasHeightFloat}, vars{vars}
+    vars{vars}
 {
 }
 
@@ -244,8 +229,8 @@ void Paint::handleEvent(event::Event* event)
         if (we->getType() == event::WindowEventType::Motion && mouseDown)
         {
             auto input = static_cast<event::MouseMotion*>(we);
-            pos.x = input->getX() / canvasWidth;
-            pos.y = input->getY() / canvasHeight;
+            pos.x = input->getX() / vars.canvasWidthFloat;
+            pos.y = input->getY() / vars.canvasHeightFloat;
             pos = vars.fragInput.xform * pos;
             brushPosX = pos.x;
             brushPosY = pos.y;
@@ -259,8 +244,8 @@ void Paint::handleEvent(event::Event* event)
             if (inputCast(static_cast<event::MousePress*>(we)->getMouseButton()) == Input::paint)
             {
                 auto input = static_cast<event::MouseMotion*>(we);
-                pos.x = input->getX() / canvasWidth;
-                pos.y = input->getY() / canvasHeight;
+                pos.x = input->getX() / vars.canvasWidthFloat;
+                pos.y = input->getY() / vars.canvasHeightFloat;
                 pos = vars.fragInput.xform * pos;
                 brushPosX = pos.x;
                 brushPosY = pos.y;
@@ -350,7 +335,7 @@ void Painter::handleEvent(event::Event* event)
             if (inputCast(mp->getMouseButton()) == Input::translate)
             {
                 painterVars.fragInput.mouseX = mp->getX() / painterVars.swapWidthFloat;
-                painterVars.fragInput.mouseY = mp->getY() / painterVars.swapWidthFloat;
+                painterVars.fragInput.mouseY = mp->getY() / painterVars.swapHeightFloat;
                 SWD_DEBUG_MSG("pushing translate")
                 pushState(&translate);
                 event->setHandled();
@@ -359,7 +344,7 @@ void Painter::handleEvent(event::Event* event)
             if (inputCast(mp->getMouseButton()) == Input::scale)
             {
                 painterVars.fragInput.mouseX = mp->getX() / painterVars.swapWidthFloat;
-                painterVars.fragInput.mouseY = mp->getY() / painterVars.swapWidthFloat;
+                painterVars.fragInput.mouseY = mp->getY() / painterVars.swapHeightFloat;
                 SWD_DEBUG_MSG("pushing translate")
                 pushState(&scale);
                 event->setHandled();
@@ -416,7 +401,6 @@ void Painter::initBasic()
     pushCmd(cp.render.request(0, 0));
     pushCmd(cp.render.request(0, 0));
 
-    resizeBrush.setRenderCommand(1);
     painterVars.paintCmdId = 0;
     painterVars.viewCmdId = 2;
     painterVars.brushStaticCmd = 1;

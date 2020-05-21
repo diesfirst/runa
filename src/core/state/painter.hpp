@@ -128,12 +128,9 @@ public:
     ResizeBrush(StateArgs, Callbacks, PainterVars&);
     const char* getName() const override { return "ResizeBrush"; }
     void handleEvent(event::Event*) override;
-    void setRenderCommand(int cmdIndex);
 private:
     void onEnterExt() override;
     CommandPool<command::Render>& renderPool;
-    uint32_t& swapWidth;
-    uint32_t& swapHeight;
     float& brushPosX;
     float& brushPosY;
     float startingDist{0};
@@ -142,7 +139,6 @@ private:
     const PainterVars& vars;
 
     float& brushSize;
-    int renderCmdId{0};
 };
 
 class Paint : public LeafState
@@ -156,8 +152,6 @@ private:
     glm::vec4 pos{0, 0, 1., 1.};
     float& brushPosX;
     float& brushPosY;
-    const float& canvasWidth;
-    const float& canvasHeight;
     const PainterVars& vars;
     bool mouseDown{false};
 };
