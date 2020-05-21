@@ -6,7 +6,8 @@ build/render/renderer.o: src/core/render/renderer.cpp \
  src/core/render/renderframe.hpp src/core/render/command.hpp \
  src/core/render/renderlayer.hpp src/core/render/attachment.hpp \
  src/core/render/renderer.hpp src/core/render/shader.hpp \
- src/core/render/pipeline.hpp src/core/render/renderpass.hpp
+ src/core/render/pipeline.hpp src/core/render/renderpass.hpp \
+ src/core/util/debug.hpp
 
 include/thirdparty/vulkan/vulkan.hpp:
 
@@ -37,3 +38,5 @@ src/core/render/shader.hpp:
 src/core/render/pipeline.hpp:
 
 src/core/render/renderpass.hpp:
+
+src/core/util/debug.hpp:

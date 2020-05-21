@@ -6,6 +6,7 @@
 #include <render/renderlayer.hpp>
 #include <render/attachment.hpp>
 #include <render/renderer.hpp>
+#include <util/debug.hpp>
 
 namespace sword
 {
@@ -199,7 +200,8 @@ void Renderer::updateFrameSamplers(const std::vector<std::string>& attachmentNam
     {
         uint32_t count = attachmentNames.size();
         assert(count && "Number of images must be greater than 0");
-        std::vector<vk::DescriptorImageInfo> imageInfos{count};
+        std::vector<vk::DescriptorImageInfo> imageInfos(count);
+        SWD_DEBUG_MSG("Attachment count: " << count);
         for (uint32_t i = 0; i < count; i++) 
         {
             // TODO: we should check flags here
@@ -207,6 +209,7 @@ void Renderer::updateFrameSamplers(const std::vector<std::string>& attachmentNam
             imageInfos[i].setImageView(attachment->getImage(0).getView());
             imageInfos[i].setSampler(attachment->getImage(0).getSampler());
             imageInfos[i].setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+            SWD_DEBUG_MSG("ImageInfos[" << i << "] image: " << &attachment->getImage(0) );
         }
         vk::WriteDescriptorSet iw;
         iw.setDescriptorType(vk::DescriptorType::eCombinedImageSampler);

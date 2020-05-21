@@ -64,6 +64,7 @@ struct PainterVars
     float canvasHeightFloat{C_HEIGHT};
     Matrices matrices;
     FragmentInput fragInput;
+    int paintCmdId;
     int viewCmdId;
     int brushStaticCmd;
 };
@@ -76,7 +77,14 @@ public:
     Rotate(StateArgs, Callbacks, PainterVars&);
 private:
     void onEnterExt() override;
+    float initX, initY;
+    float angleScale{3};
+    float angle{0};
+    glm::mat4 scaleRotCache;
+    glm::mat4& xform;
+    glm::mat4& scaleRot;
     const PainterVars& vars;
+    CommandPool<command::Render>& renderPool;
 };
 
 class Scale : public LeafState
@@ -167,6 +175,7 @@ private:
     ResizeBrush resizeBrush;
     Translate translate;
     Scale scale;
+    Rotate rotate;
 
     void initBasic();
     void displayCanvas();

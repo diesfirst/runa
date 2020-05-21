@@ -149,8 +149,6 @@ state::Report* CreateOffscreenRenderpass::makeReport() const
 void AddAttachment::execute(Application* app)
 {
         auto& attachment = app->renderer.createAttachment(attachmentName, dimensions, usage);
-        if (usage & vk::ImageUsageFlagBits::eSampled)
-            app->sampledImages.push_back(&attachment.getImage(0));
         success();
 }
 

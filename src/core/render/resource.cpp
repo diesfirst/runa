@@ -151,7 +151,8 @@ Image::Image(
 		const vk::Extent3D extent,
 		const vk::Format format,
 		const vk::ImageUsageFlags usageFlags,
-		const vk::ImageLayout initialLayout) :
+		const vk::ImageLayout initialLayout,
+        const vk::Filter filter) :
 	device(device),
 	extent{extent},
 	format{format},
@@ -203,8 +204,8 @@ Image::Image(
 
 	vk::SamplerCreateInfo samplerInfo;
 	//might want to try nearest at some point
-	samplerInfo.setMagFilter(vk::Filter::eLinear);
-	samplerInfo.setMinFilter(vk::Filter::eLinear);
+	samplerInfo.setMagFilter(filter);
+	samplerInfo.setMinFilter(filter);
 	samplerInfo.setMipmapMode(vk::SamplerMipmapMode::eLinear);
 	samplerInfo.setAddressModeU(vk::SamplerAddressMode::eClampToBorder);
 	samplerInfo.setAddressModeV(vk::SamplerAddressMode::eClampToBorder);

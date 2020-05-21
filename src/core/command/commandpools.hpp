@@ -31,7 +31,7 @@ struct CommandPools
     CommandPool<command::CreateFrameDescriptorSets> createFrameDescriptorSets;
     CommandPool<command::InitFrameUbos> initFrameUbos;
     CommandPool<command::UpdateFrameSamplers> updateFrameSamplers;
-    CommandPool<command::Render> render;
+    CommandPool<command::Render> render{6};
     CommandPool<command::CompileShader> compileShader;
     CommandPool<command::WatchFile> watchFile;
     CommandPool<command::SaveSwapToPng> saveSwapToPng;

@@ -19,7 +19,7 @@ class RenderLayer
 {
 public:
     RenderLayer(const vk::Device&, Attachment&, const RenderPass&, const GraphicsPipeline&);
-    virtual ~RenderLayer();
+    ~RenderLayer();
     RenderLayer(const RenderLayer&) = delete;
     RenderLayer& operator=(RenderLayer&) = delete;
     RenderLayer& operator=(RenderLayer&&) = delete;

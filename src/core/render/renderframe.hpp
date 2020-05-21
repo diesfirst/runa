@@ -44,7 +44,6 @@ public:
     void clearRenderPassInstances();
     BufferBlock* bufferBlock;
     std::vector<CommandBuffer*> commandBuffers;
-    
 
 private:
     std::unique_ptr<Attachment> swapchainAttachment;
