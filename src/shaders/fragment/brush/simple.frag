@@ -6,8 +6,8 @@
 
 layout(location = 0) out vec4 outColor;
 
-#define WIDTH 800
-#define HEIGHT 800
+#define WIDTH 1600
+#define HEIGHT 1600
 
 void main()
 {

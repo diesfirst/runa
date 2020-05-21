@@ -37,8 +37,8 @@ COMMAND_SHADER_HPP	command/shader.hpp	2;"	d
 COMMAND_VOCAB_HPP	command/vocab.hpp	2;"	d
 COMMAND_WATCHER_HPP	command/watcher.hpp	2;"	d
 CONTEXT_H	render/context.hpp	2;"	d
-C_HEIGHT	state/painter.hpp	/^constexpr uint32_t C_HEIGHT = 800;$/;"	m	namespace:sword::state::painter
-C_WIDTH	state/painter.hpp	/^constexpr uint32_t C_WIDTH = 800;$/;"	m	namespace:sword::state::painter
+C_HEIGHT	state/painter.hpp	/^constexpr uint32_t C_HEIGHT = 1600;$/;"	m	namespace:sword::state::painter
+C_WIDTH	state/painter.hpp	/^constexpr uint32_t C_WIDTH = 1600;$/;"	m	namespace:sword::state::painter
 Callbacks	state/state.hpp	/^struct Callbacks$/;"	s	namespace:sword::state
 Category	event/event.hpp	/^enum class Category : uint8_t$/;"	c	namespace:sword::event::symbol
 Command	command/command.hpp	/^class Command$/;"	c	namespace:sword::command

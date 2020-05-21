@@ -21,8 +21,8 @@ namespace painter
 
 constexpr uint32_t S_WIDTH = 800;
 constexpr uint32_t S_HEIGHT = 800;
-constexpr uint32_t C_WIDTH = 800;
-constexpr uint32_t C_HEIGHT = 800;
+constexpr uint32_t C_WIDTH = 1600;
+constexpr uint32_t C_HEIGHT = 1600;
 constexpr float cMapX = float(S_WIDTH) / float(C_WIDTH);
 constexpr float cMapY = float(S_HEIGHT) / float(C_HEIGHT);
 
@@ -56,12 +56,8 @@ struct PainterVars
 {
     uint32_t swapWidth{S_WIDTH};
     uint32_t swapHeight{S_HEIGHT};
-    uint32_t canvasWidth{C_WIDTH};
-    uint32_t canvasHeight{C_HEIGHT};
     float swapWidthFloat{S_WIDTH};
     float swapHeightFloat{S_HEIGHT};
-    float canvasWidthFloat{C_WIDTH};
-    float canvasHeightFloat{C_HEIGHT};
     Matrices matrices;
     FragmentInput fragInput;
     int paintCmdId;

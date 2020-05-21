@@ -228,9 +228,8 @@ void Paint::handleEvent(event::Event* event)
         auto we = static_cast<event::Window*>(event);
         if (we->getType() == event::WindowEventType::Motion && mouseDown)
         {
-            auto input = static_cast<event::MouseMotion*>(we);
-            pos.x = input->getX() / vars.canvasWidthFloat;
-            pos.y = input->getY() / vars.canvasHeightFloat;
+            pos.x = we->getX() / vars.swapWidthFloat;
+            pos.y = we->getY() / vars.swapHeightFloat;
             pos = vars.fragInput.xform * pos;
             brushPosX = pos.x;
             brushPosY = pos.y;
@@ -243,9 +242,8 @@ void Paint::handleEvent(event::Event* event)
         {
             if (inputCast(static_cast<event::MousePress*>(we)->getMouseButton()) == Input::paint)
             {
-                auto input = static_cast<event::MouseMotion*>(we);
-                pos.x = input->getX() / vars.canvasWidthFloat;
-                pos.y = input->getY() / vars.canvasHeightFloat;
+                pos.x = we->getX() / vars.swapWidthFloat;
+                pos.y = we->getY() / vars.swapHeightFloat;
                 pos = vars.fragInput.xform * pos;
                 brushPosX = pos.x;
                 brushPosY = pos.y;
@@ -287,6 +285,7 @@ Painter::Painter(StateArgs sa, Callbacks cb) :
     sr{sa.rg}
 {
     activate(opcast(Op::initBasic));
+    updateXform(painterVars.fragInput.xform, painterVars.matrices);
 }
 
 void Painter::handleEvent(event::Event* event)
@@ -366,8 +365,8 @@ void Painter::initBasic()
     bindings[1].setDescriptorCount(2);
     bindings[1].setStageFlags(vk::ShaderStageFlagBits::eFragment);
 
-    pushCmd(cp.addAttachment.request("paint", 800, 800, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled));
-    pushCmd(cp.addAttachment.request("paint_clear", 800, 800, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled));
+    pushCmd(cp.addAttachment.request("paint", C_WIDTH, C_HEIGHT, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled));
+    pushCmd(cp.addAttachment.request("paint_clear", C_WIDTH, C_HEIGHT, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled));
     pushCmd(cp.loadVertShader.request(sr.loadVertShaders->reportCallback(), "fullscreen_tri.spv"));
     pushCmd(cp.compileShader.request(sr.compileShader->reportCallback(), "fragment/brush/simple.frag", "spot"));
     pushCmd(cp.compileShader.request(sr.compileShader->reportCallback(), "fragment/simple_comp.frag", "comp"));
@@ -378,9 +377,9 @@ void Painter::initBasic()
     pushCmd(cp.createOffscreenRenderpass.request(sr.createRenderPass->reportCallback(), "paint", vk::AttachmentLoadOp::eLoad));
     pushCmd(cp.createOffscreenRenderpass.request(sr.createRenderPass->reportCallback(), "paint_clear", vk::AttachmentLoadOp::eClear));
     pushCmd(cp.createPipelineLayout.request(sr.createPipelineLayout->reportCallback(), "layout", std::vector<std::string> ({"foo"})));
-    pushCmd(cp.createGraphicsPipeline.request(sr.createGraphicsPipeline->reportCallback(), "brush", "layout", "fullscreen_tri.spv", "spot", "paint", vk::Rect2D({0, 0}, {800, 800}), false));
-    pushCmd(cp.createGraphicsPipeline.request(sr.createGraphicsPipeline->reportCallback(), "brush_static", "layout", "fullscreen_tri.spv", "spot", "paint_clear", vk::Rect2D({0, 0}, {800, 800}), false));
-    pushCmd(cp.createGraphicsPipeline.request(sr.createGraphicsPipeline->reportCallback(), "comp", "layout", "fullscreen_tri.spv", "comp", "swap", vk::Rect2D({0, 0}, {800, 800}), false));
+    pushCmd(cp.createGraphicsPipeline.request(sr.createGraphicsPipeline->reportCallback(), "brush", "layout", "fullscreen_tri.spv", "spot", "paint", vk::Rect2D({0, 0}, {C_WIDTH, C_HEIGHT}), false));
+    pushCmd(cp.createGraphicsPipeline.request(sr.createGraphicsPipeline->reportCallback(), "brush_static", "layout", "fullscreen_tri.spv", "spot", "paint_clear", vk::Rect2D({0, 0}, {C_WIDTH, C_HEIGHT}), false));
+    pushCmd(cp.createGraphicsPipeline.request(sr.createGraphicsPipeline->reportCallback(), "comp", "layout", "fullscreen_tri.spv", "comp", "swap", vk::Rect2D({0, 0}, {S_WIDTH, S_HEIGHT}), false));
     pushCmd(cp.createRenderLayer.request(sr.createRenderLayer->reportCallback(), "paint", "paint", "brush"));
     pushCmd(cp.createRenderLayer.request(sr.createRenderLayer->reportCallback(), "paint_clear", "paint_clear", "brush_static"));
     pushCmd(cp.createRenderLayer.request(sr.createRenderLayer->reportCallback(), "swap", "swap", "comp"));
