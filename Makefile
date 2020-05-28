@@ -19,10 +19,12 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.d
 #DEPFLAGS = -MT $@ -MMD -MP -MF -
 
 CC = g++
+STDFLAG = -std=c++17
 INC_DIRS := -I$(CORE) -I/usr/include -I./include/thirdparty
 
 WFLAGS = -Wall -W -Wno-parentheses -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-uninitialized -Wno-unused-parameter -Wno-unused-local-typedefs
-CPPFLAGS = $(DEPFLAGS) -g -std=c++17 $(WFLAGS) $(INC_DIRS) -fPIC 
+HDKFLAGS = -D_GLIBCXX_USE_CXX11_ABI=0
+CPPFLAGS = $(DEPFLAGS) -g $(HDKFLAGS) $(STDFLAG) $(WFLAGS) $(INC_DIRS) -fPIC 
 LDFLAGS = -lpthread -lxcb -lvulkan -lX11 -lreadline -ldl -lshaderc_combined -lglslc -lshaderc_util -llodepng
 LIB = ./lib
 LDIRS = -L$(LIB) #-L$(LIB)/loader 
@@ -44,17 +46,29 @@ $(DEPDIR) : ; @mkdir -p $@
 DEPFILES := $(SRCS:%.cpp=$(DEPDIR)/%.d)
 $(DEPFILES):
 
-.PHONY: clean shaders test
+.PHONY: clean shaders test lib
 
 clean:
-	find $(BUILD) -type f -delete 
+	find $(BUILD) -type f -delete ; find $(DEPDIR) -type f -delete
 
 shaders: 
 	python3 tools/compileShaders.py
 
+lodepng:
+	$(CC) -c $(STDFLAG) -fPIC $(HDKFLAGS) $(THIRD)/lodepng.cpp -o $(THIRD)/lodepng.o ; ar rcs lib/liblodepng.a $(THIRD)/lodepng.o
+
 test:
 	@echo '$(DEPFILES)'
 
+lib : $(OBJS)
+	ar rcs lib/libsword.a $(OBJS)
+
+shared : $(OBJS)
+	$(CC) -shared -o lib/libsword.so $(OBJS)
+
 maim:
 	@echo '$(PROGDIR)/main.cpp $(DEPDIR)/main.d | $(DEPDIR)'
+
+
+
 include $(wildcard $(DEPFILES))
