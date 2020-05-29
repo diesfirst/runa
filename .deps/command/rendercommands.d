@@ -28,13 +28,13 @@ build/command/rendercommands.o: src/core/command/rendercommands.cpp \
  src/core/state/renderpassmanager.hpp src/core/state/shader.hpp \
  src/core/command/shader.hpp src/core/command/saveimage.hpp \
  src/core/state/painter.hpp src/core/state/state.hpp \
- src/core/render/ubotypes.hpp src/core/render/context.hpp \
- src/core/render/renderer.hpp src/core/render/command.hpp \
- src/core/render/shader.hpp src/core/render/pipeline.hpp \
- src/core/render/renderpass.hpp src/core/event/dispatcher.hpp \
- src/core/event/event.hpp src/core/event/types.hpp \
- src/core/event/filewatcher.hpp src/core/render/attachment.hpp \
- src/core/render/resource.hpp
+ src/core/types/region.hpp src/core/render/ubotypes.hpp \
+ src/core/render/context.hpp src/core/render/renderer.hpp \
+ src/core/render/command.hpp src/core/render/shader.hpp \
+ src/core/render/pipeline.hpp src/core/render/renderpass.hpp \
+ src/core/event/dispatcher.hpp src/core/event/event.hpp \
+ src/core/event/types.hpp src/core/event/filewatcher.hpp \
+ src/core/render/attachment.hpp src/core/render/resource.hpp
 
 src/core/command/rendercommands.hpp:
 
@@ -133,6 +133,8 @@ src/core/command/saveimage.hpp:
 src/core/state/painter.hpp:
 
 src/core/state/state.hpp:
+
+src/core/types/region.hpp:
 
 src/core/render/ubotypes.hpp:
 

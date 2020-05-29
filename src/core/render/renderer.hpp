@@ -107,6 +107,10 @@ public:
     BufferBlock* copySwapToHost();
     BufferBlock* copyAttachmentToHost(const std::string, const vk::Rect2D region);
 
+    void copyHostToAttachment(void* source, int size, std::string_view, const vk::Rect2D region);
+
+    const Attachment* getAttachmentPtr(std::string name) const;
+
     vk::Extent2D getSwapExtent();
 
 private:
@@ -117,7 +121,6 @@ private:
     std::unique_ptr<Swapchain> swapchain;
     bool descriptionIsBound;
     uint32_t renderPassCount{0};
-    std::unordered_map<std::string, std::unique_ptr<Attachment>> attachments;
     Attachment* activeTarget;
     std::vector<Ubo> ubos;
     CommandPool commandPool;
@@ -125,7 +128,7 @@ private:
 
     //descriptor stuff
     vk::DescriptorPool descriptorPool;
-    std::unique_ptr<Buffer> descriptorBuffer;
+    std::unique_ptr<Buffer> hostBuffer;
     std::vector<vk::DescriptorSet> descriptorSets;
     void updateFramesDescriptorSet(uint32_t setId, const std::vector<vk::WriteDescriptorSet>);
     void updateOwnDescriptorSet(uint32_t setId, const std::vector<vk::WriteDescriptorSet>);
@@ -134,6 +137,7 @@ private:
 
     uint32_t activeFrameIndex{0};
 
+    std::unordered_map<std::string, std::unique_ptr<Attachment>> attachments;
     std::unordered_map<std::string, VertShader> vertexShaders;
     std::unordered_map<std::string, FragShader> fragmentShaders;
     std::unordered_map<std::string, vk::DescriptorSetLayout> descriptorSetLayouts;
@@ -146,7 +150,7 @@ private:
 
     void createDescriptorPool();
     void updateFrameDescriptorBuffer(uint32_t frame, uint32_t uboIndex);
-    void createDescriptorBuffer(uint32_t size);
+    void createHostBuffer(uint32_t size);
 };
 
 }; // namespace render

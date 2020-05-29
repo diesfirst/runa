@@ -9,6 +9,7 @@
 #include "state.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
+#include <types/region.hpp>
 
 namespace sword
 {
@@ -150,6 +151,31 @@ private:
     float& brushPosY;
     const PainterVars& vars;
     bool mouseDown{false};
+
+    using UndoStack = Region;
+    UndoStack undoStack;
+};
+
+class SaveAttachment : public LeafState
+{
+public:
+    const char* getName() const override { return "SaveAttachment"; }
+    void handleEvent(event::Event*) override;
+    SaveAttachment(StateArgs, Callbacks);
+private:
+    void onEnterExt() override;
+    CommandPool<command::SaveAttachmentToPng>& pool;
+};
+
+class SaveSwap : public LeafState
+{
+public:
+    const char* getName() const override { return "SaveSwap"; }
+    void handleEvent(event::Event*) override;
+    SaveSwap(StateArgs, Callbacks);
+private:
+    void onEnterExt() override;
+    CommandPool<command::SaveSwapToPng>& pool;
 };
 
 class Painter final : public BranchState
@@ -159,13 +185,15 @@ public:
     void handleEvent(event::Event*) override;
     Painter(StateArgs, Callbacks);
 private:
-    enum class Op : Option {initBasic, paint, brushResize};
+    enum class Op : Option {initBasic, paint, brushResize, saveAttachmentToPng};
 
     Paint paint;
     ResizeBrush resizeBrush;
     Translate translate;
     Scale scale;
     Rotate rotate;
+    SaveAttachment saveAttachment;
+    SaveSwap saveSwap;
 
     void initBasic();
     void displayCanvas();

@@ -35,10 +35,58 @@ void SaveSwapToPng::execute(Application* app)
             memPtr,
             swapSize.width,
             swapSize.height);
-    std::string path = "output/images/" + filename + ".png";
+    std::string path = "output/images/" + fileName + ".png";
     lodepng::save_file(pngBuffer, path);
+    app->renderer.popBufferBlock();
     success();
 }
+
+void SaveAttachmentToPng::execute(Application* app)
+{
+    render::BufferBlock* block = 
+        app->renderer.copyAttachmentToHost(attachmentName, vk::Rect2D{{x, y}, {width, height}});
+
+    if (!block) 
+        return;
+
+    std::vector<unsigned char> pngBuffer;
+
+    auto memPtr = static_cast<unsigned char*>(block->pHostMemory);
+
+    int resX = width - x;
+    int resY = height - y;
+
+    lodepng::encode(
+            pngBuffer,
+            memPtr,
+            resX,
+            resY);
+    std::string path = "output/images/" + fileName + ".png";
+    lodepng::save_file(pngBuffer, path);
+    
+    app->renderer.popBufferBlock();
+    success();
+}
+
+void CopyAttachmentToUndoStack::execute(Application* app)
+{
+    render::BufferBlock* block = 
+        app->renderer.copyAttachmentToHost(attachmentName, vk::Rect2D{{x, y}, {width, height}});
+    if (!block) return;
+
+    auto memPtr = static_cast<void*>(block->pHostMemory);
+
+    undoStack->copyTo(memPtr, block->size);
+
+    app->renderer.popBufferBlock();
+    success();
+
+}
+
+void CopyAttachmentToUndoStack::reverse(Application* app)
+{
+}
+
 
 }; // namespace command
 

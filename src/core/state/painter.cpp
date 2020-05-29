@@ -269,10 +269,58 @@ void Paint::handleEvent(event::Event* event)
     }
 }
 
+SaveAttachment::SaveAttachment(StateArgs sa, Callbacks cb) :
+    LeafState{sa, cb}, pool{sa.cp.saveAttachmentToPng}
+{
+}
+
+void SaveAttachment::onEnterExt()
+{
+    std::cout << "\n\nEnter the name of the attachment and the file name." << "\n\n";
+}
+
+void SaveAttachment::handleEvent(event::Event* event)
+{
+    if (event->getCategory() == event::Category::CommandLine)
+    {
+        auto ce = toCommandLine(event);       
+        auto attachmentName = ce->getArg<std::string, 0>();
+        auto fileName = ce->getArg<std::string, 1>();
+        //dont want to manually specify these yet
+        int offsetX = 0;
+        int offsetY = 0;
+        int width = C_WIDTH;
+        int height = C_HEIGHT;
+        auto cmd = pool.request(attachmentName, fileName, offsetX, offsetY, width, height);
+        pushCmd(std::move(cmd));
+        event->setHandled();
+        popSelf();
+    }
+}
+
+SaveSwap::SaveSwap(StateArgs sa, Callbacks cb) :
+    LeafState{sa, cb}, pool{sa.cp.saveSwapToPng}
+{
+}
+
+void SaveSwap::onEnterExt()
+{
+    std::cout << "Enter a name for the file." << '\n';
+}
+
+void SaveSwap::handleEvent(event::Event* event)
+{
+    if (event->getCategory() == event::Category::CommandLine)
+    {
+        //not implemented yet       
+    }
+}
+
 Painter::Painter(StateArgs sa, Callbacks cb) :
     BranchState{sa, cb, {
         {"init_basic", opcast(Op::initBasic)},
-        {"paint", opcast(Op::paint)}
+        {"paint", opcast(Op::paint)},
+        {"save_attachment_to_png", opcast(Op::saveAttachmentToPng)}
     }},
     paint{sa, {}, painterVars},
     resizeBrush{sa, {
@@ -282,7 +330,9 @@ Painter::Painter(StateArgs sa, Callbacks cb) :
     scale{sa, {}, painterVars},
     rotate{sa, {}, painterVars},
     cp{sa.cp},
-    sr{sa.rg}
+    sr{sa.rg},
+    saveAttachment{sa, {}},
+    saveSwap{sa, {}}
 {
     activate(opcast(Op::initBasic));
     updateXform(painterVars.fragInput.xform, painterVars.matrices);
@@ -299,6 +349,7 @@ void Painter::handleEvent(event::Event* event)
             case Op::initBasic: initBasic(); break;
             case Op::paint: pushState(&paint); break;
             case Op::brushResize: pushState(&resizeBrush); break;
+            case Op::saveAttachmentToPng: pushState(&saveAttachment); break;
         }
         return;
     }
@@ -365,7 +416,7 @@ void Painter::initBasic()
     bindings[1].setDescriptorCount(2);
     bindings[1].setStageFlags(vk::ShaderStageFlagBits::eFragment);
 
-    pushCmd(cp.addAttachment.request("paint", C_WIDTH, C_HEIGHT, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled));
+    pushCmd(cp.addAttachment.request("paint", C_WIDTH, C_HEIGHT, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc));
     pushCmd(cp.addAttachment.request("paint_clear", C_WIDTH, C_HEIGHT, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled));
     pushCmd(cp.loadVertShader.request(sr.loadVertShaders->reportCallback(), "fullscreen_tri.spv"));
     pushCmd(cp.compileShader.request(sr.compileShader->reportCallback(), "fragment/brush/simple.frag", "spot"));
@@ -406,6 +457,7 @@ void Painter::initBasic()
     deactivate(opcast(Op::initBasic));
     activate(opcast(Op::paint));
     activate(opcast(Op::brushResize));
+    activate(opcast(Op::saveAttachmentToPng));
     updateVocab();
 }
 

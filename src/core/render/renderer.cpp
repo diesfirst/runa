@@ -25,8 +25,8 @@ Renderer::Renderer(Context& context) :
         vk::CommandPoolCreateFlagBits::eTransient}
 {
     createDescriptorPool();
-    createDescriptorBuffer(100000000); //arbitrary for now. 100MB
-    descriptorBuffer->map();
+    createHostBuffer(100000000); //arbitrary for now. 100MB
+    hostBuffer->map();
     ubos.resize(1);
 }
 
@@ -123,11 +123,11 @@ void Renderer::initFrameUBOs(size_t size, uint32_t binding)
 {
     for (auto& frame : frames) 
     {
-        auto block = descriptorBuffer->requestBlock(size);
+        auto block = hostBuffer->requestBlock(size);
         vk::DescriptorBufferInfo bi;
         bi.setRange(block->size);
         bi.setOffset(block->offset);
-        bi.setBuffer(descriptorBuffer->getHandle());
+        bi.setBuffer(hostBuffer->getHandle());
         vk::WriteDescriptorSet bw;
         bw.setDescriptorType(vk::DescriptorType::eUniformBuffer);
         bw.setDstArrayElement(0); //may want to parameterize this
@@ -591,7 +591,7 @@ const std::string Renderer::createPipelineLayout(const std::string name, const s
 
 void Renderer::updateFrameDescriptorBuffer(uint32_t frameIndex, uint32_t uboIndex)
 {
-	auto block = descriptorBuffer->bufferBlocks[frameIndex].get();
+	auto block = hostBuffer->bufferBlocks[frameIndex].get();
     assert(block->isMapped && "Block not mapped!");
 	auto pHostMemory = block->pHostMemory;
 	memcpy(pHostMemory, ubos.at(uboIndex).data, ubos.at(uboIndex).size);
@@ -615,22 +615,23 @@ void Renderer::createDescriptorPool()
 	descriptorPool = device.createDescriptorPool(ci);
 }
 
-void Renderer::createDescriptorBuffer(uint32_t size)
+void Renderer::createHostBuffer(uint32_t size)
 {
-	descriptorBuffer = std::make_unique<Buffer>(
+	hostBuffer = std::make_unique<Buffer>(
 			device, 
             context.physicalDeviceProperties,
 			context.physicalDeviceMemoryProperties, 
 			size, 
 			vk::BufferUsageFlagBits::eUniformBuffer |
-            vk::BufferUsageFlagBits::eTransferDst,
+            vk::BufferUsageFlagBits::eTransferDst |
+            vk::BufferUsageFlagBits::eTransferSrc,
 			vk::MemoryPropertyFlagBits::eHostVisible | 
 			vk::MemoryPropertyFlagBits::eHostCoherent);
 }
 
 void Renderer::popBufferBlock()
 {
-    descriptorBuffer->popBackBlock();
+    hostBuffer->popBackBlock();
 }
 
 void Renderer::listAttachments() const
@@ -692,7 +693,7 @@ VertShader& Renderer::vertShaderAt(const std::string name)
 BufferBlock* Renderer::copySwapToHost()
 {
     auto extent = swapchain->getExtent2D();
-    auto block = descriptorBuffer->requestBlock(
+    auto block = hostBuffer->requestBlock(
             extent.width * extent.height * 4);
 
     auto& commandBuffer = commandPool.requestCommandBuffer();
@@ -728,7 +729,7 @@ BufferBlock* Renderer::copySwapToHost()
     copyRegion.setBufferRowLength(0);
     copyRegion.setBufferImageHeight(0);
 
-    commandBuffer.copyImageToBuffer(image, descriptorBuffer->getHandle(), copyRegion);
+    commandBuffer.copyImageToBuffer(image, hostBuffer->getHandle(), copyRegion);
 
     commandBuffer.end(); //renderpass should take care of converting the swap image layout back for us
 
@@ -743,7 +744,7 @@ BufferBlock* Renderer::copySwapToHost()
 BufferBlock* Renderer::copyAttachmentToHost(
         const std::string name, const vk::Rect2D region)
 {
-    auto block = descriptorBuffer->requestBlock(
+    auto block = hostBuffer->requestBlock(
             region.extent.width * region.extent.height * 4);
 
     auto& commandBuffer = commandPool.requestCommandBuffer();
@@ -779,7 +780,7 @@ BufferBlock* Renderer::copyAttachmentToHost(
     copyRegion.setBufferRowLength(0);
     copyRegion.setBufferImageHeight(0);
 
-    commandBuffer.copyImageToBuffer(image, descriptorBuffer->getHandle(), copyRegion);
+    commandBuffer.copyImageToBuffer(image, hostBuffer->getHandle(), copyRegion);
 
     commandBuffer.end(); //renderpass should take care of converting the swap image layout back for us
 
@@ -789,6 +790,54 @@ BufferBlock* Renderer::copyAttachmentToHost(
 
     commandPool.resetPool();
     return block;
+}
+
+void Renderer::copyHostToAttachment(void* source, int size, std::string attachmentName, const vk::Rect2D region)
+{
+    assert(size = region.extent.width * region.extent.height * 4 && "size does not match region");
+
+    auto block = hostBuffer->requestBlock(size);
+
+    auto& commandBuffer = commandPool.requestCommandBuffer();
+
+    vk::ImageSubresourceRange isr;
+    isr.setAspectMask(vk::ImageAspectFlagBits::eColor);
+    isr.setLayerCount(1);
+    isr.setLevelCount(1);
+    isr.setBaseMipLevel(0);
+    isr.setBaseArrayLayer(0);
+
+    auto& attachment = attachments.at(attachmentName);
+    auto& image = attachment->getImage(0).getImage();
+
+    vk::ImageMemoryBarrier imb;
+    imb.setImage(image);
+    imb.setOldLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+    imb.setNewLayout(vk::ImageLayout::eTransferDstOptimal);
+    imb.setSrcAccessMask(vk::AccessFlagBits::eMemoryRead);
+    imb.setDstAccessMask(vk::AccessFlagBits::eTransferRead);
+    imb.setSubresourceRange(isr);
+
+    commandBuffer.begin();
+    commandBuffer.insertImageMemoryBarrier(
+            vk::PipelineStageFlagBits::eTransfer,
+            vk::PipelineStageFlagBits::eTransfer,
+            imb);
+
+    vk::BufferImageCopy copyRegion;
+    copyRegion.setImageExtent({region.extent.width, region.extent.height, 1});
+    copyRegion.setImageOffset({region.offset.x, region.offset.y, 0});
+    copyRegion.setBufferOffset(block->offset);
+    copyRegion.setImageSubresource({vk::ImageAspectFlagBits::eColor, 0, 0, 1});
+    copyRegion.setBufferRowLength(0);
+    copyRegion.setBufferImageHeight(0);
+
+    //TODO: finish this
+}
+
+const Attachment* Renderer::getAttachmentPtr(std::string name) const
+{
+    return attachments.at(name).get();
 }
 
 vk::Extent2D Renderer::getSwapExtent()
