@@ -107,7 +107,7 @@ public:
     BufferBlock* copySwapToHost();
     BufferBlock* copyAttachmentToHost(const std::string, const vk::Rect2D region);
 
-    void copyHostToAttachment(void* source, int size, std::string_view, const vk::Rect2D region);
+    void copyHostToAttachment(void* source, int size, std::string attachmentName, const vk::Rect2D region);
 
     const Attachment* getAttachmentPtr(std::string name) const;
 
@@ -116,7 +116,7 @@ public:
 private:
     const Context& context;
     const vk::Device& device;
-    const vk::Queue& graphicsQueue;
+    const vk::Queue graphicsQueue;
     std::vector<RenderFrame> frames;
     std::unique_ptr<Swapchain> swapchain;
     bool descriptionIsBound;

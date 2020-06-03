@@ -17,7 +17,7 @@ friend class CommandBuffer;
 public:
     CommandPool(
         const vk::Device&, 
-        const vk::Queue&,
+        const vk::Queue,
         uint32_t queueFamilyIndex, 
         vk::CommandPoolCreateFlags = {}); //empty flags by default
     virtual ~CommandPool();
@@ -31,7 +31,7 @@ public:
 
 private:
     const vk::Device& device;
-    const vk::Queue& queue;
+    const vk::Queue queue;
     vk::CommandPool handle;
     std::vector<std::unique_ptr<CommandBuffer>> primaryCommandBuffers;
     uint32_t activePrimaryCommandBufferCount;

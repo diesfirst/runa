@@ -15,6 +15,28 @@ namespace sword
 namespace render
 {
 
+struct QueueInfo
+{
+    QueueInfo(int familyIndex, vk::QueueFlags flags, int queueCount) :
+        familyIndex{familyIndex},
+        flags{flags},
+        queueCount{queueCount},
+        priorites(queueCount, 1.0) //all queues have a priority of one
+    {}
+    vk::DeviceQueueCreateInfo makeCreateInfo()
+    {
+        vk::DeviceQueueCreateInfo ci;
+        ci.setQueueFamilyIndex(familyIndex);
+        ci.setQueueCount(queueCount);
+        ci.setPQueuePriorities(priorites.data());
+        return ci;
+    }
+    int familyIndex;
+    vk::QueueFlags flags;
+    int queueCount;
+    std::vector<float> priorites;
+};
+
 class Context
 {
 public:
@@ -28,7 +50,6 @@ public:
     vk::Device device;
     bool enableValidation = true;
     uint32_t getGraphicsQueueFamilyIndex() const;
-    void setQueue();
     void printDeviceMemoryHeapInfo();
 
     void printDeviceMemoryTypeInfo();
@@ -43,13 +64,20 @@ public:
 
     void checkLayers(std::vector<const char*>);
 
-    vk::Queue queue;
+    //TODO should use these for getting queues
+    vk::Queue getGraphicQueue(int index) const;
+
+    vk::Queue getTransferQueue(int index) const;
+
     //physical device properties
     vk::PhysicalDeviceProperties physicalDeviceProperties;
     vk::PhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
 
 private:
     vk::PhysicalDeviceFeatures physicalDeviceFeatures;
+    std::optional<QueueInfo> graphicsQueueInfo;
+    std::optional<QueueInfo> computeQueueInfo;
+    std::optional<QueueInfo> transferQueueInfo;
     std::vector<vk::QueueFamilyProperties> queueFamilies;
     std::vector<vk::ExtensionProperties> deviceExtensionProperties;
     VkDebugUtilsMessengerEXT debugMessenger;

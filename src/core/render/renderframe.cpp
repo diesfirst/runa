@@ -18,7 +18,7 @@ RenderFrame::RenderFrame(
 	swapchainAttachment{std::move(renderTarget)},
 	commandPool{CommandPool(
             device, 
-            context.queue, 
+            context.getGraphicQueue(0), 
             context.getGraphicsQueueFamilyIndex(),
             vk::CommandPoolCreateFlagBits::eResetCommandBuffer)},
 	width{width},

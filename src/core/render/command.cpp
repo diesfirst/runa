@@ -9,7 +9,7 @@ namespace render
 
 CommandPool::CommandPool(
         const vk::Device& device, 
-        const vk::Queue& queue,
+        const vk::Queue queue,
         uint32_t queueFamilyIndex, 
         vk::CommandPoolCreateFlags flags) :
     device(device),

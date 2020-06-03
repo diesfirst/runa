@@ -17,7 +17,7 @@ namespace render
 Renderer::Renderer(Context& context) :
 	context{context},
 	device{context.device},
-	graphicsQueue{context.queue},
+	graphicsQueue{context.getGraphicQueue(0)},
     commandPool{
         device, 
         graphicsQueue, 
@@ -515,7 +515,7 @@ void Renderer::render(uint32_t cmdId, bool updateUbo)
 	pi.setPWaitSemaphores(&submissionCompleteSemaphore);
 	pi.setWaitSemaphoreCount(1);
 
-	context.queue.presentKHR(pi);
+	graphicsQueue.presentKHR(pi);
 }
 
 void Renderer::bindUboData(void* dataPointer, uint32_t size, uint32_t index)
@@ -794,7 +794,7 @@ BufferBlock* Renderer::copyAttachmentToHost(
 
 void Renderer::copyHostToAttachment(void* source, int size, std::string attachmentName, const vk::Rect2D region)
 {
-    assert(size = region.extent.width * region.extent.height * 4 && "size does not match region");
+    assert(size == region.extent.width * region.extent.height * 4 && "size does not match region");
 
     auto block = hostBuffer->requestBlock(size);
 

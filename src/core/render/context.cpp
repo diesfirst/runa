@@ -22,7 +22,6 @@ Context::Context()
     if (enableValidation) setupDebugMessenger2();
     createPhysicalDevice();
     createDevice();
-    setQueue();
 }
 
 Context::~Context()
@@ -92,16 +91,48 @@ void Context::createPhysicalDevice()
 
 void Context::createDevice()
 {
-    float queuePriority = 1.0; //apparently necesary? 
-    vk::DeviceQueueCreateInfo queueInfo;
-    queueInfo.flags = vk::DeviceQueueCreateFlags();
-    queueInfo.queueCount = 1;
-    queueInfo.queueFamilyIndex = 0; //should be the one with graphics capabilities
-    queueInfo.pQueuePriorities = &queuePriority;
+    auto deviceProperties = physicalDevice.getQueueFamilyProperties();
+    int i = -1;
+    std::vector<vk::DeviceQueueCreateInfo> queueInfos;
+    for (const auto& property : deviceProperties) 
+    {
+        i++;
+        std::cout << "QueueFamilyIndex: " << i << '\n';
+        std::cout << "QueueFlags: " << vk::to_string(property.queueFlags) << '\n';
+        std::cout << "QueueCount: " << property.queueCount<< '\n';
+        if (property.queueFlags & vk::QueueFlagBits::eGraphics)
+        {
+            std::cout << "Graphics family found! Index " << i << '\n';
+            graphicsQueueInfo = QueueInfo(i, property.queueFlags, property.queueCount);
+            queueInfos.emplace_back(graphicsQueueInfo->makeCreateInfo());
+            continue;
+        }
+        if (property.queueFlags & vk::QueueFlagBits::eTransfer)
+        {
+            std::cout << "Transfer family found! Index " << i << '\n';
+            transferQueueInfo = QueueInfo(i, property.queueFlags, property.queueCount);
+            queueInfos.emplace_back(transferQueueInfo->makeCreateInfo());
+            continue;
+        }
+        if (property.queueFlags & vk::QueueFlagBits::eCompute)
+        {
+            std::cout << "Compute family found! Index " << i << '\n';
+            computeQueueInfo = QueueInfo(i, property.queueFlags, property.queueCount);
+            queueInfos.emplace_back(computeQueueInfo->makeCreateInfo());
+            continue;
+        }
+    }
+
+//    float queuePriority = 1.0; //apparently necesary? 
+//    vk::DeviceQueueCreateInfo queueInfo;
+//    queueInfo.flags = vk::DeviceQueueCreateFlags();
+//    queueInfo.queueCount = 1;
+//    queueInfo.queueFamilyIndex = 0; //should be the one with graphics capabilities
+//    queueInfo.pQueuePriorities = &queuePriority;
     
     vk::DeviceCreateInfo deviceInfo;
-    deviceInfo.queueCreateInfoCount = 1;
-    deviceInfo.pQueueCreateInfos = &queueInfo;
+    deviceInfo.queueCreateInfoCount = queueInfos.size();
+    deviceInfo.pQueueCreateInfos = queueInfos.data();
 
     std::vector<const char*> extensions;
     extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
@@ -135,10 +166,18 @@ void Context::createDevice()
     std::cout << "Device created at: " << device << std::endl;
 }
 
-void Context::setQueue()
+vk::Queue Context::getGraphicQueue(int index) const
 {
-    //this should be based on the surface requirements, but 0 works
-    queue = device.getQueue(0, 0);
+    assert(index >= 0 && index < graphicsQueueInfo->queueCount);
+    assert(graphicsQueueInfo);
+    return device.getQueue(graphicsQueueInfo->familyIndex, index);
+}
+
+vk::Queue Context::getTransferQueue(int index) const
+{
+    assert(index >= 0 && index < transferQueueInfo->queueCount);
+    assert(transferQueueInfo);
+    return device.getQueue(transferQueueInfo->familyIndex, index);
 }
 
 void Context::printDeviceMemoryHeapInfo()
@@ -189,7 +228,7 @@ void Context::printDeviceQueueFamilyInfo()
 void Context::printDeviceExtensionProperties()
 {
     std::cout << "Device Extension Properties: " << std::endl;
-    for (const auto exProp : deviceExtensionProperties) 
+    for (const auto& exProp : deviceExtensionProperties) 
         std::cout << "Name: " << exProp.extensionName << std::endl;
 }
 
@@ -219,7 +258,7 @@ uint32_t Context::pickQueueFamilyIndex(vk::SurfaceKHR surface) const
 
 uint32_t Context::getGraphicsQueueFamilyIndex() const
 {
-    return 0;
+    return graphicsQueueInfo->familyIndex;
 }
 
 void Context::setDeviceExtensions(vk::DeviceCreateInfo& createInfo)

@@ -152,8 +152,8 @@ private:
     const PainterVars& vars;
     bool mouseDown{false};
 
-    using UndoStack = Region;
-    UndoStack undoStack;
+    //using UndoStack = Region;
+    //UndoStack undoStack;
 };
 
 class SaveAttachment : public LeafState
