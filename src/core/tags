@@ -28,6 +28,7 @@ BriefState	state/state.hpp	/^class BriefState : public LeafState$/;"	c	namespace
 Buffer	render/resource.cpp	/^Buffer::Buffer($/;"	f	class:sword::render::Buffer
 Buffer	render/resource.hpp	/^class Buffer$/;"	c	namespace:sword::render
 BufferBlock	render/resource.hpp	/^struct BufferBlock$/;"	s	namespace:sword::render
+BufferResources	render/types.hpp	/^struct BufferResources$/;"	s	namespace:sword::render
 C	event/event.hpp	/^    C = 54,$/;"	m	class:sword::event::symbol::Key
 CMD_BASE	command/command.hpp	6;"	d
 COMMAND_COMMANDPOOLS_HPP	command/commandpools.hpp	2;"	d
@@ -58,6 +59,7 @@ CompileShader	state/shader.cpp	/^CompileShader::CompileShader(StateArgs sa, Call
 CompileShader	state/shader.hpp	/^class CompileShader : public LeafState$/;"	c	namespace:sword::state
 Context	render/context.cpp	/^Context::Context()$/;"	f	class:sword::render::Context
 Context	render/context.hpp	/^class Context$/;"	c	namespace:sword::render
+CopyAttachmentToDevice	command/transfer.hpp	/^class CopyAttachmentToDevice : public Command$/;"	c	namespace:sword::command
 CopyAttachmentToUndoStack	command/saveimage.hpp	/^class CopyAttachmentToUndoStack : public Command$/;"	c	namespace:sword::command
 CreateDescriptorSetLayout	command/rendercommands.hpp	/^class CreateDescriptorSetLayout : public Command$/;"	c	namespace:sword::command
 CreateDescriptorSetLayout	state/descriptorsetlayoutmanager.cpp	/^CreateDescriptorSetLayout::CreateDescriptorSetLayout(StateArgs sa, $/;"	f	class:sword::state::CreateDescriptorSetLayout
@@ -199,6 +201,7 @@ RENDER_RESOURCE_HPP_	render/resource.hpp	2;"	d
 RENDER_SHADER_HPP_	render/shader.hpp	2;"	d
 RENDER_SURFACE_WINDOW_HPP_	render/surface/window.hpp	2;"	d
 RENDER_SWAPCHAIN_HPP_	render/swapchain.hpp	2;"	d
+RENDER_TYPES_HPP	render/types.hpp	2;"	d
 RENDER_UBOTYPES_HPP_	render/ubotypes.hpp	2;"	d
 REPORT_HPP_	state/report.hpp	2;"	d
 RL_DELAY	event/dispatcher.cpp	/^constexpr uint32_t RL_DELAY = 100;$/;"	m	namespace:sword::event	file:
@@ -460,6 +463,8 @@ command	command/saveimage.hpp	/^namespace command$/;"	n	namespace:sword
 command	command/shader.cpp	/^namespace command$/;"	n	namespace:sword	file:
 command	command/shader.hpp	/^namespace command$/;"	n	namespace:sword
 command	command/template.hpp	/^namespace command$/;"	n	namespace:sword
+command	command/transfer.cpp	/^namespace command$/;"	n	namespace:sword	file:
+command	command/transfer.hpp	/^namespace command$/;"	n	namespace:sword
 command	command/vocab.cpp	/^namespace command$/;"	n	namespace:sword	file:
 command	command/vocab.hpp	/^namespace command$/;"	n	namespace:sword
 command	command/watcher.cpp	/^namespace command$/;"	n	namespace:sword	file:
@@ -595,6 +600,7 @@ device	render/renderpass.hpp	/^    const vk::Device& device;$/;"	m	class:sword::
 device	render/resource.hpp	/^    const vk::Device& device;$/;"	m	class:sword::render::Buffer
 device	render/resource.hpp	/^    const vk::Device& device;$/;"	m	class:sword::render::Image
 device	render/shader.hpp	/^    const vk::Device& device;$/;"	m	class:sword::render::Shader
+device	render/types.hpp	/^    const vk::Device& device;$/;"	m	struct:sword::render::BufferResources
 deviceExtensionProperties	render/context.hpp	/^    std::vector<vk::ExtensionProperties> deviceExtensionProperties;$/;"	m	class:sword::render::Context
 deviceReport	render/context.cpp	/^void Context::deviceReport()$/;"	f	class:sword::render::Context
 deviceSize	render/resource.hpp	/^    vk::DeviceSize deviceSize;$/;"	m	class:sword::render::Image
@@ -653,6 +659,7 @@ execute	command/saveimage.cpp	/^void CopyAttachmentToUndoStack::execute(Applicat
 execute	command/saveimage.cpp	/^void SaveAttachmentToPng::execute(Application* app)$/;"	f	class:sword::command::SaveAttachmentToPng
 execute	command/saveimage.cpp	/^void SaveSwapToPng::execute(Application* app)$/;"	f	class:sword::command::SaveSwapToPng
 execute	command/shader.cpp	/^void CompileShader::execute(Application* app)$/;"	f	class:sword::command::CompileShader
+execute	command/transfer.cpp	/^void CopyAttachmentToDevice::execute(Application* app)$/;"	f	class:sword::command::CopyAttachmentToDevice
 execute	command/vocab.cpp	/^void AddVocab::execute(Application* app)$/;"	f	class:sword::command::AddVocab
 execute	command/vocab.cpp	/^void PopVocab::execute(Application* app)$/;"	f	class:sword::command::PopVocab
 execute	command/vocab.cpp	/^void SetVocab::execute(Application* app)$/;"	f	class:sword::command::SetVocab
@@ -923,6 +930,7 @@ max_item_count	types/region.hpp	/^    static constexpr int max_item_count = 10;$
 memProps	render/resource.hpp	/^    const vk::PhysicalDeviceMemoryProperties& memProps;$/;"	m	class:sword::render::Buffer
 memory	render/resource.hpp	/^    vk::DeviceMemory memory;$/;"	m	class:sword::render::Buffer
 memory	render/resource.hpp	/^    vk::DeviceMemory memory;$/;"	m	class:sword::render::Image
+memoryProperties	render/types.hpp	/^    const vk::PhysicalDeviceMemoryProperties& memoryProperties;$/;"	m	struct:sword::render::BufferResources
 merge	state/report.hpp	/^    merge,$/;"	m	class:sword::state::ReportUsage
 mouseButton	event/event.hpp	/^    symbol::MouseButton mouseButton;$/;"	m	struct:sword::event::symbol::WindowInput
 multisampleState	render/pipeline.hpp	/^    vk::PipelineMultisampleStateCreateInfo multisampleState;$/;"	m	class:sword::render::GraphicsPipeline
@@ -1013,6 +1021,7 @@ override	command/saveimage.hpp	/^    void execute(Application*) override;$/;"	m	
 override	command/saveimage.hpp	/^    void execute(Application*) override;$/;"	m	class:sword::command::SaveSwapToPng
 override	command/shader.hpp	/^    state::Report* makeReport() const override;$/;"	m	class:sword::command::CompileShader
 override	command/shader.hpp	/^    void execute(Application*) override;$/;"	m	class:sword::command::CompileShader
+override	command/transfer.hpp	/^    void execute(Application*) override;$/;"	m	class:sword::command::CopyAttachmentToDevice
 override	command/vocab.hpp	/^    void execute(Application* app) override;$/;"	m	class:sword::command::AddVocab
 override	command/vocab.hpp	/^    void execute(Application* app) override;$/;"	m	class:sword::command::PopVocab
 override	command/vocab.hpp	/^    void execute(Application* app) override;$/;"	m	class:sword::command::SetVocab
@@ -1100,6 +1109,7 @@ physicalDevice	render/context.hpp	/^    vk::PhysicalDevice physicalDevice;$/;"	m
 physicalDeviceFeatures	render/context.hpp	/^    vk::PhysicalDeviceFeatures physicalDeviceFeatures;$/;"	m	class:sword::render::Context
 physicalDeviceMemoryProperties	render/context.hpp	/^    vk::PhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;$/;"	m	class:sword::render::Context
 physicalDeviceProperties	render/context.hpp	/^    vk::PhysicalDeviceProperties physicalDeviceProperties;$/;"	m	class:sword::render::Context
+physicalDeviceProperties	render/types.hpp	/^    const vk::PhysicalDeviceProperties& physicalDeviceProperties;$/;"	m	struct:sword::render::BufferResources
 pickQueueFamilyIndex	render/context.cpp	/^uint32_t Context::pickQueueFamilyIndex(vk::SurfaceKHR surface) const$/;"	f	class:sword::render::Context
 pipeLayoutReports	state/pipelinemanager.hpp	/^    Reports<PipelineLayoutReport> pipeLayoutReports;$/;"	m	class:sword::state::final
 pipeline	command/rendercommands.hpp	/^    std::string pipeline;$/;"	m	class:sword::command::CreateRenderLayer
@@ -1219,6 +1229,7 @@ removeFragmentShader	render/renderer.hpp	/^    void removeFragmentShader(const s
 removeGraphicsPipeline	render/renderer.hpp	/^    void removeGraphicsPipeline(const std::string name) {graphicsPipelines.erase(name);}$/;"	f	class:sword::render::Renderer
 removeVertexShader	render/renderer.hpp	/^    void removeVertexShader(const std::string name) {vertexShaders.erase(name);}$/;"	f	class:sword::render::Renderer
 render	command/render.hpp	/^class render : public Command$/;"	c
+render	command/transfer.hpp	/^namespace render { class CommandBuffer; };$/;"	n	namespace:sword
 render	render/attachment.cpp	/^namespace render$/;"	n	namespace:sword	file:
 render	render/attachment.hpp	/^namespace render$/;"	n	namespace:sword
 render	render/command.cpp	/^namespace render$/;"	n	namespace:sword	file:
@@ -1245,6 +1256,7 @@ render	render/surface/window.cpp	/^namespace render$/;"	n	namespace:sword	file:
 render	render/surface/window.hpp	/^namespace render$/;"	n	namespace:sword
 render	render/swapchain.cpp	/^namespace render$/;"	n	namespace:sword	file:
 render	render/swapchain.hpp	/^namespace render$/;"	n	namespace:sword
+render	render/types.hpp	/^namespace render$/;"	n	namespace:sword
 render	render/ubotypes.hpp	/^namespace render$/;"	n	namespace:sword
 render	state/director.hpp	/^namespace render { class Window; }$/;"	n	namespace:sword
 render	state/rendermanager.hpp	/^    Render render;$/;"	m	class:sword::state::final
@@ -1353,6 +1365,7 @@ set	command/saveimage.hpp	/^    void set( const std::string_view name) { fileNam
 set	command/saveimage.hpp	/^    void set(Region* region, std::string_view attachmentName, int offset_x, int offset_y, int width, int height ) $/;"	f	class:sword::command::CopyAttachmentToUndoStack
 set	command/shader.cpp	/^void CompileShader::set(const std::string_view rel_path, const std::string_view name, state::ShaderReport* report)$/;"	f	class:sword::command::CompileShader
 set	command/template.hpp	/^    void set() {}$/;"	f	class:sword::command::Name
+set	command/transfer.hpp	/^    void set() {}$/;"	f	class:sword::command::CopyAttachmentToDevice
 set	command/vocab.hpp	/^    void set(const state::Vocab* vPtr) { this->vocabPtr = vPtr; }$/;"	f	class:sword::command::AddVocab
 set	command/vocab.hpp	/^    void set(const std::vector<std::string> v) { this->vocab = v; }$/;"	f	class:sword::command::SetVocab
 set	command/watcher.hpp	/^    void set(std::string path) {this->path = path;}$/;"	f	class:sword::command::WatchFile
@@ -1365,6 +1378,7 @@ set	event/event.hpp	/^    void set(std::string input) { this->input = input;}$/;
 set	event/event.hpp	/^   void set() {}$/;"	f	class:sword::event::symbol::Abort
 set	state/vocab.hpp	/^    void set( std::vector<std::string> strings) { words = strings; }$/;"	f	class:sword::state::Vocab
 setClass	render/surface/window.cpp	/^void Window::setClass()$/;"	f	class:sword::render::Window
+setCommandBuffer	command/transfer.cpp	/^void CopyAttachmentToDevice::setCommandBuffer(render::CommandBuffer& buffer)$/;"	f	class:sword::command::CopyAttachmentToDevice
 setDescriptorCount	state/descriptorsetlayoutmanager.hpp	/^    SetDescriptorCount setDescriptorCount;$/;"	m	class:sword::state::final
 setDeviceExtensions	render/context.cpp	/^void Context::setDeviceExtensions(vk::DeviceCreateInfo& createInfo)$/;"	f	class:sword::render::Context
 setEvents	render/surface/window.cpp	/^void Window::setEvents()$/;"	f	class:sword::render::Window
@@ -1496,6 +1510,8 @@ sword	command/saveimage.hpp	/^namespace sword$/;"	n
 sword	command/shader.cpp	/^namespace sword$/;"	n	file:
 sword	command/shader.hpp	/^namespace sword$/;"	n
 sword	command/template.hpp	/^namespace sword$/;"	n
+sword	command/transfer.cpp	/^namespace sword$/;"	n	file:
+sword	command/transfer.hpp	/^namespace sword$/;"	n
 sword	command/vocab.cpp	/^namespace sword$/;"	n	file:
 sword	command/vocab.hpp	/^namespace sword$/;"	n
 sword	command/watcher.cpp	/^namespace sword$/;"	n	file:
@@ -1533,6 +1549,7 @@ sword	render/surface/window.cpp	/^namespace sword$/;"	n	file:
 sword	render/surface/window.hpp	/^namespace sword$/;"	n
 sword	render/swapchain.cpp	/^namespace sword$/;"	n	file:
 sword	render/swapchain.hpp	/^namespace sword$/;"	n
+sword	render/types.hpp	/^namespace sword$/;"	n
 sword	render/ubotypes.hpp	/^namespace sword$/;"	n
 sword	state/descriptormanager.cpp	/^namespace sword$/;"	n	file:
 sword	state/descriptormanager.hpp	/^namespace sword$/;"	n
@@ -1560,6 +1577,7 @@ sword	state/statetypes.hpp	/^namespace sword$/;"	n
 sword	state/vocab.hpp	/^namespace sword$/;"	n
 sword	types/heap.hpp	/^namespace sword$/;"	n
 sword	types/map.hpp	/^namespace sword$/;"	n
+sword	types/pool.cpp	/^namespace sword$/;"	n	file:
 sword	types/pool.hpp	/^namespace sword$/;"	n
 sword	types/region.hpp	/^namespace sword$/;"	n
 sword	types/spirv.hpp	/^namespace sword$/;"	n
