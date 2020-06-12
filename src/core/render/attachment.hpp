@@ -21,7 +21,7 @@ public:
         const vk::ImageUsageFlags);
     Attachment(const vk::Device&, std::unique_ptr<Image>);
     Attachment(const Attachment&) = delete;
-    Attachment& operator=(Attachment &&other) = default;
+    Attachment& operator=(Attachment &&other) = delete;
     Attachment& operator=(Attachment&) = delete;
     Attachment(Attachment&& other) = delete;
     virtual ~Attachment();

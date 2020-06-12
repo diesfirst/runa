@@ -997,7 +997,7 @@ options	state/descriptorsetlayoutmanager.hpp	/^    SmallMap<std::string, vk::Sha
 options	state/state.hpp	/^    OptionMap options;$/;"	m	class:sword::state::BranchState
 options	types/map.hpp	/^    std::vector<Element> options;$/;"	m	class:sword::SmallMap
 os	application.hpp	/^    std::ofstream os;$/;"	m	class:sword::Application
-other	render/attachment.hpp	/^    Attachment& operator=(Attachment &&other) = default;$/;"	m	class:sword::render::Attachment
+other	render/attachment.hpp	/^    Attachment& operator=(Attachment &&other) = delete;$/;"	m	class:sword::render::Attachment
 other	render/attachment.hpp	/^    Attachment(Attachment&& other) = delete;$/;"	m	class:sword::render::Attachment
 other	render/renderframe.hpp	/^    RenderFrame& operator=(RenderFrame&& other) = delete;$/;"	m	class:sword::render::RenderFrame
 other	render/shader.hpp	/^    Shader& operator=(Shader& other) = delete; \/\/no copy assignment$/;"	m	class:sword::render::Shader
