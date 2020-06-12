@@ -14,7 +14,7 @@ RenderFrame::RenderFrame(
 		std::unique_ptr<Attachment>&& renderTarget,
 		uint32_t width, uint32_t height) :
 	context(context),
-	device(context.device),
+	device(context.getDevice()),
 	swapchainAttachment{std::move(renderTarget)},
 	commandPool{CommandPool(
             device, 

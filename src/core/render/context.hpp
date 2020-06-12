@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include "types.hpp"
 
 namespace sword
 {
@@ -42,14 +43,18 @@ class Context
 public:
     Context();
     ~Context();
+    Context(Context&&) = delete;
+    Context(const Context&) = delete;
+    Context& operator=(Context&) = delete;
+    Context& operator=(Context&&) = delete;
     void deviceReport();
-    vk::Device getDevice();
+    const vk::Device& getDevice() const;
+    const vk::Instance& getInstance() const;
+    const vk::PhysicalDevice& getPhysicalDevice() const;
     uint32_t pickQueueFamilyIndex(vk::SurfaceKHR surface) const;
-    vk::PhysicalDevice physicalDevice;
-    vk::Instance instance;
-    vk::Device device;
     bool enableValidation = true;
     uint32_t getGraphicsQueueFamilyIndex() const;
+    uint32_t getTransferQueueFamilyIndex() const { return transferQueueInfo->familyIndex; }
     void printDeviceMemoryHeapInfo();
 
     void printDeviceMemoryTypeInfo();
@@ -61,6 +66,8 @@ public:
     void printDeviceExtensionProperties();
     
     void printAvailableDevices();
+
+    BufferResources getBufferResources() const;
 
     void checkLayers(std::vector<const char*>);
 
@@ -74,6 +81,10 @@ public:
     vk::PhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
 
 private:
+    vk::PhysicalDevice physicalDevice;
+    vk::UniqueInstance instance;
+    vk::UniqueDevice device;
+
     vk::PhysicalDeviceFeatures physicalDeviceFeatures;
     std::optional<QueueInfo> graphicsQueueInfo;
     std::optional<QueueInfo> computeQueueInfo;

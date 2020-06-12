@@ -1,0 +1,13 @@
+diff --git a/src/core/render/renderframe.cpp b/src/core/render/renderframe.cpp
+index 046e3d4..c633790 100644
+--- a/src/core/render/renderframe.cpp
++++ b/src/core/render/renderframe.cpp
+@@ -14,7 +14,7 @@ RenderFrame::RenderFrame(
+ 		std::unique_ptr<Attachment>&& renderTarget,
+ 		uint32_t width, uint32_t height) :
+ 	context(context),
+-	device(context.getDevice()),
++	device(context.device),
+ 	swapchainAttachment{std::move(renderTarget)},
+ 	commandPool{CommandPool(
+             device, 

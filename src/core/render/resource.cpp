@@ -1,6 +1,7 @@
 #include <cstring>
 #include <iostream>
 #include <render/resource.hpp>
+#include <render/types.hpp>
 
 namespace sword
 {
@@ -8,52 +9,61 @@ namespace sword
 namespace render
 {
 
-Buffer::Buffer(
-        const vk::Device& device,
-        const vk::PhysicalDeviceProperties& props,
-		const vk::PhysicalDeviceMemoryProperties& memProps,
-		uint32_t size, 
-		vk::BufferUsageFlags usage,
-		vk::MemoryPropertyFlags typeFlags) :
-	device{device},
-    devProps{props},
-    memProps{memProps},
-	size{size}
+uint32_t findMemoryType(
+		vk::MemoryRequirements memReqs,  //returned by device.getBufferMemoryRequirements()
+		vk::MemoryPropertyFlags properties,
+        const vk::PhysicalDeviceMemoryProperties& memProps)
 {
-	std::cout << "Creating buffer!" << std::endl;
-	std::cout << "MM Size: " << size << std::endl;
+	for (uint32_t i = 0; i < memProps.memoryTypeCount; i++) 
+	{
+		if (
+			(memReqs.memoryTypeBits & (1 << i)) && 
+			(memProps.memoryTypes[i].propertyFlags & properties) == properties
+			) 
+		{
+		return i;
+	    }
+	}
 
-	vk::BufferCreateInfo bufferInfo;
-	bufferInfo.setSize(size);
-	bufferInfo.setUsage(usage);
-	bufferInfo.setSharingMode(vk::SharingMode::eExclusive);
-
-	handle = device.createBuffer(bufferInfo);
-
-	auto memReqs = device.getBufferMemoryRequirements(handle);
-//	to do: fix this, its not working
-//	uint32_t memoryTypeIndex = findMemoryType(
-//			memReqs.memoryTypeBits, typeFlags); 
-//	std::cout << "Memory Type index: " << memoryTypeIndex << std::endl;
-//
-	vk::MemoryAllocateInfo allocInfo;
-	allocInfo.setMemoryTypeIndex(9); //always host visible for now
-	allocInfo.setAllocationSize(memReqs.size);
-//	allocInfo.setMemoryTypeIndex(memoryTypeIndex);
-	std::cout << "Mem reqs size:" << memReqs.size << std::endl;
-	std::cout << "Mem reqs alignment:" << memReqs.alignment << std::endl;
-
-	memory = device.allocateMemory(allocInfo);
-
-	device.bindBufferMemory(handle, memory, 0);
+	throw std::runtime_error("Failed to find suitable memory");
 }
 
+Buffer::Buffer(
+        BufferResources br,
+		uint32_t size, 
+		vk::BufferUsageFlags usage,
+		vk::MemoryPropertyFlags typeFlags)
+         :
+	device{br.device},
+    devProps{br.physicalDeviceProperties},
+    memProps{br.memoryProperties},
+	size{size},
+    memoryTypeFlags{typeFlags}
+{
+	handle = device.createBuffer({{}, size, usage, vk::SharingMode::eExclusive, {}, {}});
+    allocateAndBindMemory();
+	std::cout << "Created buffer!" << '\n';
+	std::cout << "Buffer size: " << size << '\n';
+}
 
 Buffer::~Buffer()
 {
-	device.unmapMemory(memory);
+    if (isMapped) 
+    {
+        device.unmapMemory(memory); 
+    }
 	device.destroyBuffer(handle);
 	device.freeMemory(memory);
+}
+
+void Buffer::allocateAndBindMemory()
+{
+	auto memReqs = device.getBufferMemoryRequirements(handle);
+
+    auto memoryTypeIndex = findMemoryType(memReqs, memoryTypeFlags, memProps);
+
+	memory = device.allocateMemory({memReqs.size, memoryTypeIndex});
+	device.bindBufferMemory(handle, memory, 0);
 }
 
 vk::Buffer& Buffer::getHandle()
@@ -128,24 +138,6 @@ void Buffer::unmap()
 	isMapped = false;
 }
 
-uint32_t Buffer::findMemoryType(
-		uint32_t typeFilter, 
-		vk::MemoryPropertyFlags properties)
-{
-	for (uint32_t i = 0; i < memProps.memoryTypeCount; i++) 
-	{
-		if (
-			(typeFilter & (1 << i)) && 
-			(memProps.memoryTypes[i].propertyFlags & properties) == properties
-			) 
-		{
-		return i;
-	    }
-	}
-
-	throw std::runtime_error("Failed to find suitable memory");
-}
-
 Image::Image(
 		const vk::Device& device,
 		const vk::Extent3D extent,
@@ -159,6 +151,8 @@ Image::Image(
 	usageFlags{usageFlags}
 {
 	vk::ImageCreateInfo createInfo;
+    std::cerr << "Bout to print device:" << '\n';
+    std::cerr << device << '\n';
 	createInfo.setImageType(vk::ImageType::e2D);
 	createInfo.setExtent(extent);
 	createInfo.setMipLevels(1);

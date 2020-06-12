@@ -1,0 +1,94 @@
+diff --git a/src/core/render/swapchain.cpp b/src/core/render/swapchain.cpp
+index 8f1120d..8e561b0 100644
+--- a/src/core/render/swapchain.cpp
++++ b/src/core/render/swapchain.cpp
+@@ -31,8 +31,8 @@ Swapchain::Swapchain(const Context& context, const Window& window, const uint8_t
+ Swapchain::~Swapchain()
+ {	
+ 	destroyImageViews();
+-	context.getDevice().destroySwapchainKHR(swapchain);
+-	context.getInstance().destroySurfaceKHR(surface);
++	context.device.destroySwapchainKHR(swapchain);
++	context.instance.destroySurfaceKHR(surface);
+ }
+ 
+ void Swapchain::createSurface()
+@@ -40,7 +40,7 @@ void Swapchain::createSurface()
+ 	vk::XcbSurfaceCreateInfoKHR surfaceCreateInfo;
+ 	surfaceCreateInfo.connection  = window.connection;
+ 	surfaceCreateInfo.window = window.window;
+-	surface = context.getInstance().createXcbSurfaceKHR(surfaceCreateInfo);
++	surface = context.instance.createXcbSurfaceKHR(surfaceCreateInfo);
+ }
+ 
+ void Swapchain::setQueueFamilyIndex()
+@@ -50,13 +50,13 @@ void Swapchain::setQueueFamilyIndex()
+ 
+ void Swapchain::setSurfaceCapabilities()
+ {
+-	surfCaps = context.getPhysicalDevice().getSurfaceCapabilitiesKHR(surface);
++	surfCaps = context.physicalDevice.getSurfaceCapabilitiesKHR(surface);
+ }
+ 
+ void Swapchain::setFormat()
+ {
+ 	//make this call simply to make validation layers happy for now
+-	context.getPhysicalDevice().getSurfaceFormatsKHR(surface);
++	context.physicalDevice.getSurfaceFormatsKHR(surface);
+ 	colorFormat = vk::Format::eB8G8R8A8Unorm; //availabe
+ 	colorSpace = vk::ColorSpaceKHR::eSrgbNonlinear; //available
+ }
+@@ -78,7 +78,7 @@ void Swapchain::setSwapExtent()
+ void Swapchain::setPresentMode()
+ {
+ 	//called just to make validation layers happy
+-	context.getPhysicalDevice().getSurfacePresentModesKHR(surface);
++	context.physicalDevice.getSurfacePresentModesKHR(surface);
+ 	presentMode = vk::PresentModeKHR::eImmediate;
+ }
+ 
+@@ -111,7 +111,7 @@ void Swapchain::createSwapchain()
+ 	createInfo.setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque);
+ 	//means we dont care about the color of obscured pixels
+ 	createInfo.setClipped(true); 
+-	swapchain = context.getDevice().createSwapchainKHR(createInfo);
++	swapchain = context.device.createSwapchainKHR(createInfo);
+ 	std::cout << "Swapchain created!" << std::endl;
+ 	swapchainCreated = true;
+ }
+@@ -148,7 +148,7 @@ void Swapchain::setImages()
+ 		       << " from nonexistant swapchain"
+ 	       	       << std::endl;
+ 	}
+-	images = context.getDevice().getSwapchainImagesKHR(swapchain);
++	images = context.device.getSwapchainImagesKHR(swapchain);
+ }
+ 
+ void Swapchain::createImageViews()
+@@ -166,7 +166,7 @@ void Swapchain::createImageViews()
+ 
+ 	for (const auto image : images) {
+ 		createInfo.setImage(image);
+-		imageViews.push_back(context.getDevice().createImageView(createInfo));
++		imageViews.push_back(context.device.createImageView(createInfo));
+ 	}
+ }
+ 
+@@ -187,7 +187,7 @@ const vk::SwapchainKHR& Swapchain::getHandle() const
+ 
+ uint32_t Swapchain::acquireNextImage(vk::Semaphore semaphore, vk::Fence fence)
+ {
+-	auto result = context.getDevice().acquireNextImageKHR(
++	auto result = context.device.acquireNextImageKHR(
+ 			swapchain,
+ 			UINT64_MAX, //so it will wait forever
+ 			//will be signalled when we can do something with this
+@@ -207,7 +207,7 @@ void Swapchain::destroyImageViews()
+ {
+ 	for (auto imageView : imageViews) 
+ 	{
+-		context.getDevice().destroyImageView(imageView);
++		context.device.destroyImageView(imageView);
+ 	}
+ }
+ 

@@ -26,10 +26,7 @@ Context::Context()
 
 Context::~Context()
 {
-    std::cout << "context destructor called" << std::endl;
-    device.destroy();
     if (enableValidation) destroyDebugMessenger();
-    instance.destroy();
 }
 
 void Context::deviceReport()
@@ -44,9 +41,19 @@ void Context::deviceReport()
     printDeviceMemoryTypeInfo();
 }
 
-vk::Device Context::getDevice()
+const vk::Device& Context::getDevice() const
 {
-    return device;
+    return *device;
+}
+
+const vk::Instance& Context::getInstance() const
+{
+    return *instance;
+}
+
+const vk::PhysicalDevice& Context::getPhysicalDevice() const
+{
+    return physicalDevice;
 }
 
 //private
@@ -73,12 +80,12 @@ void Context::createInstance()
     instanceInfo.enabledLayerCount = layers.size();
     instanceInfo.ppEnabledLayerNames = layers.data();
 
-    instance = vk::createInstance(instanceInfo);
+    instance = vk::createInstanceUnique(instanceInfo);
 }
 
 void Context::createPhysicalDevice()
 {
-    physicalDevice = instance.enumeratePhysicalDevices()[0];
+    physicalDevice = instance->enumeratePhysicalDevices()[0];
     physicalDeviceProperties = physicalDevice.getProperties();
     physicalDeviceMemoryProperties = physicalDevice.getMemoryProperties();
     physicalDeviceFeatures = physicalDevice.getFeatures();
@@ -161,23 +168,23 @@ void Context::createDevice()
 
     deviceInfo.setPNext(&indexingFeatures);
 
-    device = physicalDevice.createDevice(deviceInfo);
+    device = physicalDevice.createDeviceUnique(deviceInfo);
     assert(device && "Device failed to be created");
-    std::cout << "Device created at: " << device << std::endl;
+    std::cout << "Device created at: " << *device << std::endl;
 }
 
 vk::Queue Context::getGraphicQueue(int index) const
 {
     assert(index >= 0 && index < graphicsQueueInfo->queueCount);
     assert(graphicsQueueInfo);
-    return device.getQueue(graphicsQueueInfo->familyIndex, index);
+    return device->getQueue(graphicsQueueInfo->familyIndex, index);
 }
 
 vk::Queue Context::getTransferQueue(int index) const
 {
     assert(index >= 0 && index < transferQueueInfo->queueCount);
     assert(transferQueueInfo);
-    return device.getQueue(transferQueueInfo->familyIndex, index);
+    return device->getQueue(transferQueueInfo->familyIndex, index);
 }
 
 void Context::printDeviceMemoryHeapInfo()
@@ -284,9 +291,9 @@ void Context::setupDebugMessenger()
             vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation);
     dbCreateInfo.setPfnUserCallback(debugCallback);
     std::cout << "going for it" << std::endl;
-    dispatcher.init(instance);
+    dispatcher.init(*instance);
     std::cout << "mm" << std::endl;
-    auto messenger = instance.createDebugUtilsMessengerEXTUnique(
+    auto messenger = instance->createDebugUtilsMessengerEXTUnique(
                     dbCreateInfo,
                     nullptr,
                     dispatcher);
@@ -308,21 +315,21 @@ void Context::setupDebugMessenger2()
             VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
     dbCreateInfo.flags = 0;
     dbCreateInfo.pfnUserCallback = debugCallback;
-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT) instance.getProcAddr("vkCreateDebugUtilsMessengerEXT");
+    auto func = (PFN_vkCreateDebugUtilsMessengerEXT) instance->getProcAddr("vkCreateDebugUtilsMessengerEXT");
     assert(func != nullptr);
-    func(instance, &dbCreateInfo, nullptr, &debugMessenger);
+    func(*instance, &dbCreateInfo, nullptr, &debugMessenger);
 }
 
 void Context::destroyDebugMessenger()
 {
-    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) instance.getProcAddr("vkDestroyDebugUtilsMessengerEXT");
+    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) instance->getProcAddr("vkDestroyDebugUtilsMessengerEXT");
     assert(func != nullptr);
-    func(instance, debugMessenger, nullptr);
+    func(*instance, debugMessenger, nullptr);
 }
 
 void Context::printAvailableDevices()
 {
-    for (const auto device : instance.enumeratePhysicalDevices()) 
+    for (const auto device : instance->enumeratePhysicalDevices()) 
     {
         std::string name = device.getProperties().deviceName;
         std::cout << "Device name: " << name << std::endl;
@@ -348,6 +355,10 @@ void Context::checkLayers(std::vector<const char*> layers)
     }
 }
 
+BufferResources Context::getBufferResources() const
+{
+    return {*device, physicalDeviceProperties, physicalDeviceMemoryProperties};
+}
 
 }; // namespace render
 

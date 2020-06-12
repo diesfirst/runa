@@ -16,7 +16,7 @@ namespace render
 
 Renderer::Renderer(Context& context) :
 	context{context},
-	device{context.device},
+	device{context.getDevice()},
 	graphicsQueue{context.getGraphicQueue(0)},
     commandPool{
         device, 
@@ -276,6 +276,9 @@ Attachment& Renderer::createAttachment(
         const std::string name, const vk::Extent2D extent,
         const vk::ImageUsageFlags usageFlags)
 {
+    SWD_DEBUG_MSG("Context " << &context);
+    SWD_DEBUG_MSG("Context Device " << context.getDevice());
+    SWD_DEBUG_MSG("Device " << device);
     auto attachment = std::make_unique<Attachment>(device, extent, usageFlags);
     attachments.emplace(name, std::move(attachment));
     return *attachments.at(name);
@@ -618,9 +621,7 @@ void Renderer::createDescriptorPool()
 void Renderer::createHostBuffer(uint32_t size)
 {
 	hostBuffer = std::make_unique<Buffer>(
-			device, 
-            context.physicalDeviceProperties,
-			context.physicalDeviceMemoryProperties, 
+			context.getBufferResources(), 
 			size, 
 			vk::BufferUsageFlagBits::eUniformBuffer |
             vk::BufferUsageFlagBits::eTransferDst |

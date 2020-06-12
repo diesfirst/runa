@@ -3,6 +3,7 @@
 
 #include <vulkan/vulkan.hpp>
 #include <vector>
+#include "types.hpp"
 
 namespace sword
 {
@@ -23,17 +24,15 @@ struct BufferBlock
     bool isValid{true};
 };
 
-class Buffer
+class Buffer final
 {
 friend class MemoryManager;
 public:
     Buffer(
-	const vk::Device&,
-        const vk::PhysicalDeviceProperties&,
-	const vk::PhysicalDeviceMemoryProperties&,
-	uint32_t size,
-	vk::BufferUsageFlags,
-	vk::MemoryPropertyFlags);
+            BufferResources,
+            uint32_t size,
+            vk::BufferUsageFlags,
+            vk::MemoryPropertyFlags);
     ~Buffer();
     Buffer(const Buffer&) = delete;
     Buffer& operator=(Buffer&) = delete;
@@ -53,14 +52,15 @@ private:
     const vk::PhysicalDeviceMemoryProperties& memProps;
     vk::DeviceMemory memory;
     vk::Buffer handle;
+    vk::MemoryPropertyFlags memoryTypeFlags;
     unsigned long size;
     bool isMapped{false};
     void* pHostMemory{nullptr};
     uint32_t curBlockOffset{0};
-    uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags);
+    void allocateAndBindMemory();
 };
 
-class Image
+class Image final
 {
 friend class MemoryManager;
 public:
@@ -102,7 +102,6 @@ private:
     bool selfManaged = true;
     const vk::Device& device;
 };
-
 
 
 }; // namespace render

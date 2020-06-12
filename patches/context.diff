@@ -1,0 +1,187 @@
+diff --git a/src/core/render/context.cpp b/src/core/render/context.cpp
+index 3b7da58..c49d0bd 100644
+--- a/src/core/render/context.cpp
++++ b/src/core/render/context.cpp
+@@ -26,7 +26,10 @@ Context::Context()
+ 
+ Context::~Context()
+ {
++    std::cout << "context destructor called" << std::endl;
++    device.destroy();
+     if (enableValidation) destroyDebugMessenger();
++    instance.destroy();
+ }
+ 
+ void Context::deviceReport()
+@@ -41,19 +44,9 @@ void Context::deviceReport()
+     printDeviceMemoryTypeInfo();
+ }
+ 
+-const vk::Device& Context::getDevice() const
++vk::Device Context::getDevice()
+ {
+-    return *device;
+-}
+-
+-const vk::Instance& Context::getInstance() const
+-{
+-    return *instance;
+-}
+-
+-const vk::PhysicalDevice& Context::getPhysicalDevice() const
+-{
+-    return physicalDevice;
++    return device;
+ }
+ 
+ //private
+@@ -80,12 +73,12 @@ void Context::createInstance()
+     instanceInfo.enabledLayerCount = layers.size();
+     instanceInfo.ppEnabledLayerNames = layers.data();
+ 
+-    instance = vk::createInstanceUnique(instanceInfo);
++    instance = vk::createInstance(instanceInfo);
+ }
+ 
+ void Context::createPhysicalDevice()
+ {
+-    physicalDevice = instance->enumeratePhysicalDevices()[0];
++    physicalDevice = instance.enumeratePhysicalDevices()[0];
+     physicalDeviceProperties = physicalDevice.getProperties();
+     physicalDeviceMemoryProperties = physicalDevice.getMemoryProperties();
+     physicalDeviceFeatures = physicalDevice.getFeatures();
+@@ -168,23 +161,23 @@ void Context::createDevice()
+ 
+     deviceInfo.setPNext(&indexingFeatures);
+ 
+-    device = physicalDevice.createDeviceUnique(deviceInfo);
++    device = physicalDevice.createDevice(deviceInfo);
+     assert(device && "Device failed to be created");
+-    std::cout << "Device created at: " << *device << std::endl;
++    std::cout << "Device created at: " << device << std::endl;
+ }
+ 
+ vk::Queue Context::getGraphicQueue(int index) const
+ {
+     assert(index >= 0 && index < graphicsQueueInfo->queueCount);
+     assert(graphicsQueueInfo);
+-    return device->getQueue(graphicsQueueInfo->familyIndex, index);
++    return device.getQueue(graphicsQueueInfo->familyIndex, index);
+ }
+ 
+ vk::Queue Context::getTransferQueue(int index) const
+ {
+     assert(index >= 0 && index < transferQueueInfo->queueCount);
+     assert(transferQueueInfo);
+-    return device->getQueue(transferQueueInfo->familyIndex, index);
++    return device.getQueue(transferQueueInfo->familyIndex, index);
+ }
+ 
+ void Context::printDeviceMemoryHeapInfo()
+@@ -291,9 +284,9 @@ void Context::setupDebugMessenger()
+             vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation);
+     dbCreateInfo.setPfnUserCallback(debugCallback);
+     std::cout << "going for it" << std::endl;
+-    dispatcher.init(*instance);
++    dispatcher.init(instance);
+     std::cout << "mm" << std::endl;
+-    auto messenger = instance->createDebugUtilsMessengerEXTUnique(
++    auto messenger = instance.createDebugUtilsMessengerEXTUnique(
+                     dbCreateInfo,
+                     nullptr,
+                     dispatcher);
+@@ -315,21 +308,21 @@ void Context::setupDebugMessenger2()
+             VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
+     dbCreateInfo.flags = 0;
+     dbCreateInfo.pfnUserCallback = debugCallback;
+-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT) instance->getProcAddr("vkCreateDebugUtilsMessengerEXT");
++    auto func = (PFN_vkCreateDebugUtilsMessengerEXT) instance.getProcAddr("vkCreateDebugUtilsMessengerEXT");
+     assert(func != nullptr);
+-    func(*instance, &dbCreateInfo, nullptr, &debugMessenger);
++    func(instance, &dbCreateInfo, nullptr, &debugMessenger);
+ }
+ 
+ void Context::destroyDebugMessenger()
+ {
+-    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) instance->getProcAddr("vkDestroyDebugUtilsMessengerEXT");
++    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) instance.getProcAddr("vkDestroyDebugUtilsMessengerEXT");
+     assert(func != nullptr);
+-    func(*instance, debugMessenger, nullptr);
++    func(instance, debugMessenger, nullptr);
+ }
+ 
+ void Context::printAvailableDevices()
+ {
+-    for (const auto device : instance->enumeratePhysicalDevices()) 
++    for (const auto device : instance.enumeratePhysicalDevices()) 
+     {
+         std::string name = device.getProperties().deviceName;
+         std::cout << "Device name: " << name << std::endl;
+@@ -355,10 +348,6 @@ void Context::checkLayers(std::vector<const char*> layers)
+     }
+ }
+ 
+-BufferResources Context::getBufferResources() const
+-{
+-    return {*device, physicalDeviceProperties, physicalDeviceMemoryProperties};
+-}
+ 
+ }; // namespace render
+ 
+diff --git a/src/core/render/context.hpp b/src/core/render/context.hpp
+index 37e3f82..1fb5854 100644
+--- a/src/core/render/context.hpp
++++ b/src/core/render/context.hpp
+@@ -38,25 +38,24 @@ struct QueueInfo
+     std::vector<float> priorites;
+ };
+ 
++
+ class Context
+ {
+ public:
+     Context();
+     ~Context();
+-    Context(Context&&) = delete;
+-    Context(const Context&) = delete;
+-    Context& operator=(Context&) = delete;
+-    Context& operator=(Context&&) = delete;
+     void deviceReport();
+-    const vk::Device& getDevice() const;
+-    const vk::Instance& getInstance() const;
+-    const vk::PhysicalDevice& getPhysicalDevice() const;
++    vk::Device getDevice();
+     uint32_t pickQueueFamilyIndex(vk::SurfaceKHR surface) const;
++    vk::PhysicalDevice physicalDevice;
++    vk::Instance instance;
++    vk::Device device;
+     bool enableValidation = true;
+     uint32_t getGraphicsQueueFamilyIndex() const;
+-    uint32_t getTransferQueueFamilyIndex() const { return transferQueueInfo->familyIndex; }
+     void printDeviceMemoryHeapInfo();
+ 
++    BufferResources getBufferResources() const;
++
+     void printDeviceMemoryTypeInfo();
+ 
+     void printDeviceInfo();
+@@ -67,8 +66,6 @@ public:
+     
+     void printAvailableDevices();
+ 
+-    BufferResources getBufferResources() const;
+-
+     void checkLayers(std::vector<const char*>);
+ 
+     //TODO should use these for getting queues
+@@ -81,10 +78,6 @@ public:
+     vk::PhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
+ 
+ private:
+-    vk::PhysicalDevice physicalDevice;
+-    vk::UniqueInstance instance;
+-    vk::UniqueDevice device;
+-
+     vk::PhysicalDeviceFeatures physicalDeviceFeatures;
+     std::optional<QueueInfo> graphicsQueueInfo;
+     std::optional<QueueInfo> computeQueueInfo;
