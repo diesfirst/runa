@@ -1,5 +1,6 @@
 #include <render/attachment.hpp>
 #include <iostream>
+#include <util/debug.hpp>
 
 namespace sword
 {
@@ -14,6 +15,7 @@ Attachment::Attachment(
 	device{device},
 	extent{extent}
 {
+    SWD_DEBUG_MSG("Device" << device);
 	vk::Extent3D ex = {extent.width, extent.height, 1};
 	format = vk::Format::eR8G8B8A8Unorm;
 	auto image = std::make_unique<Image>(

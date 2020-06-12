@@ -1,0 +1,19 @@
+diff --git a/src/core/render/attachment.cpp b/src/core/render/attachment.cpp
+index c3c8595..0f3a510 100644
+--- a/src/core/render/attachment.cpp
++++ b/src/core/render/attachment.cpp
+@@ -1,6 +1,5 @@
+ #include <render/attachment.hpp>
+ #include <iostream>
+-#include <util/debug.hpp>
+ 
+ namespace sword
+ {
+@@ -15,7 +14,6 @@ Attachment::Attachment(
+ 	device{device},
+ 	extent{extent}
+ {
+-    SWD_DEBUG_MSG("Device" << device);
+ 	vk::Extent3D ex = {extent.width, extent.height, 1};
+ 	format = vk::Format::eR8G8B8A8Unorm;
+ 	auto image = std::make_unique<Image>(

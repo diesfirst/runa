@@ -12,8 +12,8 @@ CommandPool::CommandPool(
         const vk::Queue queue,
         uint32_t queueFamilyIndex, 
         vk::CommandPoolCreateFlags flags) :
-    device(device),
-    queue(queue)
+    device{device},
+    queue{queue}
 {
     std::cout << this << " CommandPool constructed" << std::endl;
     vk::CommandPoolCreateInfo info;
@@ -29,11 +29,11 @@ CommandPool::~CommandPool()
 }
 
 CommandPool::CommandPool(CommandPool&& other) :
-    device(other.device),
-    queue(other.queue),
-    handle(std::move(other.handle)),
-    primaryCommandBuffers(std::move(other.primaryCommandBuffers)),
-    activePrimaryCommandBufferCount(other.activePrimaryCommandBufferCount)
+    device{other.device},
+    queue{other.queue},
+    handle{other.handle},
+    primaryCommandBuffers{std::move(other.primaryCommandBuffers)},
+    activePrimaryCommandBufferCount{other.activePrimaryCommandBufferCount}
 {
     std::cout << this << " CommandPool move constructed" << std::endl;
     other.handle = nullptr;
@@ -41,20 +41,15 @@ CommandPool::CommandPool(CommandPool&& other) :
 
 CommandBuffer& CommandPool::requestCommandBuffer(vk::CommandBufferLevel level)
 {
-    if (level == vk::CommandBufferLevel::ePrimary)
+    assert(level == vk::CommandBufferLevel::ePrimary && "Only primary command buffers supported");
+    if (activePrimaryCommandBufferCount < primaryCommandBuffers.size())
     {
-        if (activePrimaryCommandBufferCount < primaryCommandBuffers.size())
-        {
-            return *primaryCommandBuffers.at(activePrimaryCommandBufferCount++);
-        }
-        primaryCommandBuffers.emplace_back(std::make_unique<CommandBuffer>(*this, level));
-        activePrimaryCommandBufferCount++;
-        return *primaryCommandBuffers.back();
+        return *primaryCommandBuffers.at(activePrimaryCommandBufferCount++);
     }
-    else
-    {
-        throw std::runtime_error("No support for secondary command buffers yet");
-    }
+    auto buffer = std::make_unique<CommandBuffer>(*this, level);
+    primaryCommandBuffers.push_back(std::move(buffer));
+    activePrimaryCommandBufferCount++;
+    return *primaryCommandBuffers.back();
 }
 
 void CommandPool::resetPool()
@@ -65,7 +60,6 @@ void CommandPool::resetPool()
 
 //level is primary by default
 CommandBuffer::CommandBuffer(CommandPool& pool, vk::CommandBufferLevel level) :
-    pool(pool),
     queue(pool.queue),
     device(pool.device)
 {
@@ -73,15 +67,15 @@ CommandBuffer::CommandBuffer(CommandPool& pool, vk::CommandBufferLevel level) :
     allocInfo.setCommandPool(pool.handle);
     allocInfo.setCommandBufferCount(1);
     allocInfo.setLevel(vk::CommandBufferLevel::ePrimary);
-    buffers = pool.device.allocateCommandBuffers(allocInfo);
+    buffers = device.allocateCommandBuffers(allocInfo);
     handle = buffers.at(0);
 
     vk::SemaphoreCreateInfo semaInfo;
-    signalSemaphore = pool.device.createSemaphore(semaInfo);
+    signalSemaphore = device.createSemaphore(semaInfo);
 
     vk::FenceCreateInfo fenceInfo;
     fenceInfo.setFlags(vk::FenceCreateFlagBits::eSignaled); //signalled in default state
-    fence = pool.device.createFence(fenceInfo);
+    fence = device.createFence(fenceInfo);
 }
 
 CommandBuffer::~CommandBuffer()
@@ -95,7 +89,6 @@ CommandBuffer::~CommandBuffer()
 }
 
 CommandBuffer::CommandBuffer(CommandBuffer&& other) :
-    pool{other.pool},
     device{other.device},
     queue{other.queue},
     buffers{std::move(other.buffers)},

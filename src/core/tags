@@ -360,7 +360,6 @@ activate	event/event.hpp	/^    void activate() {inUse = true;}$/;"	f	class:sword
 activate	state/state.hpp	/^    void activate(Option op) { topMask.set(op); }$/;"	f	class:sword::state::BranchState
 activateCreateSwap	state/renderpassmanager.cpp	/^void RenderPassManager::activateCreateSwap()$/;"	f	class:sword::state::RenderPassManager
 activateDSetLayoutNeeding	state/descriptormanager.cpp	/^void DescriptorManager::activateDSetLayoutNeeding()$/;"	f	class:sword::state::DescriptorManager
-activePrimaryCommandBufferCount	render/command.hpp	/^    uint32_t activePrimaryCommandBufferCount;$/;"	m	class:sword::render::CommandPool
 activeTarget	render/renderer.hpp	/^    Attachment* activeTarget;$/;"	m	class:sword::render::Renderer
 add	state/report.hpp	/^    add,$/;"	m	class:sword::state::ReportUsage
 addAttachment	command/commandpools.hpp	/^    CommandPool<command::AddAttachment> addAttachment; $/;"	m	struct:sword::CommandPools
@@ -670,7 +669,6 @@ extractCommand	state/state.cpp	/^Optional BranchState::extractCommand(event::Eve
 extractShaderStageInfos	render/pipeline.cpp	/^std::vector<vk::PipelineShaderStageCreateInfo> GraphicsPipeline::extractShaderStageInfos()$/;"	f	class:sword::render::GraphicsPipeline
 familyIndex	render/context.hpp	/^    int familyIndex;$/;"	m	struct:sword::render::QueueInfo
 fd	event/filewatcher.hpp	/^    int fd;$/;"	m	class:sword::event::FileWatcher
-fence	render/command.hpp	/^    vk::Fence fence;$/;"	m	class:sword::render::CommandBuffer
 fence	render/renderframe.hpp	/^    vk::Fence fence;$/;"	m	class:sword::render::RenderFrame
 fetchCommandLineInput	event/dispatcher.cpp	/^void EventDispatcher::fetchCommandLineInput()$/;"	f	class:sword::event::EventDispatcher
 fetchWindowInput	event/dispatcher.cpp	/^void EventDispatcher::fetchWindowInput()$/;"	f	class:sword::event::EventDispatcher
@@ -794,8 +792,6 @@ graphicsPipelines	render/renderer.hpp	/^    std::unordered_map<std::string, Grap
 graphicsQueue	render/renderer.hpp	/^    const vk::Queue graphicsQueue;$/;"	m	class:sword::render::Renderer
 graphicsQueueInfo	render/context.hpp	/^    std::optional<QueueInfo> graphicsQueueInfo;$/;"	m	class:sword::render::Context
 grow	types/region.hpp	/^    void grow()$/;"	f	class:sword::Region
-handle	render/command.hpp	/^    vk::CommandBuffer handle;$/;"	m	class:sword::render::CommandBuffer
-handle	render/command.hpp	/^    vk::CommandPool handle;$/;"	m	class:sword::render::CommandPool
 handle	render/pipeline.hpp	/^    vk::Pipeline handle;$/;"	m	class:sword::render::GraphicsPipeline
 handle	render/resource.hpp	/^    vk::Buffer handle;$/;"	m	class:sword::render::final
 handle	render/resource.hpp	/^    vk::Image handle;$/;"	m	class:sword::render::final
@@ -1125,7 +1121,6 @@ pipelineName	state/report.hpp	/^    std::string pipelineName;$/;"	m	class:sword:
 pivot	state/painter.hpp	/^    glm::mat4 pivot = glm::translate(glm::mat4(1.), glm::vec3{-0.5 * cMapX, -0.5 * cMapY, 0.0}); $/;"	m	struct:sword::state::painter::Matrices
 pollEvents	event/dispatcher.cpp	/^void EventDispatcher::pollEvents()$/;"	f	class:sword::event::EventDispatcher
 pollEvents	render/surface/window.cpp	/^xcb_generic_event_t* Window::pollEvents() const$/;"	f	class:sword::render::Window
-pool	render/command.hpp	/^    CommandPool& pool;$/;"	m	class:sword::render::CommandBuffer
 pool	state/descriptormanager.hpp	/^    CommandPool<command::InitFrameUbos>& pool;$/;"	m	class:sword::state::InitFrameUbos
 pool	state/descriptormanager.hpp	/^    CommandPool<command::UpdateFrameSamplers>& pool;$/;"	m	class:sword::state::UpdateFrameSamplers
 pool	state/painter.hpp	/^    CommandPool<command::Render>& pool;$/;"	m	class:sword::state::painter::Paint
@@ -1196,8 +1191,6 @@ pushState	application.cpp	/^void Application::pushState(state::State* state)$/;"
 pushState	state/editstack.hpp	/^    void pushState(State* ptr) { stack.push(std::forward<State*>(ptr)); }$/;"	f	class:sword::state::EditStack
 pushState	state/state.cpp	/^void BranchState::pushState(State* state)$/;"	f	class:sword::state::BranchState
 push_back	state/vocab.hpp	/^    void push_back(std::string word) { words.push_back(word); }$/;"	f	class:sword::state::Vocab
-queue	render/command.hpp	/^    const vk::Queue queue;$/;"	m	class:sword::render::CommandPool
-queue	render/command.hpp	/^    const vk::Queue& queue;$/;"	m	class:sword::render::CommandBuffer
 queueCount	render/context.hpp	/^    int queueCount;$/;"	m	struct:sword::render::QueueInfo
 queueFamilies	render/context.hpp	/^    std::vector<vk::QueueFamilyProperties> queueFamilies;$/;"	m	class:sword::render::Context
 quickSetup	state/director.cpp	/^void Director::quickSetup()$/;"	f	class:sword::state::Director
@@ -1429,7 +1422,6 @@ shaderReports	state/shader.hpp	/^    ShaderReports shaderReports;$/;"	m	class:sw
 shaderStageInfos	render/pipeline.hpp	/^    std::vector<vk::PipelineShaderStageCreateInfo> shaderStageInfos;$/;"	m	class:sword::render::GraphicsPipeline
 shader_dir	state/shader.hpp	/^namespace shader_dir$/;"	n	namespace:sword::state
 shaders	render/pipeline.hpp	/^    const std::vector<const Shader*> shaders;$/;"	m	class:sword::render::GraphicsPipeline
-signalSemaphore	render/command.hpp	/^    vk::Semaphore signalSemaphore;$/;"	m	class:sword::render::CommandBuffer
 size	command/rendercommands.hpp	/^    int size;$/;"	m	class:sword::command::BindUboData
 size	command/rendercommands.hpp	/^    size_t size;$/;"	m	class:sword::command::InitFrameUbos
 size	render/renderer.hpp	/^    uint32_t size;$/;"	m	struct:sword::render::Ubo

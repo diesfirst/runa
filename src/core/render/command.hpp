@@ -20,7 +20,7 @@ public:
         const vk::Queue,
         uint32_t queueFamilyIndex, 
         vk::CommandPoolCreateFlags = {}); //empty flags by default
-    virtual ~CommandPool();
+    ~CommandPool();
     CommandPool(CommandPool&&);
     CommandPool(const CommandPool&) = delete;
     CommandPool& operator=(CommandPool&&) = delete;
@@ -31,10 +31,10 @@ public:
 
 private:
     const vk::Device& device;
-    const vk::Queue queue;
-    vk::CommandPool handle;
+    const vk::Queue queue{nullptr};
+    vk::CommandPool handle{nullptr};
     std::vector<std::unique_ptr<CommandBuffer>> primaryCommandBuffers;
-    uint32_t activePrimaryCommandBufferCount;
+    uint32_t activePrimaryCommandBufferCount{0};
 };
 
 class CommandBuffer
@@ -43,7 +43,7 @@ public:
     CommandBuffer(
         CommandPool& pool, 
         vk::CommandBufferLevel level = vk::CommandBufferLevel::ePrimary);
-    virtual ~CommandBuffer();
+    ~CommandBuffer();
     CommandBuffer(const CommandBuffer&) = delete;
     CommandBuffer& operator=(CommandBuffer&) = delete;
     CommandBuffer& operator=(CommandBuffer&&) = delete;
@@ -70,13 +70,12 @@ public:
     void waitForFence() const;
     void reset();
 private:
-    CommandPool& pool;
     const vk::Device& device;
-    const vk::Queue& queue;
+    const vk::Queue& queue{nullptr};
     std::vector<vk::CommandBuffer> buffers;
-    vk::CommandBuffer handle;
-    vk::Semaphore signalSemaphore;
-    vk::Fence fence;
+    vk::CommandBuffer handle{nullptr};
+    vk::Semaphore signalSemaphore{nullptr};
+    vk::Fence fence{nullptr};
     bool recordingComplete{false};
 };
 
