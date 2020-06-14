@@ -54,14 +54,14 @@ private:
     bool keepCommandThread{true};
 
     //pools
-    EventPool<CommandLine> clPool{200};
-    EventPool<KeyPress> kpPool{50};
-    EventPool<KeyRelease> krPool{20};
-    EventPool<MousePress> mpPool{20};
-    EventPool<MouseRelease> mrPool{20};
-    EventPool<MouseMotion> mmPool{100};
-    EventPool<Abort> aPool{50};
-    EventPool<LeaveWindow> lwPool{3};
+    EventPool<CommandLine, 200> clPool;
+    EventPool<KeyPress, 50> kpPool;
+    EventPool<KeyRelease, 20> krPool;
+    EventPool<MousePress, 20> mpPool;
+    EventPool<MouseRelease, 20> mrPool;
+    EventPool<MouseMotion, 100> mmPool;
+    EventPool<Abort, 50> aPool;
+    EventPool<LeaveWindow, 3> lwPool;
 };
 
 }; // namespace event

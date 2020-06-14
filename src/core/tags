@@ -171,8 +171,7 @@ Pipeline	state/report.hpp	/^    Pipeline,$/;"	m	class:sword::state::ReportType
 PipelineLayoutReport	state/report.hpp	/^    PipelineLayoutReport(std::string name, std::vector<std::string> dlnames) : name{name}, descriptorSetLayouts{dlnames} {}$/;"	f	class:sword::state::PipelineLayoutReport
 PipelineLayoutReport	state/report.hpp	/^class PipelineLayoutReport : public Report$/;"	c	namespace:sword::state
 PipelineManager	state/pipelinemanager.cpp	/^PipelineManager::PipelineManager(StateArgs sa, Callbacks cb, ReportCallbackFn<GraphicsPipelineReport> rpcb) :$/;"	f	class:sword::state::PipelineManager
-Pool	types/pool.hpp	/^    Pool() : size{POOL_DEFAULT_SIZE}, pool(size) {}$/;"	f	class:sword::Pool
-Pool	types/pool.hpp	/^    Pool(size_t size) : size{size}, pool(size) {}$/;"	f	class:sword::Pool
+Pool	types/pool.hpp	/^    Pool() {}$/;"	f	class:sword::Pool
 Pool	types/pool.hpp	/^class Pool$/;"	c	namespace:sword
 PopVocab	command/vocab.hpp	/^class PopVocab : public Command$/;"	c	namespace:sword::command
 PrepareRenderFrames	command/rendercommands.hpp	/^class PrepareRenderFrames : public Command$/;"	c	namespace:sword::command
@@ -353,6 +352,7 @@ Window	render/surface/window.hpp	/^class Window$/;"	c	namespace:sword::render
 WindowEventType	event/event.hpp	/^enum class WindowEventType : uint8_t$/;"	c	namespace:sword::event::symbol
 WindowInput	event/event.hpp	/^struct WindowInput$/;"	s	namespace:sword::event::symbol
 _STATE_PAINTER_HPP	state/painter.hpp	3;"	d
+aPool	event/dispatcher.hpp	/^    EventPool<Abort, 50> aPool;$/;"	m	class:sword::event::EventDispatcher
 abortHelper	event/dispatcher.cpp	/^int abortHelper(int count, int key)$/;"	f	namespace:sword::event
 acquireNextImage	render/swapchain.cpp	/^uint32_t Swapchain::acquireNextImage(vk::Semaphore semaphore, vk::Fence fence)$/;"	f	class:sword::render::Swapchain
 activate	command/command.hpp	/^    void activate() {inUse = true;}$/;"	f	class:sword::command::Command
@@ -389,6 +389,7 @@ attachmentNames	command/rendercommands.hpp	/^    std::vector<std::string> attach
 attachmentStates	render/pipeline.hpp	/^    std::vector<vk::PipelineColorBlendAttachmentState> attachmentStates;$/;"	m	class:sword::render::GraphicsPipeline
 attachments	render/renderer.hpp	/^    std::unordered_map<std::string, std::unique_ptr<Attachment>> attachments;$/;"	m	class:sword::render::Renderer
 attachments	render/renderpass.hpp	/^    std::vector<vk::AttachmentDescription> attachments;$/;"	m	class:sword::render::RenderPass
+avPool	state/state.hpp	/^    CommandPool<command::AddVocab> avPool;$/;"	m	class:sword::state::State
 begin	render/command.cpp	/^void CommandBuffer::begin()$/;"	f	class:sword::render::CommandBuffer
 begin	state/editstack.hpp	/^    auto begin() const { return stack.begin(); }$/;"	f	class:sword::state::EditStack
 begin	types/map.hpp	/^    auto begin()$/;"	f	class:sword::SmallMap
@@ -431,6 +432,7 @@ cfdsPool	state/descriptormanager.hpp	/^    CommandPool<command::CreateFrameDescr
 cgpPool	state/pipelinemanager.hpp	/^    CommandPool<command::CreateGraphicsPipeline>& cgpPool;$/;"	m	class:sword::state::final
 checkLayers	render/context.cpp	/^void Context::checkLayers(std::vector<const char*> layers)$/;"	f	class:sword::render::Context
 clCount	event/dispatcher.cpp	/^static int clCount = 0;$/;"	m	namespace:sword::event	file:
+clPool	event/dispatcher.hpp	/^    EventPool<CommandLine, 200> clPool;$/;"	m	class:sword::event::EventDispatcher
 clear	state/editstack.hpp	/^    void clear() { stack.clear(); }$/;"	f	class:sword::state::EditStack
 clear	state/vocab.hpp	/^    void clear() { words.clear(); }$/;"	f	class:sword::state::Vocab
 clear	types/stack.hpp	/^    void clear() { items.clear(); }$/;"	f	class:sword::Stack
@@ -629,7 +631,7 @@ event	event/filewatcher.hpp	/^namespace event$/;"	n	namespace:sword
 event	event/types.hpp	/^namespace event$/;"	n	namespace:sword
 event	event/watcher.hpp	/^namespace event$/;"	n	namespace:sword
 event	render/surface/window.hpp	/^	xcb_generic_event_t* event;$/;"	m	class:sword::render::Window
-eventPool	event/filewatcher.hpp	/^    EventPool<File> eventPool;$/;"	m	class:sword::event::FileWatcher
+eventPool	event/filewatcher.hpp	/^    EventPool<File, 3> eventPool;$/;"	m	class:sword::event::FileWatcher
 eventQueue	event/dispatcher.hpp	/^    EventQueue eventQueue;$/;"	m	class:sword::event::EventDispatcher
 eventQueue	event/filewatcher.hpp	/^    EventQueue& eventQueue;$/;"	m	class:sword::event::FileWatcher
 eventType	event/event.hpp	/^    WindowEventType eventType;$/;"	m	struct:sword::event::symbol::WindowInput
@@ -855,7 +857,6 @@ initX	state/painter.hpp	/^    float initX, initY;$/;"	m	class:sword::state::pain
 initY	state/painter.hpp	/^    float initX, initY;$/;"	m	class:sword::state::painter::Rotate
 initY	state/painter.hpp	/^    float initX, initY;$/;"	m	class:sword::state::painter::Scale
 initialize	render/shader.cpp	/^void Shader::initialize()$/;"	f	class:sword::render::Shader
-initialize	types/pool.hpp	/^    template <typename... Args> void initialize(Args&&... args)$/;"	f	class:sword::Pool
 input	event/event.hpp	/^    std::string input;$/;"	m	class:sword::event::symbol::CommandLine
 inputAssemblySate	render/pipeline.hpp	/^    vk::PipelineInputAssemblyStateCreateInfo inputAssemblySate;$/;"	m	class:sword::render::GraphicsPipeline
 inputCast	state/painter.cpp	/^constexpr Input inputCast(event::symbol::Key key) { return static_cast<Input>(key); }$/;"	f	class:sword::state::painter::Input	file:
@@ -865,7 +866,7 @@ instance	render/context.hpp	/^    vk::UniqueInstance instance;$/;"	m	class:sword
 integer	state/shader.hpp	/^    enum class SpecType : uint8_t {integer, floating};$/;"	m	class:sword::state::final::SpecType
 integer	state/shader.hpp	/^    enum class SpecType : uint8_t {integer, floating};$/;"	m	class:sword::state::shader::SpecType
 is	application.hpp	/^    std::ifstream is;$/;"	m	class:sword::Application
-isAvailable	command/command.hpp	/^    inline bool isAvailable() const {return !inUse;}$/;"	f	class:sword::command::Command
+isAvailable	command/command.hpp	/^    constexpr bool isAvailable() const {return !inUse;}$/;"	f	class:sword::command::Command
 isAvailable	event/event.hpp	/^    inline bool isAvailable() const {return !inUse;}$/;"	f	class:sword::event::symbol::Event
 isCreated	render/pipeline.cpp	/^bool GraphicsPipeline::isCreated() const$/;"	f	class:sword::render::GraphicsPipeline
 isCreated	render/renderpass.cpp	/^bool RenderPass::isCreated() const$/;"	f	class:sword::render::RenderPass
@@ -879,6 +880,8 @@ key	event/event.hpp	/^    symbol::Key key;$/;"	m	class:sword::event::symbol::Key
 key	event/event.hpp	/^    symbol::Key key;$/;"	m	struct:sword::event::symbol::WindowInput
 keyAt	types/map.hpp	/^    S keyAt(int i) const { return options.at(i).first; }$/;"	f	class:sword::SmallMap
 kind	command/shader.hpp	/^    shaderc_shader_kind kind;$/;"	m	class:sword::command::CompileShader
+kpPool	event/dispatcher.hpp	/^    EventPool<KeyPress, 50> kpPool;$/;"	m	class:sword::event::EventDispatcher
+krPool	event/dispatcher.hpp	/^    EventPool<KeyRelease, 20> krPool;$/;"	m	class:sword::event::EventDispatcher
 layout	render/pipeline.hpp	/^    vk::PipelineLayout layout;$/;"	m	class:sword::render::GraphicsPipeline
 layout	render/resource.hpp	/^    vk::ImageLayout layout;$/;"	m	class:sword::render::final
 layoutnames	command/rendercommands.hpp	/^    std::vector<std::string> layoutnames;$/;"	m	class:sword::command::CreateFrameDescriptorSets
@@ -904,6 +907,7 @@ loadVertShader	render/renderer.cpp	/^bool Renderer::loadVertShader($/;"	f	class:
 loadVertShaders	state/shader.hpp	/^    LoadVertShaders loadVertShaders;$/;"	m	class:sword::state::final
 loadVertShaders	state/state.hpp	/^    const LoadVertShaders* loadVertShaders;$/;"	m	struct:sword::state::Register
 lvPool	state/shader.hpp	/^    CommandPool<command::LoadVertShader>& lvPool;$/;"	m	class:sword::state::LoadVertShaders
+lwPool	event/dispatcher.hpp	/^    EventPool<LeaveWindow, 3> lwPool;$/;"	m	class:sword::event::EventDispatcher
 makeCreateInfo	render/context.hpp	/^    vk::DeviceQueueCreateInfo makeCreateInfo()$/;"	f	struct:sword::render::QueueInfo
 makeHeader	util/stringutil.hpp	/^inline std::string makeHeader(const std::string text, const char e = '=')$/;"	f	namespace:sword::util
 makeReport	command/command.hpp	/^    virtual state::Report* makeReport() const { return nullptr; };$/;"	f	class:sword::command::Command
@@ -932,7 +936,10 @@ memory	render/resource.hpp	/^    vk::DeviceMemory memory;$/;"	m	class:sword::ren
 memoryProperties	render/types.hpp	/^    const vk::PhysicalDeviceMemoryProperties& memoryProperties;$/;"	m	struct:sword::render::BufferResources
 memoryTypeFlags	render/resource.hpp	/^    vk::MemoryPropertyFlags memoryTypeFlags;$/;"	m	class:sword::render::final
 merge	state/report.hpp	/^    merge,$/;"	m	class:sword::state::ReportUsage
+mmPool	event/dispatcher.hpp	/^    EventPool<MouseMotion, 100> mmPool;$/;"	m	class:sword::event::EventDispatcher
 mouseButton	event/event.hpp	/^    symbol::MouseButton mouseButton;$/;"	m	struct:sword::event::symbol::WindowInput
+mpPool	event/dispatcher.hpp	/^    EventPool<MousePress, 20> mpPool;$/;"	m	class:sword::event::EventDispatcher
+mrPool	event/dispatcher.hpp	/^    EventPool<MouseRelease, 20> mrPool;$/;"	m	class:sword::event::EventDispatcher
 multisampleState	render/pipeline.hpp	/^    vk::PipelineMultisampleStateCreateInfo multisampleState;$/;"	m	class:sword::render::GraphicsPipeline
 name	command/shader.hpp	/^    std::string name;$/;"	m	class:sword::command::CompileShader
 name	render/pipeline.hpp	/^    const std::string name;$/;"	m	class:sword::render::GraphicsPipeline
@@ -1133,9 +1140,7 @@ pool	state/rendermanager.hpp	/^    CommandPool<command::Render>& pool;$/;"	m	cla
 pool	state/rendermanager.hpp	/^    CommandPool<command::SaveSwapToPng>& pool;$/;"	m	class:sword::state::SaveSwapImage
 pool	state/shader.hpp	/^    CommandPool<command::CompileShader>& pool;$/;"	m	class:sword::state::CompileShader
 pool	state/shader.hpp	/^    CommandPool<command::WatchFile>& pool;$/;"	m	class:sword::state::WatchFile
-pool	types/pool.hpp	/^    Pool() : size{POOL_DEFAULT_SIZE}, pool(size) {}$/;"	f	class:sword::Pool
-pool	types/pool.hpp	/^    Pool(size_t size) : size{size}, pool(size) {}$/;"	f	class:sword::Pool
-pool	types/pool.hpp	/^    std::vector<T> pool;$/;"	m	class:sword::Pool
+pool	types/pool.hpp	/^    std::array<T, Size> pool;$/;"	m	class:sword::Pool
 pop	types/stack.hpp	/^    void pop() {items.pop_back();}$/;"	f	class:sword::Stack
 popBackBlock	render/resource.cpp	/^void Buffer::popBackBlock()$/;"	f	class:sword::render::Buffer
 popBufferBlock	render/renderer.cpp	/^void Renderer::popBufferBlock()$/;"	f	class:sword::render::Renderer
@@ -1191,6 +1196,7 @@ pushState	application.cpp	/^void Application::pushState(state::State* state)$/;"
 pushState	state/editstack.hpp	/^    void pushState(State* ptr) { stack.push(std::forward<State*>(ptr)); }$/;"	f	class:sword::state::EditStack
 pushState	state/state.cpp	/^void BranchState::pushState(State* state)$/;"	f	class:sword::state::BranchState
 push_back	state/vocab.hpp	/^    void push_back(std::string word) { words.push_back(word); }$/;"	f	class:sword::state::Vocab
+pvPool	state/state.hpp	/^    CommandPool<command::PopVocab> pvPool;$/;"	m	class:sword::state::State
 queueCount	render/context.hpp	/^    int queueCount;$/;"	m	struct:sword::render::QueueInfo
 queueFamilies	render/context.hpp	/^    std::vector<vk::QueueFamilyProperties> queueFamilies;$/;"	m	class:sword::render::Context
 quickSetup	state/director.cpp	/^void Director::quickSetup()$/;"	f	class:sword::state::Director
@@ -1225,6 +1231,7 @@ remove	types/map.hpp	/^    void remove(T t)$/;"	f	class:sword::SmallMap
 removeFragmentShader	render/renderer.hpp	/^    void removeFragmentShader(const std::string name) {fragmentShaders.erase(name);}$/;"	f	class:sword::render::Renderer
 removeGraphicsPipeline	render/renderer.hpp	/^    void removeGraphicsPipeline(const std::string name) {graphicsPipelines.erase(name);}$/;"	f	class:sword::render::Renderer
 removeVertexShader	render/renderer.hpp	/^    void removeVertexShader(const std::string name) {vertexShaders.erase(name);}$/;"	f	class:sword::render::Renderer
+render	command/commandpools.hpp	/^    CommandPool<command::Render> render;$/;"	m	struct:sword::CommandPools
 render	command/render.hpp	/^class render : public Command$/;"	c
 render	command/transfer.hpp	/^namespace render { class CommandBuffer; };$/;"	n	namespace:sword
 render	render/attachment.cpp	/^namespace render$/;"	n	namespace:sword	file:
@@ -1285,7 +1292,7 @@ reports	state/pipelinemanager.hpp	/^    std::vector<const Report*> reports;$/;"	
 reports	state/renderpassmanager.hpp	/^    Reports<RenderPassReport> reports;$/;"	m	class:sword::state::final
 reports	state/shader.hpp	/^    ShaderReports& reports;$/;"	m	class:sword::state::SetSpec
 reports	state/state.hpp	/^    std::vector<const Report*> reports;$/;"	m	class:sword::state::BranchState
-request	types/pool.hpp	/^    Pointer<Base> request(std::function<void(state::Report*)> reportCb, Args... args)$/;"	f	class:sword::Pool
+request	types/pool.hpp	/^    Pointer request(std::function<void(state::Report*)> reportCb, Args... args)$/;"	f	class:sword::Pool
 request	types/pool.hpp	/^    request(Args... args)$/;"	f	class:sword::Pool
 requestBlock	render/resource.cpp	/^BufferBlock* Buffer::requestBlock(uint32_t blockSize)$/;"	f	class:sword::render::Buffer
 requestCommandBuffer	render/command.cpp	/^CommandBuffer& CommandPool::requestCommandBuffer(vk::CommandBufferLevel level)$/;"	f	class:sword::render::CommandPool
@@ -1429,7 +1436,7 @@ size	render/resource.hpp	/^    unsigned long size;$/;"	m	class:sword::render::fi
 size	render/surface/window.hpp	/^	std::vector<int> size;$/;"	m	class:sword::render::Window
 size	state/editstack.hpp	/^    size_t size() const { return stack.size(); }$/;"	f	class:sword::state::EditStack
 size	types/map.hpp	/^    size_t size() const { return options.size(); }$/;"	f	class:sword::SmallMap
-size	types/pool.hpp	/^    const size_t size;$/;"	m	class:sword::Pool
+size	types/pool.hpp	/^    static constexpr size_t size = Size;$/;"	m	class:sword::Pool
 size	types/stack.hpp	/^    size_t size() const {return items.size();}$/;"	f	class:sword::Stack
 specData	render/shader.hpp	/^    SpecData specData;$/;"	m	class:sword::render::Shader
 specInfo	render/shader.hpp	/^    vk::SpecializationInfo specInfo;$/;"	m	class:sword::render::Shader
@@ -1487,6 +1494,7 @@ succeeded	command/command.hpp	/^    constexpr bool succeeded() {return success_s
 success	command/command.hpp	/^    void success() {$/;"	f	class:sword::command::Command
 surfCaps	render/swapchain.hpp	/^	vk::SurfaceCapabilitiesKHR surfCaps;$/;"	m	class:sword::render::Swapchain
 surface	render/swapchain.hpp	/^	vk::SurfaceKHR surface;$/;"	m	class:sword::render::Swapchain
+svPool	state/state.hpp	/^    CommandPool<command::SetVocab> svPool;$/;"	m	class:sword::state::LeafState
 swapDim	application.hpp	/^    vk::Extent2D swapDim;;$/;"	m	class:sword::Application
 swapchain	render/renderer.hpp	/^    std::unique_ptr<Swapchain> swapchain;$/;"	m	class:sword::render::Renderer
 swapchain	render/swapchain.hpp	/^	vk::SwapchainKHR swapchain;$/;"	m	class:sword::render::Swapchain
@@ -1628,6 +1636,7 @@ usageFlags	render/resource.hpp	/^    vk::ImageUsageFlags usageFlags;$/;"	m	class
 usageFlags	render/swapchain.hpp	/^	vk::ImageUsageFlags usageFlags;$/;"	m	class:sword::render::Swapchain
 usageFlags	state/report.hpp	/^    vk::ImageUsageFlags usageFlags;$/;"	m	class:sword::state::AttachmentReport
 util	util/stringutil.hpp	/^namespace util$/;"	n	namespace:sword
+uvPool	state/state.hpp	/^    CommandPool<command::UpdateVocab> uvPool;$/;"	m	class:sword::state::State
 valueAt	types/map.hpp	/^    T valueAt(int i) const { return options.at(i).second; }$/;"	f	class:sword::SmallMap
 values	render/surface/window.hpp	/^	uint32_t values[2];$/;"	m	class:sword::render::Window
 vars	state/painter.hpp	/^    const PainterVars& vars;$/;"	m	class:sword::state::painter::Paint

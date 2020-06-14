@@ -8,7 +8,7 @@ using CmdPtr = std::unique_ptr<sword::command::Command, std::function<void(sword
 using CommandStack = sword::ForwardStack<CmdPtr>;
 
 template <typename T>
-using CommandPool = sword::Pool<T, sword::command::Command>;
+using CommandPool = sword::Pool<T, sword::command::Command, 10>;
 
 //template <typename T>
 //class CommandPool

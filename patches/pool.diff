@@ -1,0 +1,108 @@
+diff --git a/src/core/types/pool.hpp b/src/core/types/pool.hpp
+index 5bc3bd0..26123cf 100644
+--- a/src/core/types/pool.hpp
++++ b/src/core/types/pool.hpp
+@@ -6,67 +6,55 @@
+ #include <functional>
+ #include <vector>
+ #include <iostream>
+-#include <render/context.hpp>
+-#include <render/command.hpp>
+-#include <command/command.hpp>
+-#include <type_traits>
+ 
+ namespace sword
+ {
+ 
+ namespace state { class Report; }
+-namespace render { class Context; class CommandPool; }
+ 
+-template <typename T, typename Base, size_t Size>
++constexpr uint32_t POOL_DEFAULT_SIZE = 3;
++
++template <typename T, typename Base>
+ class Pool
+ {
+-private:
+-    std::unique_ptr<render::CommandPool> gpuCommandPool;
+-    std::array<T, Size> pool;
+-
+ public:
+-    //using Pointer = std::unique_ptr<Base, std::function<void(Base*)>>;
+-    using Pointer = std::unique_ptr<Base, std::function<void(Base*)>>;
++    template <typename P> using Pointer = std::unique_ptr<P, std::function<void(P*)>>;
+ 
+-    Pool() {}
+-    Pool(render::CommandPool&& gpuPool) 
+-    {
+-        gpuCommandPool = std::make_unique<render::CommandPool>(std::forward<render::CommandPool>(gpuPool));
+-        {
+-            for (auto& element : pool) 
+-            {
+-                auto& buffer = gpuCommandPool->requestCommandBuffer(vk::CommandBufferLevel::ePrimary);
+-                //element.setCommandBuffer(buffer);
+-            }
+-        }
+-    }
++    Pool(size_t size) : size{size}, pool(size) {}
++    Pool() : size{POOL_DEFAULT_SIZE}, pool(size) {}
+ 
+-    template <typename... Args> 
+-    Pointer request(Args... args)
++    template <typename... Args> Pointer<Base>
++    request(Args... args)
+     {
+         std::cout << "Called first pool" << '\n';
+-        for (int i = 0; i < Size; i++) 
++        for (int i = 0; i < size; i++) 
+             if (pool[i].isAvailable())
+             {
+                 pool[i].set(args...);
+                 pool[i].activate();
+-                Pointer ptr{&pool[i], [](Base* t){ t->reset(); }}; //may not have to construct here
++                Pointer<Base> ptr{&pool[i], [](Base* t)
++                    {
++                        t->reset();
++                    }};
+                 return ptr; //tentatively may need to be std::move? copy should be ellided tho
+             }    
+         return nullptr;
+     }
+ 
+     template <typename... Args> 
+-    Pointer request(std::function<void(state::Report*)> reportCb, Args... args) //requires IsCommand<T>
++    Pointer<Base> request(std::function<void(state::Report*)> reportCb, Args... args)
+     {
+         std::cout << "Called second pool request" << std::endl;
+-        for (int i = 0; i < Size; i++) 
++        for (int i = 0; i < size; i++) 
+             if (pool[i].isAvailable())
+             {
+                 pool[i].setSuccessFn(reportCb);
+                 pool[i].set(args...);
+                 pool[i].activate();
+-                Pointer ptr{&pool[i], [](Base* t){ t->reset(); }};
++                Pointer<Base> ptr{&pool[i], [](Base* t)
++                    {
++                        t->reset();
++                    }};
+                 return ptr; //tentatively may need to be std::move? copy should be ellided tho
+             }    
+         return nullptr;
+@@ -78,6 +66,16 @@ public:
+             i.print();
+     }
+ 
++private:
++
++    template <typename... Args> void initialize(Args&&... args)
++    {
++        for (int i = 0; i < size; i++) 
++            pool.emplace_back(args...);   
++    }
++
++    const size_t size;
++    std::vector<T> pool;
+ };
+ 
+ 

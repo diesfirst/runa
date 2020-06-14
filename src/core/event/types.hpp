@@ -14,8 +14,8 @@ namespace event
 
 class Event;
 
-template <typename T>
-using EventPool = Pool<T, Event>;
+template <typename T, size_t S>
+using EventPool = Pool<T, Event, S>;
 
 using EventPtr = std::unique_ptr<Event, std::function<void(Event*)>>;
 

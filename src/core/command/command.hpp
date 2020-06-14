@@ -31,7 +31,7 @@ public:
     virtual void execute(Application*) = 0;
     virtual const char* getName() const = 0;
     virtual state::Report* makeReport() const { return nullptr; };
-    inline bool isAvailable() const {return !inUse;}
+    constexpr bool isAvailable() const {return !inUse;}
     template <typename... Args> void set(Args... args) {}
     void reset() {inUse = false; }
     void activate() {inUse = true;}

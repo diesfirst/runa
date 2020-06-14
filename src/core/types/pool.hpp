@@ -12,18 +12,19 @@ namespace sword
 
 namespace state { class Report; }
 
-constexpr uint32_t POOL_DEFAULT_SIZE = 3;
-
-template <typename T, typename Base>
+template <typename T, typename Base, size_t Size = 3>
 class Pool
 {
+private:
+    std::array<T, Size> pool;
+    static constexpr size_t size = Size;
 public:
-    template <typename P> using Pointer = std::unique_ptr<P, std::function<void(P*)>>;
 
-    Pool(size_t size) : size{size}, pool(size) {}
-    Pool() : size{POOL_DEFAULT_SIZE}, pool(size) {}
+    Pool() {}
 
-    template <typename... Args> Pointer<Base>
+    using Pointer = std::unique_ptr<Base, std::function<void(Base*)>>;
+
+    template <typename... Args> Pointer
     request(Args... args)
     {
         std::cout << "Called first pool" << '\n';
@@ -32,17 +33,14 @@ public:
             {
                 pool[i].set(args...);
                 pool[i].activate();
-                Pointer<Base> ptr{&pool[i], [](Base* t)
-                    {
-                        t->reset();
-                    }};
+                Pointer ptr{&pool[i], [](Base* t){ t->reset(); }};
                 return ptr; //tentatively may need to be std::move? copy should be ellided tho
             }    
         return nullptr;
     }
 
     template <typename... Args> 
-    Pointer<Base> request(std::function<void(state::Report*)> reportCb, Args... args)
+    Pointer request(std::function<void(state::Report*)> reportCb, Args... args)
     {
         std::cout << "Called second pool request" << std::endl;
         for (int i = 0; i < size; i++) 
@@ -51,10 +49,7 @@ public:
                 pool[i].setSuccessFn(reportCb);
                 pool[i].set(args...);
                 pool[i].activate();
-                Pointer<Base> ptr{&pool[i], [](Base* t)
-                    {
-                        t->reset();
-                    }};
+                Pointer ptr{&pool[i], [](Base* t){ t->reset(); }};
                 return ptr; //tentatively may need to be std::move? copy should be ellided tho
             }    
         return nullptr;
@@ -68,14 +63,12 @@ public:
 
 private:
 
-    template <typename... Args> void initialize(Args&&... args)
-    {
-        for (int i = 0; i < size; i++) 
-            pool.emplace_back(args...);   
-    }
+//    template <typename... Args> void initialize(Args&&... args)
+//    {
+//        for (int i = 0; i < size; i++) 
+//            pool.emplace_back(args...);   
+//    }
 
-    const size_t size;
-    std::vector<T> pool;
 };
 
 

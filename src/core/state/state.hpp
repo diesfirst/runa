@@ -135,9 +135,9 @@ protected:
     void pushCmd(CmdPtr ptr);
     void setVocabMask(OptionMask* mask) { vocab.setMaskPtr(mask); }
 private:
-    CommandPool<command::UpdateVocab> uvPool{3};
-    CommandPool<command::PopVocab> pvPool{1};
-    CommandPool<command::AddVocab> avPool{1};
+    CommandPool<command::UpdateVocab> uvPool;
+    CommandPool<command::PopVocab> pvPool;
+    CommandPool<command::AddVocab> avPool;
     Vocab vocab;
     CommandStack& cmdStack;
     ExitCallbackFn onExitCallback{nullptr};
@@ -172,7 +172,7 @@ protected:
     }
 
 private:
-    CommandPool<command::SetVocab> svPool{1};
+    CommandPool<command::SetVocab> svPool;
     EditStack& editStack;
     OwningReportCallbackFn reportCallbackFn{nullptr};
     CommandStack& cmdStack;
