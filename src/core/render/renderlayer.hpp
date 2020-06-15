@@ -1,7 +1,7 @@
 #ifndef RENDER_RENDERLAYER_HPP
 #define RENDER_RENDERLAYER_HPP
 
-#include <vulkan/vulkan.hpp>
+#include <types/vktypes.hpp>
 
 namespace sword
 {

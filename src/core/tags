@@ -172,6 +172,7 @@ PipelineLayoutReport	state/report.hpp	/^    PipelineLayoutReport(std::string nam
 PipelineLayoutReport	state/report.hpp	/^class PipelineLayoutReport : public Report$/;"	c	namespace:sword::state
 PipelineManager	state/pipelinemanager.cpp	/^PipelineManager::PipelineManager(StateArgs sa, Callbacks cb, ReportCallbackFn<GraphicsPipelineReport> rpcb) :$/;"	f	class:sword::state::PipelineManager
 Pool	types/pool.hpp	/^    Pool() {}$/;"	f	class:sword::Pool
+Pool	types/pool.hpp	/^    Pool(render::CommandPool&& gpuPool) $/;"	f	class:sword::Pool
 Pool	types/pool.hpp	/^class Pool$/;"	c	namespace:sword
 PopVocab	command/vocab.hpp	/^class PopVocab : public Command$/;"	c	namespace:sword::command
 PrepareRenderFrames	command/rendercommands.hpp	/^class PrepareRenderFrames : public Command$/;"	c	namespace:sword::command
@@ -188,6 +189,7 @@ RECORDRENDERCOMMAND_HPP_	command/recordrendercommand.hpp	2;"	d
 RENDERCOMMANDS_HPP_	command/rendercommands.hpp	2;"	d
 RENDER_ATTACHMENT_HPP	render/attachment.hpp	2;"	d
 RENDER_COMMAND_HPP	render/command.hpp	2;"	d
+RENDER_CONTEXT_H	render/context_test.hpp	2;"	d
 RENDER_DEPENDENCYGRAPH_HPP	render/dependencygraph.hpp	2;"	d
 RENDER_PIPELINE_HPP	render/pipeline.hpp	2;"	d
 RENDER_RENDERER_HPP_	render/renderer.hpp	2;"	d
@@ -317,6 +319,7 @@ TYPES_MAP_HPP	types/map.hpp	2;"	d
 TYPES_POOL_H_	types/pool.hpp	2;"	d
 TYPES_SPIRV_HPP	types/spirv.hpp	2;"	d
 TYPES_STACK_HPP_	types/stack.hpp	2;"	d
+TYPES_VKTYPES_HPP	types/vktypes.hpp	2;"	d
 TargetType	render/renderer.hpp	/^enum class TargetType {offscreen, swapchain};$/;"	c	namespace:sword::render
 Timer	util.hpp	/^class Timer$/;"	c	namespace:sword
 Translate	state/painter.cpp	/^Translate::Translate(StateArgs sa, Callbacks cb, PainterVars& vars) : $/;"	f	class:sword::state::painter::Input::Translate	file:
@@ -336,6 +339,7 @@ UpdateFrameSamplers	state/descriptormanager.cpp	/^UpdateFrameSamplers::UpdateFra
 UpdateFrameSamplers	state/descriptormanager.hpp	/^class UpdateFrameSamplers : public LeafState$/;"	c	namespace:sword::state
 UpdateVocab	command/vocab.hpp	/^class UpdateVocab : public Command$/;"	c	namespace:sword::command
 VK_USE_PLATFORM_XCB_KHR	render/context.hpp	4;"	d
+VK_USE_PLATFORM_XCB_KHR	types/vktypes.hpp	4;"	d
 VertShader	render/shader.cpp	/^VertShader::VertShader(const vk::Device& device, std::string filepath) :$/;"	f	class:sword::render::VertShader
 VertShader	render/shader.cpp	/^VertShader::VertShader(const vk::Device& device, std::vector<uint32_t>&& code) :$/;"	f	class:sword::render::VertShader
 VertShader	render/shader.hpp	/^class VertShader : public Shader$/;"	c	namespace:sword::render
@@ -789,6 +793,7 @@ getWidth	render/surface/window.hpp	/^    uint16_t getWidth() {return width;}$/;"
 getWords	state/vocab.hpp	/^    std::vector<std::string> getWords() const $/;"	f	class:sword::state::Vocab
 getX	event/event.hpp	/^    inline int16_t getX() const {return xPos;}$/;"	f	class:sword::event::symbol::Window
 getY	event/event.hpp	/^    inline int16_t getY() const {return yPos;}$/;"	f	class:sword::event::symbol::Window
+gpuCommandPool	types/pool.hpp	/^    std::unique_ptr<render::CommandPool> gpuCommandPool;$/;"	m	class:sword::Pool
 graphicsPipeReports	state/pipelinemanager.hpp	/^    Reports<GraphicsPipelineReport> graphicsPipeReports;$/;"	m	class:sword::state::final
 graphicsPipelines	render/renderer.hpp	/^    std::unordered_map<std::string, GraphicsPipeline> graphicsPipelines;$/;"	m	class:sword::render::Renderer
 graphicsQueue	render/renderer.hpp	/^    const vk::Queue graphicsQueue;$/;"	m	class:sword::render::Renderer
@@ -1292,8 +1297,8 @@ reports	state/pipelinemanager.hpp	/^    std::vector<const Report*> reports;$/;"	
 reports	state/renderpassmanager.hpp	/^    Reports<RenderPassReport> reports;$/;"	m	class:sword::state::final
 reports	state/shader.hpp	/^    ShaderReports& reports;$/;"	m	class:sword::state::SetSpec
 reports	state/state.hpp	/^    std::vector<const Report*> reports;$/;"	m	class:sword::state::BranchState
-request	types/pool.hpp	/^    Pointer request(std::function<void(state::Report*)> reportCb, Args... args)$/;"	f	class:sword::Pool
-request	types/pool.hpp	/^    request(Args... args)$/;"	f	class:sword::Pool
+request	types/pool.hpp	/^    Pointer request(Args... args)$/;"	f	class:sword::Pool
+request	types/pool.hpp	/^    Pointer request(std::function<void(state::Report*)> reportCb, Args... args) \/\/requires IsCommand<T>$/;"	f	class:sword::Pool
 requestBlock	render/resource.cpp	/^BufferBlock* Buffer::requestBlock(uint32_t blockSize)$/;"	f	class:sword::render::Buffer
 requestCommandBuffer	render/command.cpp	/^CommandBuffer& CommandPool::requestCommandBuffer(vk::CommandBufferLevel level)$/;"	f	class:sword::render::CommandPool
 requestRenderBuffer	render/renderframe.cpp	/^CommandBuffer& RenderFrame::requestRenderBuffer(uint32_t bufferId)$/;"	f	class:sword::render::RenderFrame
@@ -1436,7 +1441,6 @@ size	render/resource.hpp	/^    unsigned long size;$/;"	m	class:sword::render::fi
 size	render/surface/window.hpp	/^	std::vector<int> size;$/;"	m	class:sword::render::Window
 size	state/editstack.hpp	/^    size_t size() const { return stack.size(); }$/;"	f	class:sword::state::EditStack
 size	types/map.hpp	/^    size_t size() const { return options.size(); }$/;"	f	class:sword::SmallMap
-size	types/pool.hpp	/^    static constexpr size_t size = Size;$/;"	m	class:sword::Pool
 size	types/stack.hpp	/^    size_t size() const {return items.size();}$/;"	f	class:sword::Stack
 specData	render/shader.hpp	/^    SpecData specData;$/;"	m	class:sword::render::Shader
 specInfo	render/shader.hpp	/^    vk::SpecializationInfo specInfo;$/;"	m	class:sword::render::Shader

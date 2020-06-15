@@ -1,7 +1,7 @@
 #ifndef RENDER_TYPES_HPP
 #define RENDER_TYPES_HPP
 
-#include <vulkan/vulkan.hpp>
+#include <types/vktypes.hpp>
 
 namespace sword
 {

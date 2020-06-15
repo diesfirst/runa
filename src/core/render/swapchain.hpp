@@ -2,7 +2,7 @@
 #define RENDER_SWAPCHAIN_HPP_
 
 #include <tuple>
-#include <vulkan/vulkan.hpp>
+#include <types/vktypes.hpp>
 
 namespace sword
 {

@@ -1,7 +1,7 @@
 #ifndef RENDER_ATTACHMENT_HPP
 #define RENDER_ATTACHMENT_HPP
 
-#include <vulkan/vulkan.hpp>
+#include <types/vktypes.hpp>
 #include <render/resource.hpp>
 
 namespace sword

@@ -1,7 +1,7 @@
 #ifndef RENDER_COMMAND_HPP
 #define RENDER_COMMAND_HPP
 
-#include <vulkan/vulkan.hpp>
+#include <types/vktypes.hpp>
 
 namespace sword
 {

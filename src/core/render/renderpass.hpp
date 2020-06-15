@@ -1,7 +1,7 @@
 #ifndef RENDER_RENDERPASS_HPP_
 #define RENDER_RENDERPASS_HPP_
 
-#include <vulkan/vulkan.hpp>
+#include <types/vktypes.hpp>
 
 namespace sword
 {

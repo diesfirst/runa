@@ -1,7 +1,7 @@
 #ifndef RENDER_RENDERFRAME_HPP
 #define RENDER_RENDERFRAME_HPP
 
-#include <vulkan/vulkan.hpp>
+#include <types/vktypes.hpp>
 #include <render/command.hpp>
 #include <render/renderlayer.hpp>
 

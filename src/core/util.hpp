@@ -3,7 +3,7 @@
 
 #include <bitset>
 #include <ctime>
-#include <vulkan/vulkan.hpp>
+#include <types/vktypes.hpp>
 #include <iostream>
 #include <chrono>
 

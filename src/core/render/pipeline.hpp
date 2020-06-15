@@ -3,7 +3,7 @@
 
 //imp: "pipeline.cpp"
 
-#include <vulkan/vulkan.hpp>
+#include <types/vktypes.hpp>
 
 namespace sword
 {

@@ -3,7 +3,7 @@
 
 #include <string>
 #include <iostream>
-#include <vulkan/vulkan.hpp>
+#include <types/vktypes.hpp>
 #include <util/enum.hpp>
 
 namespace sword

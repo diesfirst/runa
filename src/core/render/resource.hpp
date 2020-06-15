@@ -1,7 +1,7 @@
 #ifndef RENDER_RESOURCE_HPP_
 #define RENDER_RESOURCE_HPP_
 
-#include <vulkan/vulkan.hpp>
+#include <types/vktypes.hpp>
 #include <vector>
 #include "types.hpp"
 

@@ -1,13 +1,16 @@
 build/command/rendercommands.o: src/core/command/rendercommands.cpp \
  src/core/command/rendercommands.hpp src/core/command/command.hpp \
- include/thirdparty/vulkan/vulkan.hpp include/thirdparty/vulkan/vulkan.h \
+ src/core/types/vktypes.hpp include/thirdparty/vulkan/vulkan.hpp \
+ include/thirdparty/vulkan/vulkan.h \
  include/thirdparty/vulkan/vk_platform.h \
- include/thirdparty/vulkan/vulkan_core.h src/core/util/enum.hpp \
+ include/thirdparty/vulkan/vulkan_core.h \
+ include/thirdparty/vulkan/vulkan_xcb.h src/core/util/enum.hpp \
  src/core/state/report.hpp src/core/application.hpp \
  src/core/event/event.hpp src/core/render/surface/window.hpp \
  src/core/state/director.hpp src/core/state/state.hpp \
  src/core/command/commandtypes.hpp src/core/command/command.hpp \
  src/core/types/stack.hpp src/core/types/pool.hpp \
+ src/core/render/context_test.hpp src/core/render/command.hpp \
  src/core/command/commandpools.hpp src/core/command/rendercommands.hpp \
  src/core/command/shader.hpp \
  include/thirdparty/libshaderc_util/file_finder.h src/core/util/defs.hpp \
@@ -30,16 +33,17 @@ build/command/rendercommands.o: src/core/command/rendercommands.cpp \
  src/core/state/painter.hpp src/core/state/state.hpp \
  src/core/types/region.hpp src/core/render/ubotypes.hpp \
  src/core/render/context.hpp src/core/render/types.hpp \
- src/core/render/renderer.hpp src/core/render/command.hpp \
- src/core/render/shader.hpp src/core/render/pipeline.hpp \
- src/core/render/renderpass.hpp src/core/event/dispatcher.hpp \
- src/core/event/event.hpp src/core/event/types.hpp \
- src/core/event/filewatcher.hpp src/core/render/attachment.hpp \
- src/core/render/resource.hpp
+ src/core/render/renderer.hpp src/core/render/shader.hpp \
+ src/core/render/pipeline.hpp src/core/render/renderpass.hpp \
+ src/core/event/dispatcher.hpp src/core/event/event.hpp \
+ src/core/event/types.hpp src/core/event/filewatcher.hpp \
+ src/core/render/attachment.hpp src/core/render/resource.hpp
 
 src/core/command/rendercommands.hpp:
 
 src/core/command/command.hpp:
+
+src/core/types/vktypes.hpp:
 
 include/thirdparty/vulkan/vulkan.hpp:
 
@@ -48,6 +52,8 @@ include/thirdparty/vulkan/vulkan.h:
 include/thirdparty/vulkan/vk_platform.h:
 
 include/thirdparty/vulkan/vulkan_core.h:
+
+include/thirdparty/vulkan/vulkan_xcb.h:
 
 src/core/util/enum.hpp:
 
@@ -70,6 +76,10 @@ src/core/command/command.hpp:
 src/core/types/stack.hpp:
 
 src/core/types/pool.hpp:
+
+src/core/render/context_test.hpp:
+
+src/core/render/command.hpp:
 
 src/core/command/commandpools.hpp:
 
@@ -144,8 +154,6 @@ src/core/render/context.hpp:
 src/core/render/types.hpp:
 
 src/core/render/renderer.hpp:
-
-src/core/render/command.hpp:
 
 src/core/render/shader.hpp:
 

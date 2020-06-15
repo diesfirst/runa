@@ -3,7 +3,7 @@
 
 #define VK_USE_PLATFORM_XCB_KHR
 
-#include <vulkan/vulkan.hpp>
+#include <types/vktypes.hpp>
 #include <iostream>
 #include <vector>
 #include <string>

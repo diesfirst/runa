@@ -18,13 +18,13 @@ DEPDIR := .deps
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.d
 #DEPFLAGS = -MT $@ -MMD -MP -MF -
 
-CC = g++
+CC = g++ 
 STDFLAG = -std=c++17
 INC_DIRS := -I$(CORE) -I/usr/include -I./include/thirdparty
 
 WFLAGS = -Wall -W -Wno-parentheses -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-uninitialized -Wno-unused-parameter -Wno-unused-local-typedefs
 HDKFLAGS = -D_GLIBCXX_USE_CXX11_ABI=0
-CPPFLAGS = $(DEPFLAGS) -g $(HDKFLAGS) $(STDFLAG) $(WFLAGS) $(INC_DIRS) -fPIC 
+CPPFLAGS = $(DEPFLAGS) -g $(HDKFLAGS) $(STDFLAG) $(WFLAGS) $(INC_DIRS) -fPIC
 LDFLAGS = -lpthread -lxcb -lvulkan -lX11 -lreadline -ldl -lshaderc_combined -lglslc -lshaderc_util -llodepng
 LIB = ./lib
 LDIRS = -L$(LIB) #-L$(LIB)/loader 
