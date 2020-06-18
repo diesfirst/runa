@@ -33,6 +33,7 @@ struct CommandPools
     CommandPool<command::UpdateFrameSamplers> updateFrameSamplers;
     CommandPool<command::Render> render;
     CommandPool<command::CompileShader> compileShader;
+    CommandPool<command::CompileShaderCode> compileShaderCode;
     CommandPool<command::WatchFile> watchFile;
     CommandPool<command::SaveSwapToPng> saveSwapToPng;
     CommandPool<command::SaveAttachmentToPng> saveAttachmentToPng;

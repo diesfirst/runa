@@ -94,6 +94,37 @@ state::Report* CompileShader::makeReport() const
         return report;
 }
 
+void CompileShaderCode::execute(Application* app)
+{
+    auto kind = (type == ShaderType::frag ? shaderc_shader_kind::shaderc_glsl_fragment_shader : shaderc_shader_kind::shaderc_glsl_vertex_shader);
+    auto result = compiler.CompileGlslToSpv(glslCode, kind, name.c_str());
+    if (result.GetCompilationStatus() == 0)
+    {
+        std::vector<uint32_t> spvCode;
+        for (const auto& i : result) 
+        {
+            spvCode.push_back(i);
+        }
+        switch (type)
+        {
+            case ShaderType::frag: app->renderer.loadFragShader(std::move(spvCode), name); success(); break;
+            case ShaderType::vert: app->renderer.loadVertShader(std::move(spvCode), name); success(); break;
+        }
+    }
+    else
+    {
+        std::cerr << "CompileShader::execute: failed to compile. Error message: " << result.GetErrorMessage() << '\n';
+    }
+}
+
+state::Report* CompileShaderCode::makeReport() const
+{
+    if (report == nullptr)  // take it to mean that no report existed before
+        return new state::ShaderReport(name, type, 0, 0, 0.0, 0.0, "raw input");
+    else
+        return report;
+}
+
 }; // namespace command
 
 }; // namespace sword

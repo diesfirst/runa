@@ -132,7 +132,7 @@ protected:
     void addToVocab(std::string word) { vocab.push_back(word); }
     void updateVocab();
     void printVocab();
-    void pushCmd(CmdPtr ptr);
+    void pushCmd(CmdPtr&& ptr);
     void setVocabMask(OptionMask* mask) { vocab.setMaskPtr(mask); }
 private:
     CommandPool<command::UpdateVocab> uvPool;
@@ -158,7 +158,7 @@ protected:
     LeafState(StateArgs sa, Callbacks cb) :
         State{sa.cs, cb.ex}, cmdStack{sa.cs}, editStack{sa.es}, reportCallbackFn{cb.rp} {}
     void popSelf() { editStack.popState(); }
-    void pushCmd(CmdPtr ptr);
+    void pushCmd(CmdPtr&& ptr);
 
     template<typename R>
     R* findReport(const std::string& name, const std::vector<std::unique_ptr<R>>& reports)

@@ -19,13 +19,12 @@ namespace sword
 class Application
 {
 public:
+    Application(bool validate = true);
     Application(uint16_t w, uint16_t h, const std::string logfile, int eventPops = 0);
-    void run();
+    void run(bool pollEvents);
     void popState();
     void pushState(state::State* const);
-    void createPipelineLayout();
-    void loadDefaultShaders();
-    void createDefaultRenderPasses();
+    void pushCmd(CmdPtr&&);
 
     void readEvents(std::ifstream&, int eventPops);
     void recordEvent(event::Event* event, std::ofstream& os);

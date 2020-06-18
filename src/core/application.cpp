@@ -8,7 +8,23 @@
 namespace sword
 {
 
+constexpr std::uint16_t windowWidth{800};
+constexpr std::uint16_t windowHeight{800};
+
+//TODO: we should not require window be initialized here. initialization of a window should be a command
+Application::Application(bool validation) :
+    context{validation},
+    window{windowWidth, windowHeight},
+    dispatcher{window},
+    renderer{context},
+    offscreenDim{{windowWidth, windowHeight}},
+    swapDim{{windowWidth, windowHeight}},
+    dirState{{stateEdits, cmdStack, cmdPools, stateRegister}, stateStack, window}
+{
+}
+
 Application::Application(uint16_t w, uint16_t h, const std::string logfile, int event_reads) :
+    context{true},
     window{w, h},
     dispatcher{window},
     renderer{context},
@@ -49,34 +65,9 @@ void Application::pushState(state::State* state)
         state->onEnter();
 }
 
-void Application::createPipelineLayout()
+void Application::pushCmd(CmdPtr&& command)
 {
-    const std::string layoutName = "layout";
-    std::vector<vk::DescriptorSetLayoutBinding> bindings(2);
-    bindings[0].setBinding(0);
-    bindings[0].setDescriptorType(vk::DescriptorType::eUniformBuffer);
-    bindings[0].setDescriptorCount(1);
-    bindings[0].setStageFlags(vk::ShaderStageFlagBits::eFragment);
-
-    bindings[1].setBinding(1);
-    bindings[1].setDescriptorType(vk::DescriptorType::eCombinedImageSampler);
-    bindings[1].setDescriptorCount(1); //arbitrary
-    bindings[1].setStageFlags(vk::ShaderStageFlagBits::eFragment);
-
-    auto paintingLayout = renderer.createDescriptorSetLayout("paintLayout", bindings);
-    renderer.createFrameDescriptorSets({paintingLayout}); //order matters for access
-    auto paintPLayout = renderer.createPipelineLayout(layoutName, {paintingLayout});
-    std::cout << "Created Pipeline Layout: " << layoutName << std::endl;
-}
-
-void Application::loadDefaultShaders()
-{
-    auto& offScreenLoadPass = renderer.createRenderPass("offscreen_load");
-    renderer.prepareAsOffscreenPass(offScreenLoadPass, vk::AttachmentLoadOp::eLoad); //can make this a static function of RenderPass
-    auto& swapchainPass = renderer.createRenderPass("swapchain");
-    renderer.prepareAsSwapchainPass(swapchainPass); //can make this a static function of RenderPass
-    auto& offScreenClearPass = renderer.createRenderPass("offscreen_clear");
-    renderer.prepareAsOffscreenPass(offScreenClearPass, vk::AttachmentLoadOp::eClear);
+    cmdStack.push(std::move(command));
 }
 
 void Application::recordEvent(event::Event* event, std::ofstream& os)
@@ -106,18 +97,23 @@ void Application::readEvents(std::ifstream& is, int eventPops)
     is.close();
 }
 
-void Application::run()
+void Application::run(bool pollEvents)
 {
-    dispatcher.pollEvents();
-    int i;
-    int j;
-    int k;
+    if (pollEvents)
+    {
+        dispatcher.pollEvents();
+    }
+    int i{0};
+    int j{0};
 
     if (readevents)
         is.open(readlog, std::ios::binary);
 
-    while (1)
+    bool keepRunnning = true;
+    while (keepRunnning)
     {
+        if (!pollEvents)
+            keepRunnning = false; //only runs once
         i = 0;
         if (readevents && eventsRead < maxEventReads)
         {

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <lodepng.h>
 #include <queue>
+#include <util/debug.hpp>
 
 namespace sword
 {
@@ -35,7 +36,7 @@ void SaveSwapToPng::execute(Application* app)
             memPtr,
             swapSize.width,
             swapSize.height);
-    std::string path = "output/images/" + fileName + ".png";
+    std::string path = "/home/michaelb/dev/sword/output/images/" + fileName + ".png";
     lodepng::save_file(pngBuffer, path);
     app->renderer.popBufferBlock();
     success();
@@ -61,8 +62,20 @@ void SaveAttachmentToPng::execute(Application* app)
             memPtr,
             resX,
             resY);
-    std::string path = "output/images/" + fileName + ".png";
-    lodepng::save_file(pngBuffer, path);
+
+    std::string path;
+    SWD_DEBUG_MSG("fileName: " << fileName)
+    if (!fullPath)
+        path = "/home/michaelb/dev/sword/output/images/" + fileName + ".png";
+    else
+        path = fileName;
+    SWD_DEBUG_MSG("path: " << path)
+    auto result = lodepng::save_file(pngBuffer, path);
+    if (result != 0)
+    {
+        std::cerr << "Error saving file: " << lodepng_error_text(result) << '\n';
+        return;
+    }
     
     app->renderer.popBufferBlock();
     success();

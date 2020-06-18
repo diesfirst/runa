@@ -9,7 +9,7 @@ TARGET := $(BIN)/sword
 
 SRCS := $(shell find $(CORE) -name "*.cpp")
 SRCS := $(shell cd $(CORE) && find -name "*.cpp" | cut -c3-)
-SRCS := $(SRCS) main.cpp
+SRCS := $(SRCS) 
 OBJS := $(SRCS:%=$(BUILD)/%)
 OBJS := $(OBJS:.cpp=.o) 
 OBJS := $(OBJS)
@@ -33,7 +33,7 @@ SPV = ./build/shadersstar
 THIRD = ./src/thirdparty
 
 $(TARGET) : $(OBJS) 
-	$(CC) $(OBJS) -o $@ $(LINK) ; ctags -R . ; cd $(CORE) ; ctags -R . 
+	$(CC) $(OBJS) $(CPPFLAGS) $(PROGDIR)/main.cpp -o $@ $(LINK) ; ctags -R . ; cd $(CORE) ; ctags -R . 
 
 $(BUILD)/%.o : $(CORE)/%.cpp $(DEPDIR)/%.d | $(DEPDIR)
 	$(CC) $(CPPFLAGS) -c $< -o $@
@@ -56,6 +56,9 @@ shaders:
 
 lodepng:
 	$(CC) -c $(STDFLAG) -fPIC $(HDKFLAGS) $(THIRD)/lodepng.cpp -o $(THIRD)/lodepng.o ; ar rcs lib/liblodepng.a $(THIRD)/lodepng.o
+
+shaderboy: $(OBJS)
+	$(CC) $(OBJS) $(CPPFLAGS) $(PROGDIR)/shaderboy.cpp -o $(BIN)/shaderboy $(LINK)
 
 test:
 	@echo '$(DEPFILES)'

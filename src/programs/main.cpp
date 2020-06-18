@@ -18,6 +18,6 @@ int main(int argc, const char *argv[])
         std::cout << "Pop events: " << popEvents << std::endl;
     }
     sword::Application app{800, 800, logfile, popEvents};
-    app.run();
+    app.run(true);
     return 0;
 }

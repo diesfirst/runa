@@ -1,4 +1,9 @@
 #include <render/context.hpp>
+#include <chrono>
+#include <thread>
+#include <semaphore.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 
 namespace sword
 {
@@ -16,17 +21,20 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     return VK_FALSE;
 }
 
-Context::Context()
+Context::Context(bool validate)
 {
     createInstance();
-    if (enableValidation) setupDebugMessenger2();
+    validationLayersOn = validate;
+    if (validate){ 
+        setupDebugMessenger2();
+    }
     createPhysicalDevice();
     createDevice();
 }
 
 Context::~Context()
 {
-    if (enableValidation) destroyDebugMessenger();
+    if (validationLayersOn) destroyDebugMessenger();
 }
 
 void Context::deviceReport()
@@ -66,7 +74,7 @@ void Context::createInstance()
     extensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
 
     std::vector<const char*> layers;
-    if (enableValidation)
+    if (validationLayersOn)
     {
         layers.push_back("VK_LAYER_KHRONOS_validation");
     }
@@ -168,8 +176,14 @@ void Context::createDevice()
 
     deviceInfo.setPNext(&indexingFeatures);
 
+    auto semaphore = sem_open("/vkdevice", O_CREAT, S_IRWXU, 1);
+    assert (semaphore != SEM_FAILED && "sem_open failed");
+
+    sem_wait(semaphore);
     device = physicalDevice.createDeviceUnique(deviceInfo);
     assert(device && "Device failed to be created");
+    sem_post(semaphore);
+
     std::cout << "Device created at: " << *device << std::endl;
 }
 

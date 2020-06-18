@@ -41,7 +41,7 @@ struct QueueInfo
 class Context
 {
 public:
-    Context();
+    Context(bool validate);
     ~Context();
     Context(Context&&) = delete;
     Context(const Context&) = delete;
@@ -52,7 +52,7 @@ public:
     const vk::Instance& getInstance() const;
     const vk::PhysicalDevice& getPhysicalDevice() const;
     uint32_t pickQueueFamilyIndex(vk::SurfaceKHR surface) const;
-    bool enableValidation = true;
+    bool validationLayersOn; 
     uint32_t getGraphicsQueueFamilyIndex() const;
     uint32_t getTransferQueueFamilyIndex() const { return transferQueueInfo->familyIndex; }
     void printDeviceMemoryHeapInfo();

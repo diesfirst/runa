@@ -39,6 +39,28 @@ private:
     shaderc_util::FileFinder file_finder;
 };
 
+class CompileShaderCode : public Command
+{
+public:
+    void execute(Application*) override;
+    const char* getName() const override {return "CompileShaderCode";};
+    void set(const std::string_view code, const std::string_view name, ShaderType type, state::ShaderReport* report = nullptr)
+    {
+        this->name = name;
+        this->glslCode= code;
+        this->type = type;
+    }
+    state::Report* makeReport() const override;
+private:
+    inline static const shaderc::Compiler compiler{}; // may not be threadsafe 
+    std::string name;
+    std::string glslCode;
+    ShaderType type;
+    shaderc_shader_kind kind;
+    state::ShaderReport* report{nullptr};
+};
+
+
 }; // namespace command
 
 }; // namespace sword
