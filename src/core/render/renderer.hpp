@@ -90,7 +90,6 @@ public:
     void clearRenderLayers();
     void render(uint32_t cmdId, bool updateUbo);
     void popBufferBlock();
-    void resetCommandBuffers();
     void listAttachments() const;
     void listVertShaders() const;
     void listFragShaders() const;

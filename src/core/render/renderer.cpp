@@ -363,18 +363,6 @@ bool Renderer::recreateGraphicsPipeline(const std::string name)
     }
 }
 
-void Renderer::resetCommandBuffers()
-{
-    for (const auto& frame : frames) 
-    {
-        for (const auto& cmdbuffer : frame.commandBuffers) 
-        {
-            if (cmdbuffer->isRecorded())
-                cmdbuffer->reset();
-        }
-    }
-}
-
 bool Renderer::loadVertShader(
         const std::string path, const std::string name)
 {
@@ -506,7 +494,8 @@ void Renderer::render(uint32_t cmdId, bool updateUbo)
     if (updateUbo)
 	    updateFrameDescriptorBuffer(activeFrameIndex, 0);
 
-	renderBuffer.waitForFence();
+    waitOnCommandBuffer(renderBuffer, device);
+	//renderBuffer.waitForFence();
 	auto submissionCompleteSemaphore = renderBuffer.submit(
 			imageAcquiredSemaphore, 
 			vk::PipelineStageFlagBits::eColorAttachmentOutput);

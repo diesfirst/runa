@@ -43,14 +43,12 @@ C_WIDTH	state/painter.hpp	/^constexpr uint32_t C_WIDTH = 1600;$/;"	m	namespace:s
 Callbacks	state/state.hpp	/^struct Callbacks$/;"	s	namespace:sword::state
 Category	event/event.hpp	/^enum class Category : uint8_t$/;"	c	namespace:sword::event::symbol
 Command	command/command.hpp	/^class Command$/;"	c	namespace:sword::command
-CommandBuffer	render/command.cpp	/^CommandBuffer::CommandBuffer(CommandBuffer&& other) :$/;"	f	class:sword::render::CommandBuffer
-CommandBuffer	render/command.cpp	/^CommandBuffer::CommandBuffer(CommandPool& pool, vk::CommandBufferLevel level) :$/;"	f	class:sword::render::CommandBuffer
+CommandBuffer	render/command.cpp	/^CommandBuffer::CommandBuffer($/;"	f	class:sword::render::CommandBuffer
 CommandBuffer	render/command.hpp	/^class CommandBuffer$/;"	c	namespace:sword::render
 CommandLine	event/event.hpp	/^    CommandLine,$/;"	m	class:sword::event::symbol::Category
 CommandLine	event/event.hpp	/^    CommandLine,$/;"	m	class:sword::event::symbol::InputMode
 CommandLine	event/event.hpp	/^class CommandLine: public Event$/;"	c	namespace:sword::event::symbol
 CommandPool	render/command.cpp	/^CommandPool::CommandPool($/;"	f	class:sword::render::CommandPool
-CommandPool	render/command.cpp	/^CommandPool::CommandPool(CommandPool&& other) :$/;"	f	class:sword::render::CommandPool
 CommandPool	render/command.hpp	/^class CommandPool$/;"	c	namespace:sword::render
 CommandPools	command/commandpools.hpp	/^struct CommandPools$/;"	s	namespace:sword
 CompileShader	command/shader.cpp	/^CompileShader::CompileShader()$/;"	f	class:sword::command::CompileShader
@@ -428,7 +426,6 @@ brushX	state/painter.hpp	/^    float brushX; \/\/mouseX in canvas space$/;"	m	st
 brushY	state/painter.hpp	/^    float brushY; \/\/mouseY in canvas space$/;"	m	struct:sword::state::painter::FragmentInput
 bufferBlock	render/renderframe.hpp	/^    BufferBlock* bufferBlock;$/;"	m	class:sword::render::RenderFrame
 bufferBlocks	render/resource.hpp	/^    std::vector<std::unique_ptr<BufferBlock>> bufferBlocks;$/;"	m	class:sword::render::final
-buffers	render/command.hpp	/^    std::vector<vk::CommandBuffer> buffers;$/;"	m	class:sword::render::CommandBuffer
 build	state/shader.hpp	/^    constexpr const char* build = SHADER_DIR;$/;"	m	namespace:sword::state::shader_dir
 button	event/event.hpp	/^    symbol::MouseButton button;$/;"	m	class:sword::event::symbol::MouseButton
 cMapX	state/painter.hpp	/^constexpr float cMapX = float(S_WIDTH) \/ float(C_WIDTH);$/;"	m	namespace:sword::state::painter
@@ -475,7 +472,6 @@ command	command/vocab.cpp	/^namespace command$/;"	n	namespace:sword	file:
 command	command/vocab.hpp	/^namespace command$/;"	n	namespace:sword
 command	command/watcher.cpp	/^namespace command$/;"	n	namespace:sword	file:
 command	command/watcher.hpp	/^namespace command$/;"	n	namespace:sword
-commandBuffers	render/renderframe.hpp	/^    std::vector<CommandBuffer*> commandBuffers;$/;"	m	class:sword::render::RenderFrame
 commandLineInput	event/dispatcher.hpp	/^    std::string commandLineInput;$/;"	m	class:sword::event::EventDispatcher
 commandPool	render/renderer.hpp	/^    CommandPool commandPool;$/;"	m	class:sword::render::Renderer
 commandPool	render/renderframe.hpp	/^    CommandPool commandPool;$/;"	m	class:sword::render::RenderFrame
@@ -595,8 +591,6 @@ destroyDebugMessenger	render/context.cpp	/^void Context::destroyDebugMessenger()
 destroyImageViews	render/swapchain.cpp	/^void Swapchain::destroyImageViews()$/;"	f	class:sword::render::Swapchain
 devProps	render/resource.hpp	/^    const vk::PhysicalDeviceProperties& devProps;$/;"	m	class:sword::render::final
 device	render/attachment.hpp	/^    const vk::Device& device;$/;"	m	class:sword::render::Attachment
-device	render/command.hpp	/^    const vk::Device& device;$/;"	m	class:sword::render::CommandBuffer
-device	render/command.hpp	/^    const vk::Device& device;$/;"	m	class:sword::render::CommandPool
 device	render/context.hpp	/^    vk::UniqueDevice device;$/;"	m	class:sword::render::Context
 device	render/pipeline.hpp	/^    const vk::Device& device;$/;"	m	class:sword::render::GraphicsPipeline
 device	render/renderer.hpp	/^    const vk::Device& device;$/;"	m	class:sword::render::Renderer
@@ -738,6 +732,7 @@ getExtent	render/attachment.cpp	/^vk::Extent2D Attachment::getExtent() const$/;"
 getExtent2D	render/resource.cpp	/^const vk::Extent2D Image::getExtent2D() const $/;"	f	class:sword::render::Image
 getExtent2D	render/swapchain.cpp	/^vk::Extent2D Swapchain::getExtent2D()$/;"	f	class:sword::render::Swapchain
 getExtent3D	render/swapchain.cpp	/^vk::Extent3D Swapchain::getExtent3D()$/;"	f	class:sword::render::Swapchain
+getFence	render/command.cpp	/^const vk::Fence& CommandBuffer::getFence()$/;"	f	class:sword::render::CommandBuffer
 getFirst	event/event.hpp	/^    T getFirst() const$/;"	f	class:sword::event::symbol::CommandLine
 getFirstWord	event/event.hpp	/^    std::string getFirstWord() const $/;"	f	class:sword::event::symbol::CommandLine
 getFormat	render/attachment.cpp	/^vk::Format Attachment::getFormat() const$/;"	f	class:sword::render::Attachment
@@ -1309,14 +1304,14 @@ reports	state/state.hpp	/^    std::vector<const Report*> reports;$/;"	m	class:sw
 request	types/pool.hpp	/^    Pointer request(Args... args)$/;"	f	class:sword::Pool
 request	types/pool.hpp	/^    Pointer request(std::function<void(state::Report*)> reportCb, Args... args) \/\/requires IsCommand<T>$/;"	f	class:sword::Pool
 requestBlock	render/resource.cpp	/^BufferBlock* Buffer::requestBlock(uint32_t blockSize)$/;"	f	class:sword::render::Buffer
-requestCommandBuffer	render/command.cpp	/^CommandBuffer& CommandPool::requestCommandBuffer(vk::CommandBufferLevel level)$/;"	f	class:sword::render::CommandPool
+requestCommandBuffer	render/command.cpp	/^CommandBuffer& CommandPool::requestCommandBuffer(uint32_t id, vk::CommandBufferLevel level)$/;"	f	class:sword::render::CommandPool
+requestCommandBuffer	render/command.hpp	/^    CommandBuffer& requestCommandBuffer() { return *primaryCommandBuffers.at(0); };$/;"	f	class:sword::render::CommandPool
 requestRenderBuffer	render/renderframe.cpp	/^CommandBuffer& RenderFrame::requestRenderBuffer(uint32_t bufferId)$/;"	f	class:sword::render::RenderFrame
 requestSemaphore	render/renderframe.cpp	/^vk::Semaphore RenderFrame::requestSemaphore()$/;"	f	class:sword::render::RenderFrame
 rerecordRenderCommand	state/rendermanager.cpp	/^void RenderManager::rerecordRenderCommand(RenderCommandReport* report)$/;"	f	class:sword::state::RenderManager
 reset	command/command.hpp	/^    void reset() {inUse = false; }$/;"	f	class:sword::command::Command
 reset	event/event.hpp	/^    void reset() {inUse = false; handled = false;}$/;"	f	class:sword::event::symbol::Event
 reset	render/command.cpp	/^void CommandBuffer::reset()$/;"	f	class:sword::render::CommandBuffer
-resetCommandBuffers	render/renderer.cpp	/^void Renderer::resetCommandBuffers()$/;"	f	class:sword::render::Renderer
 resetPool	render/command.cpp	/^void CommandPool::resetPool()$/;"	f	class:sword::render::CommandPool
 resizeBrush	state/painter.cpp	/^    resizeBrush = static_cast<uint8_t>(event::symbol::Key::Alt),$/;"	m	class:sword::state::painter::Input	file:
 resizeBrush	state/painter.hpp	/^    ResizeBrush resizeBrush;$/;"	m	class:sword::state::painter::final
@@ -1500,7 +1495,7 @@ stateStack	application.hpp	/^    StateStack stateStack;$/;"	m	class:sword::Appli
 stateStack	state/director.hpp	/^    const StateStack& stateStack;$/;"	m	class:sword::state::final
 stop	event/filewatcher.cpp	/^void FileWatcher::stop()$/;"	f	class:sword::event::FileWatcher
 string_type	state/report.hpp	/^    constexpr std::string_view string_type() const$/;"	f	class:sword::state::final
-submit	render/command.cpp	/^vk::Semaphore CommandBuffer::submit(vk::Semaphore& waitSemaphore, vk::PipelineStageFlags waitMask)$/;"	f	class:sword::render::CommandBuffer
+submit	render/command.cpp	/^vk::Semaphore CommandBuffer::submit($/;"	f	class:sword::render::CommandBuffer
 submit	render/command.cpp	/^void CommandBuffer::submit()$/;"	f	class:sword::render::CommandBuffer
 subpassDependencies	render/renderpass.hpp	/^    std::vector<vk::SubpassDependency> subpassDependencies;$/;"	m	class:sword::render::RenderPass
 subpasses	render/renderpass.hpp	/^    std::vector<vk::SubpassDescription> subpasses;$/;"	m	class:sword::render::RenderPass
@@ -1676,6 +1671,7 @@ vocabPtr	command/vocab.hpp	/^    const state::Vocab* vocabPtr;$/;"	m	class:sword
 vocabPtrs	event/dispatcher.hpp	/^    inline static std::vector<const state::Vocab*> vocabPtrs;$/;"	m	class:sword::event::EventDispatcher
 waitForEvent	render/surface/window.cpp	/^xcb_generic_event_t* Window::waitForEvent() const$/;"	f	class:sword::render::Window
 waitForFence	render/command.cpp	/^void CommandBuffer::waitForFence() const$/;"	f	class:sword::render::CommandBuffer
+waitOnCommandBuffer	render/command.cpp	/^void waitOnCommandBuffer(CommandBuffer& buffer, const vk::Device& device)$/;"	f	namespace:sword::render
 watchFile	command/commandpools.hpp	/^    CommandPool<command::WatchFile> watchFile;$/;"	m	struct:sword::CommandPools
 watchFile	state/shader.hpp	/^    WatchFile watchFile;$/;"	m	class:sword::state::final
 watchFile	state/shader.hpp	/^    enum class Op : Option {watchFile, compileShader, printShader, loadFrag, loadVert, setSpecInt, setSpecFloat, printReports};$/;"	m	class:sword::state::final::Op
@@ -1698,8 +1694,6 @@ xform	state/painter.hpp	/^    glm::mat4& xform;$/;"	m	class:sword::state::painte
 xform	state/painter.hpp	/^    glm::mat4& xform;$/;"	m	class:sword::state::painter::Translate
 ~Attachment	render/attachment.cpp	/^Attachment::~Attachment()$/;"	f	class:sword::render::Attachment
 ~Buffer	render/resource.cpp	/^Buffer::~Buffer()$/;"	f	class:sword::render::Buffer
-~CommandBuffer	render/command.cpp	/^CommandBuffer::~CommandBuffer()$/;"	f	class:sword::render::CommandBuffer
-~CommandPool	render/command.cpp	/^CommandPool::~CommandPool()$/;"	f	class:sword::render::CommandPool
 ~Context	render/context.cpp	/^Context::~Context()$/;"	f	class:sword::render::Context
 ~EventDispatcher	event/dispatcher.cpp	/^EventDispatcher::~EventDispatcher()$/;"	f	class:sword::event::EventDispatcher
 ~GraphicsPipeline	render/pipeline.cpp	/^GraphicsPipeline::~GraphicsPipeline()$/;"	f	class:sword::render::GraphicsPipeline

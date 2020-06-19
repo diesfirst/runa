@@ -9,7 +9,10 @@ namespace sword
 namespace render
 {
 
+
 class CommandBuffer; //forward declaratiohn
+
+void waitOnCommandBuffer(CommandBuffer&, const vk::Device&);
 
 class CommandPool
 {
@@ -20,19 +23,21 @@ public:
         const vk::Queue,
         uint32_t queueFamilyIndex, 
         vk::CommandPoolCreateFlags = {}); //empty flags by default
-    ~CommandPool();
-    CommandPool(CommandPool&&);
+    ~CommandPool() = default;
+    CommandPool(CommandPool&&) = default;
+
     CommandPool(const CommandPool&) = delete;
     CommandPool& operator=(CommandPool&&) = delete;
     CommandPool& operator=(const CommandPool&) = delete;
-    CommandBuffer& requestCommandBuffer(
+
+    CommandBuffer& requestCommandBuffer() { return *primaryCommandBuffers.at(0); };
+    CommandBuffer& requestCommandBuffer(uint32_t id, 
     vk::CommandBufferLevel = vk::CommandBufferLevel::ePrimary);
     void resetPool();
 
 private:
-    const vk::Device& device;
     const vk::Queue queue{nullptr};
-    vk::CommandPool handle{nullptr};
+    vk::UniqueCommandPool handle{nullptr};
     std::vector<std::unique_ptr<CommandBuffer>> primaryCommandBuffers;
     uint32_t activePrimaryCommandBufferCount{0};
 };
@@ -41,13 +46,16 @@ class CommandBuffer
 {
 public: 
     CommandBuffer(
-        CommandPool& pool, 
+        vk::UniqueCommandBuffer&& buffer,
+        const vk::Device& device,
+        const vk::Queue,
         vk::CommandBufferLevel level = vk::CommandBufferLevel::ePrimary);
-    ~CommandBuffer();
+    ~CommandBuffer() = default;
+    CommandBuffer(CommandBuffer&&) = default;
+
     CommandBuffer(const CommandBuffer&) = delete;
     CommandBuffer& operator=(CommandBuffer&) = delete;
     CommandBuffer& operator=(CommandBuffer&&) = delete;
-    CommandBuffer(CommandBuffer&&);
     
     void begin();
     void beginRenderPass(vk::RenderPassBeginInfo&);
@@ -68,14 +76,14 @@ public:
     void submit();
     bool isRecorded() const;
     void waitForFence() const;
+    const vk::Fence& getFence();
     void reset();
+
 private:
-    const vk::Device& device;
-    const vk::Queue& queue{nullptr};
-    std::vector<vk::CommandBuffer> buffers;
-    vk::CommandBuffer handle{nullptr};
-    vk::Semaphore signalSemaphore{nullptr};
-    vk::Fence fence{nullptr};
+    const vk::Queue queue{nullptr};
+    vk::UniqueCommandBuffer handle{nullptr};
+    vk::UniqueSemaphore signalSemaphore{nullptr};
+    vk::UniqueFence fence{nullptr};
     bool recordingComplete{false};
 };
 

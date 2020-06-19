@@ -51,7 +51,6 @@ RenderFrame::RenderFrame(RenderFrame&& other) :
 	descriptorSets{std::move(other.descriptorSets)},
 	width{other.width},
 	height{other.height},
-	commandBuffers{std::move(other.commandBuffers)},
 	swapchainAttachment{std::move(other.swapchainAttachment)},
     renderLayers{std::move(other.renderLayers)},
     bufferBlock{other.bufferBlock}
@@ -94,23 +93,24 @@ void RenderFrame::clearRenderPassInstances()
 
 CommandBuffer& RenderFrame::requestRenderBuffer(uint32_t bufferId)
 {
-    if (bufferId < commandBuffers.size())
-    {
-        auto& buffer = *commandBuffers.at(bufferId);
-        buffer.reset();
-        return buffer;
-    }
-    else
-    {
-        auto cmdPtr = &commandPool.requestCommandBuffer();
-        commandBuffers.push_back(cmdPtr);
-        return *commandBuffers.back();
-    }
+    return commandPool.requestCommandBuffer(bufferId);
+//    if (bufferId < commandBuffers.size())
+//    {
+//        auto& buffer = *commandBuffers.at(bufferId);
+//        buffer.reset();
+//        return buffer;
+//    }
+//    else
+//    {
+//        auto cmdPtr = &commandPool.requestCommandBuffer();
+//        commandBuffers.push_back(cmdPtr);
+//        return *commandBuffers.back();
+//    }
 }
 
 CommandBuffer& RenderFrame::getRenderBuffer(uint32_t bufferId)
 {
-    return *commandBuffers.at(bufferId);
+    return commandPool.requestCommandBuffer(bufferId);
 }
 
 vk::Semaphore RenderFrame::requestSemaphore()

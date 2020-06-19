@@ -7,112 +7,118 @@ namespace sword
 namespace render
 {
 
+void waitOnCommandBuffer(CommandBuffer& buffer, const vk::Device& device)
+{
+    device.waitForFences(buffer.getFence(), true, UINT64_MAX);
+}
+
 CommandPool::CommandPool(
         const vk::Device& device, 
         const vk::Queue queue,
         uint32_t queueFamilyIndex, 
         vk::CommandPoolCreateFlags flags) :
-    device{device},
     queue{queue}
 {
+    static constexpr int poolsize = 10;
     std::cout << this << " CommandPool constructed" << std::endl;
     vk::CommandPoolCreateInfo info;
     info.setQueueFamilyIndex(queueFamilyIndex);
     info.setFlags(flags);
-    handle = device.createCommandPool(info);
+    handle = device.createCommandPoolUnique(info);
+
+    primaryCommandBuffers.reserve(poolsize);
+
+    vk::CommandBufferAllocateInfo allocInfo;
+    allocInfo.setCommandPool(*handle);
+    allocInfo.setCommandBufferCount(poolsize); //each pool will have 5 buffers 
+    allocInfo.setLevel(vk::CommandBufferLevel::ePrimary);
+    auto bufferHandles = device.allocateCommandBuffersUnique(allocInfo);
+
+    for (auto& handle : bufferHandles) 
+    {
+        primaryCommandBuffers.emplace_back(
+                std::make_unique<CommandBuffer>(std::move(handle), device, queue));
+    }
 }
 
-CommandPool::~CommandPool()
-{
-    if (handle)
-        device.destroyCommandPool(handle);
-}
+//CommandPool::CommandPool(CommandPool&& other) :
+//    device{other.device},
+//    queue{other.queue},
+//    handle{other.handle},
+//    primaryCommandBuffers{std::move(other.primaryCommandBuffers)},
+//    activePrimaryCommandBufferCount{other.activePrimaryCommandBufferCount}
+//{
+//    std::cout << this << " CommandPool move constructed" << std::endl;
+//    other.handle = nullptr;
+//}
 
-CommandPool::CommandPool(CommandPool&& other) :
-    device{other.device},
-    queue{other.queue},
-    handle{other.handle},
-    primaryCommandBuffers{std::move(other.primaryCommandBuffers)},
-    activePrimaryCommandBufferCount{other.activePrimaryCommandBufferCount}
-{
-    std::cout << this << " CommandPool move constructed" << std::endl;
-    other.handle = nullptr;
-}
-
-CommandBuffer& CommandPool::requestCommandBuffer(vk::CommandBufferLevel level)
+CommandBuffer& CommandPool::requestCommandBuffer(uint32_t id, vk::CommandBufferLevel level)
 {
     assert(level == vk::CommandBufferLevel::ePrimary && "Only primary command buffers supported");
-    if (activePrimaryCommandBufferCount < primaryCommandBuffers.size())
-    {
-        return *primaryCommandBuffers.at(activePrimaryCommandBufferCount++);
-    }
-    auto buffer = std::make_unique<CommandBuffer>(*this, level);
-    primaryCommandBuffers.push_back(std::move(buffer));
-    activePrimaryCommandBufferCount++;
-    return *primaryCommandBuffers.back();
+    assert(activePrimaryCommandBufferCount < primaryCommandBuffers.size());
+    assert(id < primaryCommandBuffers.size());
+    return *primaryCommandBuffers.at(id);
+//    if (activePrimaryCommandBufferCount < primaryCommandBuffers.size())
+//    {
+//        return *primaryCommandBuffers.at(activePrimaryCommandBufferCount++);
+//    }
+//    auto buffer = std::make_unique<CommandBuffer>(*this, level);
+//    primaryCommandBuffers.push_back(std::move(buffer));
+//    activePrimaryCommandBufferCount++;
+//    return *primaryCommandBuffers.back();
 }
 
 void CommandPool::resetPool()
 {
-    device.resetCommandPool(handle, {}); //do not release resources
+//    device.resetCommandPool(handle, {}); //do not release resources
+    handle.getOwner().resetCommandPool(*handle, {});
     activePrimaryCommandBufferCount = 0;
 }
 
 //level is primary by default
-CommandBuffer::CommandBuffer(CommandPool& pool, vk::CommandBufferLevel level) :
-    queue(pool.queue),
-    device(pool.device)
+CommandBuffer::CommandBuffer(
+        vk::UniqueCommandBuffer&& buffer, 
+        const vk::Device& device, 
+        const vk::Queue queue,
+        vk::CommandBufferLevel level) :
+    queue{queue},
+    handle{std::move(buffer)}
 {
-    vk::CommandBufferAllocateInfo allocInfo;
-    allocInfo.setCommandPool(pool.handle);
-    allocInfo.setCommandBufferCount(1);
-    allocInfo.setLevel(vk::CommandBufferLevel::ePrimary);
-    buffers = device.allocateCommandBuffers(allocInfo);
-    handle = buffers.at(0);
-
     vk::SemaphoreCreateInfo semaInfo;
-    signalSemaphore = device.createSemaphore(semaInfo);
+    signalSemaphore = device.createSemaphoreUnique(semaInfo);
 
     vk::FenceCreateInfo fenceInfo;
     fenceInfo.setFlags(vk::FenceCreateFlagBits::eSignaled); //signalled in default state
-    fence = device.createFence(fenceInfo);
+    fence = device.createFenceUnique(fenceInfo);
 }
 
-CommandBuffer::~CommandBuffer()
-{
-    if (signalSemaphore)
-        device.destroySemaphore(signalSemaphore);
-    if (fence)
-        device.destroyFence(fence);
-//  if (handle)
-//      device.freeCommandBuffers(pool.handle, handle);
-}
-
-CommandBuffer::CommandBuffer(CommandBuffer&& other) :
-    device{other.device},
-    queue{other.queue},
-    buffers{std::move(other.buffers)},
-    handle{buffers.at(0)},
-    signalSemaphore{other.signalSemaphore},
-    fence{other.fence}
-{
-    other.fence = nullptr;
-    other.signalSemaphore = nullptr;
-    other.handle = nullptr;
-}
-
+//CommandBuffer::CommandBuffer(CommandBuffer&& other) :
+//    device{other.device},
+//    queue{other.queue},
+//    buffers{std::move(other.buffers)},
+//    handle{buffers.at(0)},
+//    signalSemaphore{other.signalSemaphore},
+//    fence{other.fence}
+//{
+//    other.fence = nullptr;
+//    other.signalSemaphore = nullptr;
+//    other.handle = nullptr;
+//}
+//
 void CommandBuffer::begin()
 {
+    assert(handle && "command buffer not initialized");
     vk::CommandBufferBeginInfo beginInfo;
 //  beginInfo.setFlags(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
 //  shoud not need this to resubmit 
-    handle.begin(beginInfo);
+    handle->reset({});
+    handle->begin(beginInfo);
     recordingComplete = false;
 }
 
 void CommandBuffer::beginRenderPass(vk::RenderPassBeginInfo& info)
 {
-    handle.beginRenderPass(&info, vk::SubpassContents::eInline);
+    handle->beginRenderPass(&info, vk::SubpassContents::eInline);
 }
 
 void CommandBuffer::bindDescriptorSets(
@@ -120,7 +126,7 @@ void CommandBuffer::bindDescriptorSets(
         const std::vector<vk::DescriptorSet>& sets, 
         const std::vector<uint32_t>& offsets)
 {
-    handle.bindDescriptorSets(
+    handle->bindDescriptorSets(
             vk::PipelineBindPoint::eGraphics,
             layout,
             0, //first set is 0
@@ -130,7 +136,7 @@ void CommandBuffer::bindDescriptorSets(
 
 void CommandBuffer::drawVerts(uint32_t vertCount, uint32_t firstVertex)
 {
-    handle.draw(vertCount, 1, firstVertex, 0);
+    handle->draw(vertCount, 1, firstVertex, 0);
 }
 
 void CommandBuffer::insertImageMemoryBarrier(
@@ -138,7 +144,7 @@ void CommandBuffer::insertImageMemoryBarrier(
             vk::PipelineStageFlags dstStageMask,
             vk::ImageMemoryBarrier imb)
 {
-    handle.pipelineBarrier(
+    handle->pipelineBarrier(
             srcStageMask, dstStageMask, 
             {},
             nullptr,
@@ -149,42 +155,44 @@ void CommandBuffer::insertImageMemoryBarrier(
 void CommandBuffer::copyImageToBuffer(
         vk::Image& image, vk::Buffer& buffer, vk::BufferImageCopy region)
 {
-    handle.copyImageToBuffer(
+    handle->copyImageToBuffer(
             image, vk::ImageLayout::eTransferSrcOptimal, buffer, region);
 }
 
 
 void CommandBuffer::endRenderPass()
 {
-    handle.endRenderPass();
+    handle->endRenderPass();
 }
 
 void CommandBuffer::end()
 {
-    handle.end();
+    handle->end();
     recordingComplete = true;
 }
 
-vk::Semaphore CommandBuffer::submit(vk::Semaphore& waitSemaphore, vk::PipelineStageFlags waitMask)
+vk::Semaphore CommandBuffer::submit(
+        vk::Semaphore& waitSemaphore, vk::PipelineStageFlags waitMask)
 {
     vk::SubmitInfo si;
-    si.setPCommandBuffers(&handle);
+    si.setPCommandBuffers(&handle.get());
     si.setPWaitSemaphores(&waitSemaphore);
-    si.setPSignalSemaphores(&signalSemaphore);
+    si.setPSignalSemaphores(&signalSemaphore.get());
     si.setCommandBufferCount(1);
     si.setWaitSemaphoreCount(1);
     si.setSignalSemaphoreCount(1);
     si.setPWaitDstStageMask(&waitMask);
 
-    device.resetFences(1, &fence);
-    queue.submit(si, fence);
-    return signalSemaphore;
+    //device.resetFences(1, &fence);
+    fence.getOwner().resetFences(*fence);
+    queue.submit(si, fence.get());
+    return *signalSemaphore;
 }
 
 void CommandBuffer::submit()
 {
     vk::SubmitInfo si;
-    si.setPCommandBuffers(&handle);
+    si.setPCommandBuffers(&handle.get());
     si.setPWaitSemaphores(nullptr);
     si.setPSignalSemaphores(nullptr);
     si.setCommandBufferCount(1);
@@ -192,18 +200,20 @@ void CommandBuffer::submit()
     si.setSignalSemaphoreCount(0);
     si.setPWaitDstStageMask(nullptr);
 
-    device.resetFences(1, &fence);
-    queue.submit(si, fence);
+    fence.getOwner().resetFences(*fence);
+    queue.submit(si, fence.get());
 }
 
+//should restructure this thing, the caller should have a function that waits 
+//on the command buffer
 void CommandBuffer::waitForFence() const
 {
-    device.waitForFences(1, &fence, true, UINT64_MAX);
+    fence.getOwner().waitForFences(fence.get(), true, UINT64_MAX);
 }
 
 void CommandBuffer::reset()
 {
-    handle.reset({});
+    handle->reset({});
 }
 
 bool CommandBuffer::isRecorded() const
@@ -213,9 +223,13 @@ bool CommandBuffer::isRecorded() const
 
 void CommandBuffer::bindGraphicsPipeline(const vk::Pipeline& pipeline)
 {
-    handle.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
+    handle->bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
 }
 
+const vk::Fence& CommandBuffer::getFence()
+{
+    return fence.get();
+}
 
 }; // namespace render
 

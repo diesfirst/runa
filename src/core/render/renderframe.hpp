@@ -43,7 +43,6 @@ public:
     void addRenderLayer(const RenderPass&, const GraphicsPipeline&);
     void clearRenderPassInstances();
     BufferBlock* bufferBlock;
-    std::vector<CommandBuffer*> commandBuffers;
 
 private:
     std::unique_ptr<Attachment> swapchainAttachment;

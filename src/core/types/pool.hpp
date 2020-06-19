@@ -32,7 +32,7 @@ public:
         {
             for (auto& element : pool) 
             {
-                auto& buffer = gpuCommandPool->requestCommandBuffer(vk::CommandBufferLevel::ePrimary);
+                auto& buffer = gpuCommandPool->requestCommandBuffer(0, vk::CommandBufferLevel::ePrimary);
                 element.setCommandBuffer(buffer);
             }
         }
