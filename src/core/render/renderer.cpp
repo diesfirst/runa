@@ -31,30 +31,14 @@ Renderer::Renderer(Context& context) :
 }
 
 Renderer::~Renderer()
-{
-	for (auto item: descriptorSetLayouts)
-	{
-		device.destroyDescriptorSetLayout(item.second);
-	}
-
-	for (auto item : pipelineLayouts) 
-	{
-		device.destroyPipelineLayout(item.second);
-	}
-	
-	device.waitIdle();
-    device.destroyDescriptorPool(descriptorPool);
-	frames.clear();
-
-	descriptorSetLayouts.clear();
-	pipelineLayouts.clear();
-}
+{}
 
 void Renderer::prepareRenderFrames(Window& window)
 {
 	swapchain = std::make_unique<Swapchain>(context, window, 3); 
 	//we hardcode 3 swap images
-	for (auto& imageHandle : swapchain->getImages()) 
+    auto& swapchainImages = swapchain->getImages();
+	for (auto& imageHandle : swapchainImages) 
 	{
 		auto image = std::make_unique<Image>(
 				device, 
@@ -62,14 +46,12 @@ void Renderer::prepareRenderFrames(Window& window)
 				swapchain->getExtent3D(), 
 				swapchain->getFormat(), 
 				swapchain->getUsageFlags());
-		auto swapAttachment{
-			std::make_unique<Attachment>(device, std::move(image))};
-		auto renderFrame{RenderFrame(
+		auto swapAttachment = std::make_unique<Attachment>(device, std::move(image));
+		frames.emplace_back(RenderFrame(
 				context, 
 				std::move(swapAttachment),
 				swapchain->getExtent2D().width, 
-				swapchain->getExtent2D().height)};
-		frames.emplace_back(std::move(renderFrame));
+				swapchain->getExtent2D().height));
 	}
 }
 
@@ -97,7 +79,7 @@ void Renderer::createFrameDescriptorSets(const std::vector<std::string>setLayout
     std::vector<vk::DescriptorSetLayout> layouts;
     for (auto& name : setLayoutNames) 
     {
-        layouts.push_back(descriptorSetLayouts.at(name));
+        layouts.push_back(*descriptorSetLayouts.at(name));
     }
     for (auto& frame : frames) 
     {
@@ -110,13 +92,13 @@ void Renderer::createOwnDescriptorSets(const std::vector<std::string>setLayoutNa
     std::vector<vk::DescriptorSetLayout> layouts;
     for (auto& name : setLayoutNames) 
     {
-        layouts.push_back(descriptorSetLayouts.at(name));
+        layouts.push_back(*descriptorSetLayouts.at(name));
     }
 	vk::DescriptorSetAllocateInfo ai;
 	ai.setPSetLayouts(layouts.data());
 	ai.setDescriptorSetCount(layouts.size());
-	ai.setDescriptorPool(descriptorPool);
-	descriptorSets = device.allocateDescriptorSets(ai);
+	ai.setDescriptorPool(*descriptorPool);
+	descriptorSets = device.allocateDescriptorSetsUnique(ai);
 }
 
 void Renderer::initFrameUBOs(size_t size, uint32_t binding)
@@ -298,7 +280,7 @@ bool Renderer::createGraphicsPipeline(
         std::vector<const Shader*> shaderPointers = 
             {&vertexShaders.at(vertShader), &fragShaderAt(fragShader)};
 
-        const vk::PipelineLayout& layout = pipelineLayouts.at(pipelineLayout);
+        const vk::PipelineLayout& layout = *pipelineLayouts.at(pipelineLayout);
 
         vk::PipelineVertexInputStateCreateInfo vertexState;
         if (geometric)
@@ -556,7 +538,7 @@ void Renderer::createDefaultDescriptorSetLayout(const std::string name)
 	vk::DescriptorSetLayoutCreateInfo createInfo;
 	createInfo.setPBindings(bindings.data());
 	createInfo.setBindingCount(bindings.size());
-	auto layout = device.createDescriptorSetLayout(createInfo);
+	auto layout = device.createDescriptorSetLayoutUnique(createInfo);
 
 	descriptorSetLayouts.insert({name, std::move(layout)}); 
 	//create a default descriptor set layout presuming one ubo 
@@ -568,7 +550,7 @@ const std::string Renderer::createPipelineLayout(const std::string name, const s
 	std::vector<vk::DescriptorSetLayout> layouts;
 	for (auto layoutName : setLayoutNames) 
 	{
-		layouts.push_back(descriptorSetLayouts.at(layoutName));
+		layouts.push_back(*descriptorSetLayouts.at(layoutName));
 	}
 
 	vk::PipelineLayoutCreateInfo ci;
@@ -604,7 +586,7 @@ void Renderer::createDescriptorPool()
 	ci.setPPoolSizes(sizes.data());
 	ci.setPoolSizeCount(sizes.size());
 
-	descriptorPool = device.createDescriptorPool(ci);
+	descriptorPool = device.createDescriptorPoolUnique(ci);
 }
 
 void Renderer::createHostBuffer(uint32_t size)

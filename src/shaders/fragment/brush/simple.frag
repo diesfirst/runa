@@ -14,8 +14,9 @@ void main()
 	vec4 color = vec4(0.);
 	vec2 st = gl_FragCoord.xy / vec2(WIDTH, HEIGHT);
     vec2 mCoords = vec2(ubo.brushX, ubo.brushY);
-    color += fill_aa(circleNormSDF(st - mCoords), ubo.brushSize * .0025, 0.00);
-    color.rgb *= vec3(.2, .5, .5);
+    color += fill_aa(circleNormSDF(st - mCoords), ubo.brushSize * .0025, 0.005);
+    color.rgb *= vec3(.9, .861, .5);
+//    color *= 0.05;
 //    color.rgb *= color.a;
 	outColor = color;
 }

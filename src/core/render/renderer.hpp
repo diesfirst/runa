@@ -126,9 +126,9 @@ private:
 
 
     //descriptor stuff
-    vk::DescriptorPool descriptorPool;
+    vk::UniqueDescriptorPool descriptorPool;
     std::unique_ptr<Buffer> hostBuffer;
-    std::vector<vk::DescriptorSet> descriptorSets;
+    std::vector<vk::UniqueDescriptorSet> descriptorSets;
     void updateFramesDescriptorSet(uint32_t setId, const std::vector<vk::WriteDescriptorSet>);
     void updateOwnDescriptorSet(uint32_t setId, const std::vector<vk::WriteDescriptorSet>);
 
@@ -139,8 +139,8 @@ private:
     std::unordered_map<std::string, std::unique_ptr<Attachment>> attachments;
     std::unordered_map<std::string, VertShader> vertexShaders;
     std::unordered_map<std::string, FragShader> fragmentShaders;
-    std::unordered_map<std::string, vk::DescriptorSetLayout> descriptorSetLayouts;
-    std::unordered_map<std::string, vk::PipelineLayout> pipelineLayouts;
+    std::unordered_map<std::string, vk::UniqueDescriptorSetLayout> descriptorSetLayouts;
+    std::unordered_map<std::string, vk::UniquePipelineLayout> pipelineLayouts;
     std::unordered_map<std::string, GraphicsPipeline> graphicsPipelines;
     std::unordered_map<std::string, RenderPass> renderPasses;
     void createDefaultDescriptorSetLayout(const std::string name);

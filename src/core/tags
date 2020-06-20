@@ -571,16 +571,16 @@ descSetLayoutNames	state/report.hpp	/^    const std::vector<std::string> descSet
 descriptionIsBound	render/renderer.hpp	/^    bool descriptionIsBound;$/;"	m	class:sword::render::Renderer
 descriptorManager	state/rendermanager.hpp	/^        descriptorManager, renderPassManager, pipelineManager, createRenderLayer, recordRenderCommand};$/;"	m	class:sword::state::final::Op
 descriptorManager	state/rendermanager.hpp	/^    DescriptorManager descriptorManager;$/;"	m	class:sword::state::final
-descriptorPool	render/renderer.hpp	/^    vk::DescriptorPool descriptorPool;$/;"	m	class:sword::render::Renderer
+descriptorPool	render/renderer.hpp	/^    vk::UniqueDescriptorPool descriptorPool;$/;"	m	class:sword::render::Renderer
 descriptorPool	render/renderframe.hpp	/^    vk::UniqueDescriptorPool descriptorPool;$/;"	m	class:sword::render::RenderFrame
 descriptorSetLayoutMgr	state/descriptormanager.hpp	/^    DescriptorSetLayoutManager descriptorSetLayoutMgr;$/;"	m	class:sword::state::final
 descriptorSetLayoutMgr	state/descriptormanager.hpp	/^    enum class Op : Option {createFrameDescriptorSets, printReports, descriptorSetLayoutMgr, initFrameUBOs, updateFrameSamplers};$/;"	m	class:sword::state::final::Op
 descriptorSetLayoutNames	command/rendercommands.hpp	/^    std::vector<std::string> descriptorSetLayoutNames;$/;"	m	class:sword::command::CreatePipelineLayout
 descriptorSetLayoutReports	state/descriptormanager.hpp	/^    std::vector<const DescriptorSetLayoutReport*> descriptorSetLayoutReports;$/;"	m	class:sword::state::final
-descriptorSetLayouts	render/renderer.hpp	/^    std::unordered_map<std::string, vk::DescriptorSetLayout> descriptorSetLayouts;$/;"	m	class:sword::render::Renderer
+descriptorSetLayouts	render/renderer.hpp	/^    std::unordered_map<std::string, vk::UniqueDescriptorSetLayout> descriptorSetLayouts;$/;"	m	class:sword::render::Renderer
 descriptorSetLayouts	state/report.hpp	/^    std::vector<std::string> descriptorSetLayouts;$/;"	m	class:sword::state::PipelineLayoutReport
 descriptorSetReports	state/descriptormanager.hpp	/^    Reports<DescriptorSetReport> descriptorSetReports; \/\/ownding$/;"	m	class:sword::state::final
-descriptorSets	render/renderer.hpp	/^    std::vector<vk::DescriptorSet> descriptorSets;$/;"	m	class:sword::render::Renderer
+descriptorSets	render/renderer.hpp	/^    std::vector<vk::UniqueDescriptorSet> descriptorSets;$/;"	m	class:sword::render::Renderer
 descriptorSets	render/renderframe.hpp	/^    std::vector<vk::UniqueDescriptorSet> descriptorSets;$/;"	m	class:sword::render::RenderFrame
 destroyDebugMessenger	render/context.cpp	/^void Context::destroyDebugMessenger()$/;"	f	class:sword::render::Context
 devProps	render/resource.hpp	/^    const vk::PhysicalDeviceProperties& devProps;$/;"	m	class:sword::render::final
@@ -1122,7 +1122,7 @@ pickQueueFamilyIndex	render/context.cpp	/^uint32_t Context::pickQueueFamilyIndex
 pipeLayoutReports	state/pipelinemanager.hpp	/^    Reports<PipelineLayoutReport> pipeLayoutReports;$/;"	m	class:sword::state::final
 pipeline	command/rendercommands.hpp	/^    std::string pipeline;$/;"	m	class:sword::command::CreateRenderLayer
 pipeline	render/renderlayer.hpp	/^    const GraphicsPipeline& pipeline;$/;"	m	class:sword::render::RenderLayer
-pipelineLayouts	render/renderer.hpp	/^    std::unordered_map<std::string, vk::PipelineLayout> pipelineLayouts;$/;"	m	class:sword::render::Renderer
+pipelineLayouts	render/renderer.hpp	/^    std::unordered_map<std::string, vk::UniquePipelineLayout> pipelineLayouts;$/;"	m	class:sword::render::Renderer
 pipelineManager	state/rendermanager.hpp	/^        descriptorManager, renderPassManager, pipelineManager, createRenderLayer, recordRenderCommand};$/;"	m	class:sword::state::final::Op
 pipelineManager	state/rendermanager.hpp	/^    PipelineManager pipelineManager;$/;"	m	class:sword::state::final
 pipelineName	state/report.hpp	/^    std::string pipelineName;$/;"	m	class:sword::state::RenderLayerReport
