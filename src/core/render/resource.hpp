@@ -50,8 +50,8 @@ private:
     const vk::Device& device;
     const vk::PhysicalDeviceProperties& devProps;
     const vk::PhysicalDeviceMemoryProperties& memProps;
-    vk::DeviceMemory memory;
-    vk::Buffer handle;
+    vk::UniqueDeviceMemory memory;
+    vk::UniqueBuffer handle;
     vk::MemoryPropertyFlags memoryTypeFlags;
     unsigned long size;
     bool isMapped{false};
@@ -70,7 +70,7 @@ public:
         const vk::Format,
         const vk::ImageUsageFlags,
         const vk::ImageLayout,
-        const vk::Filter = vk::Filter::eLinear);
+        const vk::Filter = vk::Filter::eNearest);
     Image(
         const vk::Device& device, 
         const vk::Image, 
@@ -88,10 +88,10 @@ public:
     const vk::Sampler& getSampler() const;
     vk::Image& getImage();
 private:
-    vk::Image handle;
-    vk::ImageView view;
-    vk::DeviceMemory memory;
-    vk::Sampler sampler;
+    vk::UniqueImage handle;
+    vk::UniqueImageView view;
+    vk::UniqueDeviceMemory memory;
+    vk::UniqueSampler sampler;
     vk::DeviceSize deviceSize;
     vk::Extent3D extent;
     vk::ImageLayout layout;

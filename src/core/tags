@@ -220,15 +220,12 @@ RenderCommand	state/report.hpp	/^    RenderCommand,$/;"	m	class:sword::state::Re
 RenderCommandReport	state/report.hpp	/^    RenderCommandReport(int cmdIndex, std::vector<uint32_t> rpiIndices) :$/;"	f	class:sword::state::RenderCommandReport
 RenderCommandReport	state/report.hpp	/^class RenderCommandReport : public Report$/;"	c	namespace:sword::state
 RenderFrame	render/renderframe.cpp	/^RenderFrame::RenderFrame($/;"	f	class:sword::render::RenderFrame
-RenderFrame	render/renderframe.cpp	/^RenderFrame::RenderFrame(RenderFrame&& other) :$/;"	f	class:sword::render::RenderFrame
 RenderFrame	render/renderframe.hpp	/^class RenderFrame$/;"	c	namespace:sword::render
 RenderLayer	render/renderlayer.cpp	/^RenderLayer::RenderLayer($/;"	f	class:sword::render::RenderLayer
-RenderLayer	render/renderlayer.cpp	/^RenderLayer::RenderLayer(RenderLayer&& other) :$/;"	f	class:sword::render::RenderLayer
 RenderLayer	render/renderlayer.hpp	/^class RenderLayer$/;"	c	namespace:sword::render
 RenderLayerReport	state/report.hpp	/^    RenderLayerReport($/;"	f	class:sword::state::RenderLayerReport
 RenderLayerReport	state/report.hpp	/^class RenderLayerReport : public Report$/;"	c	namespace:sword::state
 RenderManager	state/rendermanager.cpp	/^RenderManager::RenderManager(StateArgs sa, Callbacks cb) :$/;"	f	class:sword::state::RenderManager
-RenderPass	render/renderpass.cpp	/^RenderPass::RenderPass(RenderPass&& other) :$/;"	f	class:sword::render::RenderPass
 RenderPass	render/renderpass.cpp	/^RenderPass::RenderPass(const vk::Device& device, const std::string name) :$/;"	f	class:sword::render::RenderPass
 RenderPass	render/renderpass.hpp	/^class RenderPass$/;"	c	namespace:sword::render
 RenderPass	state/report.hpp	/^    RenderPass,$/;"	m	class:sword::state::ReportType
@@ -369,6 +366,7 @@ add	state/report.hpp	/^    add,$/;"	m	class:sword::state::ReportUsage
 addAttachment	command/commandpools.hpp	/^    CommandPool<command::AddAttachment> addAttachment; $/;"	m	struct:sword::CommandPools
 addRenderLayer	render/renderer.cpp	/^void Renderer::addRenderLayer($/;"	f	class:sword::render::Renderer
 addRenderLayer	render/renderframe.cpp	/^void RenderFrame::addRenderLayer($/;"	f	class:sword::render::RenderFrame
+addRenderLayer	render/renderframe.cpp	/^void RenderFrame::addRenderLayer(RenderLayer&& layer)$/;"	f	class:sword::render::RenderFrame
 addReport	state/state.hpp	/^    static void addReport(Report* ptr, std::vector<std::unique_ptr<R>>* derivedReports, ReportCallbackFn<R> callback = {})$/;"	f	class:sword::state::BranchState
 addSubpassDependency	render/renderpass.cpp	/^void RenderPass::addSubpassDependency(vk::SubpassDependency d)$/;"	f	class:sword::render::RenderPass
 addToVocab	state/state.hpp	/^    void addToVocab(std::string word) { State::addToVocab(word); }$/;"	f	class:sword::state::LeafState
@@ -488,7 +486,6 @@ connection	render/surface/window.hpp	/^	xcb_connection_t* connection;$/;"	m	clas
 containsRenderLayer	state/report.hpp	/^    bool containsRenderLayer(int i) const $/;"	f	class:sword::state::RenderCommandReport
 context	application.hpp	/^    render::Context context;$/;"	m	class:sword::Application
 context	render/renderer.hpp	/^    const Context& context;$/;"	m	class:sword::render::Renderer
-context	render/renderframe.hpp	/^    const Context& context;$/;"	m	class:sword::render::RenderFrame
 context	render/swapchain.hpp	/^	const Context& context;$/;"	m	class:sword::render::Swapchain
 copyAttachmentToHost	render/renderer.cpp	/^BufferBlock* Renderer::copyAttachmentToHost($/;"	f	class:sword::render::Renderer
 copyHostToAttachment	render/renderer.cpp	/^void Renderer::copyHostToAttachment(void* source, int size, std::string attachmentName, const vk::Rect2D region)$/;"	f	class:sword::render::Renderer
@@ -512,7 +509,6 @@ createColorBlendState	render/pipeline.cpp	/^vk::PipelineColorBlendStateCreateInf
 createDefaultDescriptorSetLayout	render/renderer.cpp	/^void Renderer::createDefaultDescriptorSetLayout(const std::string name)$/;"	f	class:sword::render::Renderer
 createDepthStencilState	render/pipeline.cpp	/^vk::PipelineDepthStencilStateCreateInfo GraphicsPipeline::createDepthStencilState()$/;"	f	class:sword::render::GraphicsPipeline
 createDescriptorPool	render/renderer.cpp	/^void Renderer::createDescriptorPool()$/;"	f	class:sword::render::Renderer
-createDescriptorPool	render/renderframe.cpp	/^void RenderFrame::createDescriptorPool()$/;"	f	class:sword::render::RenderFrame
 createDescriptorSetLayout	command/commandpools.hpp	/^    CommandPool<command::CreateDescriptorSetLayout> createDescriptorSetLayout;$/;"	m	struct:sword::CommandPools
 createDescriptorSetLayout	render/renderer.cpp	/^const std::string Renderer::createDescriptorSetLayout(const std::string name, const std::vector<vk::DescriptorSetLayoutBinding> bindings)$/;"	f	class:sword::render::Renderer
 createDescriptorSetLayout	state/descriptorsetlayoutmanager.hpp	/^    CreateDescriptorSetLayout createDescriptorSetLayout;$/;"	m	class:sword::state::final
@@ -577,7 +573,7 @@ descriptionIsBound	render/renderer.hpp	/^    bool descriptionIsBound;$/;"	m	clas
 descriptorManager	state/rendermanager.hpp	/^        descriptorManager, renderPassManager, pipelineManager, createRenderLayer, recordRenderCommand};$/;"	m	class:sword::state::final::Op
 descriptorManager	state/rendermanager.hpp	/^    DescriptorManager descriptorManager;$/;"	m	class:sword::state::final
 descriptorPool	render/renderer.hpp	/^    vk::DescriptorPool descriptorPool;$/;"	m	class:sword::render::Renderer
-descriptorPool	render/renderframe.hpp	/^    vk::DescriptorPool descriptorPool;$/;"	m	class:sword::render::RenderFrame
+descriptorPool	render/renderframe.hpp	/^    vk::UniqueDescriptorPool descriptorPool;$/;"	m	class:sword::render::RenderFrame
 descriptorSetLayoutMgr	state/descriptormanager.hpp	/^    DescriptorSetLayoutManager descriptorSetLayoutMgr;$/;"	m	class:sword::state::final
 descriptorSetLayoutMgr	state/descriptormanager.hpp	/^    enum class Op : Option {createFrameDescriptorSets, printReports, descriptorSetLayoutMgr, initFrameUBOs, updateFrameSamplers};$/;"	m	class:sword::state::final::Op
 descriptorSetLayoutNames	command/rendercommands.hpp	/^    std::vector<std::string> descriptorSetLayoutNames;$/;"	m	class:sword::command::CreatePipelineLayout
@@ -586,15 +582,13 @@ descriptorSetLayouts	render/renderer.hpp	/^    std::unordered_map<std::string, v
 descriptorSetLayouts	state/report.hpp	/^    std::vector<std::string> descriptorSetLayouts;$/;"	m	class:sword::state::PipelineLayoutReport
 descriptorSetReports	state/descriptormanager.hpp	/^    Reports<DescriptorSetReport> descriptorSetReports; \/\/ownding$/;"	m	class:sword::state::final
 descriptorSets	render/renderer.hpp	/^    std::vector<vk::DescriptorSet> descriptorSets;$/;"	m	class:sword::render::Renderer
-descriptorSets	render/renderframe.hpp	/^    std::vector<vk::DescriptorSet> descriptorSets;$/;"	m	class:sword::render::RenderFrame
+descriptorSets	render/renderframe.hpp	/^    std::vector<vk::UniqueDescriptorSet> descriptorSets;$/;"	m	class:sword::render::RenderFrame
 destroyDebugMessenger	render/context.cpp	/^void Context::destroyDebugMessenger()$/;"	f	class:sword::render::Context
-destroyImageViews	render/swapchain.cpp	/^void Swapchain::destroyImageViews()$/;"	f	class:sword::render::Swapchain
 devProps	render/resource.hpp	/^    const vk::PhysicalDeviceProperties& devProps;$/;"	m	class:sword::render::final
 device	render/attachment.hpp	/^    const vk::Device& device;$/;"	m	class:sword::render::Attachment
 device	render/context.hpp	/^    vk::UniqueDevice device;$/;"	m	class:sword::render::Context
 device	render/pipeline.hpp	/^    const vk::Device& device;$/;"	m	class:sword::render::GraphicsPipeline
 device	render/renderer.hpp	/^    const vk::Device& device;$/;"	m	class:sword::render::Renderer
-device	render/renderframe.hpp	/^    const vk::Device& device;$/;"	m	class:sword::render::RenderFrame
 device	render/renderlayer.hpp	/^    const vk::Device& device;$/;"	m	class:sword::render::RenderLayer
 device	render/renderpass.hpp	/^    const vk::Device& device;$/;"	m	class:sword::render::RenderPass
 device	render/resource.hpp	/^    const vk::Device& device;$/;"	m	class:sword::render::final
@@ -671,7 +665,7 @@ extractCommand	state/state.cpp	/^Optional BranchState::extractCommand(event::Eve
 extractShaderStageInfos	render/pipeline.cpp	/^std::vector<vk::PipelineShaderStageCreateInfo> GraphicsPipeline::extractShaderStageInfos()$/;"	f	class:sword::render::GraphicsPipeline
 familyIndex	render/context.hpp	/^    int familyIndex;$/;"	m	struct:sword::render::QueueInfo
 fd	event/filewatcher.hpp	/^    int fd;$/;"	m	class:sword::event::FileWatcher
-fence	render/renderframe.hpp	/^    vk::Fence fence;$/;"	m	class:sword::render::RenderFrame
+fence	render/renderframe.hpp	/^    vk::UniqueFence fence;$/;"	m	class:sword::render::RenderFrame
 fetchCommandLineInput	event/dispatcher.cpp	/^void EventDispatcher::fetchCommandLineInput()$/;"	f	class:sword::event::EventDispatcher
 fetchWindowInput	event/dispatcher.cpp	/^void EventDispatcher::fetchWindowInput()$/;"	f	class:sword::event::EventDispatcher
 fileName	command/saveimage.hpp	/^    std::string fileName;$/;"	m	class:sword::command::SaveAttachmentToPng
@@ -709,12 +703,12 @@ format	render/attachment.hpp	/^    vk::Format format;$/;"	m	class:sword::render:
 format	render/resource.hpp	/^    vk::Format format;$/;"	m	class:sword::render::final
 frag	state/shader.hpp	/^    constexpr const char* frag = SWORD"\/src\/shaders\/fragment";$/;"	m	namespace:sword::state::shader_dir
 frag	util/enum.hpp	/^enum class ShaderType : uint8_t {frag, vert};$/;"	m	class:sword::ShaderType
-fragInput	state/painter.hpp	/^    FragmentInput fragInput;$/;"	m	struct:sword::state::painter::PainterVars
+fragInput	state/painter.hpp	/^    FragmentInput fragInput; \/\/should be an array$/;"	m	struct:sword::state::painter::PainterVars
 fragShaderAt	render/renderer.cpp	/^FragShader& Renderer::fragShaderAt(const std::string name)$/;"	f	class:sword::render::Renderer
 frag_dir	state/shader.hpp	/^    static constexpr const char* frag_dir = shader_dir::frag;$/;"	m	class:sword::state::LoadFragShaders
 fragmentShaders	render/renderer.hpp	/^    std::unordered_map<std::string, FragShader> fragmentShaders;$/;"	m	class:sword::render::Renderer
 frameOwned	state/report.hpp	/^    enum class Type : uint8_t {frameOwned, rendererOwned};$/;"	m	class:sword::state::DescriptorSetReport::Type
-framebuffer	render/renderlayer.hpp	/^    vk::Framebuffer framebuffer;$/;"	m	class:sword::render::RenderLayer
+framebuffer	render/renderlayer.hpp	/^    vk::UniqueFramebuffer framebuffer;$/;"	m	class:sword::render::RenderLayer
 frames	render/renderer.hpp	/^    std::vector<RenderFrame> frames;$/;"	m	class:sword::render::Renderer
 fullPath	command/saveimage.hpp	/^    bool fullPath;$/;"	m	class:sword::command::SaveAttachmentToPng
 fullpath	event/filewatcher.hpp	/^    const char* fullpath;$/;"	m	struct:sword::event::WatchTicket
@@ -725,7 +719,7 @@ getBufferResources	render/context.cpp	/^BufferResources Context::getBufferResour
 getClearValue	render/renderpass.cpp	/^const vk::ClearValue* RenderPass::getClearValue() const$/;"	f	class:sword::render::RenderPass
 getCmdIndex	state/report.hpp	/^    constexpr int getCmdIndex() const { return cmdIndex; }$/;"	f	class:sword::state::RenderCommandReport
 getCurrentIndex	render/swapchain.cpp	/^uint8_t Swapchain::getCurrentIndex() const$/;"	f	class:sword::render::Swapchain
-getDescriptorSets	render/renderframe.cpp	/^const std::vector<vk::DescriptorSet>& RenderFrame::getDescriptorSets() const$/;"	f	class:sword::render::RenderFrame
+getDescriptorSets	render/renderframe.cpp	/^const std::vector<vk::UniqueDescriptorSet>& RenderFrame::getDescriptorSets() const$/;"	f	class:sword::render::RenderFrame
 getDescriptorType	state/report.hpp	/^    inline std::string getDescriptorType(int index) $/;"	f	class:sword::state::DescriptorSetLayoutReport
 getDevice	render/context.cpp	/^const vk::Device& Context::getDevice() const$/;"	f	class:sword::render::Context
 getExtent	render/attachment.cpp	/^vk::Extent2D Attachment::getExtent() const$/;"	f	class:sword::render::Attachment
@@ -799,8 +793,8 @@ graphicsQueue	render/renderer.hpp	/^    const vk::Queue graphicsQueue;$/;"	m	cla
 graphicsQueueInfo	render/context.hpp	/^    std::optional<QueueInfo> graphicsQueueInfo;$/;"	m	class:sword::render::Context
 grow	types/region.hpp	/^    void grow()$/;"	f	class:sword::Region
 handle	render/pipeline.hpp	/^    vk::Pipeline handle;$/;"	m	class:sword::render::GraphicsPipeline
-handle	render/resource.hpp	/^    vk::Buffer handle;$/;"	m	class:sword::render::final
-handle	render/resource.hpp	/^    vk::Image handle;$/;"	m	class:sword::render::final
+handle	render/resource.hpp	/^    vk::UniqueBuffer handle;$/;"	m	class:sword::render::final
+handle	render/resource.hpp	/^    vk::UniqueImage handle;$/;"	m	class:sword::render::final
 handleEvent	state/descriptormanager.cpp	/^void CreateFrameDescriptorSets::handleEvent(event::Event* event)$/;"	f	class:sword::state::CreateFrameDescriptorSets
 handleEvent	state/descriptormanager.cpp	/^void DescriptorManager::handleEvent(event::Event* event)$/;"	f	class:sword::state::DescriptorManager
 handleEvent	state/descriptormanager.cpp	/^void InitFrameUbos::handleEvent(event::Event* event)$/;"	f	class:sword::state::InitFrameUbos
@@ -847,7 +841,7 @@ id	state/report.hpp	/^    int id;$/;"	m	class:sword::state::RenderLayerReport
 imageAcquiredSemaphore	render/renderer.hpp	/^    vk::Semaphore imageAcquiredSemaphore;$/;"	m	class:sword::render::Renderer
 imageCount	render/swapchain.hpp	/^	uint8_t imageCount;$/;"	m	class:sword::render::Swapchain
 imagePtrs	command/rendercommands.hpp	/^    std::vector<const vk::Image*> imagePtrs;$/;"	m	class:sword::command::UpdateFrameSamplers
-imageViews	render/swapchain.hpp	/^	std::vector<vk::ImageView> imageViews;$/;"	m	class:sword::render::Swapchain
+imageViews	render/swapchain.hpp	/^	std::vector<vk::UniqueImageView> imageViews;$/;"	m	class:sword::render::Swapchain
 images	render/attachment.hpp	/^    std::vector<std::unique_ptr<Image>> images;$/;"	m	class:sword::render::Attachment
 images	render/swapchain.hpp	/^	std::vector<vk::Image> images;$/;"	m	class:sword::render::Swapchain
 initBasic	state/painter.cpp	/^void Painter::initBasic()$/;"	f	class:sword::state::painter::Input::Painter	file:
@@ -937,7 +931,7 @@ mask	render/surface/window.hpp	/^	uint32_t mask = 0;$/;"	m	class:sword::render::
 matrices	state/painter.hpp	/^    Matrices matrices;$/;"	m	struct:sword::state::painter::PainterVars
 max_item_count	types/region.hpp	/^    static constexpr int max_item_count = 10;$/;"	m	class:sword::Region
 memProps	render/resource.hpp	/^    const vk::PhysicalDeviceMemoryProperties& memProps;$/;"	m	class:sword::render::final
-memory	render/resource.hpp	/^    vk::DeviceMemory memory;$/;"	m	class:sword::render::final
+memory	render/resource.hpp	/^    vk::UniqueDeviceMemory memory;$/;"	m	class:sword::render::final
 memoryProperties	render/types.hpp	/^    const vk::PhysicalDeviceMemoryProperties& memoryProperties;$/;"	m	struct:sword::render::BufferResources
 memoryTypeFlags	render/resource.hpp	/^    vk::MemoryPropertyFlags memoryTypeFlags;$/;"	m	class:sword::render::final
 merge	state/report.hpp	/^    merge,$/;"	m	class:sword::state::ReportUsage
@@ -1004,7 +998,6 @@ openWindow	state/rendermanager.hpp	/^    OpenWindow openWindow;$/;"	m	class:swor
 openWindow	state/rendermanager.hpp	/^    enum class Op : Option {saveSwapImage, printReports, render, openWindow, prepRenderFrames, shaderManager, $/;"	m	class:sword::state::final::Op
 openWindow	state/state.hpp	/^    const OpenWindow* openWindow;$/;"	m	struct:sword::state::Register
 operator ()	state/report.hpp	/^    void operator()() const $/;"	f	class:sword::state::PipelineLayoutReport
-operator <	render/renderpass.cpp	/^bool RenderPass::operator<(const RenderPass& rhs)$/;"	f	class:sword::render::RenderPass
 options	state/descriptorsetlayoutmanager.hpp	/^    SmallMap<std::string, vk::DescriptorType> options;$/;"	m	class:sword::state::SetStateType
 options	state/descriptorsetlayoutmanager.hpp	/^    SmallMap<std::string, vk::ShaderStageFlagBits> options;$/;"	m	class:sword::state::SetShaderStageEntry
 options	state/state.hpp	/^    OptionMap options;$/;"	m	class:sword::state::BranchState
@@ -1013,6 +1006,7 @@ os	application.hpp	/^    std::ofstream os;$/;"	m	class:sword::Application
 other	render/attachment.hpp	/^    Attachment& operator=(Attachment &&other) = delete;$/;"	m	class:sword::render::Attachment
 other	render/attachment.hpp	/^    Attachment(Attachment&& other) = delete;$/;"	m	class:sword::render::Attachment
 other	render/renderframe.hpp	/^    RenderFrame& operator=(RenderFrame&& other) = delete;$/;"	m	class:sword::render::RenderFrame
+other	render/renderframe.hpp	/^    RenderFrame(RenderFrame&& other) = default;$/;"	m	class:sword::render::RenderFrame
 other	render/shader.hpp	/^    Shader& operator=(Shader& other) = delete; \/\/no copy assignment$/;"	m	class:sword::render::Shader
 other	render/shader.hpp	/^    Shader& operator=(Shader&& other) = delete; \/\/no move assignment$/;"	m	class:sword::render::Shader
 other	render/shader.hpp	/^    Shader(Shader&& other) = delete;$/;"	m	class:sword::render::Shader
@@ -1331,7 +1325,7 @@ run	event/filewatcher.cpp	/^void FileWatcher::run()$/;"	f	class:sword::event::Fi
 runCommandLineLoop	event/dispatcher.cpp	/^void EventDispatcher::runCommandLineLoop()$/;"	f	class:sword::event::EventDispatcher
 runWindowInputLoop	event/dispatcher.cpp	/^void EventDispatcher::runWindowInputLoop()$/;"	f	class:sword::event::EventDispatcher
 sampledImages	application.hpp	/^    std::vector<const render::Image*> sampledImages;$/;"	m	class:sword::Application
-sampler	render/resource.hpp	/^    vk::Sampler sampler;$/;"	m	class:sword::render::final
+sampler	render/resource.hpp	/^    vk::UniqueSampler sampler;$/;"	m	class:sword::render::final
 saveAttachment	state/painter.hpp	/^    SaveAttachment saveAttachment;$/;"	m	class:sword::state::painter::final
 saveAttachmentToPng	command/commandpools.hpp	/^    CommandPool<command::SaveAttachmentToPng> saveAttachmentToPng;$/;"	m	struct:sword::CommandPools
 saveSwap	state/painter.hpp	/^    SaveSwap saveSwap;$/;"	m	class:sword::state::painter::final
@@ -1347,7 +1341,7 @@ scaleRotCache	state/painter.hpp	/^    glm::mat4 scaleRotCache;$/;"	m	class:sword
 scissor	render/pipeline.hpp	/^    vk::Rect2D scissor;$/;"	m	class:sword::render::GraphicsPipeline
 screen	render/surface/window.hpp	/^	xcb_screen_t* screen;$/;"	m	class:sword::render::Window
 selfManaged	render/resource.hpp	/^    bool selfManaged = true;$/;"	m	class:sword::render::final
-semaphore	render/renderframe.hpp	/^    vk::Semaphore semaphore;$/;"	m	class:sword::render::RenderFrame
+semaphore	render/renderframe.hpp	/^    vk::UniqueSemaphore semaphore;$/;"	m	class:sword::render::RenderFrame
 serialize	event/event.hpp	/^    inline void serialize(std::ofstream& os) {$/;"	f	class:sword::event::symbol::CommandLine
 serialize	event/event.hpp	/^   void serialize(std::ofstream& os) $/;"	f	class:sword::event::symbol::Abort
 set	command/command.hpp	/^    template <typename... Args> void set(Args... args) {}$/;"	f	class:sword::command::Command
@@ -1506,7 +1500,7 @@ surface	render/swapchain.hpp	/^	vk::SurfaceKHR surface;$/;"	m	class:sword::rende
 svPool	state/state.hpp	/^    CommandPool<command::SetVocab> svPool;$/;"	m	class:sword::state::LeafState
 swapDim	application.hpp	/^    vk::Extent2D swapDim;;$/;"	m	class:sword::Application
 swapchain	render/renderer.hpp	/^    std::unique_ptr<Swapchain> swapchain;$/;"	m	class:sword::render::Renderer
-swapchain	render/swapchain.hpp	/^	vk::SwapchainKHR swapchain;$/;"	m	class:sword::render::Swapchain
+swapchain	render/swapchain.hpp	/^	vk::UniqueSwapchainKHR swapchain;$/;"	m	class:sword::render::Swapchain
 swapchain	state/renderpassmanager.hpp	/^enum class RenderPassType : uint8_t {swapchain, offscreen};$/;"	m	class:sword::state::RenderPassType
 swapchain	state/report.hpp	/^    enum class Type : uint8_t {swapchain, offscreen}; $/;"	m	class:sword::state::RenderPassReport::Type
 swapchainAttachment	render/renderframe.hpp	/^    std::unique_ptr<Attachment> swapchainAttachment;$/;"	m	class:sword::render::RenderFrame
@@ -1661,7 +1655,7 @@ vertShaderAt	render/renderer.cpp	/^VertShader& Renderer::vertShaderAt(const std:
 vert_dir	state/shader.hpp	/^    static constexpr const char* vert_dir = shader_dir::vert;$/;"	m	class:sword::state::LoadVertShaders
 vertexInputState	render/pipeline.hpp	/^    vk::PipelineVertexInputStateCreateInfo vertexInputState;$/;"	m	class:sword::render::GraphicsPipeline
 vertexShaders	render/renderer.hpp	/^    std::unordered_map<std::string, VertShader> vertexShaders;$/;"	m	class:sword::render::Renderer
-view	render/resource.hpp	/^    vk::ImageView view;$/;"	m	class:sword::render::final
+view	render/resource.hpp	/^    vk::UniqueImageView view;$/;"	m	class:sword::render::final
 viewCmdId	state/painter.hpp	/^    int viewCmdId;$/;"	m	struct:sword::state::painter::PainterVars
 viewport	render/pipeline.hpp	/^    vk::Viewport viewport;$/;"	m	class:sword::render::GraphicsPipeline
 viewportState	render/pipeline.hpp	/^    vk::PipelineViewportStateCreateInfo viewportState;$/;"	m	class:sword::render::GraphicsPipeline
@@ -1699,10 +1693,6 @@ xform	state/painter.hpp	/^    glm::mat4& xform;$/;"	m	class:sword::state::painte
 ~GraphicsPipeline	render/pipeline.cpp	/^GraphicsPipeline::~GraphicsPipeline()$/;"	f	class:sword::render::GraphicsPipeline
 ~Image	render/resource.cpp	/^Image::~Image()$/;"	f	class:sword::render::Image
 ~Region	types/region.hpp	/^    ~Region()$/;"	f	class:sword::Region
-~RenderFrame	render/renderframe.cpp	/^RenderFrame::~RenderFrame()$/;"	f	class:sword::render::RenderFrame
-~RenderLayer	render/renderlayer.cpp	/^RenderLayer::~RenderLayer()$/;"	f	class:sword::render::RenderLayer
-~RenderPass	render/renderpass.cpp	/^RenderPass::~RenderPass()$/;"	f	class:sword::render::RenderPass
 ~Renderer	render/renderer.cpp	/^Renderer::~Renderer()$/;"	f	class:sword::render::Renderer
 ~Shader	render/shader.cpp	/^Shader::~Shader()$/;"	f	class:sword::render::Shader
-~Swapchain	render/swapchain.cpp	/^Swapchain::~Swapchain()$/;"	f	class:sword::render::Swapchain
 ~Window	render/surface/window.cpp	/^Window::~Window()$/;"	f	class:sword::render::Window

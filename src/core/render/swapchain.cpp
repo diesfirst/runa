@@ -28,12 +28,12 @@ Swapchain::Swapchain(const Context& context, const Window& window, const uint8_t
 	createImageViews();
 }
 
-Swapchain::~Swapchain()
-{	
-	destroyImageViews();
-	context.getDevice().destroySwapchainKHR(swapchain);
-	context.getInstance().destroySurfaceKHR(surface);
-}
+//Swapchain::~Swapchain()
+//{	
+//	destroyImageViews();
+//	context.getDevice().destroySwapchainKHR(swapchain);
+//	context.getInstance().destroySurfaceKHR(surface);
+//}
 
 void Swapchain::createSurface()
 {
@@ -111,7 +111,7 @@ void Swapchain::createSwapchain()
 	createInfo.setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque);
 	//means we dont care about the color of obscured pixels
 	createInfo.setClipped(true); 
-	swapchain = context.getDevice().createSwapchainKHR(createInfo);
+	swapchain = context.getDevice().createSwapchainKHRUnique(createInfo);
 	std::cout << "Swapchain created!" << std::endl;
 	swapchainCreated = true;
 }
@@ -143,12 +143,8 @@ vk::ImageUsageFlags Swapchain::getUsageFlags()
 
 void Swapchain::setImages()
 {
-	if (!swapchainCreated) {
-		std::cout << "Attempted to get images"
-		       << " from nonexistant swapchain"
-	       	       << std::endl;
-	}
-	images = context.getDevice().getSwapchainImagesKHR(swapchain);
+    assert(swapchain);
+	images = context.getDevice().getSwapchainImagesKHR(*swapchain);
 }
 
 void Swapchain::createImageViews()
@@ -166,7 +162,7 @@ void Swapchain::createImageViews()
 
 	for (const auto image : images) {
 		createInfo.setImage(image);
-		imageViews.push_back(context.getDevice().createImageView(createInfo));
+		imageViews.push_back(context.getDevice().createImageViewUnique(createInfo));
 	}
 }
 
@@ -182,13 +178,13 @@ uint8_t Swapchain::getImageCount() const
 
 const vk::SwapchainKHR& Swapchain::getHandle() const
 {
-	return swapchain;
+	return *swapchain;
 }
 
 uint32_t Swapchain::acquireNextImage(vk::Semaphore semaphore, vk::Fence fence)
 {
 	auto result = context.getDevice().acquireNextImageKHR(
-			swapchain,
+			*swapchain,
 			UINT64_MAX, //so it will wait forever
 			//will be signalled when we can do something with this
 			semaphore, 
@@ -201,16 +197,6 @@ uint32_t Swapchain::acquireNextImage(vk::Semaphore semaphore, vk::Fence fence)
 
 	return result.value;
 }
-
-
-void Swapchain::destroyImageViews()
-{
-	for (auto imageView : imageViews) 
-	{
-		context.getDevice().destroyImageView(imageView);
-	}
-}
-
 
 }; // namespace render
 

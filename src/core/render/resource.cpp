@@ -24,7 +24,6 @@ uint32_t findMemoryType(
 		return i;
 	    }
 	}
-
 	throw std::runtime_error("Failed to find suitable memory");
 }
 
@@ -40,7 +39,7 @@ Buffer::Buffer(
 	size{size},
     memoryTypeFlags{typeFlags}
 {
-	handle = device.createBuffer({{}, size, usage, vk::SharingMode::eExclusive, {}, {}});
+	handle = device.createBufferUnique({{}, size, usage, vk::SharingMode::eExclusive, {}, {}});
     allocateAndBindMemory();
 	std::cout << "Created buffer!" << '\n';
 	std::cout << "Buffer size: " << size << '\n';
@@ -50,25 +49,25 @@ Buffer::~Buffer()
 {
     if (isMapped) 
     {
-        device.unmapMemory(memory); 
+        device.unmapMemory(*memory); 
     }
-	device.destroyBuffer(handle);
-	device.freeMemory(memory);
+//	device.destroyBuffer(handle);
+//	device.freeMemory(memory);
 }
 
 void Buffer::allocateAndBindMemory()
 {
-	auto memReqs = device.getBufferMemoryRequirements(handle);
+	auto memReqs = device.getBufferMemoryRequirements(*handle);
 
     auto memoryTypeIndex = findMemoryType(memReqs, memoryTypeFlags, memProps);
 
-	memory = device.allocateMemory({memReqs.size, memoryTypeIndex});
-	device.bindBufferMemory(handle, memory, 0);
+	memory = device.allocateMemoryUnique({memReqs.size, memoryTypeIndex});
+	device.bindBufferMemory(*handle, *memory, 0);
 }
 
 vk::Buffer& Buffer::getHandle()
 {
-	return handle;
+	return *handle;
 }
 
 BufferBlock* Buffer::requestBlock(uint32_t blockSize)
@@ -114,7 +113,7 @@ void Buffer::popBackBlock()
 void Buffer::map()
 {
 	assert(!isMapped);
-	pHostMemory = device.mapMemory(memory, 0, VK_WHOLE_SIZE);
+	pHostMemory = device.mapMemory(*memory, 0, VK_WHOLE_SIZE);
 	assert(pHostMemory != (void*)VK_ERROR_MEMORY_MAP_FAILED);
     isMapped = true;
 //
@@ -130,7 +129,7 @@ void Buffer::map()
 void Buffer::unmap()
 {
 	assert(isMapped);
-	device.unmapMemory(memory);
+	device.unmapMemory(*memory);
     for (auto& block : bufferBlocks) 
     {
         block->pHostMemory = nullptr;
@@ -163,17 +162,17 @@ Image::Image(
 	createInfo.setUsage(usageFlags);
 	createInfo.setSamples(vk::SampleCountFlagBits::e1);
 	createInfo.setSharingMode(vk::SharingMode::eExclusive);
-	handle = device.createImage(createInfo);
+	handle = device.createImageUnique(createInfo);
 
-	auto imgMemReq = device.getImageMemoryRequirements(handle); 
+	auto imgMemReq = device.getImageMemoryRequirements(*handle); 
 
 	vk::MemoryAllocateInfo memAllocInfo;
 	memAllocInfo.setAllocationSize(imgMemReq.size);
 	memAllocInfo.setMemoryTypeIndex(7); //device local
 
-	memory  = device.allocateMemory(memAllocInfo);
+	memory  = device.allocateMemoryUnique(memAllocInfo);
 
-	device.bindImageMemory(handle, memory, 0);
+	device.bindImageMemory(*handle, *memory, 0);
 
 	vk::ComponentMapping components;
 	components.setA(vk::ComponentSwizzle::eIdentity);
@@ -189,12 +188,12 @@ Image::Image(
 	subResRange.setBaseArrayLayer(0);
 	
 	vk::ImageViewCreateInfo viewInfo;
-	viewInfo.setImage(this->handle);
+	viewInfo.setImage(*handle);
 	viewInfo.setFormat(format);
 	viewInfo.setViewType(vk::ImageViewType::e2D);
 	viewInfo.setComponents(components);
 	viewInfo.setSubresourceRange(subResRange);
-	view = device.createImageView(viewInfo);
+	view = device.createImageViewUnique(viewInfo);
 
 	vk::SamplerCreateInfo samplerInfo;
 	//might want to try nearest at some point
@@ -209,7 +208,7 @@ Image::Image(
 	samplerInfo.setMinLod(0.0);
 	samplerInfo.setMaxLod(1.0);
 	samplerInfo.setBorderColor(vk::BorderColor::eFloatOpaqueWhite);
-	sampler = device.createSampler(samplerInfo);
+	sampler = device.createSamplerUnique(samplerInfo);
 }
 
 Image::Image(	
@@ -239,29 +238,29 @@ Image::Image(
 	subResRange.setBaseArrayLayer(0);
 	
 	vk::ImageViewCreateInfo viewInfo;
-	viewInfo.setImage(this->handle);
+	viewInfo.setImage(handle);
 	viewInfo.setFormat(format);
 	viewInfo.setViewType(vk::ImageViewType::e2D);
 	viewInfo.setComponents(components);
 	viewInfo.setSubresourceRange(subResRange);
-	view = device.createImageView(viewInfo);
+	view = device.createImageViewUnique(viewInfo);
 }
 
 Image::~Image()
 {
 	if (isMapped)
 	{
-		device.unmapMemory(memory);
+		device.unmapMemory(*memory);
 	}
-	if (selfManaged)
-	{
-		device.destroyImage(handle);
-		device.freeMemory(memory);
-	}
-	if (view)
-		device.destroyImageView(view);
-    if (sampler)
-        device.destroySampler(sampler);
+//	if (selfManaged)
+//	{
+//		device.destroyImage(handle);
+//		device.freeMemory(memory);
+//	}
+//	if (view)
+//		device.destroyImageView(view);
+//    if (sampler)
+//        device.destroySampler(sampler);
 }
 
 const vk::Extent2D Image::getExtent2D() const 
@@ -271,17 +270,17 @@ const vk::Extent2D Image::getExtent2D() const
 
 const vk::ImageView& Image::getView() const
 {
-	return view;
+	return *view;
 }
 
 const vk::Sampler& Image::getSampler() const
 {
-	return sampler;
+	return *sampler;
 }
 
 vk::Image& Image::getImage()
 {
-    return handle;
+    return *handle;
 }
 
 

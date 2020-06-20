@@ -28,6 +28,9 @@ constexpr float cMapX = float(S_WIDTH) / float(C_WIDTH);
 constexpr float cMapY = float(S_HEIGHT) / float(C_HEIGHT);
 
 // seems that bad things happen when sizeof(FragmentInput) is not a multiple of 4
+// TODO: we need to make sure we are not writing to this when a frame is not done
+// reading from it. need to have either a lock on it or have 3 that we update 
+// independently, corresponding to the current frame
 struct FragmentInput
 {
     float time{0};
@@ -60,7 +63,7 @@ struct PainterVars
     float swapWidthFloat{S_WIDTH};
     float swapHeightFloat{S_HEIGHT};
     Matrices matrices;
-    FragmentInput fragInput;
+    FragmentInput fragInput; //should be an array
     int paintCmdId;
     int viewCmdId;
     int brushStaticCmd;

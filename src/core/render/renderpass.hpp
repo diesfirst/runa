@@ -13,11 +13,13 @@ class RenderPass
 {
 public:
     RenderPass(const vk::Device&, const std::string name);
-    virtual ~RenderPass();
+    ~RenderPass() = default;
+    RenderPass(RenderPass&&) = default;
+
     RenderPass(const RenderPass&) = delete;
     RenderPass& operator=(RenderPass&) = delete;
     RenderPass& operator=(RenderPass&&) = delete;
-    RenderPass(RenderPass&&);
+
     bool operator<(const RenderPass& rhs);
     const vk::RenderPass& getHandle() const;
     uint32_t getId() const;
@@ -38,7 +40,7 @@ public:
 private:
     const vk::Device& device;
     const std::string name;
-    vk::RenderPass handle{nullptr};
+    vk::UniqueRenderPass handle{nullptr};
     std::vector<vk::AttachmentDescription> attachments;
     std::vector<vk::AttachmentDescription> colorAttachments;
     std::vector<vk::AttachmentReference> references;

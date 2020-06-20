@@ -12,35 +12,29 @@ RenderPass::RenderPass(const vk::Device& device, const std::string name) :
 {
 }
 
-RenderPass::~RenderPass()
-{
-	if (handle)
-		device.destroyRenderPass(handle);
-}
-
-RenderPass::RenderPass(RenderPass&& other) :
-	device{other.device},
-	name{other.name},
-	handle{other.handle},
-	attachments{std::move(other.attachments)},
-	colorAttachments{std::move(other.colorAttachments)},
-	references{std::move(other.references)},
-	subpasses{std::move(other.subpasses)},
-	subpassDependencies{std::move(other.subpassDependencies)}
-{
-	other.handle = nullptr;
-	other.attachments.clear();
-	other.colorAttachments.clear();
-	other.references.clear();
-	other.subpasses.clear();
-	other.subpassDependencies.clear();
-}
-
-bool RenderPass::operator<(const RenderPass& rhs)
-{
-	return handle == rhs.handle;
-}
-
+//RenderPass::RenderPass(RenderPass&& other) :
+//	device{other.device},
+//	name{other.name},
+//	handle{other.handle},
+//	attachments{std::move(other.attachments)},
+//	colorAttachments{std::move(other.colorAttachments)},
+//	references{std::move(other.references)},
+//	subpasses{std::move(other.subpasses)},
+//	subpassDependencies{std::move(other.subpassDependencies)}
+//{
+//	other.handle = nullptr;
+//	other.attachments.clear();
+//	other.colorAttachments.clear();
+//	other.references.clear();
+//	other.subpasses.clear();
+//	other.subpassDependencies.clear();
+//}
+//
+//bool RenderPass::operator<(const RenderPass& rhs)
+//{
+//	return handle == rhs.handle;
+//}
+//
 void RenderPass::createColorAttachment(
 		const vk::Format format,
 		const vk::ImageLayout initialLayout,
@@ -126,7 +120,7 @@ void RenderPass::create()
 	createInfo.setPSubpasses(subpasses.data());
 	createInfo.setDependencyCount(subpassDependencies.size());
 	createInfo.setPDependencies(subpassDependencies.data());
-  	handle = device.createRenderPass(createInfo);
+  	handle = device.createRenderPassUnique(createInfo);
 	created = true;
 }
 
@@ -142,7 +136,7 @@ const vk::ClearValue* RenderPass::getClearValue() const
 
 const vk::RenderPass& RenderPass::getHandle() const
 {
-	return handle;
+	return *handle;
 }
 
 

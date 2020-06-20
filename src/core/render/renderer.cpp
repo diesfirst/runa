@@ -132,7 +132,7 @@ void Renderer::initFrameUBOs(size_t size, uint32_t binding)
         bw.setDescriptorType(vk::DescriptorType::eUniformBuffer);
         bw.setDstArrayElement(0); //may want to parameterize this
         bw.setDescriptorCount(1);
-        bw.setDstSet(frame.getDescriptorSets().at(0));
+        bw.setDstSet(*frame.getDescriptorSets().at(0));
         bw.setDstBinding(binding);
         bw.setPBufferInfo(&bi);
         device.updateDescriptorSets(bw, nullptr);
@@ -162,7 +162,7 @@ void Renderer::updateFrameSamplers(const vk::ImageView* view, const vk::Sampler*
             throw std::runtime_error("No option to update frame samplers");
         iw.setDstArrayElement(0);
         iw.setDescriptorCount(1);
-        iw.setDstSet(frame.getDescriptorSets().at(0));
+        iw.setDstSet(*frame.getDescriptorSets().at(0));
         iw.setDstBinding(binding);
         iw.setPImageInfo(&ii);
         device.updateDescriptorSets(iw, nullptr);
@@ -185,7 +185,7 @@ void Renderer::updateFrameSamplers(const std::vector<const Image*>& images, uint
         vk::WriteDescriptorSet iw;
         iw.setDescriptorType(vk::DescriptorType::eCombinedImageSampler);
         iw.setDstArrayElement(0);
-        iw.setDstSet(frame.getDescriptorSets().at(0)); //assuming a single set
+        iw.setDstSet(*frame.getDescriptorSets().at(0)); //assuming a single set
         iw.setDstBinding(binding);
         iw.setPImageInfo(imageInfos.data());
         iw.setDescriptorCount(imageInfos.size());
@@ -214,7 +214,7 @@ void Renderer::updateFrameSamplers(const std::vector<std::string>& attachmentNam
         vk::WriteDescriptorSet iw;
         iw.setDescriptorType(vk::DescriptorType::eCombinedImageSampler);
         iw.setDstArrayElement(0);
-        iw.setDstSet(frame.getDescriptorSets().at(0)); //assuming a single set
+        iw.setDstSet(*frame.getDescriptorSets().at(0)); //assuming a single set
         iw.setDstBinding(binding);
         iw.setPImageInfo(imageInfos.data());
         iw.setDescriptorCount(imageInfos.size());
@@ -431,12 +431,12 @@ void Renderer::recordRenderCommands(uint32_t id, std::vector<uint32_t> fbIds)
 		auto& commandBuffer = frame.requestRenderBuffer(id);	
 		commandBuffer.begin();
 
-        for (auto fbId : fbIds)
+        for (const auto fbId : fbIds)
         {
-            auto& renderPassInstance = frame.getRenderLayer(fbId);
-            auto& renderPass = renderPassInstance.getRenderPass();
-            auto& pipeline = renderPassInstance.getPipeline();
-            auto& framebuffer = renderPassInstance.getFramebuffer();
+            auto& renderLayer = frame.getRenderLayer(fbId);
+            auto& renderPass = renderLayer.getRenderPass();
+            auto& pipeline = renderLayer.getPipeline();
+            auto& framebuffer = renderLayer.getFramebuffer();
 
             vk::RenderPassBeginInfo bi;
             bi.setFramebuffer(framebuffer);
@@ -449,7 +449,7 @@ void Renderer::recordRenderCommands(uint32_t id, std::vector<uint32_t> fbIds)
             commandBuffer.bindGraphicsPipeline(pipeline.getHandle());
             commandBuffer.bindDescriptorSets(
                     pipeline.getLayout(),
-                    frame.getDescriptorSets(),
+                    vk::uniqueToRaw(frame.getDescriptorSets()),
                     {});
             commandBuffer.drawVerts(3, 0);
             commandBuffer.endRenderPass();
@@ -469,11 +469,11 @@ void Renderer::addRenderLayer(
     for (auto& frame : frames) 
     {
         if (attachmentName.compare("swap") == 0)
-            frame.addRenderLayer(rpass, pipe);
+            frame.addRenderLayer(rpass, pipe, device);
         else 
         {
             auto& attachment = *attachments.at(attachmentName);
-            frame.addRenderLayer(attachment, rpass, pipe);
+            frame.addRenderLayer(RenderLayer(device, attachment, rpass, pipe));
         }
     }
 }

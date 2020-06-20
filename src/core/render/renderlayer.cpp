@@ -25,23 +25,7 @@ RenderLayer::RenderLayer(
     ci.setPAttachments(&target.getImage(0).getView());
     ci.setLayers(1);
     ci.setRenderPass(pass.getHandle()); //only a template for where this fb can be used
-    framebuffer = device.createFramebuffer(ci);
-}
-
-RenderLayer::~RenderLayer()
-{
-    if (framebuffer)
-        device.destroyFramebuffer(framebuffer);
-}
-
-RenderLayer::RenderLayer(RenderLayer&& other) :
-    renderTarget{other.renderTarget},
-    renderPass{other.renderPass},
-    pipeline{other.pipeline},
-    device{other.device},
-    framebuffer{std::move(other.framebuffer)}
-{
-    other.framebuffer = nullptr;
+    framebuffer = device.createFramebufferUnique(ci);
 }
 
 const RenderPass& RenderLayer::getRenderPass() const
@@ -56,7 +40,7 @@ const GraphicsPipeline& RenderLayer::getPipeline() const
 
 const vk::Framebuffer& RenderLayer::getFramebuffer() const
 {
-    return framebuffer;
+    return *framebuffer;
 }
 
 }; // namespace render

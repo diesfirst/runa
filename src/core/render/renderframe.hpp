@@ -25,37 +25,35 @@ public:
         const Context&, 
         std::unique_ptr<Attachment>&& renderTarget, 
         uint32_t width, uint32_t height);
+    ~RenderFrame() = default;
+    RenderFrame(RenderFrame&& other) = default;
+
     RenderFrame(const RenderFrame&) = delete;
     RenderFrame& operator=(RenderFrame&) = delete;
     RenderFrame& operator=(RenderFrame&& other) = delete;
-    RenderFrame(RenderFrame&& other);
-    virtual ~RenderFrame();
 
     Attachment& getSwapAttachment();
     void addOffscreenAttachment(std::unique_ptr<Attachment>&& renderTarget);
     void createDescriptorSets(const std::vector<vk::DescriptorSetLayout>&);
-    const std::vector<vk::DescriptorSet>& getDescriptorSets() const;
+    const std::vector<vk::UniqueDescriptorSet>& getDescriptorSets() const;
     vk::Semaphore requestSemaphore();
     CommandBuffer& requestRenderBuffer(uint32_t bufferId); //will reset if exists
     CommandBuffer& getRenderBuffer(uint32_t bufferId);  //will fetch existing
     RenderLayer& getRenderLayer(int id) { return renderLayers.at(id);}
-    void addRenderLayer(Attachment&, const RenderPass&, const GraphicsPipeline&);
-    void addRenderLayer(const RenderPass&, const GraphicsPipeline&);
+    void addRenderLayer(RenderLayer&&);
+    void addRenderLayer(const RenderPass&, const GraphicsPipeline&, const vk::Device& device);
     void clearRenderPassInstances();
     BufferBlock* bufferBlock;
 
 private:
     std::unique_ptr<Attachment> swapchainAttachment;
     std::vector<RenderLayer> renderLayers;
-    const Context& context;
-    const vk::Device& device;
     CommandPool commandPool;
-//	CommandBuffer* renderBuffer{nullptr};
-    vk::DescriptorPool descriptorPool;
-    std::vector<vk::DescriptorSet> descriptorSets;
+    vk::UniqueDescriptorPool descriptorPool;
+    vk::UniqueFence fence;
+    vk::UniqueSemaphore semaphore;
+    std::vector<vk::UniqueDescriptorSet> descriptorSets;
     void updateDescriptorSet(uint32_t setId, const std::vector<vk::WriteDescriptorSet>);
-    vk::Fence fence;
-    vk::Semaphore semaphore;
     uint32_t width;
     uint32_t height;
 

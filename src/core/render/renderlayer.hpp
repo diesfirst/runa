@@ -19,16 +19,18 @@ class RenderLayer
 {
 public:
     RenderLayer(const vk::Device&, Attachment&, const RenderPass&, const GraphicsPipeline&);
-    ~RenderLayer();
+    ~RenderLayer() = default;
+    RenderLayer(RenderLayer&&) = default;
+
     RenderLayer(const RenderLayer&) = delete;
     RenderLayer& operator=(RenderLayer&) = delete;
     RenderLayer& operator=(RenderLayer&&) = delete;
-    RenderLayer(RenderLayer&&);
+
     const RenderPass& getRenderPass() const;
     const GraphicsPipeline& getPipeline() const;
     const vk::Framebuffer& getFramebuffer() const;
 private:
-    vk::Framebuffer framebuffer;
+    vk::UniqueFramebuffer framebuffer;
     const Attachment& renderTarget;
     const RenderPass& renderPass;
     const GraphicsPipeline& pipeline;
