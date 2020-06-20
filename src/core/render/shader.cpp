@@ -23,21 +23,21 @@ Shader::Shader(const vk::Device& device, std::vector<uint32_t>&& code) :
     codeSize = code.size() * 4; //to get size in bytes
 	ci.setPCode(code.data());
 	ci.setCodeSize(codeSize);
-	module = device.createShaderModule(ci);
+	module = device.createShaderModuleUnique(ci);
     initialize();
 	std::cout << "Shader constructed" << '\n';
 }
 
-Shader::~Shader()
-{
-	if (module)
-		device.destroyShaderModule(module);
-}
+//Shader::~Shader()
+//{
+//	if (module)
+//		device.destroyShaderModule(module);
+//}
 
 void Shader::initialize()
 {
 	stageInfo.setPName("main");
-	stageInfo.setModule(module);
+	stageInfo.setModule(*module);
 
 	mapEntries.resize(4);
 	mapEntries[0].setSize(sizeof(float));
@@ -67,12 +67,12 @@ void Shader::initialize()
 void Shader::reload(std::vector<uint32_t>&& code)
 {
     assert (module); //otherwise we should not be reloading
-    device.destroyShaderModule(module);
+    module.reset();
 	vk::ShaderModuleCreateInfo ci;
     codeSize = code.size() * 4; //to get size in bytes
 	ci.setPCode(code.data());
 	ci.setCodeSize(codeSize);
-	module = device.createShaderModule(ci);
+	module = device.createShaderModuleUnique(ci);
     initialize();
     std::cout << "Shader reloaded" << '\n';
 }
@@ -119,7 +119,7 @@ void Shader::createModule()
 	vk::ShaderModuleCreateInfo ci;
 	ci.setPCode(shaderCode.data());
 	ci.setCodeSize(codeSize);
-	module = device.createShaderModule(ci);
+	module = device.createShaderModuleUnique(ci);
 }
 
 void Shader::setWindowResolution(const uint32_t w, const uint32_t h)

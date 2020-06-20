@@ -23,7 +23,7 @@ struct SpecData
 class Shader
 {
 public:
-    virtual ~Shader();
+    virtual ~Shader() = default;
     Shader(const Shader&) = delete; //no copy construction
     Shader(Shader&& other) = delete;
     Shader& operator=(Shader& other) = delete; //no copy assignment
@@ -46,7 +46,7 @@ private:
     const vk::Device& device;
     std::vector<uint32_t> shaderCode;
     size_t codeSize;
-    vk::ShaderModule module{nullptr};
+    vk::UniqueShaderModule module{nullptr};
 
     void loadFile(std::string filepath);
     void createModule();

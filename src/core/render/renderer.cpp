@@ -298,7 +298,7 @@ bool Renderer::createGraphicsPipeline(
         std::vector<const Shader*> shaderPointers = 
             {&vertexShaders.at(vertShader), &fragShaderAt(fragShader)};
 
-        vk::PipelineLayout layout = pipelineLayouts.at(pipelineLayout);
+        const vk::PipelineLayout& layout = pipelineLayouts.at(pipelineLayout);
 
         vk::PipelineVertexInputStateCreateInfo vertexState;
         if (geometric)

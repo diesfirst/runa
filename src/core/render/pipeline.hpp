@@ -26,11 +26,12 @@ public:
         const vk::Rect2D, //we could choose to make this dynamic
         const std::vector<const Shader*>,
         const vk::PipelineVertexInputStateCreateInfo);
-    ~GraphicsPipeline();
+    ~GraphicsPipeline() = default;
+    GraphicsPipeline(GraphicsPipeline&&) = default;
+
     GraphicsPipeline(const GraphicsPipeline&) = delete;
     GraphicsPipeline& operator=(GraphicsPipeline&) = delete;
     GraphicsPipeline& operator=(GraphicsPipeline&&) = delete;
-    GraphicsPipeline(GraphicsPipeline&&);
 
     void create();
     void recreate();
@@ -49,10 +50,10 @@ public:
 
 private:
     const std::string name;
-    vk::Pipeline handle;
+    vk::UniquePipeline handle;
     const vk::Device& device;
     const RenderPass& renderPass;
-    vk::PipelineLayout layout;
+    const vk::PipelineLayout& layout;
     vk::Rect2D renderArea;
     std::vector<vk::PipelineShaderStageCreateInfo> shaderStageInfos;
     vk::PipelineViewportStateCreateInfo viewportState;

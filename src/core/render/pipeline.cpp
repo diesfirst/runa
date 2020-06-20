@@ -40,36 +40,6 @@ GraphicsPipeline::GraphicsPipeline(
     create();
 }
 
-GraphicsPipeline::~GraphicsPipeline()
-{
-	if (handle)
-		device.destroyPipeline(handle);
-}
-
-GraphicsPipeline::GraphicsPipeline(GraphicsPipeline&& other) :
-    name{other.name},
-	device{other.device},
-	handle{std::move(other.handle)},
-	layout{std::move(other.layout)},
-	renderPass{other.renderPass},
-    renderArea{other.renderArea},
-    shaderStageInfos{std::move(other.shaderStageInfos)},
-    viewportState{other.viewportState},
-    multisampleState{other.multisampleState},
-    rasterizationState{other.rasterizationState},
-    colorBlendState{other.colorBlendState},
-    depthStencilState{other.depthStencilState},
-    inputAssemblySate{other.inputAssemblySate},
-    shaders{other.shaders},
-    attachmentStates{other.attachmentStates},
-    viewport{other.viewport},
-    scissor{other.scissor},
-    vertexInputState{other.vertexInputState},
-    created{other.created}
-{
-	other.handle = nullptr;
-}
-
 void GraphicsPipeline::create()
 {
     viewportState = createViewportState();
@@ -95,13 +65,13 @@ void GraphicsPipeline::create()
 	ci.setPVertexInputState(&vertexInputState);
 	ci.setPDepthStencilState(nullptr); //null for now
 	ci.setPInputAssemblyState(&inputAssemblySate);
-    handle = device.createGraphicsPipeline({}, ci);
+    handle = device.createGraphicsPipelineUnique({}, ci);
     created = true;
 }
 
 void GraphicsPipeline::recreate()
 {
-    device.destroy(handle);
+    handle.reset();
     std::cout << "GraphicsPipeline: destroyed handle, calling create..." << '\n';
     create();
     std::cout << "GraphicsPipeline: recreation successful" << '\n';
@@ -109,7 +79,7 @@ void GraphicsPipeline::recreate()
 
 const vk::Pipeline& GraphicsPipeline::getHandle() const
 {
-	return handle;
+	return *handle;
 }
 
 const vk::PipelineLayout& GraphicsPipeline::getLayout() const

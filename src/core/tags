@@ -112,7 +112,6 @@ FragmentInput	state/painter.hpp	/^struct FragmentInput$/;"	s	namespace:sword::st
 GLM_ENABLE_EXPERIMENTAL	state/painter.hpp	6;"	d
 GLSLC	util/defs.hpp	7;"	d
 GraphicsPipeline	render/pipeline.cpp	/^GraphicsPipeline::GraphicsPipeline($/;"	f	class:sword::render::GraphicsPipeline
-GraphicsPipeline	render/pipeline.cpp	/^GraphicsPipeline::GraphicsPipeline(GraphicsPipeline&& other) :$/;"	f	class:sword::render::GraphicsPipeline
 GraphicsPipeline	render/pipeline.hpp	/^class GraphicsPipeline$/;"	c	namespace:sword::render
 GraphicsPipelineReport	state/report.hpp	/^    GraphicsPipelineReport($/;"	f	class:sword::state::GraphicsPipelineReport
 GraphicsPipelineReport	state/report.hpp	/^class GraphicsPipelineReport : public Report$/;"	c	namespace:sword::state
@@ -792,7 +791,7 @@ graphicsPipelines	render/renderer.hpp	/^    std::unordered_map<std::string, Grap
 graphicsQueue	render/renderer.hpp	/^    const vk::Queue graphicsQueue;$/;"	m	class:sword::render::Renderer
 graphicsQueueInfo	render/context.hpp	/^    std::optional<QueueInfo> graphicsQueueInfo;$/;"	m	class:sword::render::Context
 grow	types/region.hpp	/^    void grow()$/;"	f	class:sword::Region
-handle	render/pipeline.hpp	/^    vk::Pipeline handle;$/;"	m	class:sword::render::GraphicsPipeline
+handle	render/pipeline.hpp	/^    vk::UniquePipeline handle;$/;"	m	class:sword::render::GraphicsPipeline
 handle	render/resource.hpp	/^    vk::UniqueBuffer handle;$/;"	m	class:sword::render::final
 handle	render/resource.hpp	/^    vk::UniqueImage handle;$/;"	m	class:sword::render::final
 handleEvent	state/descriptormanager.cpp	/^void CreateFrameDescriptorSets::handleEvent(event::Event* event)$/;"	f	class:sword::state::CreateFrameDescriptorSets
@@ -881,7 +880,7 @@ kind	command/shader.hpp	/^    shaderc_shader_kind kind;$/;"	m	class:sword::comma
 kind	command/shader.hpp	/^    shaderc_shader_kind kind;$/;"	m	class:sword::command::CompileShaderCode
 kpPool	event/dispatcher.hpp	/^    EventPool<KeyPress, 50> kpPool;$/;"	m	class:sword::event::EventDispatcher
 krPool	event/dispatcher.hpp	/^    EventPool<KeyRelease, 20> krPool;$/;"	m	class:sword::event::EventDispatcher
-layout	render/pipeline.hpp	/^    vk::PipelineLayout layout;$/;"	m	class:sword::render::GraphicsPipeline
+layout	render/pipeline.hpp	/^    const vk::PipelineLayout& layout;$/;"	m	class:sword::render::GraphicsPipeline
 layout	render/resource.hpp	/^    vk::ImageLayout layout;$/;"	m	class:sword::render::final
 layoutnames	command/rendercommands.hpp	/^    std::vector<std::string> layoutnames;$/;"	m	class:sword::command::CreateFrameDescriptorSets
 leaf	state/state.hpp	/^enum class StateType : uint8_t {leaf, branch, brief};$/;"	m	class:sword::state::StateType
@@ -1690,9 +1689,7 @@ xform	state/painter.hpp	/^    glm::mat4& xform;$/;"	m	class:sword::state::painte
 ~Buffer	render/resource.cpp	/^Buffer::~Buffer()$/;"	f	class:sword::render::Buffer
 ~Context	render/context.cpp	/^Context::~Context()$/;"	f	class:sword::render::Context
 ~EventDispatcher	event/dispatcher.cpp	/^EventDispatcher::~EventDispatcher()$/;"	f	class:sword::event::EventDispatcher
-~GraphicsPipeline	render/pipeline.cpp	/^GraphicsPipeline::~GraphicsPipeline()$/;"	f	class:sword::render::GraphicsPipeline
 ~Image	render/resource.cpp	/^Image::~Image()$/;"	f	class:sword::render::Image
 ~Region	types/region.hpp	/^    ~Region()$/;"	f	class:sword::Region
 ~Renderer	render/renderer.cpp	/^Renderer::~Renderer()$/;"	f	class:sword::render::Renderer
-~Shader	render/shader.cpp	/^Shader::~Shader()$/;"	f	class:sword::render::Shader
 ~Window	render/surface/window.cpp	/^Window::~Window()$/;"	f	class:sword::render::Window
