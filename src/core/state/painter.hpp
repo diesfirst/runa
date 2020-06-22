@@ -10,6 +10,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <types/region.hpp>
+#include "command/transfer.hpp"
 
 namespace sword
 {
@@ -202,6 +203,8 @@ private:
     void displayCanvas();
 
     PainterVars painterVars;
+
+    Pool<command::CopyAttachmentToDevice, command::Command, 2> copyAttachment;
 
     CommandPools& cp;
     const state::Register& sr;

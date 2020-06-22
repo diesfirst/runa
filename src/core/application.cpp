@@ -19,7 +19,7 @@ Application::Application(bool validation) :
     renderer{context},
     offscreenDim{{windowWidth, windowHeight}},
     swapDim{{windowWidth, windowHeight}},
-    dirState{{stateEdits, cmdStack, cmdPools, stateRegister}, stateStack, window}
+    dirState{{stateEdits, cmdStack, cmdPools, stateRegister, context}, stateStack, window}
 {
 }
 
@@ -31,7 +31,7 @@ Application::Application(uint16_t w, uint16_t h, const std::string logfile, int 
     offscreenDim{{w, h}},
     swapDim{{w, h}},
     readlog{logfile},
-    dirState{{stateEdits, cmdStack, cmdPools, stateRegister}, stateStack, window}
+    dirState{{stateEdits, cmdStack, cmdPools, stateRegister, context}, stateStack, window}
 {
     stateStack.push(&dirState);
     stateStack.top()->onEnter();

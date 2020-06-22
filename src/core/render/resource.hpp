@@ -22,6 +22,7 @@ struct BufferBlock
     void* pHostMemory{nullptr};
     bool isMapped{false};
     bool isValid{true};
+    Buffer* buffer{nullptr};
 };
 
 class Buffer final

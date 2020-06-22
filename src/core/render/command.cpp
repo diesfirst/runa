@@ -12,32 +12,34 @@ void waitOnCommandBuffer(CommandBuffer& buffer, const vk::Device& device)
     device.waitForFences(buffer.getFence(), true, UINT64_MAX);
 }
 
-CommandPool::CommandPool(
+template <size_t Size>
+CommandPool_t<Size>::CommandPool_t(
         const vk::Device& device, 
         const vk::Queue queue,
         uint32_t queueFamilyIndex, 
         vk::CommandPoolCreateFlags flags) :
     queue{queue}
 {
-    static constexpr int poolsize = 10;
     std::cout << this << " CommandPool constructed" << std::endl;
     vk::CommandPoolCreateInfo info;
     info.setQueueFamilyIndex(queueFamilyIndex);
     info.setFlags(flags);
     handle = device.createCommandPoolUnique(info);
 
-    primaryCommandBuffers.reserve(poolsize);
-
     vk::CommandBufferAllocateInfo allocInfo;
     allocInfo.setCommandPool(*handle);
-    allocInfo.setCommandBufferCount(poolsize); //each pool will have 5 buffers 
+    allocInfo.setCommandBufferCount(Size); //each pool will have 5 buffers 
     allocInfo.setLevel(vk::CommandBufferLevel::ePrimary);
     auto bufferHandles = device.allocateCommandBuffersUnique(allocInfo);
 
+    assert (bufferHandles.size() == Size);
+
+    int i = 0;
     for (auto& handle : bufferHandles) 
     {
-        primaryCommandBuffers.emplace_back(
-                std::make_unique<CommandBuffer>(std::move(handle), device, queue));
+        auto buffer = std::make_unique<CommandBuffer>(std::move(handle), device, queue);
+        primaryCommandBuffers.at(i) = std::move(buffer);
+        i++;
     }
 }
 
@@ -52,7 +54,8 @@ CommandPool::CommandPool(
 //    other.handle = nullptr;
 //}
 
-CommandBuffer& CommandPool::requestCommandBuffer(uint32_t id, vk::CommandBufferLevel level)
+template <size_t Size>
+CommandBuffer& CommandPool_t<Size>::requestCommandBuffer(uint32_t id, vk::CommandBufferLevel level)
 {
     assert(level == vk::CommandBufferLevel::ePrimary && "Only primary command buffers supported");
     assert(activePrimaryCommandBufferCount < primaryCommandBuffers.size());
@@ -68,7 +71,8 @@ CommandBuffer& CommandPool::requestCommandBuffer(uint32_t id, vk::CommandBufferL
 //    return *primaryCommandBuffers.back();
 }
 
-void CommandPool::resetPool()
+template <size_t Size>
+void CommandPool_t<Size>::resetPool()
 {
 //    device.resetCommandPool(handle, {}); //do not release resources
     handle.getOwner().resetCommandPool(*handle, {});
@@ -230,6 +234,9 @@ const vk::Fence& CommandBuffer::getFence()
 {
     return fence.get();
 }
+
+template class CommandPool_t<5>;
+template class CommandPool_t<2>;
 
 }; // namespace render
 

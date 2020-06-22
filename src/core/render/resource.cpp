@@ -88,6 +88,7 @@ BufferBlock* Buffer::requestBlock(uint32_t blockSize)
     block->size = blockSize;
     block->allocSize = allocSize;
     block->index = bufferBlocks.size();
+    block->buffer = this;
     if (isMapped)
     {
         block->pHostMemory = static_cast<uint8_t*>(pHostMemory) + block->offset;

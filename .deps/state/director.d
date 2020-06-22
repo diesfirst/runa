@@ -29,7 +29,8 @@ build/state/director.o: src/core/state/director.cpp \
  src/core/state/renderpassmanager.hpp src/core/state/shader.hpp \
  src/core/command/shader.hpp src/core/command/saveimage.hpp \
  src/core/state/painter.hpp src/core/state/state.hpp \
- src/core/types/region.hpp src/core/util/stringutil.hpp
+ src/core/types/region.hpp src/core/command/transfer.hpp \
+ src/core/util/stringutil.hpp
 
 src/core/state/director.hpp:
 
@@ -134,5 +135,7 @@ src/core/state/painter.hpp:
 src/core/state/state.hpp:
 
 src/core/types/region.hpp:
+
+src/core/command/transfer.hpp:
 
 src/core/util/stringutil.hpp:

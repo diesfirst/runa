@@ -807,7 +807,7 @@ void Renderer::copyHostToAttachment(void* source, int size, std::string attachme
     //TODO: finish this
 }
 
-const Attachment* Renderer::getAttachmentPtr(std::string name) const
+Attachment* Renderer::getAttachmentPtr(std::string name) const
 {
     return attachments.at(name).get();
 }

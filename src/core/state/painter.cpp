@@ -4,6 +4,7 @@
 #include "vulkan/vulkan.hpp"
 #include <util/debug.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <render/context.hpp>
 
 namespace sword
 {
@@ -332,7 +333,11 @@ Painter::Painter(StateArgs sa, Callbacks cb) :
     cp{sa.cp},
     sr{sa.rg},
     saveAttachment{sa, {}},
-    saveSwap{sa, {}}
+    saveSwap{sa, {}},
+    copyAttachment(render::CommandPool_t<2>(
+                sa.ct.getDevice(),
+                sa.ct.getTransferQueue(0),
+                sa.ct.getTransferQueueFamilyIndex()))
 {
     activate(opcast(Op::initBasic));
     updateXform(painterVars.fragInput.xform, painterVars.matrices);

@@ -108,7 +108,7 @@ public:
 
     void copyHostToAttachment(void* source, int size, std::string attachmentName, const vk::Rect2D region);
 
-    const Attachment* getAttachmentPtr(std::string name) const;
+    Attachment* getAttachmentPtr(std::string name) const;
 
     vk::Extent2D getSwapExtent();
 

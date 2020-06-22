@@ -7,6 +7,7 @@
 #include <vector>
 #include <iostream>
 #include <render/command.hpp>
+//#include <concepts>
 
 namespace sword
 {
@@ -17,23 +18,29 @@ template <typename T, typename Base, size_t Size>
 class Pool
 {
 private:
-    std::unique_ptr<render::CommandPool> gpuCommandPool;
+    std::unique_ptr<render::CommandPool_t<Size>> gpuCommandPool;
     std::array<T, Size> pool;
 
 public:
     //using Pointer = std::unique_ptr<Base, std::function<void(Base*)>>;
     using Pointer = std::unique_ptr<Base, std::function<void(Base*)>>;
 
-    Pool() {}
-    Pool(render::CommandPool&& gpuPool) 
+    Pool()
+    {}
+    Pool(render::CommandPool_t<Size>&& gpuPool)
     {
-        std::cerr << "BAD POOL CTOR GETTING CALLED!!!!!!!!!!!!!!!!!!!!!!!" << '\n';
-        gpuCommandPool = std::make_unique<render::CommandPool>(std::move(gpuPool));
+        constexpr bool hasCmdBufferMember = requires (T t, render::CommandBuffer& buffer)
         {
-            for (auto& element : pool) 
+            t.commandBuffer;
+            t.setCommandBuffer(buffer);
+        };
+        if constexpr(hasCmdBufferMember)
+        {
+            std::cout << "Constructing gpuCommandPool" << '\n';
+            gpuCommandPool = std::make_unique<render::CommandPool_t<Size>>(std::move(gpuPool));
+            for (int i = 0; i < Size; i++) 
             {
-                auto& buffer = gpuCommandPool->requestCommandBuffer(0, vk::CommandBufferLevel::ePrimary);
-                element.setCommandBuffer(buffer);
+                pool[i].setCommandBuffer(gpuCommandPool->requestCommandBuffer(i));
             }
         }
     }

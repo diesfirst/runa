@@ -14,21 +14,22 @@ class CommandBuffer; //forward declaratiohn
 
 void waitOnCommandBuffer(CommandBuffer&, const vk::Device&);
 
-class CommandPool
+template <size_t Size>
+class CommandPool_t
 {
 friend class CommandBuffer;
 public:
-    CommandPool(
+    CommandPool_t(
         const vk::Device&, 
         const vk::Queue,
         uint32_t queueFamilyIndex, 
         vk::CommandPoolCreateFlags = {}); //empty flags by default
-    ~CommandPool() = default;
-    CommandPool(CommandPool&&) = default;
+    ~CommandPool_t() = default;
+    CommandPool_t(CommandPool_t&&) = default;
 
-    CommandPool(const CommandPool&) = delete;
-    CommandPool& operator=(CommandPool&&) = delete;
-    CommandPool& operator=(const CommandPool&) = delete;
+    CommandPool_t(const CommandPool_t&) = delete;
+    CommandPool_t& operator=(CommandPool_t&&) = delete;
+    CommandPool_t& operator=(const CommandPool_t&) = delete;
 
     CommandBuffer& requestCommandBuffer() { return *primaryCommandBuffers.at(0); };
     CommandBuffer& requestCommandBuffer(uint32_t id, 
@@ -38,9 +39,11 @@ public:
 private:
     const vk::Queue queue{nullptr};
     vk::UniqueCommandPool handle{nullptr};
-    std::vector<std::unique_ptr<CommandBuffer>> primaryCommandBuffers;
+    std::array<std::unique_ptr<CommandBuffer>, Size> primaryCommandBuffers;
     uint32_t activePrimaryCommandBufferCount{0};
 };
+
+using CommandPool = CommandPool_t<5>;
 
 class CommandBuffer
 {

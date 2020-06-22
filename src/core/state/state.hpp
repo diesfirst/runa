@@ -21,7 +21,7 @@ namespace sword { namespace state { class State; }; };
 namespace sword
 {
 
-//namespace event{ class Event;}
+namespace render{ class Context;}
     
 namespace state
 {
@@ -80,6 +80,7 @@ struct StateArgs
     CommandStack& cs;
     CommandPools& cp;
     Register& rg;
+    render::Context& ct;
 };
 
 struct Callbacks
