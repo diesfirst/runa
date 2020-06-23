@@ -7,26 +7,26 @@
 namespace sword
 {
 
-namespace render { class CommandBuffer; class Buffer; struct BufferBlock; };
+namespace render { class CommandBuffer; class Image; }
 
 namespace command
 {
 
-class CopyAttachmentToDevice : public Command
+class CopyAttachmentToImage : public Command
 {
 public:
     void execute(Application*) override;
     const char* getName() const override {return "CopyAttachmentToHost";};
-    void set(std::string attachmentName, vk::Rect2D region, render::BufferBlock* block) 
+    void set(std::string attachmentName, vk::Rect2D region, render::Image* image) 
     {
         this->attachmentName = attachmentName;
-        this->bufferBlock = block;
+        this->image = image;
         this->region = region;
     }
     void setCommandBuffer(render::CommandBuffer& cmdBuffer) {this->commandBuffer = &cmdBuffer; }
 private:
     render::CommandBuffer* commandBuffer{nullptr};
-    render::BufferBlock* bufferBlock{nullptr};
+    render::Image* image{nullptr};
     std::string attachmentName;
     vk::Rect2D region;
 };

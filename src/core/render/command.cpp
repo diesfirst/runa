@@ -163,6 +163,11 @@ void CommandBuffer::copyImageToBuffer(
             image, vk::ImageLayout::eTransferSrcOptimal, buffer, region);
 }
 
+void CommandBuffer::copyImageToImage(vk::Image& from, vk::Image& to, vk::ImageCopy region)
+{
+    handle->copyImage(from, vk::ImageLayout::eTransferSrcOptimal, 
+            to, vk::ImageLayout::eTransferDstOptimal, region);
+}
 
 void CommandBuffer::endRenderPass()
 {

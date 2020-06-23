@@ -17,7 +17,7 @@ Attachment::Attachment(
 {
     SWD_DEBUG_MSG("Device" << device);
 	vk::Extent3D ex = {extent.width, extent.height, 1};
-	format = vk::Format::eR8G8B8A8Unorm;
+	format = standard::imageFormat;
 	auto image = std::make_unique<Image>(
 			device, 
 			ex,

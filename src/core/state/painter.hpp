@@ -11,6 +11,7 @@
 #include <glm/gtx/transform.hpp>
 #include <types/region.hpp>
 #include "command/transfer.hpp"
+#include "render/resource.hpp"
 
 namespace sword
 {
@@ -204,7 +205,8 @@ private:
 
     PainterVars painterVars;
 
-    Pool<command::CopyAttachmentToDevice, command::Command, 2> copyAttachment;
+    Pool<command::CopyAttachmentToImage, command::Command, 2> copyAttachment;
+    render::Image undoImage;
 
     CommandPools& cp;
     const state::Register& sr;

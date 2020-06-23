@@ -71,7 +71,7 @@ public:
         const vk::Format,
         const vk::ImageUsageFlags,
         const vk::ImageLayout,
-        const vk::Filter = vk::Filter::eNearest);
+        const vk::Filter = vk::Filter::eLinear);
     Image(
         const vk::Device& device, 
         const vk::Image, 

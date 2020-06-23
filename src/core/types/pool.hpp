@@ -31,9 +31,10 @@ public:
     {
         constexpr bool hasCmdBufferMember = requires (T t, render::CommandBuffer& buffer)
         {
-            t.commandBuffer;
+//            t.commandBuffer;
             t.setCommandBuffer(buffer);
         };
+        static_assert (hasCmdBufferMember);
         if constexpr(hasCmdBufferMember)
         {
             std::cout << "Constructing gpuCommandPool" << '\n';

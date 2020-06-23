@@ -21,7 +21,8 @@ enum class Input : uint8_t
     translate = static_cast<uint8_t>(event::symbol::MouseButton::Middle),
     paint = static_cast<uint8_t>(event::symbol::MouseButton::Left),
     scale = static_cast<uint8_t>(event::symbol::MouseButton::Right),
-    rotate = static_cast<uint8_t>(event::symbol::Key::Shift_L)
+    rotate = static_cast<uint8_t>(event::symbol::Key::Shift_L),
+    copyImage = static_cast<uint8_t>(event::symbol::Key::C)
 };
 
 constexpr Input inputCast(event::symbol::Key key) { return static_cast<Input>(key); }
@@ -337,7 +338,12 @@ Painter::Painter(StateArgs sa, Callbacks cb) :
     copyAttachment(render::CommandPool_t<2>(
                 sa.ct.getDevice(),
                 sa.ct.getTransferQueue(0),
-                sa.ct.getTransferQueueFamilyIndex()))
+                sa.ct.getTransferQueueFamilyIndex())),
+    undoImage(sa.ct.getDevice(),
+            vk::Extent3D{C_WIDTH, C_HEIGHT, 1},
+            render::standard::imageFormat,
+            vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eTransferSrc,
+            vk::ImageLayout::eUndefined)
 {
     activate(opcast(Op::initBasic));
     updateXform(painterVars.fragInput.xform, painterVars.matrices);
@@ -380,6 +386,13 @@ void Painter::handleEvent(event::Event* event)
                 painterVars.fragInput.mouseX = we->getX() / painterVars.swapWidthFloat;
                 painterVars.fragInput.mouseY = we->getY() / painterVars.swapHeightFloat;
                 pushState(&rotate);
+                event->setHandled();
+                return;
+            }
+            if (inputCast(kp->getKey()) == Input::copyImage)
+            {
+                auto cmd = copyAttachment.request("paint", vk::Rect2D({0, 0}, {C_WIDTH, C_HEIGHT}), &undoImage);
+                pushCmd(std::move(cmd));
                 event->setHandled();
                 return;
             }
@@ -459,6 +472,7 @@ void Painter::initBasic()
     painterVars.paintCmdId = 0;
     painterVars.viewCmdId = 2;
     painterVars.brushStaticCmd = 1;
+
     deactivate(opcast(Op::initBasic));
     activate(opcast(Op::paint));
     activate(opcast(Op::brushResize));

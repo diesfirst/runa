@@ -73,6 +73,7 @@ public:
     vk::PipelineStageFlags dstStageMask,
     vk::ImageMemoryBarrier imb);
     void copyImageToBuffer(vk::Image&, vk::Buffer&, vk::BufferImageCopy);
+    void copyImageToImage(vk::Image&, vk::Image&, vk::ImageCopy);
     void endRenderPass();
     void end();
     vk::Semaphore submit(vk::Semaphore& waitSemaphore, vk::PipelineStageFlags);
