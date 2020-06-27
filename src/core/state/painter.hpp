@@ -71,6 +71,9 @@ struct PainterVars
     int brushStaticCmd;
 };
 
+using CopyAttachmentToImage = Pool<command::CopyAttachmentToImage, command::Command, 2>;
+using CopyImageToAttachment = Pool<command::CopyImageToAttachment, command::Command, 2>;
+
 class Rotate : public LeafState
 {
 public:
@@ -146,7 +149,7 @@ private:
 class Paint : public LeafState
 {
 public:
-    Paint(StateArgs, Callbacks, PainterVars&);
+    Paint(StateArgs, Callbacks, PainterVars&, CopyAttachmentToImage&, render::Image&);
     const char* getName() const override { return "Paint"; }
     void handleEvent(event::Event*) override;
 private:
@@ -156,9 +159,8 @@ private:
     float& brushPosY;
     const PainterVars& vars;
     bool mouseDown{false};
-
-    //using UndoStack = Region;
-    //UndoStack undoStack;
+    CopyAttachmentToImage& copyAttachmentToImage;
+    render::Image& undoImage;
 };
 
 class SaveAttachment : public LeafState
@@ -205,8 +207,11 @@ private:
 
     PainterVars painterVars;
 
-    Pool<command::CopyAttachmentToImage, command::Command, 2> copyAttachment;
+    CopyAttachmentToImage copyAttachmentToImage;
+    CopyImageToAttachment copyImageToAttachment;
     render::Image undoImage;
+
+    bool paintActive{false};
 
     CommandPools& cp;
     const state::Register& sr;

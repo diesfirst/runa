@@ -439,6 +439,7 @@ void Renderer::recordRenderCommands(uint32_t id, std::vector<uint32_t> fbIds)
         }
 		commandBuffer.end();
 	}
+
 }
 
 void Renderer::addRenderLayer(

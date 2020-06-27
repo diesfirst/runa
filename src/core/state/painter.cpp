@@ -22,7 +22,8 @@ enum class Input : uint8_t
     paint = static_cast<uint8_t>(event::symbol::MouseButton::Left),
     scale = static_cast<uint8_t>(event::symbol::MouseButton::Right),
     rotate = static_cast<uint8_t>(event::symbol::Key::Shift_L),
-    copyImage = static_cast<uint8_t>(event::symbol::Key::C)
+    copyAttachmentToImage = static_cast<uint8_t>(event::symbol::Key::C),
+    copyImageToAttachment = static_cast<uint8_t>(event::symbol::Key::B)
 };
 
 constexpr Input inputCast(event::symbol::Key key) { return static_cast<Input>(key); }
@@ -217,9 +218,9 @@ void ResizeBrush::handleEvent(event::Event* event)
     }
 }
 
-Paint::Paint(StateArgs sa, Callbacks cb, PainterVars& vars) :
+Paint::Paint(StateArgs sa, Callbacks cb, PainterVars& vars, CopyAttachmentToImage& cati, render::Image& undoImage) :
     LeafState{sa, cb}, pool{sa.cp.render}, brushPosX{vars.fragInput.brushX}, brushPosY{vars.fragInput.brushY},
-    vars{vars}
+    vars{vars}, copyAttachmentToImage{cati}, undoImage{undoImage}
 {
 }
 
@@ -244,14 +245,17 @@ void Paint::handleEvent(event::Event* event)
         {
             if (inputCast(static_cast<event::MousePress*>(we)->getMouseButton()) == Input::paint)
             {
+                //copy image to undo image
+                auto copyCommand = copyAttachmentToImage.request("paint", &undoImage, vk::Rect2D({0, 0}, {C_WIDTH, C_HEIGHT}));
+
                 pos.x = we->getX() / vars.swapWidthFloat;
                 pos.y = we->getY() / vars.swapHeightFloat;
                 pos = vars.fragInput.xform * pos;
                 brushPosX = pos.x;
                 brushPosY = pos.y;
                 auto cmd = pool.request(vars.paintCmdId, 1);
+                pushCmd(std::move(copyCommand));
                 pushCmd(std::move(cmd));
-                event->isHandled();
                 mouseDown = true;
                 return;
             }
@@ -324,7 +328,9 @@ Painter::Painter(StateArgs sa, Callbacks cb) :
         {"paint", opcast(Op::paint)},
         {"save_attachment_to_png", opcast(Op::saveAttachmentToPng)}
     }},
-    paint{sa, {}, painterVars},
+    paint{sa, {
+        [this](){ paintActive = false; }
+    }, painterVars, copyAttachmentToImage, undoImage},
     resizeBrush{sa, {
         [this](){ displayCanvas(); }
     }, painterVars},
@@ -335,7 +341,11 @@ Painter::Painter(StateArgs sa, Callbacks cb) :
     sr{sa.rg},
     saveAttachment{sa, {}},
     saveSwap{sa, {}},
-    copyAttachment(render::CommandPool_t<2>(
+    copyAttachmentToImage(render::CommandPool_t<2>(
+                sa.ct.getDevice(),
+                sa.ct.getTransferQueue(0),
+                sa.ct.getTransferQueueFamilyIndex())),
+    copyImageToAttachment(render::CommandPool_t<2>(
                 sa.ct.getDevice(),
                 sa.ct.getTransferQueue(0),
                 sa.ct.getTransferQueueFamilyIndex())),
@@ -358,7 +368,7 @@ void Painter::handleEvent(event::Event* event)
         switch(opcast<Op>(*option))
         {
             case Op::initBasic: initBasic(); break;
-            case Op::paint: pushState(&paint); break;
+            case Op::paint: pushState(&paint); paintActive = true; break;
             case Op::brushResize: pushState(&resizeBrush); break;
             case Op::saveAttachmentToPng: pushState(&saveAttachment); break;
         }
@@ -389,10 +399,11 @@ void Painter::handleEvent(event::Event* event)
                 event->setHandled();
                 return;
             }
-            if (inputCast(kp->getKey()) == Input::copyImage)
+            if (inputCast(kp->getKey()) == Input::copyImageToAttachment)
             {
-                auto cmd = copyAttachment.request("paint", vk::Rect2D({0, 0}, {C_WIDTH, C_HEIGHT}), &undoImage);
+                auto cmd = copyImageToAttachment.request(&undoImage, "paint", vk::Rect2D({0, 0}, {C_WIDTH, C_HEIGHT}));
                 pushCmd(std::move(cmd));
+                pushCmd(cp.render.request(1, 0));
                 event->setHandled();
                 return;
             }
