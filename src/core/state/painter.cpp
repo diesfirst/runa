@@ -220,7 +220,7 @@ void ResizeBrush::handleEvent(event::Event* event)
 
 Paint::Paint(StateArgs sa, Callbacks cb, PainterVars& vars, CopyAttachmentToImage& cati, render::Image& undoImage) :
     LeafState{sa, cb}, pool{sa.cp.render}, brushPosX{vars.fragInput.brushX}, brushPosY{vars.fragInput.brushY},
-    vars{vars}, copyAttachmentToImage{cati}, undoImage{undoImage}
+    vars{vars}, copyAttachmentToImage{cati}, undoImage{undoImage}, paintSamples{vars.paintSamples}
 {
 }
 
@@ -253,7 +253,20 @@ void Paint::handleEvent(event::Event* event)
                 pos = vars.fragInput.xform * pos;
                 brushPosX = pos.x;
                 brushPosY = pos.y;
-                auto cmd = pool.request(vars.paintCmdId, 1, std::array<int, 5>{0});
+
+                paintSamples.samples[paintSamples.count] = {pos.x, pos.y};
+                paintSamples.count++;
+
+                SWD_DEBUG_MSG("brushPosX " << brushPosX);
+                SWD_DEBUG_MSG("brushPosY " << brushPosY);
+                SWD_DEBUG_MSG("paintSamples.count " << paintSamples.count);
+                SWD_DEBUG_MSG("samples: ");
+                for (int i = 0; i < paintSamples.count; i++) {
+                    SWD_DEBUG_MSG("x: " << paintSamples.samples[i].x <<
+                            " y: " << paintSamples.samples[i].y);
+                }
+
+                auto cmd = pool.request(vars.paintCmdId, 2, std::array<int, 5>{0, 1});
                 pushCmd(std::move(copyCommand));
                 pushCmd(std::move(cmd));
                 mouseDown = true;
@@ -472,6 +485,7 @@ void Painter::initBasic()
     pushCmd(cp.updateFrameSamplers.request(std::vector<std::string>{"paint", "paint_clear"}, 1));
     pushCmd(cp.bindUboData.request(&painterVars.fragInput, sizeof(FragmentInput), 0));
     pushCmd(cp.bindUboData.request(&painterVars.paintSamples, sizeof(PaintSamples), 1));
+    SWD_DEBUG_MSG("Sizeof PaintSamples: " << sizeof(PaintSamples));
     pushCmd(cp.recordRenderCommand.request(sr.recordRenderCommand->reportCallback(), 0, std::vector<uint32_t>{0, 2}));
     pushCmd(cp.recordRenderCommand.request(sr.recordRenderCommand->reportCallback(), 1, std::vector<uint32_t>{1, 2}));
     pushCmd(cp.recordRenderCommand.request(sr.recordRenderCommand->reportCallback(), 2, std::vector<uint32_t>{2}));

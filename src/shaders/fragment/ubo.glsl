@@ -11,6 +11,6 @@ layout(set = 0, binding = 0) uniform uboBuf
     float brushX;
     float brushY;
     int sampleId;
-    int null2;
+    int null2; //for padding the xform
     mat4 xform;
 } ubo;

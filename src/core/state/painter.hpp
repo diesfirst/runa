@@ -58,8 +58,9 @@ struct PaintSample
 
 struct PaintSamples
 {
-    int count;
-    PaintSample samples[50]; //specifying 50 for now
+    int count{0};
+    int null;
+    PaintSample samples[48]; //specifying 50 for now
 };
 
 struct Matrices
@@ -170,6 +171,7 @@ private:
     glm::vec4 pos{0, 0, 1., 1.};
     float& brushPosX;
     float& brushPosY;
+    PaintSamples& paintSamples;
     const PainterVars& vars;
     bool mouseDown{false};
     CopyAttachmentToImage& copyAttachmentToImage;

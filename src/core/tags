@@ -506,7 +506,6 @@ copyImageToImage	render/command.cpp	/^void CommandBuffer::copyImageToImage(vk::I
 copySwapToHost	render/renderer.cpp	/^BufferBlock* Renderer::copySwapToHost()$/;"	f	class:sword::render::Renderer
 copyTo	types/region.hpp	/^    void copyTo(void* src, int size)$/;"	f	class:sword::Region
 corpPool	state/renderpassmanager.hpp	/^    CommandPool<command::CreateOffscreenRenderpass>& corpPool;$/;"	m	class:sword::state::CreateRenderPass
-count	state/painter.hpp	/^    int count;$/;"	m	struct:sword::state::painter::PaintSamples
 cp	state/director.hpp	/^    CommandPools& cp;$/;"	m	class:sword::state::QuickSetup
 cp	state/director.hpp	/^    CommandPools& cp;$/;"	m	class:sword::state::final
 cp	state/painter.hpp	/^    CommandPools& cp;$/;"	m	class:sword::state::painter::final
@@ -965,6 +964,7 @@ name	state/report.hpp	/^    const std::string name;$/;"	m	class:sword::state::At
 name	state/report.hpp	/^    const std::string name;$/;"	m	class:sword::state::DescriptorSetLayoutReport
 name	state/report.hpp	/^    std::string name;$/;"	m	class:sword::state::PipelineLayoutReport
 normCoords	event/dispatcher.cpp	/^float normCoords(int16_t windowCoord, int16_t extent)$/;"	f	namespace:sword::event
+null	state/painter.hpp	/^    int null;$/;"	m	struct:sword::state::painter::PaintSamples
 null2	state/painter.hpp	/^    float null2;$/;"	m	struct:sword::state::painter::FragmentInput
 offscreen	render/renderer.hpp	/^enum class TargetType {offscreen, swapchain};$/;"	m	class:sword::render::TargetType
 offscreenDim	application.hpp	/^    vk::Extent2D offscreenDim;$/;"	m	class:sword::Application
@@ -1125,6 +1125,7 @@ paint	state/painter.hpp	/^    Paint paint;$/;"	m	class:sword::state::painter::fi
 paint	state/painter.hpp	/^    enum class Op : Option {initBasic, paint, brushResize, saveAttachmentToPng};$/;"	m	class:sword::state::painter::final::Op
 paintCmdId	state/painter.hpp	/^    int paintCmdId;$/;"	m	struct:sword::state::painter::PainterVars
 paintSamples	state/painter.hpp	/^    PaintSamples paintSamples;$/;"	m	struct:sword::state::painter::PainterVars
+paintSamples	state/painter.hpp	/^    PaintSamples& paintSamples;$/;"	m	class:sword::state::painter::Paint
 painter	state/director.hpp	/^    enum class Op : Option {painter, pushRenderManager, printHierarchy, quickSetup, quickSetup2, quickSetup3};$/;"	m	class:sword::state::final::Op
 painter	state/director.hpp	/^    painter::Painter painter;$/;"	m	class:sword::state::final
 painter	state/painter.cpp	/^namespace painter$/;"	n	namespace:sword::state	file:
@@ -1349,7 +1350,7 @@ runCommandLineLoop	event/dispatcher.cpp	/^void EventDispatcher::runCommandLineLo
 runWindowInputLoop	event/dispatcher.cpp	/^void EventDispatcher::runWindowInputLoop()$/;"	f	class:sword::event::EventDispatcher
 sampledImages	application.hpp	/^    std::vector<const render::Image*> sampledImages;$/;"	m	class:sword::Application
 sampler	render/resource.hpp	/^    vk::UniqueSampler sampler;$/;"	m	class:sword::render::final
-samples	state/painter.hpp	/^    PaintSample samples[50]; \/\/specifying 50 for now$/;"	m	struct:sword::state::painter::PaintSamples
+samples	state/painter.hpp	/^    PaintSample samples[48]; \/\/specifying 50 for now$/;"	m	struct:sword::state::painter::PaintSamples
 saveAttachment	state/painter.hpp	/^    SaveAttachment saveAttachment;$/;"	m	class:sword::state::painter::final
 saveAttachmentToPng	command/commandpools.hpp	/^    CommandPool<command::SaveAttachmentToPng> saveAttachmentToPng;$/;"	m	struct:sword::CommandPools
 saveSwap	state/painter.hpp	/^    SaveSwap saveSwap;$/;"	m	class:sword::state::painter::final
