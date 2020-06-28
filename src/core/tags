@@ -862,6 +862,7 @@ imagePtrs	command/rendercommands.hpp	/^    std::vector<const vk::Image*> imagePt
 imageViews	render/swapchain.hpp	/^	std::vector<vk::UniqueImageView> imageViews;$/;"	m	class:sword::render::Swapchain
 images	render/attachment.hpp	/^    std::vector<std::unique_ptr<Image>> images;$/;"	m	class:sword::render::Attachment
 images	render/swapchain.hpp	/^	std::vector<vk::Image> images;$/;"	m	class:sword::render::Swapchain
+index	command/rendercommands.hpp	/^    int index;$/;"	m	class:sword::command::BindUboData
 initBasic	state/painter.cpp	/^void Painter::initBasic()$/;"	f	class:sword::state::painter::Input::Painter	file:
 initBasic	state/painter.hpp	/^    enum class Op : Option {initBasic, paint, brushResize, saveAttachmentToPng};$/;"	m	class:sword::state::painter::final::Op
 initFrameUBOs	state/descriptormanager.hpp	/^    enum class Op : Option {createFrameDescriptorSets, printReports, descriptorSetLayoutMgr, initFrameUBOs, updateFrameSamplers};$/;"	m	class:sword::state::final::Op
@@ -1390,7 +1391,8 @@ set	command/rendercommands.hpp	/^    void set(std::string name, int x, int y, vk
 set	command/rendercommands.hpp	/^    void set(std::string name, vk::AttachmentLoadOp op) {rpassName = name; loadOp = op;}$/;"	f	class:sword::command::CreateOffscreenRenderpass
 set	command/rendercommands.hpp	/^    void set(std::vector<const vk::Image*> imagePtrs, uint32_t b) { this->imagePtrs = imagePtrs; binding = b;}$/;"	f	class:sword::command::UpdateFrameSamplers
 set	command/rendercommands.hpp	/^    void set(std::vector<std::string> attachmentsNamesArg, uint32_t b) { this->attachmentNames = attachmentsNamesArg; binding = b;}$/;"	f	class:sword::command::UpdateFrameSamplers
-set	command/rendercommands.hpp	/^    void set(void* address, int size) { this->address = address, this->size = size; }$/;"	f	class:sword::command::BindUboData
+set	command/rendercommands.hpp	/^    void set(void* address, int size) { $/;"	f	class:sword::command::BindUboData
+set	command/rendercommands.hpp	/^    void set(void* address, int size, int index) { $/;"	f	class:sword::command::BindUboData
 set	command/saveimage.hpp	/^    void set( const std::string_view attachmentName, const std::string_view fileName, int offset_x, int offset_y, int width, int height, bool fullPath = false ) $/;"	f	class:sword::command::SaveAttachmentToPng
 set	command/saveimage.hpp	/^    void set( const std::string_view name) { fileName = name; }$/;"	f	class:sword::command::SaveSwapToPng
 set	command/saveimage.hpp	/^    void set(Region* region, std::string_view attachmentName, int offset_x, int offset_y, int width, int height ) $/;"	f	class:sword::command::CopyAttachmentToUndoStack

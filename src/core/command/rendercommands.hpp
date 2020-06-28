@@ -262,11 +262,15 @@ class BindUboData : public Command
 public:
     void execute(Application* app) override;
     const char* getName() const override {return "BindUboData";};
-    void set(void* address, int size) { this->address = address, this->size = size; }
+    void set(void* address, int size) { 
+        this->address = address, this->size = size; this->index = 0; }
+    void set(void* address, int size, int index) { 
+        this->address = address, this->size = size; this->index = index; }
     state::Report* makeReport() const override {return nullptr;}
 private:
     void* address;
     int size;
+    int index;
 };
 
 class UpdateFrameSamplers : public Command

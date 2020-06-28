@@ -235,7 +235,7 @@ state::Report* CreatePipelineLayout::makeReport() const
 
 void BindUboData::execute(Application* app)
 {
-    app->renderer.bindUboData(address, size, 0);
+    app->renderer.bindUboData(address, size, index);
 }
 
 

@@ -29,7 +29,7 @@ Renderer::Renderer(Context& context) :
     createDescriptorPool();
     createHostBuffer(100000000); //arbitrary for now. 100MB
     hostBuffer->map();
-    ubos.resize(1);
+    ubos.resize(2);
 }
 
 Renderer::~Renderer()

@@ -468,8 +468,10 @@ void Painter::initBasic()
     pushCmd(cp.createRenderLayer.request(sr.createRenderLayer->reportCallback(), "paint_clear", "paint_clear", "brush_static"));
     pushCmd(cp.createRenderLayer.request(sr.createRenderLayer->reportCallback(), "swap", "swap", "comp"));
     pushCmd(cp.addFrameUniformBuffer.request(sizeof(FragmentInput), 0));
+    pushCmd(cp.addFrameUniformBuffer.request(sizeof(PaintSamples), 2));
     pushCmd(cp.updateFrameSamplers.request(std::vector<std::string>{"paint", "paint_clear"}, 1));
-    pushCmd(cp.bindUboData.request(&painterVars.fragInput, sizeof(FragmentInput)));
+    pushCmd(cp.bindUboData.request(&painterVars.fragInput, sizeof(FragmentInput), 0));
+    pushCmd(cp.bindUboData.request(&painterVars.paintSamples, sizeof(PaintSamples), 1));
     pushCmd(cp.recordRenderCommand.request(sr.recordRenderCommand->reportCallback(), 0, std::vector<uint32_t>{0, 2}));
     pushCmd(cp.recordRenderCommand.request(sr.recordRenderCommand->reportCallback(), 1, std::vector<uint32_t>{1, 2}));
     pushCmd(cp.recordRenderCommand.request(sr.recordRenderCommand->reportCallback(), 2, std::vector<uint32_t>{2}));
