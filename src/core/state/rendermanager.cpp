@@ -41,7 +41,7 @@ Render::Render(StateArgs sa, Callbacks cb) :
 
 void Render::onEnterExt()
 {
-    std::cout << "Enter a render command index and 0 or 1 based on whether or not to update ubo" << std::endl;
+    std::cout << "Enter a render command index" << '\n';
 }
 
 void Render::handleEvent(event::Event* event)
@@ -50,8 +50,7 @@ void Render::handleEvent(event::Event* event)
     {
         auto ce = toCommandLine(event);
         auto commandIndex = ce->getArg<int, 0>();
-        auto updateUbo = ce->getArg<bool, 1>();
-        auto cmd = pool.request(reportCallback(), commandIndex, updateUbo);
+        auto cmd = pool.request(reportCallback(), commandIndex);
         pushCmd(std::move(cmd));
         popSelf();
         event->setHandled();
@@ -256,7 +255,7 @@ void RenderManager::rerecordRenderCommand(RenderCommandReport* report)
 
 void RenderManager::renderCmd(int cmdIndex, bool updateUbo)
 {
-    auto cmd = renderPool.request(cmdIndex, updateUbo);
+    auto cmd = renderPool.request(cmdIndex);
     pushCmd(std::move(cmd));
 }
 

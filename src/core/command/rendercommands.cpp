@@ -217,7 +217,7 @@ state::Report* RecordRenderCommand::makeReport() const
 
 void Render::execute(Application* app)
 {
-    app->renderer.render(renderCommandId, updateUBO);
+    app->renderer.render(renderCommandId, uboCount, ubosToUpdate);
     success();
 }
 

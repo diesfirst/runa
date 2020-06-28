@@ -43,7 +43,8 @@ public:
     void addRenderLayer(RenderLayer&&);
     void addRenderLayer(const RenderPass&, const GraphicsPipeline&, const vk::Device& device);
     void clearRenderPassInstances();
-    BufferBlock* bufferBlock;
+    void addUniformBufferBlock(BufferBlock*);
+    BufferBlock* getUniformBufferBlock(int index);
 
 private:
     std::unique_ptr<Attachment> swapchainAttachment;
@@ -53,6 +54,7 @@ private:
     vk::UniqueFence fence;
     vk::UniqueSemaphore semaphore;
     std::vector<vk::UniqueDescriptorSet> descriptorSets;
+    std::vector<BufferBlock*> uniformBufferBlocks;
     void updateDescriptorSet(uint32_t setId, const std::vector<vk::WriteDescriptorSet>);
     uint32_t width;
     uint32_t height;

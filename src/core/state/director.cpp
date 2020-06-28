@@ -34,7 +34,7 @@ void QuickSetup::onEnterExt()
     pushCmd(cp.createGraphicsPipeline.request(sr.createGraphicsPipeline->reportCallback(), "pipe", "layout", "triangle.spv", "simpleFrag.spv", "swap", vk::Rect2D({0, 0}, {500, 500}), false));
     pushCmd(cp.createRenderLayer.request(sr.createRenderLayer->reportCallback(), "swap", "swap", "pipe"));
     pushCmd(cp.recordRenderCommand.request(0, std::vector<uint32_t>({0})));
-    pushCmd(cp.render.request(0, 0));
+    pushCmd(cp.render.request(0));
     popSelf();
 }
 
@@ -135,7 +135,7 @@ void Director::quickSetup2()
     pushCmd(cp.createGraphicsPipeline.request(sr.createGraphicsPipeline->reportCallback(), "pipe_red", "layout", "triangle.spv", "red", "swap", vk::Rect2D({0, 0}, {200, 200}), false));
     pushCmd(cp.createRenderLayer.request(sr.createRenderLayer->reportCallback(), "swap", "swap", "pipe_red"));
     pushCmd(cp.recordRenderCommand.request(sr.recordRenderCommand->reportCallback(), 0, std::vector<uint32_t>({0, 1})));
-    pushCmd(cp.render.request(0, 0));
+    pushCmd(cp.render.request(0));
     deactivate(opcast(Op::quickSetup2));
     deactivate(opcast(Op::quickSetup));
     deactivate(opcast(Op::quickSetup3));

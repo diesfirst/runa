@@ -373,6 +373,7 @@ addReport	state/state.hpp	/^    static void addReport(Report* ptr, std::vector<s
 addSubpassDependency	render/renderpass.cpp	/^void RenderPass::addSubpassDependency(vk::SubpassDependency d)$/;"	f	class:sword::render::RenderPass
 addToVocab	state/state.hpp	/^    void addToVocab(std::string word) { State::addToVocab(word); }$/;"	f	class:sword::state::LeafState
 addToVocab	state/state.hpp	/^    void addToVocab(std::string word) { vocab.push_back(word); }$/;"	f	class:sword::state::State
+addUniformBufferBlock	render/renderframe.cpp	/^void RenderFrame::addUniformBufferBlock(BufferBlock* block)$/;"	f	class:sword::render::RenderFrame
 addVocab	event/dispatcher.cpp	/^void EventDispatcher::addVocab(const state::Vocab* vptr)$/;"	f	class:sword::event::EventDispatcher
 addWatch	event/filewatcher.cpp	/^bool FileWatcher::addWatch(const char* path_str)$/;"	f	class:sword::event::FileWatcher
 address	command/rendercommands.hpp	/^    void* address;$/;"	m	class:sword::command::BindUboData
@@ -426,7 +427,6 @@ brushSize	state/painter.hpp	/^    float& brushSize;$/;"	m	class:sword::state::pa
 brushStaticCmd	state/painter.hpp	/^    int brushStaticCmd;$/;"	m	struct:sword::state::painter::PainterVars
 brushX	state/painter.hpp	/^    float brushX; \/\/mouseX in canvas space$/;"	m	struct:sword::state::painter::FragmentInput
 brushY	state/painter.hpp	/^    float brushY; \/\/mouseY in canvas space$/;"	m	struct:sword::state::painter::FragmentInput
-bufferBlock	render/renderframe.hpp	/^    BufferBlock* bufferBlock;$/;"	m	class:sword::render::RenderFrame
 bufferBlocks	render/resource.hpp	/^    std::vector<std::unique_ptr<BufferBlock>> bufferBlocks;$/;"	m	class:sword::render::final
 build	state/shader.hpp	/^    constexpr const char* build = SHADER_DIR;$/;"	m	namespace:sword::state::shader_dir
 button	event/event.hpp	/^    symbol::MouseButton button;$/;"	m	class:sword::event::symbol::MouseButton
@@ -787,6 +787,7 @@ getSwapExtent	render/renderer.cpp	/^vk::Extent2D Renderer::getSwapExtent()$/;"	f
 getTransferQueue	render/context.cpp	/^vk::Queue Context::getTransferQueue(int index) const$/;"	f	class:sword::render::Context
 getTransferQueueFamilyIndex	render/context.hpp	/^    uint32_t getTransferQueueFamilyIndex() const { return transferQueueInfo->familyIndex; }$/;"	f	class:sword::render::Context
 getType	state/report.hpp	/^    ReportType getType() const {return ReportType::PipelineLayout;}$/;"	f	class:sword::state::PipelineLayoutReport
+getUniformBufferBlock	render/renderframe.cpp	/^BufferBlock* RenderFrame::getUniformBufferBlock(int index) $/;"	f	class:sword::render::RenderFrame
 getUsage	state/report.hpp	/^    ReportUsage getUsage() const {return usage;}$/;"	f	class:sword::state::Report
 getUsageFlags	render/swapchain.cpp	/^vk::ImageUsageFlags Swapchain::getUsageFlags()$/;"	f	class:sword::render::Swapchain
 getVertShader	state/report.hpp	/^    const std::string_view getVertShader() const { return vertshader; }$/;"	f	class:sword::state::GraphicsPipelineReport
@@ -1263,7 +1264,7 @@ render	render/dependencygraph.hpp	/^namespace render$/;"	n	namespace:sword
 render	render/pipeline.cpp	/^namespace render$/;"	n	namespace:sword	file:
 render	render/pipeline.hpp	/^namespace render$/;"	n	namespace:sword
 render	render/renderer.cpp	/^namespace render$/;"	n	namespace:sword	file:
-render	render/renderer.cpp	/^void Renderer::render(uint32_t cmdId, bool updateUbo)$/;"	f	class:sword::render::Renderer
+render	render/renderer.cpp	/^void Renderer::render(uint32_t cmdId, int count, const std::array<int, 5>& ubosToUpdate)$/;"	f	class:sword::render::Renderer
 render	render/renderer.hpp	/^namespace render$/;"	n	namespace:sword
 render	render/renderframe.cpp	/^namespace render$/;"	n	namespace:sword	file:
 render	render/renderframe.hpp	/^namespace render$/;"	n	namespace:sword
@@ -1365,7 +1366,8 @@ serialize	event/event.hpp	/^   void serialize(std::ofstream& os) $/;"	f	class:sw
 set	command/command.hpp	/^    template <typename... Args> void set(Args... args) {}$/;"	f	class:sword::command::Command
 set	command/recordrendercommand.hpp	/^    inline void set(int index, std::vector<uint32_t> renderpassInstances)$/;"	f	class:sword::command::RecordRenderCommand
 set	command/render.hpp	/^    void set() {}$/;"	f	class:render
-set	command/rendercommands.hpp	/^    inline void set(int renderCommandId, bool updateUBO)$/;"	f	class:sword::command::Render
+set	command/rendercommands.hpp	/^    inline void set(int renderCommandId)$/;"	f	class:sword::command::Render
+set	command/rendercommands.hpp	/^    inline void set(int renderCommandId, int uboCount, std::array<int, 5> ubosToUpdate)$/;"	f	class:sword::command::Render
 set	command/rendercommands.hpp	/^    inline void set(std::string n, std::vector<vk::DescriptorSetLayoutBinding> b) $/;"	f	class:sword::command::CreateDescriptorSetLayout
 set	command/rendercommands.hpp	/^    inline void set(std::string name, ShaderType t, int first, int second) {$/;"	f	class:sword::command::SetSpecInt
 set	command/rendercommands.hpp	/^    inline void set(std::vector<std::string> layouts) {layoutnames = layouts;}$/;"	f	class:sword::command::CreateFrameDescriptorSets
@@ -1642,10 +1644,12 @@ type	state/report.hpp	/^    Type type;$/;"	m	class:sword::state::RenderPassRepor
 type	state/shader.hpp	/^    shader::SpecType type;$/;"	m	class:sword::state::SetSpec
 typeToString	state/report.hpp	/^    inline std::string typeToString() const$/;"	f	class:sword::state::RenderPassReport
 ubos	render/renderer.hpp	/^    std::vector<Ubo> ubos;$/;"	m	class:sword::render::Renderer
+ubosToUpdate	command/rendercommands.hpp	/^    std::array<int, 5> ubosToUpdate;$/;"	m	class:sword::command::Render
 undoImage	state/painter.cpp	/^    undoImage(sa.ct.getDevice(),$/;"	f	class:sword::state::painter::Input	file:
 undoImage	state/painter.hpp	/^    render::Image undoImage;$/;"	m	class:sword::state::painter::final
 undoImage	state/painter.hpp	/^    render::Image& undoImage;$/;"	m	class:sword::state::painter::Paint
 undoStack	command/saveimage.hpp	/^    Region* undoStack;$/;"	m	class:sword::command::CopyAttachmentToUndoStack
+uniformBufferBlocks	render/renderframe.hpp	/^    std::vector<BufferBlock*> uniformBufferBlocks;$/;"	m	class:sword::render::RenderFrame
 unmap	render/resource.cpp	/^void Buffer::unmap()$/;"	f	class:sword::render::Buffer
 unserialize	event/event.hpp	/^    inline void unserialize(std::ifstream& is) {$/;"	f	class:sword::event::symbol::CommandLine
 unserializeCategory	event/event.hpp	/^    inline static Category unserializeCategory(std::ifstream& is)$/;"	f	class:sword::event::symbol::Event

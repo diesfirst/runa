@@ -88,7 +88,7 @@ public:
     const std::string attachment, const std::string renderpass,
     const std::string pipeline);
     void clearRenderLayers();
-    void render(uint32_t cmdId, bool updateUbo);
+    void render(uint32_t cmdId, int count, const std::array<int, 5>& ubosToUpdate); //5 is the max number of ubos we can have
     void popBufferBlock();
     void listAttachments() const;
     void listVertShaders() const;

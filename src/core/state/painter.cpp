@@ -58,7 +58,7 @@ void Rotate::handleEvent(event::Event *event)
             angle = angleScale * (we->getX() / vars.swapWidthFloat - initX + we->getY() / vars.swapHeightFloat - initY);
             scaleRot = scaleRotCache * vars.matrices.translate * glm::rotate(glm::mat4(1.), angle, {0, 0, 1.}) * glm::inverse(vars.matrices.translate);
             updateXform(xform, vars.matrices);
-            auto cmd = renderPool.request(vars.viewCmdId, 1);
+            auto cmd = renderPool.request(vars.viewCmdId, 1, std::array<int, 5>{0});
             pushCmd(std::move(cmd));
             event->setHandled();
             return;
@@ -102,7 +102,7 @@ void Scale::handleEvent(event::Event *event)
             glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.), glm::vec3(scale, scale, 1.));
             scaleRot = scaleRotCache * vars.matrices.translate * scaleMatrix * glm::inverse(vars.matrices.translate);
             updateXform(xform, vars.matrices);
-            auto cmd = renderPool.request(vars.viewCmdId, 1);
+            auto cmd = renderPool.request(vars.viewCmdId, 1, std::array<int, 5>{0});
             pushCmd(std::move(cmd));
             event->setHandled();
             return;
@@ -145,7 +145,7 @@ void Translate::handleEvent(event::Event *event)
             updateXform(xform, vars.matrices);
             SWD_DEBUG_MSG("xform: " << glm::to_string(vars.fragInput.xform));
             SWD_DEBUG_MSG("viewCmd: " << vars.viewCmdId);
-            auto cmd = renderPool.request(vars.viewCmdId, 1);
+            auto cmd = renderPool.request(vars.viewCmdId, 1, std::array<int, 5>{0});
             pushCmd(std::move(cmd));
             event->setHandled();
             return;
@@ -190,7 +190,7 @@ void ResizeBrush::handleEvent(event::Event* event)
             diff *= 20;
             brushSize = initBrushSize + diff;
 
-            auto cmd = renderPool.request(vars.brushStaticCmd, 1);
+            auto cmd = renderPool.request(vars.brushStaticCmd, 1, std::array<int, 5>{0});
             pushCmd(std::move(cmd));
 
             event->setHandled();
@@ -236,7 +236,7 @@ void Paint::handleEvent(event::Event* event)
             pos = vars.fragInput.xform * pos;
             brushPosX = pos.x;
             brushPosY = pos.y;
-            auto cmd = pool.request(vars.paintCmdId, 1);
+            auto cmd = pool.request(vars.paintCmdId, 1, std::array<int, 5>{0});
             pushCmd(std::move(cmd));
             event->isHandled();
             return;
@@ -253,7 +253,7 @@ void Paint::handleEvent(event::Event* event)
                 pos = vars.fragInput.xform * pos;
                 brushPosX = pos.x;
                 brushPosY = pos.y;
-                auto cmd = pool.request(vars.paintCmdId, 1);
+                auto cmd = pool.request(vars.paintCmdId, 1, std::array<int, 5>{0});
                 pushCmd(std::move(copyCommand));
                 pushCmd(std::move(cmd));
                 mouseDown = true;
@@ -403,7 +403,7 @@ void Painter::handleEvent(event::Event* event)
             {
                 auto cmd = copyImageToAttachment.request(&undoImage, "paint", vk::Rect2D({0, 0}, {C_WIDTH, C_HEIGHT}));
                 pushCmd(std::move(cmd));
-                pushCmd(cp.render.request(1, 0));
+                pushCmd(cp.render.request(1));
                 event->setHandled();
                 return;
             }
@@ -476,13 +476,13 @@ void Painter::initBasic()
     pushCmd(cp.openWindow.request(sr.openWindow->reportCallback()));
     pushCmd(cp.watchFile.request("fragment/brush/simple.frag"));
 
-    pushCmd(cp.render.request(1, 0));
-    pushCmd(cp.render.request(1, 0));
-    pushCmd(cp.render.request(1, 0));
+    pushCmd(cp.render.request(1));
+    pushCmd(cp.render.request(1));
+    pushCmd(cp.render.request(1));
 
-    pushCmd(cp.render.request(0, 0));
-    pushCmd(cp.render.request(0, 0));
-    pushCmd(cp.render.request(0, 0));
+    pushCmd(cp.render.request(0));
+    pushCmd(cp.render.request(0));
+    pushCmd(cp.render.request(0));
 
     painterVars.paintCmdId = 0;
     painterVars.viewCmdId = 2;
@@ -498,7 +498,7 @@ void Painter::initBasic()
 void Painter::displayCanvas()
 {
     painterVars.fragInput.sampleIndex = 0;
-    auto cmd = cp.render.request(painterVars.viewCmdId, 1);
+    auto cmd = cp.render.request(painterVars.viewCmdId, 1, std::array<int, 5>{0});
     pushCmd(std::move(cmd));
 }
 

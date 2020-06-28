@@ -107,6 +107,17 @@ const std::vector<vk::UniqueDescriptorSet>& RenderFrame::getDescriptorSets() con
 	return descriptorSets;
 }
 
+void RenderFrame::addUniformBufferBlock(BufferBlock* block)
+{
+    uniformBufferBlocks.push_back(block);
+}
+
+BufferBlock* RenderFrame::getUniformBufferBlock(int index) 
+{
+    assert(index < uniformBufferBlocks.size());
+    return uniformBufferBlocks[index];
+}
+
 }; // namespace render
 
 }; // namespace sword

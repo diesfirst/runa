@@ -119,7 +119,7 @@ void Renderer::initFrameUBOs(size_t size, uint32_t binding)
         bw.setDstBinding(binding);
         bw.setPBufferInfo(&bi);
         device.updateDescriptorSets(bw, nullptr);
-        frame.bufferBlock = block;
+        frame.addUniformBufferBlock(block);
     }
 }
 
@@ -470,15 +470,17 @@ void Renderer::clearRenderLayers()
     }
 }
 
-void Renderer::render(uint32_t cmdId, bool updateUbo)
+void Renderer::render(uint32_t cmdId, int count, const std::array<int, 5>& ubosToUpdate)
 {
 	auto& renderBuffer = beginFrame(cmdId);
 	assert(renderBuffer.isRecorded() && "Render buffer is not recorded");
 
     waitOnCommandBuffer(renderBuffer, device);
 
-    if (updateUbo)
-	    updateFrameDescriptorBuffer(activeFrameIndex, 0);
+    for (int i = 0; i < count; i++) 
+    {
+	    updateFrameDescriptorBuffer(activeFrameIndex, ubosToUpdate[i]);
+    }
 
 	//renderBuffer.waitForFence();
 	auto submissionCompleteSemaphore = renderBuffer.submit(
@@ -568,7 +570,7 @@ const std::string Renderer::createPipelineLayout(const std::string name, const s
 
 void Renderer::updateFrameDescriptorBuffer(uint32_t frameIndex, uint32_t uboIndex)
 {
-	auto block = hostBuffer->bufferBlocks[frameIndex].get();
+	auto block = frames[frameIndex].getUniformBufferBlock(uboIndex);
     assert(block->isMapped && "Block not mapped!");
 	auto pHostMemory = block->pHostMemory;
 	memcpy(pHostMemory, ubos.at(uboIndex).data, ubos.at(uboIndex).size);

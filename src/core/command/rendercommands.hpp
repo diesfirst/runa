@@ -285,14 +285,21 @@ class Render : public Command
 {
 public:
     CMD_BASE("render");
-    inline void set(int renderCommandId, bool updateUBO)
+    inline void set(int renderCommandId)
     {
         this->renderCommandId = renderCommandId;
-        this->updateUBO = updateUBO;
+        this->uboCount = 0;
+    }
+    inline void set(int renderCommandId, int uboCount, std::array<int, 5> ubosToUpdate)
+    {
+        this->renderCommandId = renderCommandId;
+        this->uboCount = uboCount;
+        this->ubosToUpdate = ubosToUpdate;
     }
 private:
     int renderCommandId{0};
-    bool updateUBO{false};
+    int uboCount{0};
+    std::array<int, 5> ubosToUpdate;
 };
 
 
