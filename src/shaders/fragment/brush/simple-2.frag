@@ -22,6 +22,13 @@ layout(set = 0, binding = 2) uniform sampleArray
 #define WIDTH 1600
 #define HEIGHT 1600
 
+vec4 over(vec4 A, vec4 B)
+{
+    float alpha = A.a + B.a * ( 1.0 - A.a );
+    vec3 res = (A.rgb + B.rgb * ( 1.0 - A.a));
+    return vec4(res, alpha);
+}
+
 void main()
 {
 	vec4 color = vec4(0.);
@@ -33,14 +40,9 @@ void main()
         float y = samples.samples[i].y;
         vec2 mCoords = vec2(x, y);
         thisColor += fill_aa(circleNormSDF(st - mCoords), ubo.brushSize * .0025, 0.005);
-        thisColor *= vec4(1, 0, 0, 1);
-        color += thisColor;
+        thisColor *= vec4(.8, .2, .5, 1);
+        color = over(thisColor, color);
     }
-    vec2 mCoords = vec2(ubo.brushX, ubo.brushY);
-    vec4 thisColor = vec4(0.);
-    thisColor += fill_aa(circleNormSDF(st - mCoords), ubo.brushSize * .0025, 0.005);
-    thisColor *= vec4(0, 1, 0, 1);
-    color += thisColor;
 //    color *= 0.05;
 //    color.rgb *= color.a;
 	outColor = color;

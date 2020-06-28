@@ -103,7 +103,6 @@ private:
     glm::mat4& xform;
     glm::mat4& scaleRot;
     const PainterVars& vars;
-    CommandPool<command::Render>& renderPool;
 };
 
 class Scale : public LeafState
@@ -119,7 +118,6 @@ private:
     glm::mat4 scaleRotCache;
     glm::mat4& scaleRot;
     glm::mat4& xform;
-    CommandPool<command::Render>& renderPool;
 };
 
 class Translate : public LeafState
@@ -138,7 +136,6 @@ private:
     glm::vec4 initPos{0, 0, 0, 0};
 
     bool initial{false};
-    CommandPool<command::Render>& renderPool;
 };
 
 class ResizeBrush : public LeafState
@@ -149,7 +146,6 @@ public:
     void handleEvent(event::Event*) override;
 private:
     void onEnterExt() override;
-    CommandPool<command::Render>& renderPool;
     float& brushPosX;
     float& brushPosY;
     float startingDist{0};
@@ -167,7 +163,6 @@ public:
     const char* getName() const override { return "Paint"; }
     void handleEvent(event::Event*) override;
 private:
-    CommandPool<command::Render>& pool;
     glm::vec4 pos{0, 0, 1., 1.};
     float& brushPosX;
     float& brushPosY;
@@ -206,6 +201,8 @@ public:
     const char* getName() const override { return "Painter"; }
     void handleEvent(event::Event*) override;
     Painter(StateArgs, Callbacks);
+    void beginFrame();
+    void endFrame();
 private:
     enum class Op : Option {initBasic, paint, brushResize, saveAttachmentToPng};
 
@@ -227,6 +224,7 @@ private:
     render::Image undoImage;
 
     bool paintActive{false};
+    bool initialized{false};
 
     CommandPools& cp;
     const state::Register& sr;

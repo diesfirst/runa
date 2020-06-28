@@ -67,6 +67,8 @@ enum class Category : uint8_t
     Abort,
     File,
     Nothing,
+    BeginFrame,
+    EndFrame
 };
 
 class Event
@@ -128,8 +130,22 @@ public:
 class Nothing : public Event
 {
 public:
-   inline Category getCategory() const override {return Category::Nothing;} 
-   inline std::string getName() const override {return "Nothing";}
+   Category getCategory() const override {return Category::Nothing;} 
+   std::string getName() const override {return "Nothing";}
+};
+
+class BeginFrame : public Event
+{
+public:
+   constexpr Category getCategory() const override {return Category::BeginFrame;}
+   std::string getName() const override {return "BeginFrame";}
+};
+
+class EndFrame : public Event
+{
+public:
+   constexpr Category getCategory() const override {return Category::EndFrame;}
+   std::string getName() const override {return "EndFrame";}
 };
 
 class CommandLine: public Event

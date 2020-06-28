@@ -154,7 +154,6 @@ void EventDispatcher::fetchWindowInput()
     auto* event = window.waitForEvent();
     assert (event);
     EventPtr curEvent;
-    SWD_DEBUG_MSG("XCB key response_type: " << uint32_t(event->response_type));
 	switch (static_cast<WindowEventType>(event->response_type))
 	{
         case WindowEventType::Motion: 

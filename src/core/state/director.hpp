@@ -34,6 +34,8 @@ public:
     const char* getName() const override { return "director"; }
     void handleEvent(event::Event*) override;
     Director(StateArgs, const StateStack& ss, render::Window& window);
+    void beginFrame() { painter.beginFrame(); }
+    void endFrame() { painter.endFrame(); }
 
 private:
     enum class Op : Option {painter, pushRenderManager, printHierarchy, quickSetup, quickSetup2, quickSetup3};

@@ -22,6 +22,8 @@ Attachment	state/report.hpp	/^    Attachment,$/;"	m	class:sword::state::ReportTy
 AttachmentReport	state/report.hpp	/^    AttachmentReport(const std::string n, const int w, const int h, vk::ImageUsageFlags f) :$/;"	f	class:sword::state::AttachmentReport
 AttachmentReport	state/report.hpp	/^class AttachmentReport : public Report$/;"	c	namespace:sword::state
 B	event/event.hpp	/^    B = 56,$/;"	m	class:sword::event::symbol::Key
+BeginFrame	event/event.hpp	/^    BeginFrame,$/;"	m	class:sword::event::symbol::Category
+BeginFrame	event/event.hpp	/^class BeginFrame : public Event$/;"	c	namespace:sword::event::symbol
 BindUboData	command/rendercommands.hpp	/^class BindUboData : public Command$/;"	c	namespace:sword::command
 BranchState	state/state.hpp	/^    BranchState(StateArgs sa, Callbacks cb, std::initializer_list<Element> ops) :$/;"	f	class:sword::state::BranchState
 BranchState	state/state.hpp	/^class BranchState : public State$/;"	c	namespace:sword::state
@@ -98,6 +100,7 @@ EVENT_FILEWATCHER_HPP	event/filewatcher.hpp	2;"	d
 EVENT_TYPES_HPP	event/types.hpp	2;"	d
 EVENT_WATCHER_HPP	event/watcher.hpp	2;"	d
 EditStack	state/editstack.hpp	/^class EditStack $/;"	c	namespace:sword::state
+EndFrame	event/event.hpp	/^class EndFrame : public Event$/;"	c	namespace:sword::event::symbol
 EnterWindow	event/event.hpp	/^    EnterWindow = 7,$/;"	m	class:sword::event::symbol::WindowEventType
 Esc	event/event.hpp	/^    Esc = 9,$/;"	m	class:sword::event::symbol::Key
 Event	event/event.hpp	/^class Event$/;"	c	namespace:sword::event::symbol
@@ -405,7 +408,11 @@ begin	state/editstack.hpp	/^    auto begin() const { return stack.begin(); }$/;"
 begin	types/map.hpp	/^    auto begin()$/;"	f	class:sword::SmallMap
 begin	types/stack.hpp	/^    auto begin() const {return this->items.rbegin();}$/;"	f	class:sword::ReverseStack
 begin	types/stack.hpp	/^    auto begin() {return this->items.begin();}$/;"	f	class:sword::ForwardStack
+beginFrame	application.cpp	/^void Application::beginFrame()$/;"	f	class:sword::Application
 beginFrame	render/renderer.cpp	/^CommandBuffer& Renderer::beginFrame(uint32_t cmdId)$/;"	f	class:sword::render::Renderer
+beginFrame	state/director.hpp	/^    void beginFrame() { painter.beginFrame(); }$/;"	f	class:sword::state::final
+beginFrame	state/painter.cpp	/^void Painter::beginFrame()$/;"	f	class:sword::state::painter::Input::Painter	file:
+beginFramePool	application.hpp	/^    event::EventPool<event::BeginFrame, 2> beginFramePool;$/;"	m	class:sword::Application
 beginRenderPass	render/command.cpp	/^void CommandBuffer::beginRenderPass(vk::RenderPassBeginInfo& info)$/;"	f	class:sword::render::CommandBuffer
 bindDescriptorSets	render/command.cpp	/^void CommandBuffer::bindDescriptorSets($/;"	f	class:sword::render::CommandBuffer
 bindGraphicsPipeline	render/command.cpp	/^void CommandBuffer::bindGraphicsPipeline(const vk::Pipeline& pipeline)$/;"	f	class:sword::render::CommandBuffer
@@ -615,6 +622,7 @@ dirState	application.hpp	/^    state::Director dirState;$/;"	m	class:sword::Appl
 dispatcher	application.hpp	/^    event::EventDispatcher dispatcher;$/;"	m	class:sword::Application
 dispatcher	render/context.hpp	/^    vk::DispatchLoaderDynamic dispatcher;$/;"	m	class:sword::render::Context
 displayCanvas	state/painter.cpp	/^void Painter::displayCanvas()$/;"	f	class:sword::state::painter::Input::Painter	file:
+drainEventQueue	application.cpp	/^void Application::drainEventQueue()$/;"	f	class:sword::Application
 drawVerts	render/command.cpp	/^void CommandBuffer::drawVerts(uint32_t vertCount, uint32_t firstVertex)$/;"	f	class:sword::render::CommandBuffer
 editStack	state/state.hpp	/^    EditStack& editStack;$/;"	m	class:sword::state::BranchState
 editStack	state/state.hpp	/^    EditStack& editStack;$/;"	m	class:sword::state::LeafState
@@ -626,6 +634,10 @@ end	types/map.hpp	/^    auto end()$/;"	f	class:sword::SmallMap
 end	types/stack.hpp	/^    auto end() const {return this->items.rend();}$/;"	f	class:sword::ReverseStack
 end	types/stack.hpp	/^    auto end() {return this->items.end();}$/;"	f	class:sword::ForwardStack
 end	util.hpp	/^void Timer::end(const std::string& funcName)$/;"	f	class:sword::Timer
+endFrame	application.cpp	/^void Application::endFrame()$/;"	f	class:sword::Application
+endFrame	state/director.hpp	/^    void endFrame() { painter.endFrame(); }$/;"	f	class:sword::state::final
+endFrame	state/painter.cpp	/^void Painter::endFrame()$/;"	f	class:sword::state::painter::Input::Painter	file:
+endFramePool	application.hpp	/^    event::EventPool<event::EndFrame, 2> endFramePool;$/;"	m	class:sword::Application
 endRenderPass	render/command.cpp	/^void CommandBuffer::endRenderPass()$/;"	f	class:sword::render::CommandBuffer
 endTime	util.hpp	/^    std::chrono::time_point<std::chrono::high_resolution_clock> startTime, endTime;$/;"	m	class:sword::Timer
 es	state/state.hpp	/^    EditStack& es;$/;"	m	struct:sword::state::StateArgs
@@ -673,6 +685,7 @@ execute	command/vocab.cpp	/^void PopVocab::execute(Application* app)$/;"	f	class
 execute	command/vocab.cpp	/^void SetVocab::execute(Application* app)$/;"	f	class:sword::command::SetVocab
 execute	command/vocab.cpp	/^void UpdateVocab::execute(Application* app)$/;"	f	class:sword::command::UpdateVocab
 execute	command/watcher.cpp	/^void WatchFile::execute(Application* app) $/;"	f	class:sword::command::WatchFile
+executeCommands	application.cpp	/^void Application::executeCommands()$/;"	f	class:sword::Application
 extent	render/attachment.hpp	/^    vk::Extent2D extent;$/;"	m	class:sword::render::Attachment
 extent	render/resource.hpp	/^    vk::Extent3D extent;$/;"	m	class:sword::render::final
 extent	render/swapchain.hpp	/^	vk::Extent2D extent;$/;"	m	class:sword::render::Swapchain
@@ -1152,7 +1165,6 @@ pollEvents	event/dispatcher.cpp	/^void EventDispatcher::pollEvents()$/;"	f	class
 pollEvents	render/surface/window.cpp	/^xcb_generic_event_t* Window::pollEvents() const$/;"	f	class:sword::render::Window
 pool	state/descriptormanager.hpp	/^    CommandPool<command::AddFrameUniformBuffer>& pool;$/;"	m	class:sword::state::InitFrameUbos
 pool	state/descriptormanager.hpp	/^    CommandPool<command::UpdateFrameSamplers>& pool;$/;"	m	class:sword::state::UpdateFrameSamplers
-pool	state/painter.hpp	/^    CommandPool<command::Render>& pool;$/;"	m	class:sword::state::painter::Paint
 pool	state/painter.hpp	/^    CommandPool<command::SaveAttachmentToPng>& pool;$/;"	m	class:sword::state::painter::SaveAttachment
 pool	state/painter.hpp	/^    CommandPool<command::SaveSwapToPng>& pool;$/;"	m	class:sword::state::painter::SaveSwap
 pool	state/pipelinemanager.hpp	/^    CommandPool<command::CreateGraphicsPipeline>& pool;$/;"	m	class:sword::state::CreateGraphicsPipeline
@@ -1303,10 +1315,6 @@ renderPass	render/pipeline.hpp	/^    const RenderPass& renderPass;$/;"	m	class:s
 renderPass	render/renderlayer.hpp	/^    const RenderPass& renderPass;$/;"	m	class:sword::render::RenderLayer
 renderPassManager	state/rendermanager.hpp	/^        descriptorManager, renderPassManager, pipelineManager, createRenderLayer, recordRenderCommand};$/;"	m	class:sword::state::final::Op
 renderPasses	render/renderer.hpp	/^    std::unordered_map<std::string, RenderPass> renderPasses;$/;"	m	class:sword::render::Renderer
-renderPool	state/painter.hpp	/^    CommandPool<command::Render>& renderPool;$/;"	m	class:sword::state::painter::ResizeBrush
-renderPool	state/painter.hpp	/^    CommandPool<command::Render>& renderPool;$/;"	m	class:sword::state::painter::Rotate
-renderPool	state/painter.hpp	/^    CommandPool<command::Render>& renderPool;$/;"	m	class:sword::state::painter::Scale
-renderPool	state/painter.hpp	/^    CommandPool<command::Render>& renderPool;$/;"	m	class:sword::state::painter::Translate
 renderPool	state/rendermanager.hpp	/^    CommandPool<command::Render>& renderPool;$/;"	m	class:sword::state::final
 renderTarget	render/renderlayer.hpp	/^    const Attachment& renderTarget;$/;"	m	class:sword::render::RenderLayer
 renderer	application.hpp	/^    render::Renderer renderer;$/;"	m	class:sword::Application

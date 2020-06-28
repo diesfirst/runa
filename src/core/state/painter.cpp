@@ -36,8 +36,7 @@ void updateXform(glm::mat4& xform, const Matrices& mats)
 }
 
 Rotate::Rotate(StateArgs sa, Callbacks cb, PainterVars& vars) :
-    LeafState{sa, cb}, vars{vars}, scaleRot{vars.matrices.scaleRotate}, xform{vars.fragInput.xform},
-    renderPool{sa.cp.render}
+    LeafState{sa, cb}, vars{vars}, scaleRot{vars.matrices.scaleRotate}, xform{vars.fragInput.xform}
 {
 }
 
@@ -58,8 +57,6 @@ void Rotate::handleEvent(event::Event *event)
             angle = angleScale * (we->getX() / vars.swapWidthFloat - initX + we->getY() / vars.swapHeightFloat - initY);
             scaleRot = scaleRotCache * vars.matrices.translate * glm::rotate(glm::mat4(1.), angle, {0, 0, 1.}) * glm::inverse(vars.matrices.translate);
             updateXform(xform, vars.matrices);
-            auto cmd = renderPool.request(vars.viewCmdId, 1, std::array<int, 5>{0});
-            pushCmd(std::move(cmd));
             event->setHandled();
             return;
         }
@@ -77,8 +74,7 @@ void Rotate::handleEvent(event::Event *event)
 }
 
 Scale::Scale(StateArgs sa, Callbacks cb, PainterVars& vars) :
-    LeafState{sa, cb}, vars{vars}, xform{vars.fragInput.xform}, scaleRot{vars.matrices.scaleRotate},
-    renderPool{sa.cp.render}
+    LeafState{sa, cb}, vars{vars}, xform{vars.fragInput.xform}, scaleRot{vars.matrices.scaleRotate}
 {
 }
 
@@ -102,8 +98,6 @@ void Scale::handleEvent(event::Event *event)
             glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.), glm::vec3(scale, scale, 1.));
             scaleRot = scaleRotCache * vars.matrices.translate * scaleMatrix * glm::inverse(vars.matrices.translate);
             updateXform(xform, vars.matrices);
-            auto cmd = renderPool.request(vars.viewCmdId, 1, std::array<int, 5>{0});
-            pushCmd(std::move(cmd));
             event->setHandled();
             return;
         }
@@ -117,8 +111,7 @@ void Scale::handleEvent(event::Event *event)
 }
 
 Translate::Translate(StateArgs sa, Callbacks cb, PainterVars& vars) : 
-    LeafState{sa, cb}, translate{vars.matrices.translate}, xform{vars.fragInput.xform}, vars{vars},
-    renderPool{sa.cp.render}
+    LeafState{sa, cb}, translate{vars.matrices.translate}, xform{vars.fragInput.xform}, vars{vars}
 {}
 
 void Translate::onEnterExt()
@@ -145,8 +138,6 @@ void Translate::handleEvent(event::Event *event)
             updateXform(xform, vars.matrices);
             SWD_DEBUG_MSG("xform: " << glm::to_string(vars.fragInput.xform));
             SWD_DEBUG_MSG("viewCmd: " << vars.viewCmdId);
-            auto cmd = renderPool.request(vars.viewCmdId, 1, std::array<int, 5>{0});
-            pushCmd(std::move(cmd));
             event->setHandled();
             return;
         }
@@ -160,7 +151,7 @@ void Translate::handleEvent(event::Event *event)
 }
 
 ResizeBrush::ResizeBrush(StateArgs sa, Callbacks cb, PainterVars& vars) :
-    LeafState{sa, cb}, renderPool{sa.cp.render}, 
+    LeafState{sa, cb}, 
     brushSize{vars.fragInput.brushSize}, brushPosX{vars.fragInput.brushX}, brushPosY{vars.fragInput.brushY},
     vars{vars}
 {}
@@ -190,9 +181,6 @@ void ResizeBrush::handleEvent(event::Event* event)
             diff *= 20;
             brushSize = initBrushSize + diff;
 
-            auto cmd = renderPool.request(vars.brushStaticCmd, 1, std::array<int, 5>{0});
-            pushCmd(std::move(cmd));
-
             event->setHandled();
             return;
         }
@@ -219,7 +207,7 @@ void ResizeBrush::handleEvent(event::Event* event)
 }
 
 Paint::Paint(StateArgs sa, Callbacks cb, PainterVars& vars, CopyAttachmentToImage& cati, render::Image& undoImage) :
-    LeafState{sa, cb}, pool{sa.cp.render}, brushPosX{vars.fragInput.brushX}, brushPosY{vars.fragInput.brushY},
+    LeafState{sa, cb}, brushPosX{vars.fragInput.brushX}, brushPosY{vars.fragInput.brushY},
     vars{vars}, copyAttachmentToImage{cati}, undoImage{undoImage}, paintSamples{vars.paintSamples}
 {
 }
@@ -236,8 +224,19 @@ void Paint::handleEvent(event::Event* event)
             pos = vars.fragInput.xform * pos;
             brushPosX = pos.x;
             brushPosY = pos.y;
-            auto cmd = pool.request(vars.paintCmdId, 1, std::array<int, 5>{0});
-            pushCmd(std::move(cmd));
+
+            paintSamples.samples[paintSamples.count] = {pos.x, pos.y};
+            paintSamples.count++;
+
+            SWD_DEBUG_MSG("brushPosX " << brushPosX);
+            SWD_DEBUG_MSG("brushPosY " << brushPosY);
+            SWD_DEBUG_MSG("paintSamples.count " << paintSamples.count);
+            SWD_DEBUG_MSG("samples: ");
+            for (int i = 0; i < paintSamples.count; i++) {
+                SWD_DEBUG_MSG("x: " << paintSamples.samples[i].x <<
+                        " y: " << paintSamples.samples[i].y);
+            }
+
             event->isHandled();
             return;
         }
@@ -266,9 +265,7 @@ void Paint::handleEvent(event::Event* event)
                             " y: " << paintSamples.samples[i].y);
                 }
 
-                auto cmd = pool.request(vars.paintCmdId, 2, std::array<int, 5>{0, 1});
                 pushCmd(std::move(copyCommand));
-                pushCmd(std::move(cmd));
                 mouseDown = true;
                 return;
             }
@@ -509,6 +506,8 @@ void Painter::initBasic()
     activate(opcast(Op::brushResize));
     activate(opcast(Op::saveAttachmentToPng));
     updateVocab();
+
+    initialized = true;
 }
 
 void Painter::displayCanvas()
@@ -516,6 +515,21 @@ void Painter::displayCanvas()
     painterVars.fragInput.sampleIndex = 0;
     auto cmd = cp.render.request(painterVars.viewCmdId, 1, std::array<int, 5>{0});
     pushCmd(std::move(cmd));
+}
+
+void Painter::beginFrame()
+{
+    if (initialized)
+        painterVars.paintSamples.count = 0;
+}
+
+void Painter::endFrame()
+{
+    if (initialized)
+    {
+        auto cmd = cp.render.request(painterVars.paintCmdId, 2, std::array<int, 5>{0, 1});
+        pushCmd(std::move(cmd));
+    }
 }
 
 

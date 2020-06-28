@@ -48,7 +48,6 @@ public:
     template <typename... Args> 
     Pointer request(Args... args)
     {
-        std::cout << "Called first pool" << '\n';
         for (int i = 0; i < Size; i++) 
             if (pool[i].isAvailable())
             {
@@ -63,7 +62,6 @@ public:
     template <typename... Args> 
     Pointer request(std::function<void(state::Report*)> reportCb, Args... args) //requires IsCommand<T>
     {
-        std::cout << "Called second pool request" << std::endl;
         for (int i = 0; i < Size; i++) 
             if (pool[i].isAvailable())
             {
