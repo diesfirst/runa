@@ -51,7 +51,6 @@ private:
 
 	bool swapchainCreated = false;
 	void initSyncObjects();
-	void setImageCount(const uint32_t count = 2);
 	void setQueueFamilyIndex();
 	void createSurface();
 	void setSurfaceCapabilities();

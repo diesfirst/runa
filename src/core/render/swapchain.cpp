@@ -82,11 +82,6 @@ void Swapchain::setPresentMode()
 	presentMode = vk::PresentModeKHR::eImmediate;
 }
 
-void Swapchain::setImageCount(const uint32_t count)
-{
-	imageCount = count;
-}
-
 void Swapchain::createSwapchain()
 {
 	vk::SwapchainCreateInfoKHR createInfo;

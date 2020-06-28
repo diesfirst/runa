@@ -1411,7 +1411,6 @@ setDeviceExtensions	render/context.cpp	/^void Context::setDeviceExtensions(vk::D
 setEvents	render/surface/window.cpp	/^void Window::setEvents()$/;"	f	class:sword::render::Window
 setFormat	render/swapchain.cpp	/^void Swapchain::setFormat()$/;"	f	class:sword::render::Swapchain
 setHandled	event/event.hpp	/^    inline void setHandled() {handled = true;}$/;"	f	class:sword::event::symbol::Event
-setImageCount	render/swapchain.cpp	/^void Swapchain::setImageCount(const uint32_t count)$/;"	f	class:sword::render::Swapchain
 setImages	render/swapchain.cpp	/^void Swapchain::setImages()$/;"	f	class:sword::render::Swapchain
 setInputMode	event/dispatcher.hpp	/^    inline void setInputMode(InputMode mode) {inputMode = mode;}$/;"	f	class:sword::event::EventDispatcher
 setMaskPtr	state/vocab.hpp	/^    void setMaskPtr( OptionMask* ptr ) { mask = ptr; }$/;"	f	class:sword::state::Vocab
@@ -1525,6 +1524,7 @@ swapchain	state/renderpassmanager.hpp	/^enum class RenderPassType : uint8_t {swa
 swapchain	state/report.hpp	/^    enum class Type : uint8_t {swapchain, offscreen}; $/;"	m	class:sword::state::RenderPassReport::Type
 swapchainAttachment	render/renderframe.hpp	/^    std::unique_ptr<Attachment> swapchainAttachment;$/;"	m	class:sword::render::RenderFrame
 swapchainCreated	render/swapchain.hpp	/^	bool swapchainCreated = false;$/;"	m	class:sword::render::Swapchain
+swapchainImageCount	render/renderer.cpp	/^static constexpr int swapchainImageCount = 2;$/;"	m	namespace:sword::render	file:
 sword	application.cpp	/^namespace sword$/;"	n	file:
 sword	application.hpp	/^namespace sword$/;"	n
 sword	command/command.hpp	/^namespace sword$/;"	n

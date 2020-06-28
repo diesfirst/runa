@@ -14,6 +14,8 @@ namespace sword
 namespace render
 {
 
+static constexpr int swapchainImageCount = 2;
+
 Renderer::Renderer(Context& context) :
 	context{context},
 	device{context.getDevice()},
@@ -35,8 +37,7 @@ Renderer::~Renderer()
 
 void Renderer::prepareRenderFrames(Window& window)
 {
-	swapchain = std::make_unique<Swapchain>(context, window, 3); 
-	//we hardcode 3 swap images
+	swapchain = std::make_unique<Swapchain>(context, window, swapchainImageCount); 
     auto& swapchainImages = swapchain->getImages();
 	for (auto& imageHandle : swapchainImages) 
 	{
