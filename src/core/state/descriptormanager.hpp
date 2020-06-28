@@ -31,7 +31,7 @@ public:
     InitFrameUbos(StateArgs);
 private:
     void onEnterExt() override;
-    CommandPool<command::InitFrameUbos>& pool;
+    CommandPool<command::AddFrameUniformBuffer>& pool;
 };
 
 class UpdateFrameSamplers : public LeafState

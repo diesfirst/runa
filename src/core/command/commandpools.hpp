@@ -29,7 +29,7 @@ struct CommandPools
     CommandPool<command::CreateRenderLayer> createRenderLayer;
     CommandPool<command::RecordRenderCommand> recordRenderCommand;
     CommandPool<command::CreateFrameDescriptorSets> createFrameDescriptorSets;
-    CommandPool<command::InitFrameUbos> initFrameUbos;
+    CommandPool<command::AddFrameUniformBuffer> addFrameUniformBuffer;
     CommandPool<command::UpdateFrameSamplers> updateFrameSamplers;
     CommandPool<command::Render> render;
     CommandPool<command::CompileShader> compileShader;

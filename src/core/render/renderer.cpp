@@ -102,7 +102,7 @@ void Renderer::createOwnDescriptorSets(const std::vector<std::string>setLayoutNa
 	descriptorSets = device.allocateDescriptorSetsUnique(ai);
 }
 
-void Renderer::initFrameUBOs(size_t size, uint32_t binding)
+void Renderer::addFrameUniformBuffer(size_t size, uint32_t binding)
 {
     for (auto& frame : frames) 
     {

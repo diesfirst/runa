@@ -35,7 +35,7 @@ void CreateFrameDescriptorSets::handleEvent(event::Event* event)
 }
 
 InitFrameUbos::InitFrameUbos(StateArgs sa) :
-    LeafState{sa, {}}, pool{sa.cp.initFrameUbos}
+    LeafState{sa, {}}, pool{sa.cp.addFrameUniformBuffer}
 {}
 
 void InitFrameUbos::onEnterExt()

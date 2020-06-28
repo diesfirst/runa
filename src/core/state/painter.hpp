@@ -56,6 +56,12 @@ struct PaintSample
     float y;
 };
 
+struct PaintSamples
+{
+    int count;
+    PaintSample samples[50]; //specifying 50 for now
+};
+
 struct Matrices
 {
     glm::mat4 toCanvasSpace = glm::scale(glm::mat4(1.), glm::vec3(cMapX, cMapY, 1.0)); 
@@ -72,6 +78,7 @@ struct PainterVars
     float swapHeightFloat{S_HEIGHT};
     Matrices matrices;
     FragmentInput fragInput; //should be an array
+    PaintSamples paintSamples;
     int paintCmdId;
     int viewCmdId;
     int brushStaticCmd;

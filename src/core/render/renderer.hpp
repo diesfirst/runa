@@ -59,7 +59,7 @@ public:
     void prepareRenderFrames(Window& window);
     void createFrameDescriptorSets(const std::vector<std::string>setLayoutNames);
     void createOwnDescriptorSets(const std::vector<std::string>setLayoutNames);
-    void initFrameUBOs(size_t size, uint32_t binding);
+    void addFrameUniformBuffer(size_t size, uint32_t binding);
     void updateFrameSamplers(const vk::ImageView*, const vk::Sampler*, uint32_t binding);
     void updateFrameSamplers(const std::vector<const Image*>&, uint32_t binding);
     void updateFrameSamplers(const std::vector<std::string>& attachmentNames, uint32_t binding);

@@ -247,7 +247,7 @@ private:
     std::vector<std::string> layoutnames;
 };
 
-class InitFrameUbos : public Command
+class AddFrameUniformBuffer : public Command
 {
 public:
     CMD_BASE("initFrameUbos");

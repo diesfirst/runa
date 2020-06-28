@@ -106,9 +106,9 @@ state::Report* CreateDescriptorSetLayout::makeReport() const
     return new state::DescriptorSetLayoutReport(name, bindings);
 }
 
-void InitFrameUbos::execute(Application* app)
+void AddFrameUniformBuffer::execute(Application* app)
 {
-    app->renderer.initFrameUBOs(size, binding);
+    app->renderer.addFrameUniformBuffer(size, binding);
     success();
 }
 
