@@ -435,7 +435,7 @@ void Painter::handleEvent(event::Event* event)
 
 void Painter::initBasic()
 {
-    std::vector<vk::DescriptorSetLayoutBinding> bindings(2);
+    std::vector<vk::DescriptorSetLayoutBinding> bindings(3);
     bindings[0].setDescriptorType(vk::DescriptorType::eUniformBuffer);
     bindings[0].setBinding(0);
     bindings[0].setStageFlags(vk::ShaderStageFlagBits::eFragment);
@@ -444,11 +444,15 @@ void Painter::initBasic()
     bindings[1].setDescriptorType(vk::DescriptorType::eCombinedImageSampler);
     bindings[1].setDescriptorCount(2);
     bindings[1].setStageFlags(vk::ShaderStageFlagBits::eFragment);
+    bindings[2].setDescriptorType(vk::DescriptorType::eUniformBuffer);
+    bindings[2].setBinding(2);
+    bindings[2].setStageFlags(vk::ShaderStageFlagBits::eFragment);
+    bindings[2].setDescriptorCount(1);
 
     pushCmd(cp.addAttachment.request("paint", C_WIDTH, C_HEIGHT, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc));
     pushCmd(cp.addAttachment.request("paint_clear", C_WIDTH, C_HEIGHT, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled));
     pushCmd(cp.loadVertShader.request(sr.loadVertShaders->reportCallback(), "fullscreen_tri.spv"));
-    pushCmd(cp.compileShader.request(sr.compileShader->reportCallback(), "fragment/brush/simple.frag", "spot"));
+    pushCmd(cp.compileShader.request(sr.compileShader->reportCallback(), "fragment/brush/simple-2.frag", "spot"));
     pushCmd(cp.compileShader.request(sr.compileShader->reportCallback(), "fragment/simple_comp.frag", "comp"));
     pushCmd(cp.prepareRenderFrames.request(sr.prepareRenderFrames->reportCallback()));
     pushCmd(cp.createDescriptorSetLayout.request(sr.createDescriptorSetLayout->reportCallback(), "foo", bindings));

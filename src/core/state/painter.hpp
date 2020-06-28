@@ -50,6 +50,12 @@ struct FragmentInput
     glm::mat4 xform{1.};
 };
 
+struct PaintSample
+{
+    float x;
+    float y;
+};
+
 struct Matrices
 {
     glm::mat4 toCanvasSpace = glm::scale(glm::mat4(1.), glm::vec3(cMapX, cMapY, 1.0)); 

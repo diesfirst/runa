@@ -6,22 +6,22 @@ namespace sword
 namespace state
 {
 
-SetStateType::SetStateType(StateArgs sa, Callbacks cb, vk::DescriptorSetLayoutBinding* const & binding) :
+SetDescriptorType::SetDescriptorType(StateArgs sa, Callbacks cb, vk::DescriptorSetLayoutBinding* const & binding) :
     LeafState{sa, cb},
     options{
         {"uniform_buffer", vk::DescriptorType::eUniformBuffer},
-        {"combinded_image_sampler", vk::DescriptorType::eCombinedImageSampler}
+        {"combinded_image_sampler", vk::DescriptorType::eCombinedImageSampler},
     },
     binding{binding}
 {}
 
-void SetStateType::onEnterExt()
+void SetDescriptorType::onEnterExt()
 {
     std::cout << "Enter a descriptor type" << std::endl;
     setVocab(options.getKeys());
 }
 
-void SetStateType::handleEvent(event::Event* event)
+void SetDescriptorType::handleEvent(event::Event* event)
 {
     if (event->getCategory() == event::Category::CommandLine)
     {

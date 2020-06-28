@@ -475,10 +475,11 @@ void Renderer::render(uint32_t cmdId, bool updateUbo)
 	auto& renderBuffer = beginFrame(cmdId);
 	assert(renderBuffer.isRecorded() && "Render buffer is not recorded");
 
+    waitOnCommandBuffer(renderBuffer, device);
+
     if (updateUbo)
 	    updateFrameDescriptorBuffer(activeFrameIndex, 0);
 
-    waitOnCommandBuffer(renderBuffer, device);
 	//renderBuffer.waitForFence();
 	auto submissionCompleteSemaphore = renderBuffer.submit(
 			imageAcquiredSemaphore, 

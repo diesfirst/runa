@@ -12,13 +12,13 @@ namespace sword
 namespace state
 {
 
-class SetStateType : public LeafState
+class SetDescriptorType : public LeafState
 {
 public:
-    const char* getName() const override { return "SetStateType"; }
+    const char* getName() const override { return "SetDescriptorType"; }
     void handleEvent(event::Event*) override;
-    virtual ~SetStateType() = default;   
-    SetStateType(StateArgs, Callbacks, vk::DescriptorSetLayoutBinding* const &);
+    virtual ~SetDescriptorType() = default;   
+    SetDescriptorType(StateArgs, Callbacks, vk::DescriptorSetLayoutBinding* const &);
     vk::DescriptorSetLayoutBinding* const & binding;
 private:
     void onEnterExt() override;
@@ -79,7 +79,7 @@ public:
 private:
     enum class Op : Option {createBinding, createDescriptorSetLayout, printReports};
 
-    SetStateType setStateType;
+    SetDescriptorType setStateType;
     SetDescriptorCount setDescriptorCount;
     SetShaderStageEntry setShaderStageEntry;
     CreateDescriptorSetLayout createDescriptorSetLayout;
