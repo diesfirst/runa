@@ -4,6 +4,7 @@
 #include <event/event.hpp>
 #include <state/state.hpp>
 #include <thread>
+#include <util/debug.hpp>
 
 namespace sword
 {
@@ -110,6 +111,8 @@ void Application::drainEventQueue()
             for (auto state : stateStack) 
             {
                 state->handleEvent(event.get());
+                SWD_DEBUG_MSG("State: " << state->getName());
+                assert(event);
                 if (event->isHandled()) 
                     break;
             }

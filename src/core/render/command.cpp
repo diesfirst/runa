@@ -193,7 +193,7 @@ vk::Semaphore CommandBuffer::submit(
     si.setPWaitDstStageMask(&waitMask);
 
     //device.resetFences(1, &fence);
-    fence.getOwner().resetFences(*fence);
+    //fence.getOwner().resetFences(*fence);
     queue.submit(si, fence.get());
     return *signalSemaphore;
 }

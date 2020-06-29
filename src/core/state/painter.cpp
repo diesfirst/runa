@@ -237,7 +237,7 @@ void Paint::handleEvent(event::Event* event)
                         " y: " << paintSamples.samples[i].y);
             }
 
-            event->isHandled();
+            event->setHandled();
             return;
         }
         if (we->getType() == event::WindowEventType::MousePress)
@@ -267,13 +267,14 @@ void Paint::handleEvent(event::Event* event)
 
                 pushCmd(std::move(copyCommand));
                 mouseDown = true;
+                event->setHandled();
                 return;
             }
         }
         if (we->getType() == event::WindowEventType::MouseRelease)
         {
             mouseDown = false;
-            event->isHandled();
+            event->setHandled();
             return;
         }
     }
@@ -282,6 +283,7 @@ void Paint::handleEvent(event::Event* event)
         mouseDown = false;
         popSelf();
         event->setHandled();
+        return;
     }
 }
 
