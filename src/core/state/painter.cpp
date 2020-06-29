@@ -519,8 +519,7 @@ void Painter::displayCanvas()
 
 void Painter::beginFrame()
 {
-    if (initialized)
-        painterVars.paintSamples.count = 0;
+    painterVars.paintSamples.count = 0;
 }
 
 void Painter::endFrame()
