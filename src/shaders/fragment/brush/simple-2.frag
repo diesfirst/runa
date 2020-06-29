@@ -43,7 +43,5 @@ void main()
         thisColor *= vec4(.8, .2, .5, 1);
         color = over(thisColor, color);
     }
-//    color *= 0.05;
-//    color.rgb *= color.a;
 	outColor = color;
 }
