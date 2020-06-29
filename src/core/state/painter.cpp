@@ -462,7 +462,7 @@ void Painter::initBasic()
     pushCmd(cp.addAttachment.request("paint", C_WIDTH, C_HEIGHT, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc));
     pushCmd(cp.addAttachment.request("paint_clear", C_WIDTH, C_HEIGHT, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled));
     pushCmd(cp.loadVertShader.request(sr.loadVertShaders->reportCallback(), "fullscreen_tri.spv"));
-    pushCmd(cp.compileShader.request(sr.compileShader->reportCallback(), "fragment/brush/simple-3.frag", "spot"));
+    pushCmd(cp.compileShader.request(sr.compileShader->reportCallback(), "fragment/brush/simple-2.frag", "spot"));
     pushCmd(cp.compileShader.request(sr.compileShader->reportCallback(), "fragment/simple_comp.frag", "comp"));
     pushCmd(cp.prepareRenderFrames.request(sr.prepareRenderFrames->reportCallback()));
     pushCmd(cp.createDescriptorSetLayout.request(sr.createDescriptorSetLayout->reportCallback(), "foo", bindings));

@@ -64,6 +64,10 @@ void main()
             nextCoord.x = samples.samples[i + 1].x;
             nextCoord.y = samples.samples[i + 1].y;
         }
+        else
+        {
+            //swap the coords around?
+        }
         color = over(colorWithInterp(thisCoord, nextCoord), color);
     }
 	outColor = color;
