@@ -28,6 +28,7 @@ constexpr uint32_t C_WIDTH = 1600;
 constexpr uint32_t C_HEIGHT = 1600;
 constexpr float cMapX = float(S_WIDTH) / float(C_WIDTH);
 constexpr float cMapY = float(S_HEIGHT) / float(C_HEIGHT);
+constexpr int maxPaintSamples = 50;
 
 // seems that bad things happen when sizeof(FragmentInput) is not a multiple of 4
 // TODO: we need to make sure we are not writing to this when a frame is not done
@@ -64,7 +65,7 @@ struct PaintSamples
     int null0{0};
     int null1{0};
     int null2{0};
-    PaintSample samples[16]; //specifying 50 for now
+    PaintSample samples[maxPaintSamples]; //specifying 50 for now
 };
 
 struct Matrices

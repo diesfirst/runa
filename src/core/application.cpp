@@ -111,19 +111,7 @@ void Application::drainEventQueue()
 
             for (auto state : stateStack) 
             {
-                if (!event)
-                {
-                    SWD_DEBUG_MSG("Event is null BEFORE being handled.");
-                }
-                else
-                {
-                    SWD_DEBUG_MSG("Event: " << event->getName());
-                }
                 state->handleEvent(event.get());
-                if (!event)
-                {
-                    SWD_DEBUG_MSG("State: " << state->getName());
-                }
                 if (event->isHandled()) 
                     break;
             }
@@ -213,7 +201,7 @@ void Application::run(bool pollEvents)
 
         executeCommands();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(15));
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
     if (readevents)
         is.close();

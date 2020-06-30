@@ -225,17 +225,9 @@ void Paint::handleEvent(event::Event* event)
             brushPosX = pos.x;
             brushPosY = pos.y;
 
+            assert (paintSamples.count < maxPaintSamples);
             paintSamples.samples[paintSamples.count] = {pos.x, pos.y};
             paintSamples.count++;
-
-            SWD_DEBUG_MSG("brushPosX " << brushPosX);
-            SWD_DEBUG_MSG("brushPosY " << brushPosY);
-            SWD_DEBUG_MSG("paintSamples.count " << paintSamples.count);
-            SWD_DEBUG_MSG("samples: ");
-            for (int i = 0; i < paintSamples.count; i++) {
-                SWD_DEBUG_MSG("x: " << paintSamples.samples[i].x <<
-                        " y: " << paintSamples.samples[i].y);
-            }
 
             event->setHandled();
             return;
@@ -253,17 +245,9 @@ void Paint::handleEvent(event::Event* event)
                 brushPosX = pos.x;
                 brushPosY = pos.y;
 
+                assert (paintSamples.count < maxPaintSamples);
                 paintSamples.samples[paintSamples.count] = {pos.x, pos.y};
                 paintSamples.count++;
-
-                SWD_DEBUG_MSG("brushPosX " << brushPosX);
-                SWD_DEBUG_MSG("brushPosY " << brushPosY);
-                SWD_DEBUG_MSG("paintSamples.count " << paintSamples.count);
-                SWD_DEBUG_MSG("samples: ");
-                for (int i = 0; i < paintSamples.count; i++) {
-                    SWD_DEBUG_MSG("x: " << paintSamples.samples[i].x <<
-                            " y: " << paintSamples.samples[i].y);
-                }
 
                 pushCmd(std::move(copyCommand));
                 mouseDown = true;
@@ -540,6 +524,14 @@ void Painter::endFrame()
         {
             auto cmd = cp.render.request(painterVars.paintCmdId, 2, std::array<int, 5>{0, 1});
             pushCmd(std::move(cmd));
+//            auto& paintSamples = painterVars.paintSamples;
+//            SWD_DEBUG_MSG("paintSamples.count " << paintSamples.count);
+//            SWD_DEBUG_MSG("samples: ");
+//            for (int i = 0; i < paintSamples.count; i++) {
+//                SWD_DEBUG_MSG("x: " << paintSamples.samples[i].x <<
+//                        " y: " << paintSamples.samples[i].y);
+//            }
+//
         }
     }
 }

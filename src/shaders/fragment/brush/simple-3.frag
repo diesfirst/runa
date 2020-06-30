@@ -20,7 +20,7 @@ layout(set = 0, binding = 2) uniform sampleArray
     int null0;
     int null1;
     int null2;
-    PaintSample samples[48];
+    PaintSample samples[50];
 } samples;
 
 #define WIDTH 1600
@@ -35,7 +35,7 @@ vec4 over(vec4 A, vec4 B)
     return vec4(res, alpha);
 }
 
-vec4 colorWithInterp(vec2 sampleA, vec2 sampleB)
+vec4 colorWithInterp(vec2 sampleA, vec2 sampleB, vec3 rgb)
 { 
 	vec4 color = vec4(0.);
 	vec2 st = gl_FragCoord.xy / vec2(WIDTH, HEIGHT);
@@ -48,7 +48,7 @@ vec4 colorWithInterp(vec2 sampleA, vec2 sampleB)
         vec2 curSample = sampleA + AtoB * stepSize * i;
         vec4 thisColor = vec4(0.);
         thisColor += fill_aa(circleNormSDF(st - curSample), ubo.brushSize * .0025, 0.005);
-        thisColor *= vec4(.8, .2, .5, 1);
+        thisColor.rgb *= rgb;
         color = over(thisColor, color);
     }
     return color;
@@ -67,12 +67,24 @@ void main()
         {
             nextCoord.x = samples.samples[i + 1].x;
             nextCoord.y = samples.samples[i + 1].y;
+            if (i == 0)
+                color = over(colorWithInterp(thisCoord, nextCoord, vec3(1, 0, 0)), color);
+            else
+                color = over(colorWithInterp(thisCoord, nextCoord, vec3(1, 0, 0)), color);
         }
-        else
+        else if (i == samples.count - 1 && i > 0)
         {
+            float x = samples.samples[i - 1].x;
+            float y = samples.samples[i - 1].y;
+            vec2 lastCoord = vec2(x, y);
+            nextCoord = (thisCoord - lastCoord) + thisCoord;
+            color = over(colorWithInterp(thisCoord, nextCoord, vec3(1, 0, 0)), color);
             //swap the coords around?
         }
-        color = over(colorWithInterp(thisCoord, nextCoord), color);
+        else if (i == 0)
+        {
+            color = over(colorWithInterp(thisCoord, nextCoord, vec3(1, 0, 0)), color);
+        }
     }
 	outColor = color;
 }

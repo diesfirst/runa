@@ -958,6 +958,7 @@ map	state/state.hpp	/^    SmallMap<std::string, Option> map;$/;"	m	class:sword::
 mapEntries	render/shader.hpp	/^    std::vector<vk::SpecializationMapEntry> mapEntries;$/;"	m	class:sword::render::Shader
 mask	render/surface/window.hpp	/^	uint32_t mask = 0;$/;"	m	class:sword::render::Window
 matrices	state/painter.hpp	/^    Matrices matrices;$/;"	m	struct:sword::state::painter::PainterVars
+maxPaintSamples	state/painter.hpp	/^constexpr int maxPaintSamples = 50;$/;"	m	namespace:sword::state::painter
 maxSize	event/queue.hpp	/^    static constexpr int maxSize = 50;$/;"	m	class:sword::event::EventQueue
 max_item_count	types/region.hpp	/^    static constexpr int max_item_count = 10;$/;"	m	class:sword::Region
 memProps	render/resource.hpp	/^    const vk::PhysicalDeviceMemoryProperties& memProps;$/;"	m	class:sword::render::final
@@ -1360,7 +1361,7 @@ runCommandLineLoop	event/dispatcher.cpp	/^void EventDispatcher::runCommandLineLo
 runWindowInputLoop	event/dispatcher.cpp	/^void EventDispatcher::runWindowInputLoop()$/;"	f	class:sword::event::EventDispatcher
 sampledImages	application.hpp	/^    std::vector<const render::Image*> sampledImages;$/;"	m	class:sword::Application
 sampler	render/resource.hpp	/^    vk::UniqueSampler sampler;$/;"	m	class:sword::render::final
-samples	state/painter.hpp	/^    PaintSample samples[16]; \/\/specifying 50 for now$/;"	m	struct:sword::state::painter::PaintSamples
+samples	state/painter.hpp	/^    PaintSample samples[maxPaintSamples]; \/\/specifying 50 for now$/;"	m	struct:sword::state::painter::PaintSamples
 saveAttachment	state/painter.hpp	/^    SaveAttachment saveAttachment;$/;"	m	class:sword::state::painter::final
 saveAttachmentToPng	command/commandpools.hpp	/^    CommandPool<command::SaveAttachmentToPng> saveAttachmentToPng;$/;"	m	struct:sword::CommandPools
 saveSwap	state/painter.hpp	/^    SaveSwap saveSwap;$/;"	m	class:sword::state::painter::final
