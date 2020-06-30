@@ -52,15 +52,19 @@ struct FragmentInput
 
 struct PaintSample
 {
-    float x;
-    float y;
+    float x{0};
+    float y{0};
+    float fuck{0};
+    float you{0};
 };
 
 struct PaintSamples
 {
     int count{0};
-    int null;
-    PaintSample samples[48]; //specifying 50 for now
+    int null0{0};
+    int null1{0};
+    int null2{0};
+    PaintSample samples[16]; //specifying 50 for now
 };
 
 struct Matrices
@@ -224,6 +228,7 @@ private:
     render::Image undoImage;
 
     bool paintActive{false};
+    bool resizeActive{false};
     bool initialized{false};
 
     CommandPools& cp;

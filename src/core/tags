@@ -978,7 +978,6 @@ name	state/report.hpp	/^    const std::string name;$/;"	m	class:sword::state::At
 name	state/report.hpp	/^    const std::string name;$/;"	m	class:sword::state::DescriptorSetLayoutReport
 name	state/report.hpp	/^    std::string name;$/;"	m	class:sword::state::PipelineLayoutReport
 normCoords	event/dispatcher.cpp	/^float normCoords(int16_t windowCoord, int16_t extent)$/;"	f	namespace:sword::event
-null	state/painter.hpp	/^    int null;$/;"	m	struct:sword::state::painter::PaintSamples
 null2	state/painter.hpp	/^    float null2;$/;"	m	struct:sword::state::painter::FragmentInput
 offscreen	render/renderer.hpp	/^enum class TargetType {offscreen, swapchain};$/;"	m	class:sword::render::TargetType
 offscreenDim	application.hpp	/^    vk::Extent2D offscreenDim;$/;"	m	class:sword::Application
@@ -1361,7 +1360,7 @@ runCommandLineLoop	event/dispatcher.cpp	/^void EventDispatcher::runCommandLineLo
 runWindowInputLoop	event/dispatcher.cpp	/^void EventDispatcher::runWindowInputLoop()$/;"	f	class:sword::event::EventDispatcher
 sampledImages	application.hpp	/^    std::vector<const render::Image*> sampledImages;$/;"	m	class:sword::Application
 sampler	render/resource.hpp	/^    vk::UniqueSampler sampler;$/;"	m	class:sword::render::final
-samples	state/painter.hpp	/^    PaintSample samples[48]; \/\/specifying 50 for now$/;"	m	struct:sword::state::painter::PaintSamples
+samples	state/painter.hpp	/^    PaintSample samples[16]; \/\/specifying 50 for now$/;"	m	struct:sword::state::painter::PaintSamples
 saveAttachment	state/painter.hpp	/^    SaveAttachment saveAttachment;$/;"	m	class:sword::state::painter::final
 saveAttachmentToPng	command/commandpools.hpp	/^    CommandPool<command::SaveAttachmentToPng> saveAttachmentToPng;$/;"	m	struct:sword::CommandPools
 saveSwap	state/painter.hpp	/^    SaveSwap saveSwap;$/;"	m	class:sword::state::painter::final
@@ -1731,11 +1730,9 @@ windowInput	event/dispatcher.hpp	/^    WindowInput windowInput;$/;"	m	class:swor
 wmDeleteWin	render/surface/window.hpp	/^	xcb_atom_t wmDeleteWin;$/;"	m	class:sword::render::Window
 wmProtocols	render/surface/window.hpp	/^	xcb_atom_t wmProtocols;$/;"	m	class:sword::render::Window
 words	state/vocab.hpp	/^    std::vector<std::string> words;$/;"	m	class:sword::state::Vocab
-x	state/painter.hpp	/^    float x;$/;"	m	struct:sword::state::painter::PaintSample
 xform	state/painter.hpp	/^    glm::mat4& xform;$/;"	m	class:sword::state::painter::Rotate
 xform	state/painter.hpp	/^    glm::mat4& xform;$/;"	m	class:sword::state::painter::Scale
 xform	state/painter.hpp	/^    glm::mat4& xform;$/;"	m	class:sword::state::painter::Translate
-y	state/painter.hpp	/^    float y;$/;"	m	struct:sword::state::painter::PaintSample
 ~Attachment	render/attachment.cpp	/^Attachment::~Attachment()$/;"	f	class:sword::render::Attachment
 ~Buffer	render/resource.cpp	/^Buffer::~Buffer()$/;"	f	class:sword::render::Buffer
 ~Context	render/context.cpp	/^Context::~Context()$/;"	f	class:sword::render::Context

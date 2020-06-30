@@ -10,6 +10,8 @@ struct PaintSample
 {
     float x;
     float y;
+    float n1;
+    float n2;
 };
 
 layout(set = 0, binding = 2) uniform sampleArray
@@ -35,19 +37,34 @@ void main()
 {
 	vec4 color = vec4(0.);
 	vec2 st = gl_FragCoord.xy / vec2(WIDTH, HEIGHT);
-    for (int i = 0; i < samples.count; i++)
+    int i = 0;
+    if (samples.count >= 16)
+    {
+        outColor.x = 0.5;
+        return;
+    }
+    while (i < samples.count)
     {
         vec4 thisColor = vec4(0.);
         float x = samples.samples[i].x;
         float y = samples.samples[i].y;
-        vec2 mCoords = vec2(x, y);
-        thisColor += fill_aa(circleNormSDF(st - mCoords), ubo.brushSize * .0025, 0.005);
-        thisColor *= vec4(.8, .2, .5, 1);
-        color = over(thisColor, color);
+        thisColor += fill_aa(circleNormSDF(st - vec2(x, y)), ubo.brushSize * .0025, 0.005);
+        color += thisColor;
+        i++;
     }
 //    if (samples.count == 1)
 //    {
-//        color.b = 1;
+//        color.b += 0.1;
+//    }
+//    for (int i = 0; i < samples.count; i++)
+//    {
+//        vec4 thisColor = vec4(0.);
+//        float x = samples.samples[i].x;
+//        float y = samples.samples[i].y;
+//        vec2 mCoords = vec2(x, y);
+//        thisColor += fill_aa(circleNormSDF(st - mCoords), ubo.brushSize * .0025, 0.005);
+//        thisColor *= vec4(.8, .2, .5, 1);
+//        color += thisColor;
 //    }
 	outColor = color;
 }

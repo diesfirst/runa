@@ -381,7 +381,7 @@ void Painter::handleEvent(event::Event* event)
         {
             case Op::initBasic: initBasic(); break;
             case Op::paint: pushState(&paint); paintActive = true; break;
-            case Op::brushResize: pushState(&resizeBrush); break;
+            case Op::brushResize: pushState(&resizeBrush); resizeActive = true; break;
             case Op::saveAttachmentToPng: pushState(&saveAttachment); break;
         }
         return;
@@ -401,6 +401,7 @@ void Painter::handleEvent(event::Event* event)
                 pushState(&resizeBrush);
                 event->setHandled();
                 painterVars.fragInput.sampleIndex = 1;
+                resizeActive = true;
                 return;
             }
             if (inputCast(kp->getKey()) == Input::rotate)
@@ -464,7 +465,7 @@ void Painter::initBasic()
     pushCmd(cp.addAttachment.request("paint", C_WIDTH, C_HEIGHT, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc));
     pushCmd(cp.addAttachment.request("paint_clear", C_WIDTH, C_HEIGHT, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled));
     pushCmd(cp.loadVertShader.request(sr.loadVertShaders->reportCallback(), "fullscreen_tri.spv"));
-    pushCmd(cp.compileShader.request(sr.compileShader->reportCallback(), "fragment/brush/simple-2.frag", "spot"));
+    pushCmd(cp.compileShader.request(sr.compileShader->reportCallback(), "fragment/brush/simple-4.frag", "spot"));
     pushCmd(cp.compileShader.request(sr.compileShader->reportCallback(), "fragment/simple_comp.frag", "comp"));
     pushCmd(cp.prepareRenderFrames.request(sr.prepareRenderFrames->reportCallback()));
     pushCmd(cp.createDescriptorSetLayout.request(sr.createDescriptorSetLayout->reportCallback(), "foo", bindings));
@@ -517,6 +518,8 @@ void Painter::displayCanvas()
     painterVars.fragInput.sampleIndex = 0;
     auto cmd = cp.render.request(painterVars.viewCmdId, 1, std::array<int, 5>{0});
     pushCmd(std::move(cmd));
+
+    resizeActive = false;
 }
 
 void Painter::beginFrame()
@@ -528,8 +531,16 @@ void Painter::endFrame()
 {
     if (initialized)
     {
-        auto cmd = cp.render.request(painterVars.paintCmdId, 2, std::array<int, 5>{0, 1});
-        pushCmd(std::move(cmd));
+        if (resizeActive)
+        {
+            auto cmd = cp.render.request(painterVars.brushStaticCmd, 2, std::array<int, 5>{0, 1});
+            pushCmd(std::move(cmd));
+        }
+        else
+        {
+            auto cmd = cp.render.request(painterVars.paintCmdId, 2, std::array<int, 5>{0, 1});
+            pushCmd(std::move(cmd));
+        }
     }
 }
 

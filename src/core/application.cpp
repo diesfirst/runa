@@ -127,7 +127,6 @@ void Application::drainEventQueue()
                 if (event->isHandled()) 
                     break;
             }
-
         }
 
         if (stateEdits.size() > 0)
@@ -173,7 +172,6 @@ void Application::executeCommands()
             cmd->onSuccess();
     }
     cmdStack.items.clear();
-    std::this_thread::sleep_for(std::chrono::milliseconds(15));
 }
 
 void Application::beginFrame()
@@ -214,6 +212,8 @@ void Application::run(bool pollEvents)
         endFrame();
 
         executeCommands();
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(15));
     }
     if (readevents)
         is.close();

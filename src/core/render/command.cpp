@@ -209,7 +209,7 @@ void CommandBuffer::submit()
     si.setSignalSemaphoreCount(0);
     si.setPWaitDstStageMask(nullptr);
 
-    fence.getOwner().resetFences(*fence);
+    fence.getOwner().resetFences(*fence); //has no effect if fence is already unsignalled
     queue.submit(si, fence.get());
 }
 
