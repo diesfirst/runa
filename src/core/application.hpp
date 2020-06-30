@@ -62,9 +62,6 @@ private:
 
     int maxEventReads{0};
     int eventsRead{0};
-
-    event::EventPool<event::BeginFrame, 2> beginFramePool;
-    event::EventPool<event::EndFrame, 2> endFramePool;
 };
 
 }; // namespace sword

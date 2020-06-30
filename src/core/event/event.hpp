@@ -78,10 +78,10 @@ public:
     virtual Category getCategory() const = 0;
     virtual std::string getName() const = 0;
     template <typename... Args> void set(Args... args) {}
-    inline bool isAvailable() const {return !inUse;}
-    inline void setHandled() {handled = true;}
-    inline bool isHandled() const {return handled;}
-    inline static Category unserializeCategory(std::ifstream& is)
+    bool isAvailable() const {return !inUse;}
+    void setHandled() {handled = true;}
+    bool isHandled() const {return handled;}
+    static Category unserializeCategory(std::ifstream& is)
     {
         Category ec;
         is.read((char*)&ec, sizeof(Category));
@@ -132,20 +132,6 @@ class Nothing : public Event
 public:
    Category getCategory() const override {return Category::Nothing;} 
    std::string getName() const override {return "Nothing";}
-};
-
-class BeginFrame : public Event
-{
-public:
-   constexpr Category getCategory() const override {return Category::BeginFrame;}
-   std::string getName() const override {return "BeginFrame";}
-};
-
-class EndFrame : public Event
-{
-public:
-   constexpr Category getCategory() const override {return Category::EndFrame;}
-   std::string getName() const override {return "EndFrame";}
 };
 
 class CommandLine: public Event

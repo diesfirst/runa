@@ -110,9 +110,19 @@ void Application::drainEventQueue()
 
             for (auto state : stateStack) 
             {
+                if (!event)
+                {
+                    SWD_DEBUG_MSG("Event is null BEFORE being handled.");
+                }
+                else
+                {
+                    SWD_DEBUG_MSG("Event: " << event->getName());
+                }
                 state->handleEvent(event.get());
-                SWD_DEBUG_MSG("State: " << state->getName());
-                assert(event);
+                if (!event)
+                {
+                    SWD_DEBUG_MSG("State: " << state->getName());
+                }
                 if (event->isHandled()) 
                     break;
             }

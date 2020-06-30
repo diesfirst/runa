@@ -23,7 +23,6 @@ AttachmentReport	state/report.hpp	/^    AttachmentReport(const std::string n, co
 AttachmentReport	state/report.hpp	/^class AttachmentReport : public Report$/;"	c	namespace:sword::state
 B	event/event.hpp	/^    B = 56,$/;"	m	class:sword::event::symbol::Key
 BeginFrame	event/event.hpp	/^    BeginFrame,$/;"	m	class:sword::event::symbol::Category
-BeginFrame	event/event.hpp	/^class BeginFrame : public Event$/;"	c	namespace:sword::event::symbol
 BindUboData	command/rendercommands.hpp	/^class BindUboData : public Command$/;"	c	namespace:sword::command
 BranchState	state/state.hpp	/^    BranchState(StateArgs sa, Callbacks cb, std::initializer_list<Element> ops) :$/;"	f	class:sword::state::BranchState
 BranchState	state/state.hpp	/^class BranchState : public State$/;"	c	namespace:sword::state
@@ -100,7 +99,6 @@ EVENT_FILEWATCHER_HPP	event/filewatcher.hpp	2;"	d
 EVENT_TYPES_HPP	event/types.hpp	2;"	d
 EVENT_WATCHER_HPP	event/watcher.hpp	2;"	d
 EditStack	state/editstack.hpp	/^class EditStack $/;"	c	namespace:sword::state
-EndFrame	event/event.hpp	/^class EndFrame : public Event$/;"	c	namespace:sword::event::symbol
 EnterWindow	event/event.hpp	/^    EnterWindow = 7,$/;"	m	class:sword::event::symbol::WindowEventType
 Esc	event/event.hpp	/^    Esc = 9,$/;"	m	class:sword::event::symbol::Key
 Event	event/event.hpp	/^class Event$/;"	c	namespace:sword::event::symbol
@@ -412,7 +410,6 @@ beginFrame	application.cpp	/^void Application::beginFrame()$/;"	f	class:sword::A
 beginFrame	render/renderer.cpp	/^CommandBuffer& Renderer::beginFrame(uint32_t cmdId)$/;"	f	class:sword::render::Renderer
 beginFrame	state/director.hpp	/^    void beginFrame() { painter.beginFrame(); }$/;"	f	class:sword::state::final
 beginFrame	state/painter.cpp	/^void Painter::beginFrame()$/;"	f	class:sword::state::painter::Input::Painter	file:
-beginFramePool	application.hpp	/^    event::EventPool<event::BeginFrame, 2> beginFramePool;$/;"	m	class:sword::Application
 beginRenderPass	render/command.cpp	/^void CommandBuffer::beginRenderPass(vk::RenderPassBeginInfo& info)$/;"	f	class:sword::render::CommandBuffer
 bindDescriptorSets	render/command.cpp	/^void CommandBuffer::bindDescriptorSets($/;"	f	class:sword::render::CommandBuffer
 bindGraphicsPipeline	render/command.cpp	/^void CommandBuffer::bindGraphicsPipeline(const vk::Pipeline& pipeline)$/;"	f	class:sword::render::CommandBuffer
@@ -637,7 +634,6 @@ end	util.hpp	/^void Timer::end(const std::string& funcName)$/;"	f	class:sword::T
 endFrame	application.cpp	/^void Application::endFrame()$/;"	f	class:sword::Application
 endFrame	state/director.hpp	/^    void endFrame() { painter.endFrame(); }$/;"	f	class:sword::state::final
 endFrame	state/painter.cpp	/^void Painter::endFrame()$/;"	f	class:sword::state::painter::Input::Painter	file:
-endFramePool	application.hpp	/^    event::EventPool<event::EndFrame, 2> endFramePool;$/;"	m	class:sword::Application
 endRenderPass	render/command.cpp	/^void CommandBuffer::endRenderPass()$/;"	f	class:sword::render::CommandBuffer
 endTime	util.hpp	/^    std::chrono::time_point<std::chrono::high_resolution_clock> startTime, endTime;$/;"	m	class:sword::Timer
 es	state/state.hpp	/^    EditStack& es;$/;"	m	struct:sword::state::StateArgs
@@ -894,10 +890,10 @@ integer	state/shader.hpp	/^    enum class SpecType : uint8_t {integer, floating}
 integer	state/shader.hpp	/^    enum class SpecType : uint8_t {integer, floating};$/;"	m	class:sword::state::shader::SpecType
 is	application.hpp	/^    std::ifstream is;$/;"	m	class:sword::Application
 isAvailable	command/command.hpp	/^    constexpr bool isAvailable() const {return !inUse;}$/;"	f	class:sword::command::Command
-isAvailable	event/event.hpp	/^    inline bool isAvailable() const {return !inUse;}$/;"	f	class:sword::event::symbol::Event
+isAvailable	event/event.hpp	/^    bool isAvailable() const {return !inUse;}$/;"	f	class:sword::event::symbol::Event
 isCreated	render/pipeline.cpp	/^bool GraphicsPipeline::isCreated() const$/;"	f	class:sword::render::GraphicsPipeline
 isCreated	render/renderpass.cpp	/^bool RenderPass::isCreated() const$/;"	f	class:sword::render::RenderPass
-isHandled	event/event.hpp	/^    inline bool isHandled() const {return handled;}$/;"	f	class:sword::event::symbol::Event
+isHandled	event/event.hpp	/^    bool isHandled() const {return handled;}$/;"	f	class:sword::event::symbol::Event
 isMapped	render/resource.hpp	/^    bool isMapped = false;$/;"	m	class:sword::render::final
 isOpen	render/surface/window.hpp	/^    bool isOpen() {return opened;}$/;"	f	class:sword::render::Window
 isRecorded	render/command.cpp	/^bool CommandBuffer::isRecorded() const$/;"	f	class:sword::render::CommandBuffer
@@ -1428,7 +1424,7 @@ setDescriptorCount	state/descriptorsetlayoutmanager.hpp	/^    SetDescriptorCount
 setDeviceExtensions	render/context.cpp	/^void Context::setDeviceExtensions(vk::DeviceCreateInfo& createInfo)$/;"	f	class:sword::render::Context
 setEvents	render/surface/window.cpp	/^void Window::setEvents()$/;"	f	class:sword::render::Window
 setFormat	render/swapchain.cpp	/^void Swapchain::setFormat()$/;"	f	class:sword::render::Swapchain
-setHandled	event/event.hpp	/^    inline void setHandled() {handled = true;}$/;"	f	class:sword::event::symbol::Event
+setHandled	event/event.hpp	/^    void setHandled() {handled = true;}$/;"	f	class:sword::event::symbol::Event
 setImages	render/swapchain.cpp	/^void Swapchain::setImages()$/;"	f	class:sword::render::Swapchain
 setInputMode	event/dispatcher.hpp	/^    inline void setInputMode(InputMode mode) {inputMode = mode;}$/;"	f	class:sword::event::EventDispatcher
 setMaskPtr	state/vocab.hpp	/^    void setMaskPtr( OptionMask* ptr ) { mask = ptr; }$/;"	f	class:sword::state::Vocab
@@ -1667,7 +1663,7 @@ undoStack	command/saveimage.hpp	/^    Region* undoStack;$/;"	m	class:sword::comm
 uniformBufferBlocks	render/renderframe.hpp	/^    std::vector<BufferBlock*> uniformBufferBlocks;$/;"	m	class:sword::render::RenderFrame
 unmap	render/resource.cpp	/^void Buffer::unmap()$/;"	f	class:sword::render::Buffer
 unserialize	event/event.hpp	/^    inline void unserialize(std::ifstream& is) {$/;"	f	class:sword::event::symbol::CommandLine
-unserializeCategory	event/event.hpp	/^    inline static Category unserializeCategory(std::ifstream& is)$/;"	f	class:sword::event::symbol::Event
+unserializeCategory	event/event.hpp	/^    static Category unserializeCategory(std::ifstream& is)$/;"	f	class:sword::event::symbol::Event
 updateActiveVocab	state/state.cpp	/^void BranchState::updateActiveVocab()$/;"	f	class:sword::state::BranchState
 updateFrameDescriptorBuffer	render/renderer.cpp	/^void Renderer::updateFrameDescriptorBuffer(uint32_t frameIndex, uint32_t uboIndex)$/;"	f	class:sword::render::Renderer
 updateFrameSamplers	command/commandpools.hpp	/^    CommandPool<command::UpdateFrameSamplers> updateFrameSamplers;$/;"	m	struct:sword::CommandPools
