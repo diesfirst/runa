@@ -101,6 +101,7 @@ void Application::readEvents(std::ifstream& is, int eventPops)
 void Application::drainEventQueue()
 {
     int i = 0;
+    dispatcher.lock.lock();
     while (i < dispatcher.eventQueue.size())
     {
         auto& event = dispatcher.eventQueue.items[i];
@@ -149,6 +150,7 @@ void Application::drainEventQueue()
         i++;
     }
     dispatcher.eventQueue.items.clear();
+    dispatcher.lock.unlock();
 }
 
 void Application::executeCommands()

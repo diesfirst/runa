@@ -96,6 +96,7 @@ Director	state/director.cpp	/^Director::Director(StateArgs sa, const StateStack&
 EDITSTACK_HPP_	state/editstack.hpp	2;"	d
 EVENT_EVENT_HPP	event/event.hpp	2;"	d
 EVENT_FILEWATCHER_HPP	event/filewatcher.hpp	2;"	d
+EVENT_QUEUE_HPP	event/queue.hpp	2;"	d
 EVENT_TYPES_HPP	event/types.hpp	2;"	d
 EVENT_WATCHER_HPP	event/watcher.hpp	2;"	d
 EditStack	state/editstack.hpp	/^class EditStack $/;"	c	namespace:sword::state
@@ -104,6 +105,7 @@ Esc	event/event.hpp	/^    Esc = 9,$/;"	m	class:sword::event::symbol::Key
 Event	event/event.hpp	/^class Event$/;"	c	namespace:sword::event::symbol
 EventDispatcher	event/dispatcher.cpp	/^EventDispatcher::EventDispatcher(const render::Window& window):$/;"	f	class:sword::event::EventDispatcher
 EventDispatcher	event/dispatcher.hpp	/^class EventDispatcher$/;"	c	namespace:sword::event
+EventQueue	event/queue.hpp	/^class EventQueue$/;"	c	namespace:sword::event
 File	event/event.hpp	/^    File,$/;"	m	class:sword::event::symbol::Category
 File	event/event.hpp	/^class File : public Event$/;"	c	namespace:sword::event::symbol
 FileWatcher	event/filewatcher.cpp	/^FileWatcher::FileWatcher(EventQueue& queue) :$/;"	f	class:sword::event::FileWatcher
@@ -643,6 +645,7 @@ event	event/event.cpp	/^namespace event$/;"	n	namespace:sword	file:
 event	event/event.hpp	/^namespace event$/;"	n	namespace:sword
 event	event/filewatcher.cpp	/^namespace event$/;"	n	namespace:sword	file:
 event	event/filewatcher.hpp	/^namespace event$/;"	n	namespace:sword
+event	event/queue.hpp	/^namespace event$/;"	n	namespace:sword
 event	event/types.hpp	/^namespace event$/;"	n	namespace:sword
 event	event/watcher.hpp	/^namespace event$/;"	n	namespace:sword
 event	render/surface/window.hpp	/^	xcb_generic_event_t* event;$/;"	m	class:sword::render::Window
@@ -929,6 +932,7 @@ loadVertShader	command/commandpools.hpp	/^    CommandPool<command::LoadVertShade
 loadVertShader	render/renderer.cpp	/^bool Renderer::loadVertShader($/;"	f	class:sword::render::Renderer
 loadVertShaders	state/shader.hpp	/^    LoadVertShaders loadVertShaders;$/;"	m	class:sword::state::final
 loadVertShaders	state/state.hpp	/^    const LoadVertShaders* loadVertShaders;$/;"	m	struct:sword::state::Register
+lock	event/dispatcher.hpp	/^    std::mutex lock;$/;"	m	class:sword::event::EventDispatcher
 lvPool	state/shader.hpp	/^    CommandPool<command::LoadVertShader>& lvPool;$/;"	m	class:sword::state::LoadVertShaders
 lwPool	event/dispatcher.hpp	/^    EventPool<LeaveWindow, 3> lwPool;$/;"	m	class:sword::event::EventDispatcher
 makeCreateInfo	render/context.hpp	/^    vk::DeviceQueueCreateInfo makeCreateInfo()$/;"	f	struct:sword::render::QueueInfo
@@ -954,6 +958,7 @@ map	state/state.hpp	/^    SmallMap<std::string, Option> map;$/;"	m	class:sword::
 mapEntries	render/shader.hpp	/^    std::vector<vk::SpecializationMapEntry> mapEntries;$/;"	m	class:sword::render::Shader
 mask	render/surface/window.hpp	/^	uint32_t mask = 0;$/;"	m	class:sword::render::Window
 matrices	state/painter.hpp	/^    Matrices matrices;$/;"	m	struct:sword::state::painter::PainterVars
+maxSize	event/queue.hpp	/^    static constexpr int maxSize = 50;$/;"	m	class:sword::event::EventQueue
 max_item_count	types/region.hpp	/^    static constexpr int max_item_count = 10;$/;"	m	class:sword::Region
 memProps	render/resource.hpp	/^    const vk::PhysicalDeviceMemoryProperties& memProps;$/;"	m	class:sword::render::final
 memory	render/resource.hpp	/^    vk::UniqueDeviceMemory memory;$/;"	m	class:sword::render::final
@@ -1214,6 +1219,7 @@ printStateHierarchy	state/director.cpp	/^void Director::printStateHierarchy()$/;
 printVocab	state/state.cpp	/^void State::printVocab()$/;"	f	class:sword::state::State
 priorites	render/context.hpp	/^        priorites(queueCount, 1.0) \/\/all queues have a priority of one$/;"	f	struct:sword::render::QueueInfo
 priorites	render/context.hpp	/^    std::vector<float> priorites;$/;"	m	struct:sword::render::QueueInfo
+push	event/queue.hpp	/^    void push(EventPtr&& eventPtr) { queue[curSize] = eventPtr; }$/;"	f	class:sword::event::EventQueue
 push	types/map.hpp	/^    void push(Element element)$/;"	f	class:sword::SmallMap
 push	types/stack.hpp	/^    void push(T&& item) {items.push_back(std::forward<T>(item));}$/;"	f	class:sword::Stack
 pushCmd	application.cpp	/^void Application::pushCmd(CmdPtr&& command)$/;"	f	class:sword::Application
@@ -1228,6 +1234,7 @@ pushState	state/editstack.hpp	/^    void pushState(State* ptr) { stack.push(std:
 pushState	state/state.cpp	/^void BranchState::pushState(State* state)$/;"	f	class:sword::state::BranchState
 push_back	state/vocab.hpp	/^    void push_back(std::string word) { words.push_back(word); }$/;"	f	class:sword::state::Vocab
 pvPool	state/state.hpp	/^    CommandPool<command::PopVocab> pvPool;$/;"	m	class:sword::state::State
+queue	event/queue.hpp	/^    std::array<EventPtr, maxSize> queue;$/;"	m	class:sword::event::EventQueue
 queueCount	render/context.hpp	/^    int queueCount;$/;"	m	struct:sword::render::QueueInfo
 queueFamilies	render/context.hpp	/^    std::vector<vk::QueueFamilyProperties> queueFamilies;$/;"	m	class:sword::render::Context
 quickSetup	state/director.cpp	/^void Director::quickSetup()$/;"	f	class:sword::state::Director
@@ -1563,6 +1570,7 @@ sword	event/event.cpp	/^namespace sword$/;"	n	file:
 sword	event/event.hpp	/^namespace sword$/;"	n
 sword	event/filewatcher.cpp	/^namespace sword$/;"	n	file:
 sword	event/filewatcher.hpp	/^namespace sword$/;"	n
+sword	event/queue.hpp	/^namespace sword$/;"	n
 sword	event/types.hpp	/^namespace sword$/;"	n
 sword	event/watcher.hpp	/^namespace sword$/;"	n
 sword	render/attachment.cpp	/^namespace sword$/;"	n	file:

@@ -4,6 +4,7 @@
 #include "event.hpp"
 #include "types.hpp"
 #include "filewatcher.hpp"
+#include <mutex>
 
 namespace sword
 {
@@ -32,7 +33,6 @@ public:
     void readEvents(std::ifstream& is, int eventPops);
     void readEvent(std::ifstream& is);
 
-
     void getNextEvent();
 
     WindowInput windowInput;
@@ -41,6 +41,8 @@ public:
 
     EventQueue eventQueue;
     FileWatcher fileWatcher;
+
+    std::mutex lock;
 
 private:
     const render::Window& window;

@@ -144,7 +144,9 @@ void EventDispatcher::fetchCommandLineInput()
     }
 
     auto event = clPool.request(input);
+    lock.lock();
     eventQueue.push(std::move(event));
+    lock.unlock();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(RL_DELAY));
 }
@@ -207,7 +209,9 @@ void EventDispatcher::fetchWindowInput()
         }
 	}
 	free(event);
+    lock.lock();
     eventQueue.push(std::move(curEvent));
+    lock.unlock();
 }
 
 void EventDispatcher::runCommandLineLoop()
