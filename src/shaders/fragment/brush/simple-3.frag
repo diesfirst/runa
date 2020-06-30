@@ -10,19 +10,23 @@ struct PaintSample
 {
     float x;
     float y;
+    float fuck;
+    float you;
 };
 
 layout(set = 0, binding = 2) uniform sampleArray
 {
     int count;
-    int null;
+    int null0;
+    int null1;
+    int null2;
     PaintSample samples[48];
 } samples;
 
 #define WIDTH 1600
 #define HEIGHT 1600
 
-#define interpCount 20
+#define interpCount 36
 
 vec4 over(vec4 A, vec4 B)
 {

@@ -1383,10 +1383,10 @@ set	command/command.hpp	/^    template <typename... Args> void set(Args... args)
 set	command/recordrendercommand.hpp	/^    inline void set(int index, std::vector<uint32_t> renderpassInstances)$/;"	f	class:sword::command::RecordRenderCommand
 set	command/render.hpp	/^    void set() {}$/;"	f	class:render
 set	command/rendercommands.hpp	/^    inline void set(int renderCommandId)$/;"	f	class:sword::command::Render
-set	command/rendercommands.hpp	/^    inline void set(int renderCommandId, int uboCount, std::array<int, 5> ubosToUpdate)$/;"	f	class:sword::command::Render
 set	command/rendercommands.hpp	/^    inline void set(std::string n, std::vector<vk::DescriptorSetLayoutBinding> b) $/;"	f	class:sword::command::CreateDescriptorSetLayout
 set	command/rendercommands.hpp	/^    inline void set(std::string name, ShaderType t, int first, int second) {$/;"	f	class:sword::command::SetSpecInt
 set	command/rendercommands.hpp	/^    inline void set(std::vector<std::string> layouts) {layoutnames = layouts;}$/;"	f	class:sword::command::CreateFrameDescriptorSets
+set	command/rendercommands.hpp	/^    inline void set(uint32_t renderCommandId, int uboCount, std::array<int, 5> ubosToUpdate)$/;"	f	class:sword::command::Render
 set	command/rendercommands.hpp	/^    void set( std::string n, std::vector<std::string> descSetLayoutNames)$/;"	f	class:sword::command::CreatePipelineLayout
 set	command/rendercommands.hpp	/^    void set($/;"	f	class:sword::command::CreateGraphicsPipeline
 set	command/rendercommands.hpp	/^    void set($/;"	f	class:sword::command::CreateRenderLayer

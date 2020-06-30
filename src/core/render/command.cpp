@@ -59,6 +59,10 @@ CommandBuffer& CommandPool_t<Size>::requestCommandBuffer(uint32_t id, vk::Comman
 {
     assert(level == vk::CommandBufferLevel::ePrimary && "Only primary command buffers supported");
     assert(activePrimaryCommandBufferCount < primaryCommandBuffers.size());
+    if (id >= primaryCommandBuffers.size())
+    {
+        std::cout << "We here" << '\n';
+    }
     assert(id < primaryCommandBuffers.size());
     return *primaryCommandBuffers.at(id);
 //    if (activePrimaryCommandBufferCount < primaryCommandBuffers.size())
