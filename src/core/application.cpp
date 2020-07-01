@@ -201,7 +201,7 @@ void Application::run(bool pollEvents)
 
         executeCommands();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }
     if (readevents)
         is.close();

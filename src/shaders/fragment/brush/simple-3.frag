@@ -17,7 +17,7 @@ struct PaintSample
 layout(set = 0, binding = 2) uniform sampleArray
 {
     int count;
-    int null0;
+    int brushIsResizing;
     int null1;
     int null2;
     PaintSample samples[50];
@@ -47,16 +47,27 @@ vec4 colorWithInterp(vec2 sampleA, vec2 sampleB, vec3 rgb)
     {
         vec2 curSample = sampleA + AtoB * stepSize * i;
         vec4 thisColor = vec4(0.);
-        thisColor += fill_aa(circleNormSDF(st - curSample), ubo.brushSize * .0025, 0.005);
+        thisColor += fill_aa(circleNormSDF(st - curSample), ubo.brushSize * .05, ubo.brushSize * 0.1);
         thisColor.rgb *= rgb;
         color = over(thisColor, color);
     }
     return color;
 }
 
+const vec3 RGB = vec3(.5, .9, .7);
+
 void main()
 {
     vec4 color = vec4(0.);
+    if (samples.brushIsResizing == 1)
+    {
+        vec2 st = gl_FragCoord.xy / vec2(WIDTH, HEIGHT);
+        vec2 pos = vec2(ubo.brushX, ubo.brushY);
+        vec4 color = vec4(0.);
+        color += fill_aa(circleNormSDF(st - pos), ubo.brushSize * .05, ubo.brushSize * 0.1);
+        outColor = color;
+        return;
+    }
     for (int i = 0; i < samples.count; i++)
     {
         float x = samples.samples[i].x;
@@ -68,9 +79,9 @@ void main()
             nextCoord.x = samples.samples[i + 1].x;
             nextCoord.y = samples.samples[i + 1].y;
             if (i == 0)
-                color = over(colorWithInterp(thisCoord, nextCoord, vec3(1, 0, 0)), color);
+                color = over(colorWithInterp(thisCoord, nextCoord, RGB), color);
             else
-                color = over(colorWithInterp(thisCoord, nextCoord, vec3(1, 0, 0)), color);
+                color = over(colorWithInterp(thisCoord, nextCoord, RGB), color);
         }
         else if (i == samples.count - 1 && i > 0)
         {
@@ -78,12 +89,11 @@ void main()
             float y = samples.samples[i - 1].y;
             vec2 lastCoord = vec2(x, y);
             nextCoord = (thisCoord - lastCoord) + thisCoord;
-            color = over(colorWithInterp(thisCoord, nextCoord, vec3(1, 0, 0)), color);
-            //swap the coords around?
+            color = over(colorWithInterp(thisCoord, nextCoord, RGB), color);
         }
         else if (i == 0)
         {
-            color = over(colorWithInterp(thisCoord, nextCoord, vec3(1, 0, 0)), color);
+            color = over(colorWithInterp(thisCoord, nextCoord, RGB), color);
         }
     }
 	outColor = color;

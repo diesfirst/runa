@@ -385,6 +385,7 @@ void Painter::handleEvent(event::Event* event)
                 pushState(&resizeBrush);
                 event->setHandled();
                 painterVars.fragInput.sampleIndex = 1;
+                painterVars.paintSamples.brushIsResizing = 1;
                 resizeActive = true;
                 return;
             }
@@ -504,6 +505,7 @@ void Painter::displayCanvas()
     pushCmd(std::move(cmd));
 
     resizeActive = false;
+    painterVars.paintSamples.brushIsResizing = 0;
 }
 
 void Painter::beginFrame()
@@ -517,6 +519,7 @@ void Painter::endFrame()
     {
         if (resizeActive)
         {
+            SWD_DEBUG_MSG("Resizing. Brush Size: " << painterVars.fragInput.brushSize << "\nbrushX: " << painterVars.fragInput.brushX << " brushY: " << painterVars.fragInput.brushY);
             auto cmd = cp.render.request(painterVars.brushStaticCmd, 2, std::array<int, 5>{0, 1});
             pushCmd(std::move(cmd));
         }
@@ -524,14 +527,7 @@ void Painter::endFrame()
         {
             auto cmd = cp.render.request(painterVars.paintCmdId, 2, std::array<int, 5>{0, 1});
             pushCmd(std::move(cmd));
-//            auto& paintSamples = painterVars.paintSamples;
-//            SWD_DEBUG_MSG("paintSamples.count " << paintSamples.count);
-//            SWD_DEBUG_MSG("samples: ");
-//            for (int i = 0; i < paintSamples.count; i++) {
-//                SWD_DEBUG_MSG("x: " << paintSamples.samples[i].x <<
-//                        " y: " << paintSamples.samples[i].y);
-//            }
-//
+
         }
     }
 }

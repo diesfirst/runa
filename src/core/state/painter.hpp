@@ -62,7 +62,7 @@ struct PaintSample
 struct PaintSamples
 {
     int count{0};
-    int null0{0};
+    int brushIsResizing{0};
     int null1{0};
     int null2{0};
     PaintSample samples[maxPaintSamples]; //specifying 50 for now
