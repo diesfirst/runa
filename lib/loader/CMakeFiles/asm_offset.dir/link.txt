@@ -1,1 +1,0 @@
-/usr/bin/cc  -std=c99 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -fno-strict-aliasing -fno-builtin-memcmp -Wno-stringop-truncation -Wno-stringop-overflow -Wimplicit-fallthrough=0 -fvisibility=hidden -Wpointer-arith -O2 -g -DNDEBUG   CMakeFiles/asm_offset.dir/asm_offset.c.o  -o asm_offset 
