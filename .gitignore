@@ -12,3 +12,5 @@ bin/*
 eventlog
 tags
 .clangd*
+layers/*
+lib/loader/CMakeFiles/*
