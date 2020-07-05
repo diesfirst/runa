@@ -5,6 +5,7 @@
 #include <state/statetypes.hpp>
 #include <state/rendermanager.hpp>
 #include "painter.hpp"
+#include "viewer.hpp"
 
 //imp: state/director.cpp
 
@@ -38,7 +39,7 @@ public:
     void endFrame() { painter.endFrame(); }
 
 private:
-    enum class Op : Option {painter, pushRenderManager, printHierarchy, quickSetup, quickSetup2, quickSetup3};
+    enum class Op : Option {viewer, painter, pushRenderManager, printHierarchy, quickSetup, quickSetup2, quickSetup3};
 
     void pushRenderManager();
     void printStateHierarchy();
@@ -50,6 +51,7 @@ private:
     RenderManager renderManager;
     QuickSetup quickState;
     painter::Painter painter;
+    Viewer viewer;
 
     CommandPools& cp;
     const state::Register& sr;

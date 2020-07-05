@@ -45,13 +45,16 @@ Director::Director(StateArgs sa, const StateStack& ss, render::Window& window) :
         {"quick_setup", opcast(Op::quickSetup)},
         {"quick_setup2", opcast(Op::quickSetup2)},
         {"quick_setup3", opcast(Op::quickSetup3)},
-        {"painter", opcast(Op::painter)}
+        {"painter", opcast(Op::painter)},
+        {"viewer", opcast(Op::viewer)}
     }}, 
     stateStack{ss},
     renderManager{sa, 
         {[this](){activate(opcast(Op::pushRenderManager));}, {}, {}}},
     painter{sa,
         {[this](){activate(opcast(Op::painter));}, {}, {}}},
+    viewer{sa, 
+        {[this](){activate(opcast(Op::viewer));}, {}}},
     quickState{sa, {}},
     cp{sa.cp},
     sr{sa.rg}
@@ -62,6 +65,7 @@ Director::Director(StateArgs sa, const StateStack& ss, render::Window& window) :
     activate(opcast(Op::quickSetup2));
     activate(opcast(Op::quickSetup3));
     activate(opcast(Op::painter));
+    activate(opcast(Op::viewer));
 }
 
 void Director::handleEvent(event::Event* event)
@@ -78,6 +82,7 @@ void Director::handleEvent(event::Event* event)
             case Op::quickSetup: quickSetup(); break;
             case Op::quickSetup2: quickSetup2(); break;
             case Op::quickSetup3: quickSetup3(); break;
+            case Op::viewer: pushState(&viewer); deactivate(opcast(Op::viewer)); break;
         }
         event->setHandled();
     }

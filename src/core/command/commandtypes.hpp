@@ -10,6 +10,19 @@ using CommandStack = sword::ForwardStack<CmdPtr>;
 template <typename T>
 using CommandPool = sword::Pool<T, sword::command::Command, 10>;
 
+namespace sword
+{
+
+namespace command
+{
+
+template <typename T, size_t N>
+using pool = Pool<T, Command, N>;
+
+}; // namespace command
+
+}; // namespace sword
+
 //template <typename T>
 //class CommandPool
 //{
