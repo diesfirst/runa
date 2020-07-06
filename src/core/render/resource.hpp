@@ -40,7 +40,7 @@ public:
     Buffer& operator=(Buffer&&) = delete;
     Buffer(Buffer&&) = delete;
 
-    vk::Buffer& getHandle();
+    vk::Buffer& getHandle() {return *handle; }
     BufferBlock* requestBlock(uint32_t size);
     void popBackBlock();
     void map();

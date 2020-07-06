@@ -12,11 +12,13 @@ RenderLayer::RenderLayer(
         const vk::Device& device,
         Attachment& target, 
         const RenderPass& pass,
-        const GraphicsPipeline& pipe) :
+        const GraphicsPipeline& pipe, 
+        const DrawParms) :
     renderTarget{target},
     renderPass{pass},
     pipeline{pipe},
-    device{device}
+    device{device},
+    drawParms{drawParms}
 {
     vk::FramebufferCreateInfo ci;
     ci.setWidth(target.getExtent().width);
@@ -41,6 +43,11 @@ const GraphicsPipeline& RenderLayer::getPipeline() const
 const vk::Framebuffer& RenderLayer::getFramebuffer() const
 {
     return *framebuffer;
+}
+
+const DrawParms RenderLayer::getDrawParms() const
+{
+    return drawParms;
 }
 
 }; // namespace render

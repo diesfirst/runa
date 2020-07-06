@@ -41,7 +41,7 @@ public:
     CommandBuffer& getRenderBuffer(uint32_t bufferId);  //will fetch existing
     RenderLayer& getRenderLayer(int id) { return renderLayers.at(id);}
     void addRenderLayer(RenderLayer&&);
-    void addRenderLayer(const RenderPass&, const GraphicsPipeline&, const vk::Device& device);
+    void addRenderLayer(const RenderPass&, const GraphicsPipeline&, const vk::Device&, const DrawParms);
     void clearRenderPassInstances();
     void addUniformBufferBlock(BufferBlock*);
     BufferBlock* getUniformBufferBlock(int index);

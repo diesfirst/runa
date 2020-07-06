@@ -196,7 +196,7 @@ state::Report* CreateGraphicsPipeline::makeReport() const
 
 void CreateRenderLayer::execute(Application* app)
 {
-    app->renderer.addRenderLayer(attachment, renderpass, pipeline);
+    app->renderer.createRenderLayer(attachment, renderpass, pipeline, drawParms);
     success();
 }
 

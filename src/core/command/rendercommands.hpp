@@ -9,6 +9,7 @@
 #include <iostream>
 #include <state/report.hpp>
 #include <geometry/types.hpp>
+#include <render/types.hpp>
 
 namespace sword
 {
@@ -234,12 +235,24 @@ public:
         renderpass = renderpassName;
         pipeline = pipelineName;
     }
+    void set(
+            std::string attachName,
+            std::string renderpassName,
+            std::string pipelineName, 
+            render::DrawParms drawParms) 
+    {
+        attachment = attachName;
+        renderpass = renderpassName;
+        pipeline = pipelineName;
+        this->drawParms = drawParms;
+    }
     state::Report* makeReport() const override;
 private:
     std::string attachment;
     std::string renderpass;
     std::string pipeline;
     inline static int id{0};
+    render::DrawParms drawParms;
 };
 
 class RecordRenderCommand : public Command

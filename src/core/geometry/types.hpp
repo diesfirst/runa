@@ -9,6 +9,8 @@
 namespace sword
 {
 
+namespace render {class BufferBlock; }
+
 namespace geo
 {
 
@@ -18,7 +20,6 @@ struct AttributeInfo
 {
     //later this should be the element of the array we pass to make a VertexInfo
 };
-
 
 struct VertexInfo
 {

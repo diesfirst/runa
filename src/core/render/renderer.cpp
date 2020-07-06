@@ -448,21 +448,22 @@ void Renderer::recordRenderCommands(uint32_t id, std::vector<uint32_t> fbIds)
 
 }
 
-void Renderer::addRenderLayer(
-        std::string attachmentName,
-        std::string renderPassName,
-        std::string pipeline)
+void Renderer::createRenderLayer(
+        const std::string attachmentName,
+        const std::string renderPassName,
+        const std::string pipeline,
+        const DrawParms drawParms)
 {
     auto& rpass = renderPasses.at(renderPassName);
     auto& pipe = graphicsPipelines.at(pipeline);
     for (auto& frame : frames) 
     {
         if (attachmentName.compare("swap") == 0)
-            frame.addRenderLayer(rpass, pipe, device);
+            frame.addRenderLayer(rpass, pipe, device, drawParms);
         else 
         {
             auto& attachment = *attachments.at(attachmentName);
-            frame.addRenderLayer(RenderLayer(device, attachment, rpass, pipe));
+            frame.addRenderLayer(RenderLayer(device, attachment, rpass, pipe, drawParms));
         }
     }
 }

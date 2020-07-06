@@ -2,6 +2,7 @@
 #define RENDER_RENDERLAYER_HPP
 
 #include <types/vktypes.hpp>
+#include "types.hpp"
 
 namespace sword
 {
@@ -18,7 +19,7 @@ class Attachment;
 class RenderLayer
 {
 public:
-    RenderLayer(const vk::Device&, Attachment&, const RenderPass&, const GraphicsPipeline&);
+    RenderLayer(const vk::Device&, Attachment&, const RenderPass&, const GraphicsPipeline&, const DrawParms);
     ~RenderLayer() = default;
     RenderLayer(RenderLayer&&) = default;
 
@@ -29,12 +30,14 @@ public:
     const RenderPass& getRenderPass() const;
     const GraphicsPipeline& getPipeline() const;
     const vk::Framebuffer& getFramebuffer() const;
+    const DrawParms getDrawParms() const;
 private:
     vk::UniqueFramebuffer framebuffer;
     const Attachment& renderTarget;
     const RenderPass& renderPass;
     const GraphicsPipeline& pipeline;
     const vk::Device& device;
+    const DrawParms drawParms;
 };
 
 }; // namespace render

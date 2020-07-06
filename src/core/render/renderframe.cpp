@@ -57,14 +57,16 @@ void RenderFrame::addRenderLayer(RenderLayer&& layer)
 void RenderFrame::addRenderLayer(
         const RenderPass& pass, 
         const GraphicsPipeline& pipe,
-        const vk::Device& device)
+        const vk::Device& device,
+        const DrawParms drawParms)
 {
     assert(pipe.isCreated() && "Pipeline not created!");
     renderLayers.emplace_back(
                 device,
                 *swapchainAttachment,
                 pass,
-                pipe);
+                pipe, 
+                drawParms);
 }
 
 void RenderFrame::clearRenderPassInstances()

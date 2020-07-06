@@ -11,6 +11,7 @@
 #include <render/pipeline.hpp>
 #include <render/renderpass.hpp>
 #include <geometry/types.hpp>
+#include "types.hpp"
 
 namespace sword
 {
@@ -86,9 +87,9 @@ public:
     //having only 1 pipeline per commandbuffer is doomed
     void recordRenderCommands(uint32_t bufferId, std::vector<uint32_t> renderPassIds);
     void prepare(const std::string tarotPath);
-    void addRenderLayer(
-    const std::string attachment, const std::string renderpass,
-    const std::string pipeline);
+    void createRenderLayer(
+        const std::string attachment, const std::string renderpass,
+        const std::string pipeline, const DrawParms);
     void clearRenderLayers();
     void render(uint32_t cmdId, int count, const std::array<int, 5>& ubosToUpdate); //5 is the max number of ubos we can have
     void popBufferBlock();

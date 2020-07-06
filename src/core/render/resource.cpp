@@ -65,11 +65,6 @@ void Buffer::allocateAndBindMemory()
 	device.bindBufferMemory(*handle, *memory, 0);
 }
 
-vk::Buffer& Buffer::getHandle()
-{
-	return *handle;
-}
-
 BufferBlock* Buffer::requestBlock(uint32_t blockSize)
 {
     uint32_t allocSize{0};
