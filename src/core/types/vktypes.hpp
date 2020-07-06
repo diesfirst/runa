@@ -2,6 +2,7 @@
 #define TYPES_VKTYPES_HPP
 
 #define VK_USE_PLATFORM_XCB_KHR
+#define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
 
 #include <vulkan/vulkan.hpp>
 

@@ -8,9 +8,12 @@
 #include <util/enum.hpp>
 #include <iostream>
 #include <state/report.hpp>
+#include <geometry/types.hpp>
 
 namespace sword
 {
+
+namespace render {class BufferBlock; };
 
 namespace command
 {
@@ -143,7 +146,8 @@ public:
             std::string fragShader,
             std::string renderPass,
             vk::Rect2D renderAreaSet,
-            bool has3dGeo) 
+            bool has3dGeo,
+            vk::PolygonMode polygonMode = vk::PolygonMode::eFill) 
     {
         this->name = name;
         this->pipelineLayout = pipelineLayout;
@@ -153,6 +157,28 @@ public:
         renderArea = renderAreaSet;
         is3d = has3dGeo;
         this->report = nullptr;
+        this->polygonMode = polygonMode;
+    }
+    void set(
+            std::string name,
+            std::string pipelineLayout,
+            std::string vertShader,
+            std::string fragShader,
+            std::string renderPass,
+            vk::Rect2D renderAreaSet,
+            geo::VertexInfo vertInfo,
+            vk::PolygonMode polygonMode) 
+    {
+        this->name = name;
+        this->pipelineLayout = pipelineLayout;
+        vertshader = vertShader;
+        fragshader = fragShader;
+        renderpass = renderPass;
+        renderArea = renderAreaSet;
+        is3d = true;
+        this->report = nullptr;
+        this->vertInfo = vertInfo;
+        this->polygonMode = polygonMode;
     }
 
     void set(state::GraphicsPipelineReport* report)
@@ -170,6 +196,8 @@ private:
     vk::Rect2D renderArea{{0, 0}, {100, 100}};
     state::GraphicsPipelineReport* report{nullptr};
     bool is3d{false};
+    geo::VertexInfo vertInfo;
+    vk::PolygonMode polygonMode = vk::PolygonMode::eFill;
 };
 
 class CreateSwapchainRenderpass : public Command
@@ -285,6 +313,19 @@ private:
     uint32_t binding;
 };
 
+
+class RequestBufferBlock : public Command
+{
+public:
+    CMD_BASE("RequestBufferBlock");
+    enum class Type : uint8_t {device, host};
+    void set(size_t size, Type type, render::BufferBlock* target);
+private:
+    Type type{Type::host};
+    size_t size{0};
+    render::BufferBlock* target{nullptr};
+};
+
 class Render : public Command
 {
 public:
@@ -305,6 +346,7 @@ private:
     int uboCount{0};
     std::array<int, 5> ubosToUpdate;
 };
+
 
 
 }; //command

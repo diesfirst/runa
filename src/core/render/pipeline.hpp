@@ -25,7 +25,8 @@ public:
         const uint32_t subpassIndex,
         const vk::Rect2D, //we could choose to make this dynamic
         const std::vector<const Shader*>,
-        const vk::PipelineVertexInputStateCreateInfo);
+        const vk::PipelineVertexInputStateCreateInfo, 
+        const vk::PolygonMode);
     ~GraphicsPipeline() = default;
     GraphicsPipeline(GraphicsPipeline&&) = default;
 
@@ -65,6 +66,7 @@ private:
     const std::vector<const Shader*> shaders;
     vk::Viewport viewport;
     vk::Rect2D scissor;
+    vk::PolygonMode polygonMode;
     uint32_t subpassIndex{0};
     bool created{false};
 

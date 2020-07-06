@@ -15,6 +15,7 @@ namespace render
 {
 
 static constexpr int swapchainImageCount = 2;
+static constexpr size_t defaultBufferSize = 100000000;
 
 Renderer::Renderer(Context& context) :
 	context{context},
@@ -27,8 +28,9 @@ Renderer::Renderer(Context& context) :
         vk::CommandPoolCreateFlagBits::eTransient}
 {
     createDescriptorPool();
-    createHostBuffer(100000000); //arbitrary for now. 100MB
+    createHostBuffer(defaultBufferSize); //arbitrary for now. 100MB
     hostBuffer->map();
+    createDeviceBuffer(defaultBufferSize);
     ubos.resize(2);
 }
 
@@ -274,7 +276,8 @@ bool Renderer::createGraphicsPipeline(
 		const std::string fragShader,
 		const std::string renderPass,
         const vk::Rect2D renderArea,
-		const bool geometric)
+		const geo::VertexInfo* vertInfo,
+        const vk::PolygonMode polygonMode)
 {
     if (graphicsPipelines.find(name) == graphicsPipelines.end())
     {
@@ -284,12 +287,13 @@ bool Renderer::createGraphicsPipeline(
         const vk::PipelineLayout& layout = *pipelineLayouts.at(pipelineLayout);
 
         vk::PipelineVertexInputStateCreateInfo vertexState;
-        if (geometric)
+        if (vertInfo)
         {
-            std::cerr << "Geometry pipelines not supported right now" << '\n';
-            return false;
+            vertexState.setPVertexBindingDescriptions(&vertInfo->bindingDescription);
+            vertexState.setPVertexAttributeDescriptions(vertInfo->attrbuteDescriptions.data());
+            vertexState.setVertexBindingDescriptionCount(1);
+            vertexState.setVertexAttributeDescriptionCount(vertInfo->attributeCount);
         }
-
         else 
         {
             vertexState.setPVertexBindingDescriptions(nullptr);
@@ -306,7 +310,8 @@ bool Renderer::createGraphicsPipeline(
                     0,
                     renderArea,
                     shaderPointers,
-                    vertexState));
+                    vertexState, 
+                    polygonMode));
 
         return true;
     }
@@ -606,6 +611,15 @@ void Renderer::createHostBuffer(uint32_t size)
 			vk::MemoryPropertyFlagBits::eHostCoherent);
 }
 
+void Renderer::createDeviceBuffer(uint32_t size)
+{
+	deviceBuffer = std::make_unique<Buffer>(
+			context.getBufferResources(), 
+			size, 
+            vk::BufferUsageFlagBits::eTransferDst,
+			vk::MemoryPropertyFlagBits::eDeviceLocal);
+}
+
 void Renderer::popBufferBlock()
 {
     hostBuffer->popBackBlock();
@@ -767,6 +781,11 @@ BufferBlock* Renderer::copyAttachmentToHost(
 
     commandPool.resetPool();
     return block;
+}
+
+BufferBlock* Renderer::requestHostBufferBlock(size_t size)
+{
+    return hostBuffer->requestBlock(size);
 }
 
 void Renderer::copyHostToAttachment(void* source, int size, std::string attachmentName, const vk::Rect2D region)

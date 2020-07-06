@@ -168,10 +168,18 @@ void CreateGraphicsPipeline::execute(Application* app)
         res = app->renderer.recreateGraphicsPipeline(report->getObjectName());
     }
     else 
-        res = app->renderer.createGraphicsPipeline(
-            name, pipelineLayout,
-            vertshader, fragshader,
-            renderpass, renderArea, is3d);
+    {
+        if (!is3d)
+            res = app->renderer.createGraphicsPipeline(
+                name, pipelineLayout,
+                vertshader, fragshader,
+                renderpass, renderArea, nullptr, polygonMode);
+        else
+            res = app->renderer.createGraphicsPipeline(
+                name, pipelineLayout,
+                vertshader, fragshader,
+                renderpass, renderArea, &vertInfo, polygonMode);
+    }
     if (res)
         success();
 }
@@ -233,9 +241,21 @@ state::Report* CreatePipelineLayout::makeReport() const
     return new state::PipelineLayoutReport(name, descriptorSetLayoutNames);
 }
 
+void RequestBufferBlock::execute(Application* app)
+{
+    assert(size > 0);
+    switch (type)
+    {
+        case Type::host: target = app->renderer.requestHostBufferBlock(size); break;
+        case Type::device: target = app->renderer.requestDeviceBufferBlock(size); break;
+    }
+    success();
+}
+
 void BindUboData::execute(Application* app)
 {
     app->renderer.bindUboData(address, size, index);
+    success();
 }
 
 

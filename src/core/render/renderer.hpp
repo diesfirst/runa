@@ -10,6 +10,7 @@
 #include <render/shader.hpp>
 #include <render/pipeline.hpp>
 #include <render/renderpass.hpp>
+#include <geometry/types.hpp>
 
 namespace sword
 {
@@ -51,11 +52,11 @@ public:
     bool loadVertShader(std::vector<uint32_t>&& code, const std::string name);
     RenderPass& createRenderPass(std::string name);
     const std::string createDescriptorSetLayout(
-    const std::string name, 
-    const std::vector<vk::DescriptorSetLayoutBinding>);
-    const std::string createPipelineLayout(
-    const std::string name, 
-    const std::vector<std::string> setLayouts);
+        const std::string name, 
+        const std::vector<vk::DescriptorSetLayoutBinding>);
+        const std::string createPipelineLayout(
+        const std::string name, 
+        const std::vector<std::string> setLayouts);
     void prepareRenderFrames(Window& window);
     void createFrameDescriptorSets(const std::vector<std::string>setLayoutNames);
     void createOwnDescriptorSets(const std::vector<std::string>setLayoutNames);
@@ -74,7 +75,8 @@ public:
         const std::string fragshader,
         const std::string renderpass,
         const vk::Rect2D renderArea,
-        const bool geometric);
+        const geo::VertexInfo*,
+        const vk::PolygonMode);
     bool recreateGraphicsPipeline(
         const std::string name);
     void bindUboData(void* dataPointer, uint32_t size, uint32_t index);
@@ -106,6 +108,9 @@ public:
     BufferBlock* copySwapToHost();
     BufferBlock* copyAttachmentToHost(const std::string, const vk::Rect2D region);
 
+    BufferBlock* requestHostBufferBlock(size_t size);
+    BufferBlock* requestDeviceBufferBlock(size_t size);
+
     void copyHostToAttachment(void* source, int size, std::string attachmentName, const vk::Rect2D region);
 
     Attachment* getAttachmentPtr(std::string name) const;
@@ -123,12 +128,18 @@ private:
     Attachment* activeTarget;
     std::vector<Ubo> ubos;
     CommandPool commandPool;
-
+    
 
     //descriptor stuff
     vk::UniqueDescriptorPool descriptorPool;
-    std::unique_ptr<Buffer> hostBuffer;
     std::vector<vk::UniqueDescriptorSet> descriptorSets;
+
+    //buffer stuff
+    void createHostBuffer(uint32_t size);
+    void createDeviceBuffer(uint32_t size);
+    std::unique_ptr<Buffer> hostBuffer;
+    std::unique_ptr<Buffer> deviceBuffer;
+
     void updateFramesDescriptorSet(uint32_t setId, const std::vector<vk::WriteDescriptorSet>);
     void updateOwnDescriptorSet(uint32_t setId, const std::vector<vk::WriteDescriptorSet>);
 
@@ -149,7 +160,7 @@ private:
 
     void createDescriptorPool();
     void updateFrameDescriptorBuffer(uint32_t frame, uint32_t uboIndex);
-    void createHostBuffer(uint32_t size);
+
 };
 
 }; // namespace render

@@ -1,9 +1,11 @@
+//imp: viewer.cpp
 #ifndef STATE_VIEWER_HPP
 #define STATE_VIEWER_HPP
 
 #include "state.hpp"
 #include <command/rendercommands.hpp>
 #include <command/commandtypes.hpp>
+#include <render/resource.hpp>
 #include <glm/glm.hpp>
 
 namespace sword
@@ -30,6 +32,9 @@ private:
     void initialize();
 
     Xform xform;
+
+    render::BufferBlock* stagingVertBuffer;
+    render::BufferBlock* deviceVertBuffer;
 
     command::pool<command::CompileShader, 2> compileShader;
     command::pool<command::PrepareRenderFrames, 1> prepareRenderFrames;

@@ -17,7 +17,8 @@ GraphicsPipeline::GraphicsPipeline(
 		const uint32_t subpassIndex,
 		const vk::Rect2D renderArea,
 		const std::vector<const Shader*> shaders,
-		const vk::PipelineVertexInputStateCreateInfo vertexInputState) :
+		const vk::PipelineVertexInputStateCreateInfo vertexInputState,
+        const vk::PolygonMode polygonMode) :
     name{name},
 	device{device},
 	layout{layout},
@@ -26,7 +27,8 @@ GraphicsPipeline::GraphicsPipeline(
     shaders{shaders},
     subpassIndex{subpassIndex},
     vertexInputState{vertexInputState},
-    scissor{renderArea}
+    scissor{renderArea},
+    polygonMode{polygonMode}
 {
 	viewport = createViewport(renderArea);
 	auto attachmentState0 = createColorBlendAttachmentState();
@@ -147,7 +149,7 @@ vk::PipelineRasterizationStateCreateInfo GraphicsPipeline::createRasterizationSt
 	ci.setCullMode(vk::CullModeFlagBits::eBack);
 	ci.setFrontFace(vk::FrontFace::eClockwise);
 	ci.setLineWidth(1.0);
-	ci.setPolygonMode(vk::PolygonMode::eFillRectangleNV);
+	ci.setPolygonMode(polygonMode);
 	ci.setDepthBiasClamp(0.0);
 	ci.setDepthBiasSlopeFactor(0.0);
 	ci.setDepthBiasConstantFactor(0.0);

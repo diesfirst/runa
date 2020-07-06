@@ -1,11 +1,17 @@
 #include "viewer.hpp"
 #include <event/event.hpp>
+#include <geometry/types.hpp>
 
 namespace sword
 {
 
 namespace state
 {
+
+struct Vertex
+{
+    glm::vec3 pos;
+};
 
 Viewer::Viewer(StateArgs sa, Callbacks cb) :
     BranchState{sa, cb, {
@@ -39,6 +45,8 @@ void Viewer::initialize()
     bindings[0].setStageFlags(vk::ShaderStageFlagBits::eVertex);
     bindings[0].setDescriptorCount(1);
 
+    geo::VertexInfo vertInfo{sizeof(Vertex), {offsetof(Vertex, pos)}};
+
     pushCmd(compileShader.request("vertex/triangle.vert", "tri"));
     pushCmd(compileShader.request("fragment/blue.frag", "blue"));
     pushCmd(prepareRenderFrames.request());
@@ -46,7 +54,9 @@ void Viewer::initialize()
     pushCmd(createFrameDescriptorSets.request(std::vector<std::string>({"foo"})));
     pushCmd(createSwapchainRenderpass.request("swap"));
     pushCmd(createPipelineLayout.request("layout", std::vector<std::string> ({"foo"})));
-    pushCmd(createGraphicsPipeline.request("view", "layout", "tri", "blue", "swap", vk::Rect2D({0, 0}, {800, 800}), false));
+    pushCmd(createGraphicsPipeline.request(
+                "view", "layout", "tri", "blue", "swap", 
+                vk::Rect2D({0, 0}, {800, 800}), vertInfo, vk::PolygonMode::eFill));
     pushCmd(createRenderLayer.request("swap", "swap", "view"));
     pushCmd(addFrameUniformBuffer.request(sizeof(Xform), 0));
     pushCmd(bindUboData.request(&xform, sizeof(Xform), 0));
@@ -54,7 +64,9 @@ void Viewer::initialize()
     pushCmd(openWindow.request());
 
     deactivate(opcast(Op::initialize));
+
 }
+
 
 }; // namespace state
 
