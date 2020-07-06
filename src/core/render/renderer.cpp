@@ -606,7 +606,8 @@ void Renderer::createHostBuffer(uint32_t size)
 			size, 
 			vk::BufferUsageFlagBits::eUniformBuffer |
             vk::BufferUsageFlagBits::eTransferDst |
-            vk::BufferUsageFlagBits::eTransferSrc,
+            vk::BufferUsageFlagBits::eTransferSrc | 
+            vk::BufferUsageFlagBits::eVertexBuffer,
 			vk::MemoryPropertyFlagBits::eHostVisible | 
 			vk::MemoryPropertyFlagBits::eHostCoherent);
 }
@@ -788,6 +789,12 @@ BufferBlock* Renderer::requestHostBufferBlock(size_t size)
     return hostBuffer->requestBlock(size);
 }
 
+BufferBlock* Renderer::requestDeviceBufferBlock(size_t size)
+{
+    return deviceBuffer->requestBlock(size);
+}
+
+
 void Renderer::copyHostToAttachment(void* source, int size, std::string attachmentName, const vk::Rect2D region)
 {
     assert(size == region.extent.width * region.extent.height * 4 && "size does not match region");
@@ -842,8 +849,8 @@ vk::Extent2D Renderer::getSwapExtent()
 }
 
 
-}; // namespace render
+} // namespace render
 
-}; // namespace sword
+} // namespace sword
 
 

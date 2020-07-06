@@ -259,6 +259,6 @@ void BindUboData::execute(Application* app)
 }
 
 
-}; // namespace command
+} // namespace command
 
-}; // namespace sword
+} // namespace sword

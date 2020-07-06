@@ -1,4 +1,5 @@
 #include "viewer.hpp"
+#include <cstring>
 #include <event/event.hpp>
 #include <geometry/types.hpp>
 
@@ -12,6 +13,11 @@ struct Vertex
 {
     glm::vec3 pos;
 };
+
+static const std::array<Vertex, 3> vertices = 
+{{
+    {{-0.5, -0.5, 0}}, {{0.5, 0.5, 0}}, {{-0.5, 0.5, 0}}
+}};
 
 Viewer::Viewer(StateArgs sa, Callbacks cb) :
     BranchState{sa, cb, {
@@ -57,17 +63,27 @@ void Viewer::initialize()
     pushCmd(createGraphicsPipeline.request(
                 "view", "layout", "tri", "blue", "swap", 
                 vk::Rect2D({0, 0}, {800, 800}), vertInfo, vk::PolygonMode::eFill));
-    pushCmd(createRenderLayer.request("swap", "swap", "view"));
     pushCmd(addFrameUniformBuffer.request(sizeof(Xform), 0));
     pushCmd(bindUboData.request(&xform, sizeof(Xform), 0));
-    pushCmd(recordRenderCommand.request(0, std::vector<uint32_t>{0}));
-    pushCmd(openWindow.request());
+    pushCmd(requestBufferBlock.request(
+                sizeof(vertices), 
+                command::RequestBufferBlock::Type::host, 
+                stagingVertBuffer));
+    pushCmd(requestBufferBlock.request(
+                sizeof(vertices), 
+                command::RequestBufferBlock::Type::device, 
+                deviceVertBuffer));
+//    pushCmd(recordRenderCommand.request(0, std::vector<uint32_t>{0}));
+//    pushCmd(openWindow.request());
+    memcpy(stagingVertBuffer->pHostMemory, &vertices, sizeof(vertices[0]) * vertices.size());
+
+    pushCmd(createRenderLayer.request("swap", "swap", "view"));
 
     deactivate(opcast(Op::initialize));
 
 }
 
 
-}; // namespace state
+} // namespace state
 
-}; // namespace sword
+} // namespace sword

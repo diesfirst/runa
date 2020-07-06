@@ -13,7 +13,7 @@
 namespace sword
 {
 
-namespace render {class BufferBlock; };
+namespace render {class BufferBlock; }
 
 namespace command
 {
@@ -319,7 +319,12 @@ class RequestBufferBlock : public Command
 public:
     CMD_BASE("RequestBufferBlock");
     enum class Type : uint8_t {device, host};
-    void set(size_t size, Type type, render::BufferBlock* target);
+    void set(size_t size, Type type, render::BufferBlock* target)
+    {
+        this->type = type;
+        this->size = size;
+        this->target = target;
+    }
 private:
     Type type{Type::host};
     size_t size{0};
@@ -349,7 +354,7 @@ private:
 
 
 
-}; //command
-}; //sword
+} //command
+} //sword
 
 #endif /* ifndef RENDERCOMMANDS_HPP_ */

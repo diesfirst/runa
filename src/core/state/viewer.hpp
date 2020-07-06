@@ -48,6 +48,7 @@ private:
     command::pool<command::BindUboData, 1> bindUboData;
     command::pool<command::RecordRenderCommand, 1> recordRenderCommand;
     command::pool<command::OpenWindow, 1> openWindow;
+    command::pool<command::RequestBufferBlock, 2> requestBufferBlock;
 };
 
 }; // namespace state

@@ -163,8 +163,8 @@ private:
 
 };
 
-}; // namespace render
+} // namespace render
 
-}; // namespace sword
+} // namespace sword
 
 #endif /* RENDERER_H */
