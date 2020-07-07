@@ -9,7 +9,14 @@ namespace render
 
 const vk::Buffer* DrawParms::getVertexBuffer() const
 {
-    return &vertexBufferBlock->buffer->getHandle();
+    if (vertexBufferBlock)
+        return &vertexBufferBlock->buffer->getHandle();
+    return nullptr;
+}
+
+uint32_t DrawParms::getOffset() const
+{
+    return vertexBufferBlock->offset;
 }
 
 } // namespace render

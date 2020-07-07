@@ -332,7 +332,7 @@ class RequestBufferBlock : public Command
 public:
     CMD_BASE("RequestBufferBlock");
     enum class Type : uint8_t {device, host};
-    void set(size_t size, Type type, render::BufferBlock* target)
+    void set(size_t size, Type type, render::BufferBlock** target)
     {
         this->type = type;
         this->size = size;
@@ -341,7 +341,7 @@ public:
 private:
     Type type{Type::host};
     size_t size{0};
-    render::BufferBlock* target{nullptr};
+    render::BufferBlock** target{nullptr};
 };
 
 class Render : public Command

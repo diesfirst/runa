@@ -31,7 +31,7 @@ struct Ubo
 
 class Window;
 class Image;
-class BufferBlock;
+struct BufferBlock;
 class RenderFrame;
 class Attachment;
 class Swapchain;

@@ -25,6 +25,7 @@ struct DrawParms
         vertexBufferBlock{bufferBlock}, vertexCount{numberOfVerts}, firstVertex{firstVertex}
     {}
     const vk::Buffer* getVertexBuffer() const;
+    uint32_t getOffset() const;
     constexpr uint32_t getVertexCount() const { return vertexCount; } 
     constexpr uint32_t getFirstVertex() const { return firstVertex; }
 private:

@@ -246,8 +246,8 @@ void RequestBufferBlock::execute(Application* app)
     assert(size > 0);
     switch (type)
     {
-        case Type::host: target = app->renderer.requestHostBufferBlock(size); break;
-        case Type::device: target = app->renderer.requestDeviceBufferBlock(size); break;
+        case Type::host: *target = app->renderer.requestHostBufferBlock(size); break;
+        case Type::device: *target = app->renderer.requestDeviceBufferBlock(size); break;
     }
     success();
 }

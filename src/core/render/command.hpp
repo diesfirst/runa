@@ -64,9 +64,10 @@ public:
     void beginRenderPass(vk::RenderPassBeginInfo&);
     void bindGraphicsPipeline(const vk::Pipeline& pipeline);
     void bindDescriptorSets(
-    const vk::PipelineLayout& layout, 
-    const std::vector<vk::DescriptorSet>& sets, 
-    const std::vector<uint32_t>& offsets);
+        const vk::PipelineLayout& layout, 
+        const std::vector<vk::DescriptorSet>& sets, 
+        const std::vector<uint32_t>& offsets);
+    void bindVertexBuffer(uint32_t firstBinding, const vk::Buffer*, uint32_t offset);
     void drawVerts(uint32_t vertCount, uint32_t firstVertex);
     void insertImageMemoryBarrier(
     vk::PipelineStageFlags srcStageMask,

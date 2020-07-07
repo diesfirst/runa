@@ -16,7 +16,7 @@ class Attachment;
 class CommandBuffer;
 class GraphicsPipeline;
 class RenderPass;
-class BufferBlock;
+struct BufferBlock;
 
 class RenderFrame
 {

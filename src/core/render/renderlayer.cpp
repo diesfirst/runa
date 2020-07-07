@@ -13,7 +13,7 @@ RenderLayer::RenderLayer(
         Attachment& target, 
         const RenderPass& pass,
         const GraphicsPipeline& pipe, 
-        const DrawParms) :
+        const DrawParms drawParms) :
     renderTarget{target},
     renderPass{pass},
     pipeline{pipe},

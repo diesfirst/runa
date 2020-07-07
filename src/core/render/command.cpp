@@ -142,6 +142,12 @@ void CommandBuffer::bindDescriptorSets(
             offsets);
 }
 
+void CommandBuffer::bindVertexBuffer(uint32_t firstBinding, const vk::Buffer* buffer, uint32_t offset)
+{
+    handle->bindVertexBuffers(firstBinding, {*buffer}, {offset}); 
+    //first binding, array of buffers, arrays of offsets
+}
+
 void CommandBuffer::drawVerts(uint32_t vertCount, uint32_t firstVertex)
 {
     handle->draw(vertCount, 1, firstVertex, 0);

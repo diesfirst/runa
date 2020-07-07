@@ -27,14 +27,15 @@ public:
     virtual ~Viewer() = default;
     Viewer(StateArgs, Callbacks);
 private:
-    enum class Op : Option {initialize, loadModel};
+    enum class Op : Option {initialize, loadModel, initialize2};
 
     void initialize();
+    void initialize2();
 
     Xform xform;
 
-    render::BufferBlock* stagingVertBuffer;
-    render::BufferBlock* deviceVertBuffer;
+    render::BufferBlock* stagingVertBuffer{nullptr};
+    render::BufferBlock* deviceVertBuffer{nullptr};
 
     command::pool<command::CompileShader, 2> compileShader;
     command::pool<command::PrepareRenderFrames, 1> prepareRenderFrames;

@@ -426,6 +426,8 @@ void Renderer::recordRenderCommands(uint32_t id, std::vector<uint32_t> fbIds)
             auto& pipeline = renderLayer.getPipeline();
             auto& framebuffer = renderLayer.getFramebuffer();
 
+            auto drawParms = renderLayer.getDrawParms();
+
             vk::RenderPassBeginInfo bi;
             bi.setFramebuffer(framebuffer);
             bi.setRenderArea(pipeline.getRenderArea());
@@ -439,7 +441,10 @@ void Renderer::recordRenderCommands(uint32_t id, std::vector<uint32_t> fbIds)
                     pipeline.getLayout(),
                     vk::uniqueToRaw(frame.getDescriptorSets()),
                     {});
-            commandBuffer.drawVerts(3, 0);
+            auto vertexBuffer = drawParms.getVertexBuffer();
+            if (vertexBuffer)
+                commandBuffer.bindVertexBuffer(0, drawParms.getVertexBuffer(), drawParms.getOffset());
+            commandBuffer.drawVerts(drawParms.getVertexCount(), 0); //default vertexCount is 3
             commandBuffer.endRenderPass();
 
         }
