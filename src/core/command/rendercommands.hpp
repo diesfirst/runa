@@ -14,7 +14,7 @@
 namespace sword
 {
 
-namespace render {class BufferBlock; }
+namespace render {struct BufferBlock; }
 
 namespace command
 {
@@ -245,6 +245,11 @@ public:
         renderpass = renderpassName;
         pipeline = pipelineName;
         this->drawParms = drawParms;
+    }
+    void reset() override
+    {
+        Command::reset();
+        drawParms.reset();
     }
     state::Report* makeReport() const override;
 private:

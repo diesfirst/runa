@@ -28,6 +28,12 @@ struct DrawParms
     uint32_t getOffset() const;
     constexpr uint32_t getVertexCount() const { return vertexCount; } 
     constexpr uint32_t getFirstVertex() const { return firstVertex; }
+    constexpr void reset() 
+    {
+        vertexBufferBlock = nullptr;
+        vertexCount = 3;
+        firstVertex = 0;
+    }
 private:
     BufferBlock* vertexBufferBlock{nullptr};
     uint32_t vertexCount{3}; //trianlge is default

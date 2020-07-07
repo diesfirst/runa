@@ -1,0 +1,65 @@
+diff --git a/src/core/command/command.hpp b/src/core/command/command.hpp
+index 6a70bb5..d8dea50 100644
+--- a/src/core/command/command.hpp
++++ b/src/core/command/command.hpp
+@@ -33,7 +33,7 @@ public:
+     virtual state::Report* makeReport() const { return nullptr; };
+     constexpr bool isAvailable() const {return !inUse;}
+     template <typename... Args> void set(Args... args) {}
+-    void reset() {inUse = false; }
++    virtual void reset() {inUse = false; }
+     void activate() {inUse = true;}
+     void setSuccessFn(SuccessFn fn) { successFn = fn; }
+     constexpr bool succeeded() {return success_status;}
+@@ -55,7 +55,7 @@ private:
+     bool success_status{false};
+ };
+ 
+-}; // namespace command
+-}; // namespace sword
++} // namespace command
++} // namespace sword
+ 
+ #endif
+diff --git a/src/core/command/rendercommands.hpp b/src/core/command/rendercommands.hpp
+index cb05b95..d99ee8f 100644
+--- a/src/core/command/rendercommands.hpp
++++ b/src/core/command/rendercommands.hpp
+@@ -14,7 +14,7 @@
+ namespace sword
+ {
+ 
+-namespace render {class BufferBlock; }
++namespace render {struct BufferBlock; }
+ 
+ namespace command
+ {
+@@ -246,6 +246,11 @@ public:
+         pipeline = pipelineName;
+         this->drawParms = drawParms;
+     }
++    void reset() override
++    {
++        Command::reset();
++        drawParms.reset();
++    }
+     state::Report* makeReport() const override;
+ private:
+     std::string attachment;
+diff --git a/src/core/render/types.hpp b/src/core/render/types.hpp
+index bda83f6..4cc73b8 100644
+--- a/src/core/render/types.hpp
++++ b/src/core/render/types.hpp
+@@ -28,6 +28,12 @@ struct DrawParms
+     uint32_t getOffset() const;
+     constexpr uint32_t getVertexCount() const { return vertexCount; } 
+     constexpr uint32_t getFirstVertex() const { return firstVertex; }
++    constexpr void reset() 
++    {
++        vertexBufferBlock = nullptr;
++        vertexCount = 3;
++        firstVertex = 0;
++    }
+ private:
+     BufferBlock* vertexBufferBlock{nullptr};
+     uint32_t vertexCount{3}; //trianlge is default

@@ -125,3 +125,14 @@ Thu May  7 22:51:28 EDT 2020
 Mon Jun 29 21:13:50 EDT 2020
     Its time. My hacky concurrancy has caught up with me. Need to design a legitmate queue, and may as well change over
     the event class hierarchy to a variant array.
+
+Mon Jul  6 23:06:16 EDT 2020
+    Ok, vertices and the three d world is back. But in working on the viewer initialize, I've finally encountered a case where 
+    I need the result of a command in order to execute a subsequent one. So the only way for our monolithic
+    command list pattern to continue on is to introduce asynchronous command execution. This will be necessary for anything really
+    game engine like to kick off anyway, so we may as well do it now. 
+    The idea is that as our monolithic command list onto the queue, worker threads will peel them off and execute them. This 
+    means that by the time the main thread gets to the point where it needs the result of a command, there will be a chance
+    its already done. But because its only a chance, we will need to encapsulate the result in some asynch primitive we
+    can wait on. I'm thinking futures? 
+    This may allow us to get rid of the brief state class, which was fucking stupid. 

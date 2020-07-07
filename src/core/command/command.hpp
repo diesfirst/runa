@@ -33,7 +33,7 @@ public:
     virtual state::Report* makeReport() const { return nullptr; };
     constexpr bool isAvailable() const {return !inUse;}
     template <typename... Args> void set(Args... args) {}
-    void reset() {inUse = false; }
+    virtual void reset() {inUse = false; }
     void activate() {inUse = true;}
     void setSuccessFn(SuccessFn fn) { successFn = fn; }
     constexpr bool succeeded() {return success_status;}
@@ -55,7 +55,7 @@ private:
     bool success_status{false};
 };
 
-}; // namespace command
-}; // namespace sword
+} // namespace command
+} // namespace sword
 
 #endif

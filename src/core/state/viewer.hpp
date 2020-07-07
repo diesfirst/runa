@@ -50,6 +50,7 @@ private:
     command::pool<command::RecordRenderCommand, 1> recordRenderCommand;
     command::pool<command::OpenWindow, 1> openWindow;
     command::pool<command::RequestBufferBlock, 2> requestBufferBlock;
+    command::pool<command::Render, 2> render;
 };
 
 }; // namespace state
