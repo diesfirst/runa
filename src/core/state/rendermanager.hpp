@@ -10,6 +10,7 @@
 #include <state/shader.hpp>
 #include <command/rendercommands.hpp>
 #include <command/saveimage.hpp>
+#include <command/commandtypes.hpp>
 
 namespace sword
 {
@@ -28,15 +29,15 @@ private:
     CommandPool<command::SaveSwapToPng>& pool;
 };
 
-class Render : public LeafState
+class SetRenderCommand : public LeafState
 {
 public:
     const char* getName() const override { return "Render"; }
     void handleEvent(event::Event*) override;
-    Render(StateArgs, Callbacks);
+    SetRenderCommand(StateArgs, Callbacks);
 private:
     void onEnterExt() override;
-    CommandPool<command::Render>& pool;
+    command::pool<command::SetRenderCommand, 1> pool;
 };
 
 class RecordRenderCommand : public LeafState
@@ -99,28 +100,29 @@ private:
     PrepareRenderFrames prepRenderFrames;
     CreateRenderLayer createRenderLayer;
     RecordRenderCommand recordRenderCommand;
-    Render render;
     SaveSwapImage saveSwapImage;
+    SetRenderCommand setRenderCommand;
 
     Reports<RenderLayerReport> renderLayersReports;
     Reports<RenderCommandReport> renderCommandReports;
 
     CommandPool<command::RecordRenderCommand>& rrcPool;
-    CommandPool<command::Render>& renderPool;
+
+    command::pool<command::SetRenderCommand, 1> pool;
 
     bool createdDescSetLayout{false};
 
+    void setRenderCommandF(int cmdIndex);
     void onPrepRenderFrames();
     void onOpenWindow();
     void receiveDescriptorSetLayoutReport(const DescriptorSetLayoutReport*);
     void printReports() const;
     void rerecordRenderCommand(RenderCommandReport*);
     void receiveGraphicsPipelineReport(const GraphicsPipelineReport*);
-    void renderCmd(int cmdIndex, bool updateUbo);
 };
 
-}; // namespace state
+} // namespace state
 
-}; // namespace sword
+} // namespace sword
 
 #endif /* end of include guard: STATE_RENDERMANAGER_HPP */

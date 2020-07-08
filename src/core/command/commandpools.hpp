@@ -31,7 +31,6 @@ struct CommandPools
     CommandPool<command::CreateFrameDescriptorSets> createFrameDescriptorSets;
     CommandPool<command::AddFrameUniformBuffer> addFrameUniformBuffer;
     CommandPool<command::UpdateFrameSamplers> updateFrameSamplers;
-    CommandPool<command::Render> render;
     CommandPool<command::CompileShader> compileShader;
     CommandPool<command::CompileShaderCode> compileShaderCode;
     CommandPool<command::WatchFile> watchFile;

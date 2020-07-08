@@ -206,8 +206,8 @@ public:
     const char* getName() const override { return "Painter"; }
     void handleEvent(event::Event*) override;
     Painter(StateArgs, Callbacks);
-    void beginFrame();
-    void endFrame();
+    void beginFrame() override;
+    void endFrame() override;
 private:
     enum class Op : Option {initBasic, paint, brushResize, saveAttachmentToPng};
 
@@ -227,6 +227,8 @@ private:
     CopyAttachmentToImage copyAttachmentToImage;
     CopyImageToAttachment copyImageToAttachment;
     render::Image undoImage;
+
+    command::pool<command::SetRenderCommand, 2> setRenderCommand;
 
     bool paintActive{false};
     bool resizeActive{false};

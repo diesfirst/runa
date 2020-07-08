@@ -29,6 +29,8 @@ public:
     void readEvents(std::ifstream&, int eventPops);
     void recordEvent(event::Event* event, std::ofstream& os);
 
+    void setRenderCommand(render::RenderParms);
+
     render::Context context;
     render::Window window;
     render::Renderer renderer;
@@ -62,6 +64,9 @@ private:
 
     int maxEventReads{0};
     int eventsRead{0};
+    bool renderParmsSet{false};
+
+    render::RenderParms renderParms;
 };
 
 }; // namespace sword

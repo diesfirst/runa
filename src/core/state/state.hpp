@@ -120,6 +120,8 @@ public:
     virtual void handleEvent(event::Event* event) = 0;
     virtual const char* getName() const = 0;
     virtual StateType getType() const = 0;
+    virtual void beginFrame() {}
+    virtual void endFrame() {}
     virtual ~State() = default;
     void onEnter();
     void onExit();

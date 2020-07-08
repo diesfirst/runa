@@ -35,17 +35,14 @@ public:
     const char* getName() const override { return "director"; }
     void handleEvent(event::Event*) override;
     Director(StateArgs, const StateStack& ss, render::Window& window);
-    void beginFrame() { painter.beginFrame(); }
-    void endFrame() { painter.endFrame(); }
 
 private:
-    enum class Op : Option {viewer, painter, pushRenderManager, printHierarchy, quickSetup, quickSetup2, quickSetup3};
+    enum class Op : Option {viewer, painter, pushRenderManager, printHierarchy, quickSetup, quickSetup3};
 
     void pushRenderManager();
     void printStateHierarchy();
     void popTop();
     void quickSetup();
-    void quickSetup2();
     void quickSetup3();
 
     RenderManager renderManager;

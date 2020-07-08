@@ -35,16 +35,16 @@ void SaveSwapImage::handleEvent(event::Event* event)
     }
 }
 
-Render::Render(StateArgs sa, Callbacks cb) :
-    LeafState{sa, cb}, pool{sa.cp.render}
+SetRenderCommand::SetRenderCommand(StateArgs sa, Callbacks cb) :
+    LeafState{sa, cb}
 {}
 
-void Render::onEnterExt()
+void SetRenderCommand::onEnterExt()
 {
     std::cout << "Enter a render command index" << '\n';
 }
 
-void Render::handleEvent(event::Event* event)
+void SetRenderCommand::handleEvent(event::Event* event)
 {
     if (event->getCategory() == event::Category::CommandLine)
     {
@@ -169,10 +169,9 @@ RenderManager::RenderManager(StateArgs sa, Callbacks cb) :
     prepRenderFrames{sa, {nullptr, [this](Report* report) { onPrepRenderFrames(); }}},
     createRenderLayer{sa, {nullptr, [this](Report* report) { addReport(report, &renderLayersReports); }}},
     recordRenderCommand{sa, {nullptr, [this](Report* report) { addReport(report, &renderCommandReports); }}},
-    render{sa, {}},
+    setRenderCommand{sa, {}},
     saveSwapImage{sa, {}},
-    rrcPool{sa.cp.recordRenderCommand},
-    renderPool{sa.cp.render}
+    rrcPool{sa.cp.recordRenderCommand}
 {   
     activate(opcast(Op::openWindow));
     activate(opcast(Op::shaderManager));
@@ -202,7 +201,7 @@ void RenderManager::handleEvent(event::Event* event)
             case Op::createRenderLayer: pushState(&createRenderLayer); break;
             case Op::recordRenderCommand: pushState(&recordRenderCommand); break;
             case Op::printReports: printReports(); break;
-            case Op::render: pushState(&render); break;
+            case Op::render: pushState(&setRenderCommand); break;
             case Op::saveSwapImage: pushState(&saveSwapImage); break;
         }
     }
@@ -246,17 +245,11 @@ void RenderManager::rerecordRenderCommand(RenderCommandReport* report)
     auto cmd = rrcPool.request(
             OwningReportCallbackFn([this, report](Report* r) {
                 auto cmdIndex = report->getCmdIndex();
-                renderCmd(cmdIndex, false);
+                setRenderCommandF(0);
                 }),
             report);
     pushCmd(std::move(cmd));
     std::cerr << "RenderManager::rerecordRenderCommand: pushed command" << '\n';
-}
-
-void RenderManager::renderCmd(int cmdIndex, bool updateUbo)
-{
-    auto cmd = renderPool.request(cmdIndex);
-    pushCmd(std::move(cmd));
 }
 
 void RenderManager::printReports() const
@@ -271,8 +264,14 @@ void RenderManager::printReports() const
     }
 }
 
-}; // namespace state
+void RenderManager::setRenderCommandF(int cmdIndex)
+{
+    auto cmd = pool.request(cmdIndex);
+    pushCmd(std::move(cmd));
+}
 
-}; // namespace sword
+} // namespace state
+
+} // namespace sword
 
 

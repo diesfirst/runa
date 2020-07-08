@@ -98,6 +98,12 @@ void Application::readEvents(std::ifstream& is, int eventPops)
     is.close();
 }
 
+void Application::setRenderCommand(render::RenderParms parms)
+{
+    renderParmsSet = true;
+    renderParms = parms;
+}
+
 void Application::drainEventQueue()
 {
     int i = 0;
@@ -164,12 +170,20 @@ void Application::executeCommands()
 
 void Application::beginFrame()
 {
-    dirState.beginFrame();
+    for (auto& state : stateStack) 
+    {
+        state->beginFrame();
+    }
 }
 
 void Application::endFrame()
 {
-    dirState.endFrame();
+    for (auto& state : stateStack) 
+    {
+        state->endFrame();
+    }
+    if (renderParmsSet)
+        renderer.render(renderParms.getBufferId(), renderParms.getUboCount(), renderParms.getUboIndices());
 }
 
 void Application::run(bool pollEvents)
@@ -197,9 +211,9 @@ void Application::run(bool pollEvents)
 
         drainEventQueue();
 
-        endFrame();
-
         executeCommands();
+
+        endFrame();
 
         std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }

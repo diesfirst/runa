@@ -2,6 +2,7 @@
 #define RENDER_TYPES_HPP
 
 #include <types/vktypes.hpp>
+#include <util/debug.hpp>
 
 namespace sword
 {
@@ -38,6 +39,33 @@ private:
     BufferBlock* vertexBufferBlock{nullptr};
     uint32_t vertexCount{3}; //trianlge is default
     uint32_t firstVertex{0};
+};
+
+struct RenderParms
+{
+    static constexpr int MAX_UBO_COUNT = 5;
+
+    RenderParms() = default;
+
+    RenderParms(uint32_t bufferId) : bufferId{bufferId}
+    {}
+
+    template<size_t N>
+    RenderParms(uint32_t bufferId, const int(&uboIndexes)[N] ) : bufferId{bufferId},
+        uboCount{N}
+    {
+        static_assert(N < MAX_UBO_COUNT);
+        SWD_DEBUG_MSG(typeid(uboIndexes).name());
+        memcpy(uboIndices.data(), uboIndexes, sizeof(int) * N);
+    }
+
+    constexpr uint32_t getBufferId() const { return bufferId; }
+    constexpr uint32_t getUboCount() const { return uboCount; }
+    const std::array<int, MAX_UBO_COUNT>& getUboIndices() const { return uboIndices; } 
+    size_t uboCount{0};
+private:
+    uint32_t bufferId{0};
+    std::array<int, MAX_UBO_COUNT> uboIndices;
 };
 
 

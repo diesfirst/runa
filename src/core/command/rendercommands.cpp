@@ -223,9 +223,9 @@ state::Report* RecordRenderCommand::makeReport() const
     return new state::RenderCommandReport(cmdBufferId, renderLayers);
 }
 
-void Render::execute(Application* app)
+void SetRenderCommand::execute(Application* app)
 {
-    app->renderer.render(renderCommandId, uboCount, ubosToUpdate);
+    app->setRenderCommand(renderParms);
     success();
 }
 

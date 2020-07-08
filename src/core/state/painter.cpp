@@ -5,6 +5,7 @@
 #include <util/debug.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <render/context.hpp>
+#include <render/types.hpp>
 
 namespace sword
 {
@@ -401,7 +402,7 @@ void Painter::handleEvent(event::Event* event)
             {
                 auto cmd = copyImageToAttachment.request(&undoImage, "paint", vk::Rect2D({0, 0}, {C_WIDTH, C_HEIGHT}));
                 pushCmd(std::move(cmd));
-                pushCmd(cp.render.request(1));
+                pushCmd(setRenderCommand.request(render::RenderParms(1)));
                 event->setHandled();
                 return;
             }
@@ -480,13 +481,13 @@ void Painter::initBasic()
     pushCmd(cp.openWindow.request(sr.openWindow->reportCallback()));
     pushCmd(cp.watchFile.request("fragment/brush/simple.frag"));
 
-    pushCmd(cp.render.request(1));
-    pushCmd(cp.render.request(1));
-    pushCmd(cp.render.request(1));
-
-    pushCmd(cp.render.request(0));
-    pushCmd(cp.render.request(0));
-    pushCmd(cp.render.request(0));
+//    pushCmd(cp.render.request(1));
+//    pushCmd(cp.render.request(1));
+//    pushCmd(cp.render.request(1));
+//
+//    pushCmd(cp.render.request(0));
+//    pushCmd(cp.render.request(0));
+//    pushCmd(cp.render.request(0));
 
     painterVars.paintCmdId = 0;
     painterVars.viewCmdId = 2;
@@ -504,7 +505,7 @@ void Painter::initBasic()
 void Painter::displayCanvas()
 {
     painterVars.fragInput.sampleIndex = 0;
-    auto cmd = cp.render.request(painterVars.viewCmdId, 1, std::array<int, 5>{0});
+    auto cmd = setRenderCommand.request(render::RenderParms(painterVars.viewCmdId, {0}));
     pushCmd(std::move(cmd));
 
     resizeActive = false;
@@ -523,12 +524,14 @@ void Painter::endFrame()
         if (resizeActive)
         {
             SWD_DEBUG_MSG("Resizing. Brush Size: " << painterVars.fragInput.brushSize << "\nbrushX: " << painterVars.fragInput.brushX << " brushY: " << painterVars.fragInput.brushY);
-            auto cmd = cp.render.request(painterVars.brushStaticCmd, 2, std::array<int, 5>{0, 1});
+            auto parms = render::RenderParms(painterVars.brushStaticCmd, {0, 1});
+            auto cmd = setRenderCommand.request(parms);
             pushCmd(std::move(cmd));
         }
         else
         {
-            auto cmd = cp.render.request(painterVars.paintCmdId, 2, std::array<int, 5>{0, 1});
+            auto parms = render::RenderParms(painterVars.paintCmdId, {0, 1});
+            auto cmd = setRenderCommand.request(parms);
             pushCmd(std::move(cmd));
 
         }
