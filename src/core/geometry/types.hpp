@@ -25,24 +25,29 @@ struct VertexInfo
 {
     VertexInfo() = default;
     template<size_t N>
-    VertexInfo(const size_t vertexSize, const uint32_t(&offsets)[N]) : attributeCount{N}
+    VertexInfo(uint32_t vertexSize, const uint32_t(&attributeOffsets)[N]) : attributeCount{N},
+        bindingDescription{
+            .binding = 0,
+            .stride = vertexSize,
+            .inputRate = vk::VertexInputRate::eVertex}
     {
         static_assert(N < MAX_ATTRIBUTE_COUNT);
-        bindingDescription.setBinding(0);
-        bindingDescription.setStride(vertexSize);
-        bindingDescription.setInputRate(vk::VertexInputRate::eVertex);
         for (int i = 0; i < N; i++)
         {
             attrbuteDescriptions[i] = vk::VertexInputAttributeDescription{
-                .location = 0,
+                .location = i,
                 .binding = 0,
                 .format = vk::Format::eR32G32B32Sfloat,
-                .offset = offsets[i]};
+                .offset = attributeOffsets[i]};
         }
     }
+    constexpr size_t getAttributeCount() const { return attributeCount; }
+    constexpr const vk::VertexInputBindingDescription* getPBindingDescription() const { return &bindingDescription; }
+    constexpr const vk::VertexInputAttributeDescription* getPAttributeDescriptions() const { return attrbuteDescriptions.data(); }
+private:
     vk::VertexInputBindingDescription bindingDescription;
-    std::array<vk::VertexInputAttributeDescription, MAX_ATTRIBUTE_COUNT> attrbuteDescriptions;
     size_t attributeCount{0};
+    std::array<vk::VertexInputAttributeDescription, MAX_ATTRIBUTE_COUNT> attrbuteDescriptions;
 };
 
 

@@ -10,15 +10,35 @@ namespace sword
 namespace state
 {
 
-struct Vertex
+struct Position
 {
-    glm::vec3 pos;
+    float x;
+    float y;
+    float z;
 };
 
-static const std::array<Vertex, 3> vertices = 
-{{
-    {{-0.5, -0.5, 0}}, {{0.5, 0.5, 0}}, {{-0.5, 0.5, 0}}
-}};
+struct Color
+{
+    float r;
+    float g;
+    float b;
+};
+
+struct Vertex
+{
+    Position pos;
+    Color color;
+};
+
+const Vertex vertices[] = 
+{
+    {{-0.5, -0.5, 0}, {1, 0, 0}}, 
+    {{ 0.5,  0.5, 0}, {0, 1, 0}}, 
+    {{-0.5,  0.5, 0}, {0, 0, 1}},
+    {{-0.3, -0.2, 0}, {1, 0, 0}}, 
+    {{ 0.7,  0.1, 0}, {0, 1, 0}}, 
+    {{-0.4,  0.6, 0}, {0, 0, 1}},
+};
 
 Viewer::Viewer(StateArgs sa, Callbacks cb) :
     BranchState{sa, cb, {
@@ -39,7 +59,7 @@ void Viewer::handleEvent(event::Event* event)
         if (!option) return;
         switch(opcast<Op>(*option))
         {
-            case Op::loadModel: std::cout << "did it" << '\n'; break;
+            case Op::loadModel: std::cout << "loadModel called" << '\n'; break;
             case Op::initialize: initialize(); break;
             case Op::initialize2: initialize2(); break;
         }
@@ -54,10 +74,12 @@ void Viewer::initialize()
     bindings[0].setStageFlags(vk::ShaderStageFlagBits::eVertex);
     bindings[0].setDescriptorCount(1);
 
-    geo::VertexInfo vertInfo{sizeof(Vertex), {offsetof(Vertex, pos)}};
+    geo::VertexInfo vertInfo{
+        sizeof(Vertex), 
+        {offsetof(Vertex, pos), offsetof(Vertex, color)}};
 
     pushCmd(compileShader.request("vertex/basic.vert", "tri"));
-    pushCmd(compileShader.request("fragment/blue.frag", "blue"));
+    pushCmd(compileShader.request("fragment/vertcolor.frag", "blue"));
     pushCmd(prepareRenderFrames.request());
     pushCmd(createDescriptorSetLayout.request("foo", bindings));
     pushCmd(createFrameDescriptorSets.request(std::vector<std::string>({"foo"})));
@@ -69,7 +91,7 @@ void Viewer::initialize()
     pushCmd(addFrameUniformBuffer.request(sizeof(Xform), 0));
     pushCmd(bindUboData.request(&xform, sizeof(Xform), 0));
     pushCmd(requestBufferBlock.request(
-                sizeof(vertices[0]) * vertices.size(), 
+                sizeof(vertices), 
                 command::RequestBufferBlock::Type::host, 
                 &stagingVertBuffer));
 //    pushCmd(requestBufferBlock.request(
@@ -86,9 +108,9 @@ void Viewer::initialize()
 
 void Viewer::initialize2()
 {
-    memcpy(stagingVertBuffer->pHostMemory, vertices.data(), sizeof(vertices[0]) * vertices.size());
+    memcpy(stagingVertBuffer->pHostMemory, vertices, sizeof(vertices));
 
-    render::DrawParms drawParms{stagingVertBuffer, vertices.size(), 0};
+    render::DrawParms drawParms{stagingVertBuffer, sizeof(vertices) / sizeof(vertices[0]), 0};
 
     pushCmd(createRenderLayer.request("swap", "swap", "view", drawParms));
 

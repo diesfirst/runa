@@ -289,10 +289,10 @@ bool Renderer::createGraphicsPipeline(
         vk::PipelineVertexInputStateCreateInfo vertexState;
         if (vertInfo)
         {
-            vertexState.setPVertexBindingDescriptions(&vertInfo->bindingDescription);
-            vertexState.setPVertexAttributeDescriptions(vertInfo->attrbuteDescriptions.data());
+            vertexState.setPVertexBindingDescriptions(vertInfo->getPBindingDescription());
+            vertexState.setPVertexAttributeDescriptions(vertInfo->getPAttributeDescriptions());
             vertexState.setVertexBindingDescriptionCount(1);
-            vertexState.setVertexAttributeDescriptionCount(vertInfo->attributeCount);
+            vertexState.setVertexAttributeDescriptionCount(vertInfo->getAttributeCount());
         }
         else 
         {
