@@ -22,7 +22,7 @@ struct BufferResources
 struct DrawParms
 {
     constexpr DrawParms() = default;
-    constexpr DrawParms(BufferBlock* bufferBlock, uint32_t numberOfVerts, uint32_t firstVertex) : 
+    constexpr DrawParms(BufferBlock** bufferBlock, uint32_t numberOfVerts, uint32_t firstVertex) : 
         vertexBufferBlock{bufferBlock}, vertexCount{numberOfVerts}, firstVertex{firstVertex}
     {}
     const vk::Buffer* getVertexBuffer() const;
@@ -36,7 +36,7 @@ struct DrawParms
         firstVertex = 0;
     }
 private:
-    BufferBlock* vertexBufferBlock{nullptr};
+    BufferBlock** vertexBufferBlock{nullptr};
     uint32_t vertexCount{3}; //trianlge is default
     uint32_t firstVertex{0};
 };

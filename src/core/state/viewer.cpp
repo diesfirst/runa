@@ -103,14 +103,13 @@ void Viewer::initialize()
 
     deactivate(opcast(Op::initialize));
     activate(opcast(Op::initialize2));
-
 }
 
 void Viewer::initialize2()
 {
     memcpy(stagingVertBuffer->pHostMemory, vertices, sizeof(vertices));
 
-    render::DrawParms drawParms{stagingVertBuffer, sizeof(vertices) / sizeof(vertices[0]), 0};
+    render::DrawParms drawParms{&stagingVertBuffer, sizeof(vertices) / sizeof(vertices[0]), 0};
 
     pushCmd(createRenderLayer.request("swap", "swap", "view", drawParms));
 

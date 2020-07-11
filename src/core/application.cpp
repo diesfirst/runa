@@ -107,6 +107,13 @@ void Application::popDraw()
     drawStack.pop();
 }
 
+void Application::launchWorkerThread()
+{
+    std::thread worker(&Application::executeCommands, this);
+    worker.detach();
+    SWD_DEBUG_MSG("Worker launched");
+}
+
 void Application::drainEventQueue()
 {
     while (!dispatcher.eventQueue.empty())
@@ -146,21 +153,26 @@ void Application::drainEventQueue()
 
 void Application::executeCommands()
 {
-    if (!cmdStack.empty())
+    while (1)
     {
-        cmdStack.reverse();
-    }
-    while (!cmdStack.empty())
-    {
-        auto cmd = cmdStack.pop();
-        if (cmd)
+        if (!cmdStack.empty())
         {
-            cmd->execute(this);
-            if (cmd->succeeded())
-                cmd->onSuccess();
+            cmdStack.reverse();
         }
-        else
-            std::cout << "Recieved null cmd" << std::endl;
+        while (!cmdStack.empty())
+        {
+            auto cmd = cmdStack.pop();
+            if (cmd)
+            {
+                cmd->execute(this);
+                SWD_DEBUG_MSG(cmd->getName() << " executed.");
+                if (cmd->succeeded())
+                    cmd->onSuccess();
+            }
+            else
+                std::cout << "Recieved null cmd" << std::endl;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
     }
 }
 
@@ -195,6 +207,8 @@ void Application::run(bool pollEvents)
     if (readevents)
         is.open(readlog, std::ios::binary);
 
+    launchWorkerThread();
+
     bool keepRunnning = true;
     while (keepRunnning)
     {
@@ -210,7 +224,7 @@ void Application::run(bool pollEvents)
 
         drainEventQueue();
 
-        executeCommands();
+        //commands will be executed by worker thread
 
         endFrame();
 

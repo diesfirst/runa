@@ -32,6 +32,7 @@ public:
     void readEvents(std::ifstream&, int eventPops);
     void recordEvent(event::Event* event, std::ofstream& os);
 
+
     render::Context context;
     render::Window window;
     render::Renderer renderer;
@@ -59,6 +60,8 @@ private:
     Stack<render::RenderParms> drawStack;
 
     state::Director dirState;
+
+    void launchWorkerThread();
 
     void beginFrame();
     void endFrame();
