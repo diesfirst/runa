@@ -5,6 +5,7 @@
 #include <functional>
 #include <types/stack.hpp>
 #include <types/pool.hpp>
+#include <types/queue.hpp>
 
 namespace sword
 {
@@ -14,12 +15,12 @@ namespace event
 
 class Event;
 
-template <typename T, size_t S>
-using EventPool = Pool<T, Event, S>;
+template <typename T, size_t N>
+using Pool = container::Pool<T, Event, N>;
 
-using EventPtr = std::unique_ptr<Event, std::function<void(Event*)>>;
+using Vessel = container::PoolVessel<Event>;
 
-using EventQueue = ForwardStack<EventPtr>;
+using EventQueue = container::LockingQueue<Vessel, 40>;
 
 }; // namespace event
 

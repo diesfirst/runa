@@ -9,7 +9,7 @@
 namespace sword
 {
 
-namespace render {class BufferBlock; }
+namespace render {struct BufferBlock; }
 
 namespace geo
 {
@@ -26,19 +26,16 @@ struct VertexInfo
     VertexInfo() = default;
     template<size_t N>
     VertexInfo(uint32_t vertexSize, const uint32_t(&attributeOffsets)[N]) : attributeCount{N},
-        bindingDescription{
-            .binding = 0,
-            .stride = vertexSize,
-            .inputRate = vk::VertexInputRate::eVertex}
+        bindingDescription{0, vertexSize, vk::VertexInputRate::eVertex}
     {
         static_assert(N < MAX_ATTRIBUTE_COUNT);
-        for (int i = 0; i < N; i++)
+        for (uint32_t i = 0; i < N; i++)
         {
             attrbuteDescriptions[i] = vk::VertexInputAttributeDescription{
-                .location = i,
-                .binding = 0,
-                .format = vk::Format::eR32G32B32Sfloat,
-                .offset = attributeOffsets[i]};
+                i,
+                0,
+                vk::Format::eR32G32B32Sfloat,
+                attributeOffsets[i]};
         }
     }
     constexpr size_t getAttributeCount() const { return attributeCount; }

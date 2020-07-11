@@ -135,8 +135,8 @@ void EventDispatcher::fetchCommandLineInput()
     {
         if (catcher == "q")
         {
-            auto event = aPool.request();
-            eventQueue.push(std::move(event));
+            Vessel event = aPool.request();
+            eventQueue.push(event);
             std::cout << "Aborting operation" << std::endl;
             std::this_thread::sleep_for(std::chrono::milliseconds(RL_DELAY));
             return;
@@ -155,7 +155,7 @@ void EventDispatcher::fetchWindowInput()
 {	
     auto* event = window.waitForEvent();
     assert (event);
-    EventPtr curEvent;
+    Vessel curEvent;
 	switch (static_cast<WindowEventType>(event->response_type))
 	{
         case WindowEventType::Motion: 
@@ -209,9 +209,7 @@ void EventDispatcher::fetchWindowInput()
         }
 	}
 	free(event);
-    lock.lock();
     eventQueue.push(std::move(curEvent));
-    lock.unlock();
 }
 
 void EventDispatcher::runCommandLineLoop()

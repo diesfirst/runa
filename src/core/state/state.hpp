@@ -77,7 +77,7 @@ struct Register
 struct StateArgs
 {
     EditStack& es;
-    CommandStack& cs;
+    command::Queue& cs;
     CommandPools& cp;
     Register& rg;
     render::Context& ct;
@@ -128,21 +128,21 @@ public:
     std::vector<std::string> getVocab();
 //    virtual std::vector<const Report*> getReports() const {return {};};
 protected:
-    State(CommandStack& cs) : cmdStack{cs} {}
-    State(CommandStack& cs, ExitCallbackFn callback) : cmdStack{cs}, onExitCallback{callback} {}
+    State(command::Queue& cs) : cmdStack{cs} {}
+    State(command::Queue& cs, ExitCallbackFn callback) : cmdStack{cs}, onExitCallback{callback} {}
     void setVocab(std::vector<std::string> strings);
     void clearVocab() { vocab.clear(); }
     void addToVocab(std::string word) { vocab.push_back(word); }
     void updateVocab();
     void printVocab();
-    void pushCmd(CmdPtr&& ptr);
+    void pushCmd(command::Vessel);
     void setVocabMask(OptionMask* mask) { vocab.setMaskPtr(mask); }
 private:
-    CommandPool<command::UpdateVocab> uvPool;
-    CommandPool<command::PopVocab> pvPool;
-    CommandPool<command::AddVocab> avPool;
+    command::Pool<command::UpdateVocab, 3> uvPool;
+    command::Pool<command::PopVocab, 3> pvPool;
+    command::Pool<command::AddVocab, 3> avPool;
     Vocab vocab;
-    CommandStack& cmdStack;
+    command::Queue& cmdStack;
     ExitCallbackFn onExitCallback{nullptr};
     virtual void onEnterImp();
     virtual void onExitImp();
@@ -161,7 +161,7 @@ protected:
     LeafState(StateArgs sa, Callbacks cb) :
         State{sa.cs, cb.ex}, cmdStack{sa.cs}, editStack{sa.es}, reportCallbackFn{cb.rp} {}
     void popSelf() { editStack.popState(); }
-    void pushCmd(CmdPtr&& ptr);
+    void pushCmd(command::Vessel ptr);
 
     template<typename R>
     R* findReport(const std::string& name, const std::vector<std::unique_ptr<R>>& reports)
@@ -175,10 +175,10 @@ protected:
     }
 
 private:
-    CommandPool<command::SetVocab> svPool;
+    command::Pool<command::SetVocab, 3> svPool;
     EditStack& editStack;
     OwningReportCallbackFn reportCallbackFn{nullptr};
-    CommandStack& cmdStack;
+    command::Queue& cmdStack;
 
     void onExitImp() override final;
     void onEnterImp() override final;

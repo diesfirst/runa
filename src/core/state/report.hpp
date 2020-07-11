@@ -86,7 +86,6 @@ private:
         return "";
     }
     const std::string name{"unitilialized"};
-    const char* type_string{"uninilialized"};
     std::string source_path{"unknown"};
     ShaderType type;
     int specint0{0};

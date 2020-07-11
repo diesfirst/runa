@@ -34,7 +34,7 @@ private:
     EventQueue& eventQueue;
     std::vector<WatchTicket> watches;
 
-    EventPool<File, 3> eventPool;
+    Pool<File, 3> eventPool;
 };
 
 }; // namespace event

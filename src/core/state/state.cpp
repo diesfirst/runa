@@ -6,7 +6,7 @@ namespace sword
 namespace state
 {
 
-void State::pushCmd(CmdPtr&& cmd)
+void State::pushCmd(command::Vessel cmd)
 {
     cmdStack.push(std::move(cmd));
 }
@@ -74,7 +74,7 @@ void LeafState::onExitImp()
     updateVocab();
 }
 
-void LeafState::pushCmd(CmdPtr&& cmd)
+void LeafState::pushCmd(command::Vessel cmd)
 {
     cmdStack.push(std::move(cmd));
 }

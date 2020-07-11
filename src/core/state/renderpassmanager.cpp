@@ -24,10 +24,10 @@ void CreateRenderPass::handleEvent(event::Event* event)
         auto ce = toCommandLine(event);       
         auto name = ce->getFirst<std::string>();
         Report* report;
-        CmdPtr cmd;
         if (type == RenderPassType::swapchain)
         {
-            cmd = csrpPool.request(reportCallback(), name);
+            auto cmd = csrpPool.request(reportCallback(), name);
+            pushCmd(cmd);
         }
         else if (type == RenderPassType::offscreen)
         {
@@ -44,7 +44,8 @@ void CreateRenderPass::handleEvent(event::Event* event)
                 event->setHandled();
                 return;
             }
-            cmd = corpPool.request(reportCallback(), name, loadop);
+            auto cmd = corpPool.request(reportCallback(), name, loadop);
+            pushCmd(cmd);
         }
         else
         {
@@ -53,7 +54,6 @@ void CreateRenderPass::handleEvent(event::Event* event)
             event->setHandled();
             return;
         }
-        pushCmd(std::move(cmd));
         popSelf();
         event->setHandled();
     }

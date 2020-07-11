@@ -10,6 +10,9 @@
 namespace sword
 {
 
+template<typename T>
+using CommandPool = command::Pool<T, 5>;
+
 //not including vocab commands
 struct CommandPools
 {

@@ -193,21 +193,21 @@ void SetSpec::handleEvent(event::Event* event)
             type = ShaderType::vert;
         while (stream >> name)
         {
-            CmdPtr cmd;
             auto report = findReport<ShaderReport>(name, reports);
             if (this->type == shader::SpecType::floating)
             {
-                cmd = ssfPool.request(name, type, first, second);
+                auto cmd = ssfPool.request(name, type, first, second);
                 report->setSpecFloat(0, first);
                 report->setSpecFloat(1, second);
+                pushCmd(std::move(cmd));
             }
             else 
             {
-                cmd = ssiPool.request(name, type, first, second);
+                auto cmd = ssiPool.request(name, type, first, second);
                 report->setSpecInt(0, first);
                 report->setSpecInt(1, second);
+                pushCmd(std::move(cmd));
             }
-            pushCmd(std::move(cmd));
         }
         event->setHandled();
         popSelf();

@@ -34,9 +34,8 @@ void CreateGraphicsPipeline::handleEvent(event::Event* event)
             {ce->getArg<int, 5>(), ce->getArg<int, 6>()},
             {ce->getArg<uint32_t, 7>(), ce->getArg<uint32_t, 8>()}};
         auto is3d = ce->getArg<bool, 9>();
-        auto cmd = pool.request(reportCallback(), name, pipelineLayout,
-                vertshader, fragshader, renderpass, area, is3d);
-        pushCmd(std::move(cmd));
+        auto cmd = pool.request(reportCallback(), name, pipelineLayout, vertshader, fragshader, renderpass, area, is3d);
+        pushCmd(cmd);
         popSelf();
         event->setHandled();
     }

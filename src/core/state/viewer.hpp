@@ -37,20 +37,20 @@ private:
     render::BufferBlock* stagingVertBuffer{nullptr};
     render::BufferBlock* deviceVertBuffer{nullptr};
 
-    command::pool<command::CompileShader, 2> compileShader;
-    command::pool<command::PrepareRenderFrames, 1> prepareRenderFrames;
-    command::pool<command::CreateDescriptorSetLayout, 1> createDescriptorSetLayout;
-    command::pool<command::CreateFrameDescriptorSets, 1> createFrameDescriptorSets;
-    command::pool<command::CreateSwapchainRenderpass, 1> createSwapchainRenderpass;
-    command::pool<command::CreatePipelineLayout, 1> createPipelineLayout;
-    command::pool<command::CreateGraphicsPipeline, 1> createGraphicsPipeline;
-    command::pool<command::CreateRenderLayer, 1> createRenderLayer;
-    command::pool<command::AddFrameUniformBuffer, 1> addFrameUniformBuffer;
-    command::pool<command::BindUboData, 1> bindUboData;
-    command::pool<command::RecordRenderCommand, 1> recordRenderCommand;
-    command::pool<command::OpenWindow, 1> openWindow;
-    command::pool<command::RequestBufferBlock, 2> requestBufferBlock;
-    command::pool<command::SetRenderCommand, 2> setRenderCommand;
+    command::Pool<command::CompileShader, 2> compileShader;
+    command::Pool<command::PrepareRenderFrames, 1> prepareRenderFrames;
+    command::Pool<command::CreateDescriptorSetLayout, 1> createDescriptorSetLayout;
+    command::Pool<command::CreateFrameDescriptorSets, 1> createFrameDescriptorSets;
+    command::Pool<command::CreateSwapchainRenderpass, 1> createSwapchainRenderpass;
+    command::Pool<command::CreatePipelineLayout, 1> createPipelineLayout;
+    command::Pool<command::CreateGraphicsPipeline, 1> createGraphicsPipeline;
+    command::Pool<command::CreateRenderLayer, 1> createRenderLayer;
+    command::Pool<command::AddFrameUniformBuffer, 1> addFrameUniformBuffer;
+    command::Pool<command::BindUboData, 1> bindUboData;
+    command::Pool<command::RecordRenderCommand, 1> recordRenderCommand;
+    command::Pool<command::OpenWindow, 1> openWindow;
+    command::Pool<command::RequestBufferBlock, 2> requestBufferBlock;
+    command::Pool<command::SetRenderCommand, 2> setRenderCommand;
 };
 
 }; // namespace state

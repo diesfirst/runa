@@ -90,8 +90,8 @@ struct PainterVars
     int brushStaticCmd;
 };
 
-using CopyAttachmentToImage = Pool<command::CopyAttachmentToImage, command::Command, 2>;
-using CopyImageToAttachment = Pool<command::CopyImageToAttachment, command::Command, 2>;
+using CopyAttachmentToImage = command::Pool<command::CopyAttachmentToImage, 2>;
+using CopyImageToAttachment = command::Pool<command::CopyImageToAttachment, 2>;
 
 class Rotate : public LeafState
 {
@@ -228,7 +228,7 @@ private:
     CopyImageToAttachment copyImageToAttachment;
     render::Image undoImage;
 
-    command::pool<command::SetRenderCommand, 2> setRenderCommand;
+    command::Pool<command::SetRenderCommand, 2> setRenderCommand;
 
     bool paintActive{false};
     bool resizeActive{false};

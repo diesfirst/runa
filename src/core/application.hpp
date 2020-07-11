@@ -24,7 +24,7 @@ public:
     void run(bool pollEvents);
     void popState();
     void pushState(state::State* const);
-    void pushCmd(CmdPtr&&);
+    void pushCmd(command::Vessel);
 
     void readEvents(std::ifstream&, int eventPops);
     void recordEvent(event::Event* event, std::ofstream& os);
@@ -53,7 +53,7 @@ private:
     
     state::EditStack stateEdits;
     StateStack stateStack;
-    CommandStack cmdStack;
+    command::Queue cmdStack;
 
     state::Director dirState;
 

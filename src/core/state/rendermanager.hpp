@@ -37,7 +37,7 @@ public:
     SetRenderCommand(StateArgs, Callbacks);
 private:
     void onEnterExt() override;
-    command::pool<command::SetRenderCommand, 1> pool;
+    command::Pool<command::SetRenderCommand, 1> pool;
 };
 
 class RecordRenderCommand : public LeafState
@@ -108,7 +108,7 @@ private:
 
     CommandPool<command::RecordRenderCommand>& rrcPool;
 
-    command::pool<command::SetRenderCommand, 1> pool;
+    command::Pool<command::SetRenderCommand, 1> pool;
 
     bool createdDescSetLayout{false};
 

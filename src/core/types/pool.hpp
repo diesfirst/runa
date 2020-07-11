@@ -14,6 +14,35 @@ namespace sword
 
 namespace state { class Report; }
 
+namespace container
+{
+
+//template<typename T>
+//concept Resetable = requires(T t)
+//{
+//    t.reset();
+//};
+//
+//template<Resetable T>
+//class PoolVessel
+//...
+// clang still gets this wrong. gcc is fine with it, but im sick of seeing the 
+// error diagnostics
+
+template<typename T>
+class PoolVessel
+{
+public:
+    PoolVessel() = default;
+    PoolVessel(T* pT) { handle = pT; }
+    ~PoolVessel() { if (handle) handle->reset(); }
+    T* operator->() { return handle; }
+    T* get() { return handle; }
+    operator bool() const { return handle != nullptr; }
+private:
+    T* handle = nullptr;
+};
+
 template <typename T, typename Base, size_t Size>
 class Pool
 {
@@ -23,10 +52,10 @@ private:
 
 public:
     //using Pointer = std::unique_ptr<Base, std::function<void(Base*)>>;
-    using Pointer = std::unique_ptr<Base, std::function<void(Base*)>>;
+    using Vessel = PoolVessel<Base>;
 
-    Pool()
-    {}
+    Pool() {}
+
     Pool(render::CommandPool_t<Size>&& gpuPool)
     {
         constexpr bool hasCmdBufferMember = requires (T t, render::CommandBuffer& buffer)
@@ -46,21 +75,21 @@ public:
     }
 
     template <typename... Args> 
-    Pointer request(Args... args)
+    Vessel request(Args... args)
     {
         for (int i = 0; i < Size; i++) 
             if (pool[i].isAvailable())
             {
                 pool[i].set(args...);
                 pool[i].activate();
-                Pointer ptr{&pool[i], [](Base* t){ t->reset(); }}; //may not have to construct here
-                return ptr; //tentatively may need to be std::move? copy should be ellided tho
+                Vessel vessel{&pool[i]};
+                return vessel; //tentatively may need to be std::move? copy should be ellided tho
             }    
-        return nullptr;
+        throw std::runtime_error("Ran out of room in pool. ");
     }
 
     template <typename... Args> 
-    Pointer request(std::function<void(state::Report*)> reportCb, Args... args) //requires IsCommand<T>
+    Vessel request(std::function<void(state::Report*)> reportCb, Args... args) //requires IsCommand<T>
     {
         for (int i = 0; i < Size; i++) 
             if (pool[i].isAvailable())
@@ -68,21 +97,25 @@ public:
                 pool[i].setSuccessFn(reportCb);
                 pool[i].set(args...);
                 pool[i].activate();
-                Pointer ptr{&pool[i], [](Base* t){ t->reset(); }};
-                return ptr; //tentatively may need to be std::move? copy should be ellided tho
+                Vessel vessel{&pool[i]};
+                return vessel; //tentatively may need to be std::move? copy should be ellided tho
             }    
-        return nullptr;
+        throw std::runtime_error("Ran out of room in pool. ");
     }
 
-    void printAll() const 
+    static void printAll(Pool* pool) 
     {
-        for (auto& i : pool) 
+        for (auto& i : pool->pool) 
             i.print();
     }
 
 };
 
 
-};
+} // namespace container
+
+
+
+}
 
 #endif /* ifndef POOL_H_ */

@@ -50,7 +50,6 @@ Application::Application(uint16_t w, uint16_t h, const std::string logfile, int 
         maxEventReads = INT32_MAX;
     else 
         maxEventReads = event_reads;
-
 }
 
 void Application::popState()
@@ -66,7 +65,7 @@ void Application::pushState(state::State* state)
         state->onEnter();
 }
 
-void Application::pushCmd(CmdPtr&& command)
+void Application::pushCmd(command::Vessel command)
 {
     cmdStack.push(std::move(command));
 }
@@ -110,7 +109,7 @@ void Application::drainEventQueue()
     dispatcher.lock.lock();
     while (i < dispatcher.eventQueue.size())
     {
-        auto& event = dispatcher.eventQueue.items[i];
+        auto& event = dispatcher.eventQueue[i];
         if (event)
         {
             if (recordevents) recordEvent(event.get(), os);
@@ -142,7 +141,7 @@ void Application::drainEventQueue()
         }
         i++;
     }
-    dispatcher.eventQueue.items.clear();
+    dispatcher.eventQueue.clear();
     dispatcher.lock.unlock();
 }
 
@@ -165,7 +164,7 @@ void Application::executeCommands()
         if (cmd && cmd->succeeded())
             cmd->onSuccess();
     }
-    cmdStack.items.clear();
+    cmdStack.clear();
 }
 
 void Application::beginFrame()
