@@ -16,7 +16,7 @@ template <typename T,size_t N>
 class LockingQueue
 {
 public:
-    void push(T&& item) { lock.lock(); items[count] = std::move(item); count++; lock.unlock(); }
+    void push(T&& item) { assert(!isFull()); lock.lock(); items[count] = std::move(item); count++; lock.unlock(); }
     T pop() 
     { 
         assert(count > 0); 
@@ -35,6 +35,7 @@ public:
     void print() const {for (const auto& item : items) std::cout << item->getName() << '\n';}
     size_t size() const {return count; }
     void reverse() { std::reverse(items.begin(), items.begin() + count); }
+    bool isFull() { return count == maxItems; }
     T& operator[](int i) { return items[i]; }
 private:
     static constexpr size_t maxItems = N; 

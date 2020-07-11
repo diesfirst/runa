@@ -12,7 +12,7 @@ namespace command
 {
 
 using Vessel = container::PoolVessel<Command>;
-using Queue = container::LockingQueue<Vessel, 20>;
+using Queue = container::LockingQueue<Vessel, 50>;
 
 template <typename T, size_t N>
 using Pool = container::Pool<T, Command, N>;

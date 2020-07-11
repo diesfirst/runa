@@ -55,7 +55,6 @@ struct RenderParms
         uboCount{N}
     {
         static_assert(N < MAX_UBO_COUNT);
-        SWD_DEBUG_MSG(typeid(uboIndexes).name());
         memcpy(uboIndices.data(), uboIndexes, sizeof(int) * N);
     }
 
