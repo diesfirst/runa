@@ -7,6 +7,7 @@
 #include <vector>
 #include <iostream>
 #include <render/command.hpp>
+#include <util/debug.hpp>
 //#include <concepts>
 
 namespace sword
@@ -36,6 +37,14 @@ public:
     PoolVessel() = default;
     PoolVessel(T* pT) { handle = pT; }
     ~PoolVessel() { if (handle) handle->reset(); }
+    PoolVessel(const PoolVessel&) = delete;
+    PoolVessel& operator=(const PoolVessel&) = delete;
+    PoolVessel& operator=(PoolVessel&& other) 
+    { 
+        if (this == &other) return *this;
+        handle = other.handle; other.handle = nullptr; return *this;
+    }
+    PoolVessel(PoolVessel&& other) : handle{other.handle} {other.handle = nullptr;}
     T* operator->() { return handle; }
     T* get() { return handle; }
     operator bool() const { return handle != nullptr; }
@@ -85,6 +94,7 @@ public:
                 Vessel vessel{&pool[i]};
                 return vessel; //tentatively may need to be std::move? copy should be ellided tho
             }    
+        SWD_DEBUG_MSG("No more room. Size: " << Size);
         throw std::runtime_error("Ran out of room in pool. ");
     }
 
@@ -100,6 +110,7 @@ public:
                 Vessel vessel{&pool[i]};
                 return vessel; //tentatively may need to be std::move? copy should be ellided tho
             }    
+        SWD_DEBUG_MSG("No more room. Size: " << Size);
         throw std::runtime_error("Ran out of room in pool. ");
     }
 

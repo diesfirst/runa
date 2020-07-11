@@ -27,7 +27,7 @@ void CreateRenderPass::handleEvent(event::Event* event)
         if (type == RenderPassType::swapchain)
         {
             auto cmd = csrpPool.request(reportCallback(), name);
-            pushCmd(cmd);
+            pushCmd(std::move(cmd));
         }
         else if (type == RenderPassType::offscreen)
         {
@@ -45,7 +45,7 @@ void CreateRenderPass::handleEvent(event::Event* event)
                 return;
             }
             auto cmd = corpPool.request(reportCallback(), name, loadop);
-            pushCmd(cmd);
+            pushCmd(std::move(cmd));
         }
         else
         {

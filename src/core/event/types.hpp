@@ -20,7 +20,7 @@ using Pool = container::Pool<T, Event, N>;
 
 using Vessel = container::PoolVessel<Event>;
 
-using EventQueue = container::LockingQueue<Vessel, 40>;
+using EventQueue = container::LockingQueue<Vessel, 200>;
 
 }; // namespace event
 

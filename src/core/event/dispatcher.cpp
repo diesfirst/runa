@@ -136,7 +136,7 @@ void EventDispatcher::fetchCommandLineInput()
         if (catcher == "q")
         {
             Vessel event = aPool.request();
-            eventQueue.push(event);
+            eventQueue.push(std::move(event));
             std::cout << "Aborting operation" << std::endl;
             std::this_thread::sleep_for(std::chrono::milliseconds(RL_DELAY));
             return;

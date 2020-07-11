@@ -4,6 +4,7 @@
 #include <array>
 #include <iostream>
 #include <mutex>
+#include <cassert>
 
 namespace sword
 {
@@ -15,10 +16,20 @@ template <typename T,size_t N>
 class LockingQueue
 {
 public:
-    void push(T item) { lock.lock(); items[count] = item; count++; lock.unlock(); }
-    void pop() { lock.lock(); count--; lock.unlock(); }
-    T& top() {return items[count]; }
-    auto topPtr() {return items[count].get();}
+    void push(T&& item) { lock.lock(); items[count] = std::move(item); count++; lock.unlock(); }
+    T pop() 
+    { 
+        assert(count > 0); 
+        size_t cur;
+        T t;
+        lock.lock(); 
+        count--; 
+        t = std::move(items[count]); 
+        lock.unlock(); 
+        return t; //may need a move, but it should be elided
+    }
+    //T&& top() {return items[count]; }
+    //auto topPtr() {return items[count].get();}
     bool empty() const {return count == 0;}
     void clear() { lock.lock(); count = 0; lock.unlock(); }
     void print() const {for (const auto& item : items) std::cout << item->getName() << '\n';}

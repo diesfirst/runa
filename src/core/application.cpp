@@ -106,10 +106,9 @@ void Application::setRenderCommand(render::RenderParms parms)
 void Application::drainEventQueue()
 {
     int i = 0;
-    dispatcher.lock.lock();
     while (i < dispatcher.eventQueue.size())
     {
-        auto& event = dispatcher.eventQueue[i];
+        auto event = dispatcher.eventQueue.pop();
         if (event)
         {
             if (recordevents) recordEvent(event.get(), os);
@@ -141,8 +140,6 @@ void Application::drainEventQueue()
         }
         i++;
     }
-    dispatcher.eventQueue.clear();
-    dispatcher.lock.unlock();
 }
 
 void Application::executeCommands()
@@ -153,16 +150,15 @@ void Application::executeCommands()
     }
     while (!cmdStack.empty())
     {
-        auto cmd = cmdStack.topPtr();
+        auto cmd = cmdStack.pop();
         if (cmd)
         {
             cmd->execute(this);
+            if (cmd->succeeded())
+                cmd->onSuccess();
         }
         else
             std::cout << "Recieved null cmd" << std::endl;
-        cmdStack.pop();
-        if (cmd && cmd->succeeded())
-            cmd->onSuccess();
     }
     cmdStack.clear();
 }
