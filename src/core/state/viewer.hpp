@@ -27,10 +27,9 @@ public:
     virtual ~Viewer() = default;
     Viewer(StateArgs, Callbacks);
 private:
-    enum class Op : Option {initialize, loadModel, initialize2};
+    enum class Op : Option {initialize, loadModel};
 
     void initialize();
-    void initialize2();
 
     Xform xform;
 

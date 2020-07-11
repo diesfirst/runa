@@ -5,6 +5,7 @@
 #include <render/types.hpp>
 #include <thread>
 #include <chrono>
+#include <cmath>
 
 namespace sword
 {
@@ -32,7 +33,7 @@ struct Vertex
     Color color;
 };
 
-const Vertex vertices[] = 
+Vertex vertices[] = 
 {
     {{-0.5, -0.5, 0}, {1, 0, 0}}, 
     {{ 0.5,  0.5, 0}, {0, 1, 0}}, 
@@ -46,11 +47,34 @@ Viewer::Viewer(StateArgs sa, Callbacks cb) :
     BranchState{sa, cb, {
             {"load_model", opcast(Op::loadModel)},
             {"initialize", opcast(Op::initialize)},
-            {"initialize2", opcast(Op::initialize2)}
             }}
 {
     activate(opcast(Op::loadModel));
     activate(opcast(Op::initialize));
+}
+
+
+static float distance(float x1, float y1, float x2, float y2)
+{
+    return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+}
+
+static int findVertInRange(float x, float y)
+{
+    size_t count = sizeof(vertices) / sizeof(vertices[0]);
+    for (int i = 0; i < count; i++) 
+    {
+        auto pos = vertices[i].pos;
+        float dist = distance(x, y, pos.x, pos.y);
+        if (dist < .2)
+            return i;
+    }
+    return -1;
+}
+
+static float normalize(int16_t x)
+{
+    return float(x) / 800.0;
 }
 
 void Viewer::handleEvent(event::Event* event)
@@ -63,7 +87,57 @@ void Viewer::handleEvent(event::Event* event)
         {
             case Op::loadModel: std::cout << "loadModel called" << '\n'; break;
             case Op::initialize: initialize(); break;
-            case Op::initialize2: initialize2(); break;
+        }
+    }
+    if (event->getCategory() == event::Category::Window)
+    {
+        static float initX = 0.0;
+        static float initY = 0.0;
+        static float initVertX = 0.0;
+        static float initVertY = 0.0;
+        static bool mouseButtonDown = false;
+        static int curVert = -1;
+
+        auto we = toWindowEvent(event);
+        if (we->getType() == event::WindowEventType::MousePress)
+        {
+            auto mp = toMousePress(we);
+            if(mp->getMouseButton() == event::symbol::MouseButton::Left)
+            {
+                mouseButtonDown = true;
+                auto x = normalize(mp->getX());
+                auto y = normalize(mp->getY());
+                SWD_DEBUG_MSG("x: " << x << " y: " << y);
+                auto vert = findVertInRange(x, y);
+                if (vert == -1) return;
+                SWD_DEBUG_MSG("Selecting vert " << vert);
+                mouseButtonDown = true;
+                initX = x;
+                initY = y;
+                initVertX = vertices[curVert].pos.x;
+                initVertY = vertices[curVert].pos.y;
+                curVert = vert;
+                return;
+            }
+        }
+//        else if (we->getType() == event::WindowEventType::MouseRelease)
+//        {
+//            auto mp = toMousePress(we);
+//            if(mp->getMouseButton() == event::symbol::MouseButton::Left)
+//            {
+//                mouseButtonDown = false;
+//                return;
+//            }
+//        }
+        else if (we->getType() == event::WindowEventType::Motion && mouseButtonDown)
+        {
+            float diffX = normalize(we->getX()) - initX;
+            float diffY = normalize(we->getY()) - initY;
+            vertices[curVert].pos.x = initVertX + diffX;
+            vertices[curVert].pos.y = initVertY + diffY;
+            memcpy(stagingVertBuffer->pHostMemory, vertices, sizeof(vertices));
+            SWD_DEBUG_MSG("Added an x difference of " << diffX);
+            return;
         }
     }
 }
@@ -113,24 +187,6 @@ void Viewer::initialize()
     pushCmd(pushDraw.request(0));
 
     deactivate(opcast(Op::initialize));
-//    activate(opcast(Op::initialize2));
-}
-
-void Viewer::initialize2()
-{
-    memcpy(stagingVertBuffer->pHostMemory, vertices, sizeof(vertices));
-
-    render::DrawParms drawParms{&stagingVertBuffer, sizeof(vertices) / sizeof(vertices[0]), 0};
-
-    pushCmd(createRenderLayer.request("swap", "swap", "view", drawParms));
-
-    pushCmd(recordRenderCommand.request(0, std::vector<uint32_t>{0}));
-
-    pushCmd(openWindow.request());
-
-    pushCmd(pushDraw.request(0));
-
-    deactivate(opcast(Op::initialize2));
 }
 
 

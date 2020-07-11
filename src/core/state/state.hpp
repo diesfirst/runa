@@ -39,6 +39,8 @@ using Reports = std::vector<std::unique_ptr<T>>;
 
 //constexpr bool isCommandLine(event::Event* event) { return event->getCategory() == event::Category::CommandLine;}
 constexpr event::CommandLine* toCommandLine(event::Event* event) { return static_cast<event::CommandLine*>(event);}
+constexpr event::Window* toWindowEvent(event::Event* event) { return static_cast<event::Window*>(event);}
+constexpr event::MousePress* toMousePress(event::Window* event) { return static_cast<event::MousePress*>(event);}
 
 enum class StateType : uint8_t {leaf, branch, brief};
 
