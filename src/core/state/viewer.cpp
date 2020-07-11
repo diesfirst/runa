@@ -3,6 +3,8 @@
 #include <event/event.hpp>
 #include <geometry/types.hpp>
 #include <render/types.hpp>
+#include <thread>
+#include <chrono>
 
 namespace sword
 {
@@ -94,15 +96,24 @@ void Viewer::initialize()
                 sizeof(vertices), 
                 command::RequestBufferBlock::Type::host, 
                 &stagingVertBuffer));
-//    pushCmd(requestBufferBlock.request(
-//                sizeof(vertices), 
-//                command::RequestBufferBlock::Type::device, 
-//                deviceVertBuffer));
-//    pushCmd(recordRenderCommand.request(0, std::vector<uint32_t>{0}));
-//    pushCmd(openWindow.request());
+
+    // poor mans synchronization
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+
+    memcpy(stagingVertBuffer->pHostMemory, vertices, sizeof(vertices));
+
+    render::DrawParms drawParms{&stagingVertBuffer, sizeof(vertices) / sizeof(vertices[0]), 0};
+
+    pushCmd(createRenderLayer.request("swap", "swap", "view", drawParms));
+
+    pushCmd(recordRenderCommand.request(0, std::vector<uint32_t>{0}));
+
+    pushCmd(openWindow.request());
+
+    pushCmd(pushDraw.request(0));
 
     deactivate(opcast(Op::initialize));
-    activate(opcast(Op::initialize2));
+//    activate(opcast(Op::initialize2));
 }
 
 void Viewer::initialize2()
