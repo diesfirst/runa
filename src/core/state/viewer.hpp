@@ -50,7 +50,7 @@ private:
     command::Pool<command::RecordRenderCommand, 1> recordRenderCommand;
     command::Pool<command::OpenWindow, 1> openWindow;
     command::Pool<command::RequestBufferBlock, 2> requestBufferBlock;
-    command::Pool<command::SetRenderCommand, 2> setRenderCommand;
+    command::Pool<command::PushDraw, 2> pushDraw;
 };
 
 }; // namespace state

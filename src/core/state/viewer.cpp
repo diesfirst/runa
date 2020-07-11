@@ -118,7 +118,7 @@ void Viewer::initialize2()
 
     pushCmd(openWindow.request());
 
-    pushCmd(setRenderCommand.request(0));
+    pushCmd(pushDraw.request(0));
 
     deactivate(opcast(Op::initialize2));
 }

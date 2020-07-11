@@ -26,10 +26,11 @@ public:
     void pushState(state::State* const);
     void pushCmd(command::Vessel);
 
+    void pushDraw(const render::RenderParms);
+    void popDraw();
+
     void readEvents(std::ifstream&, int eventPops);
     void recordEvent(event::Event* event, std::ofstream& os);
-
-    void setRenderCommand(render::RenderParms);
 
     render::Context context;
     render::Window window;
@@ -55,6 +56,8 @@ private:
     StateStack stateStack;
     command::Queue cmdStack;
 
+    Stack<render::RenderParms> drawStack;
+
     state::Director dirState;
 
     void beginFrame();
@@ -64,9 +67,6 @@ private:
 
     int maxEventReads{0};
     int eventsRead{0};
-    bool renderParmsSet{false};
-
-    render::RenderParms renderParms;
 };
 
 }; // namespace sword

@@ -2,6 +2,7 @@
 #define COMMAND_COMMAND_H_
 
 #include <functional>
+#include <util/debug.hpp>
 
 #define CMD_BASE(name) \
     void execute(Application*) override;\
@@ -33,7 +34,10 @@ public:
     virtual state::Report* makeReport() const { return nullptr; };
     constexpr bool isAvailable() const {return !inUse;}
     template <typename... Args> void set(Args... args) {}
-    virtual void reset() {inUse = false; }
+    virtual void reset() {
+        inUse = false; 
+        SWD_DEBUG_MSG("");
+    }
     void activate() {inUse = true;}
     void setSuccessFn(SuccessFn fn) { successFn = fn; }
     constexpr bool succeeded() {return success_status;}

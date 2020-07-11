@@ -223,9 +223,15 @@ state::Report* RecordRenderCommand::makeReport() const
     return new state::RenderCommandReport(cmdBufferId, renderLayers);
 }
 
-void SetRenderCommand::execute(Application* app)
+void PushDraw::execute(Application* app)
 {
-    app->setRenderCommand(renderParms);
+    app->pushDraw(renderParms);
+    success();
+}
+
+void PopDraw::execute(Application* app)
+{
+    app->popDraw();
     success();
 }
 

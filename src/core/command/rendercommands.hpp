@@ -349,10 +349,10 @@ private:
     render::BufferBlock** target{nullptr};
 };
 
-class SetRenderCommand : public Command
+class PushDraw : public Command
 {
 public:
-    CMD_BASE("render");
+    CMD_BASE("pushDraw");
     void set(render::RenderParms parms)
     {
         renderParms = parms;
@@ -364,6 +364,15 @@ private:
 //    std::array<int, 5> ubosToUpdate;
 };
 
+class PopDraw : public Command
+{
+public:
+    CMD_BASE("popRenderCommand");
+private:
+//    uint32_t renderCommandId{0};
+//    int uboCount{0};
+//    std::array<int, 5> ubosToUpdate;
+};
 
 
 } //command

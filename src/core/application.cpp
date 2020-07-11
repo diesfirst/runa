@@ -97,16 +97,19 @@ void Application::readEvents(std::ifstream& is, int eventPops)
     is.close();
 }
 
-void Application::setRenderCommand(render::RenderParms parms)
+void Application::pushDraw(render::RenderParms parms)
 {
-    renderParmsSet = true;
-    renderParms = parms;
+    drawStack.push(std::move(parms));
+}
+
+void Application::popDraw()
+{
+    drawStack.pop();
 }
 
 void Application::drainEventQueue()
 {
-    int i = 0;
-    while (i < dispatcher.eventQueue.size())
+    while (!dispatcher.eventQueue.empty())
     {
         auto event = dispatcher.eventQueue.pop();
         if (event)
@@ -138,7 +141,6 @@ void Application::drainEventQueue()
             if (stateStack.top()->getType() == state::StateType::leaf)
                 stateStack.top()->onEnter();
         }
-        i++;
     }
 }
 
@@ -160,7 +162,6 @@ void Application::executeCommands()
         else
             std::cout << "Recieved null cmd" << std::endl;
     }
-    cmdStack.clear();
 }
 
 void Application::beginFrame()
@@ -177,8 +178,11 @@ void Application::endFrame()
     {
         state->endFrame();
     }
-    if (renderParmsSet)
-        renderer.render(renderParms.getBufferId(), renderParms.getUboCount(), renderParms.getUboIndices());
+    if (!drawStack.empty())
+    {
+        auto parms = drawStack.top();
+        renderer.render(parms.getBufferId(), parms.getUboCount(), parms.getUboIndices());
+    }
 }
 
 void Application::run(bool pollEvents)

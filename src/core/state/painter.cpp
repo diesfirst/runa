@@ -154,7 +154,8 @@ void Translate::handleEvent(event::Event *event)
 ResizeBrush::ResizeBrush(StateArgs sa, Callbacks cb, PainterVars& vars) :
     LeafState{sa, cb}, 
     brushSize{vars.fragInput.brushSize}, brushPosX{vars.fragInput.brushX}, brushPosY{vars.fragInput.brushY},
-    vars{vars}
+    vars{vars},
+    pushDraw{vars.pushDraw}, popDraw{vars.popDraw}
 {}
 
 void ResizeBrush::onEnterExt()
@@ -167,6 +168,14 @@ void ResizeBrush::onEnterExt()
     brushPosX = startPos.x;
     brushPosY = startPos.y;
     SWD_DEBUG_MSG("Starting dist: " << startingDist);
+    auto cmd = pushDraw.request(render::RenderParms(vars.brushStaticCmd, {0, 1}));
+    pushCmd(std::move(cmd));
+}
+
+void ResizeBrush::onExitExt()
+{
+    auto cmd = popDraw.request();
+    pushCmd(std::move(cmd));
 }
 
 void ResizeBrush::handleEvent(event::Event* event)
@@ -209,8 +218,22 @@ void ResizeBrush::handleEvent(event::Event* event)
 
 Paint::Paint(StateArgs sa, Callbacks cb, PainterVars& vars, CopyAttachmentToImage& cati, render::Image& undoImage) :
     LeafState{sa, cb}, brushPosX{vars.fragInput.brushX}, brushPosY{vars.fragInput.brushY},
-    vars{vars}, copyAttachmentToImage{cati}, undoImage{undoImage}, paintSamples{vars.paintSamples}
+    vars{vars}, copyAttachmentToImage{cati}, undoImage{undoImage}, paintSamples{vars.paintSamples},
+    pushDraw{vars.pushDraw}, popDraw{vars.popDraw}
 {
+}
+
+void Paint::onEnterExt()
+{
+    auto parms = render::RenderParms(vars.paintCmdId, {0, 1});
+    auto cmd = pushDraw.request(parms);
+    pushCmd(std::move(cmd));
+}
+
+void Paint::onExitExt()
+{
+    auto cmd = popDraw.request();
+    pushCmd(std::move(cmd));
 }
 
 void Paint::handleEvent(event::Event* event)
@@ -387,7 +410,7 @@ void Painter::handleEvent(event::Event* event)
                 event->setHandled();
                 painterVars.fragInput.sampleIndex = 1;
                 painterVars.paintSamples.brushIsResizing = 1;
-                resizeActive = true;
+//                resizeActive = true;
                 return;
             }
             if (inputCast(kp->getKey()) == Input::rotate)
@@ -402,7 +425,6 @@ void Painter::handleEvent(event::Event* event)
             {
                 auto cmd = copyImageToAttachment.request(&undoImage, "paint", vk::Rect2D({0, 0}, {C_WIDTH, C_HEIGHT}));
                 pushCmd(std::move(cmd));
-                pushCmd(setRenderCommand.request(render::RenderParms(1)));
                 event->setHandled();
                 return;
             }
@@ -505,10 +527,10 @@ void Painter::initBasic()
 void Painter::displayCanvas()
 {
     painterVars.fragInput.sampleIndex = 0;
-    auto cmd = setRenderCommand.request(render::RenderParms(painterVars.viewCmdId, {0}));
-    pushCmd(std::move(cmd));
-
-    resizeActive = false;
+//    auto cmd = setRenderCommand.request(render::RenderParms(painterVars.viewCmdId, {0}));
+//    pushCmd(std::move(cmd));
+//
+//    resizeActive = false;
     painterVars.paintSamples.brushIsResizing = 0;
 }
 
@@ -519,23 +541,23 @@ void Painter::beginFrame()
 
 void Painter::endFrame()
 {
-    if (initialized)
-    {
-        if (resizeActive)
-        {
-            SWD_DEBUG_MSG("Resizing. Brush Size: " << painterVars.fragInput.brushSize << "\nbrushX: " << painterVars.fragInput.brushX << " brushY: " << painterVars.fragInput.brushY);
-            auto parms = render::RenderParms(painterVars.brushStaticCmd, {0, 1});
-            auto cmd = setRenderCommand.request(parms);
-            pushCmd(std::move(cmd));
-        }
-        else
-        {
-            auto parms = render::RenderParms(painterVars.paintCmdId, {0, 1});
-            auto cmd = setRenderCommand.request(parms);
-            pushCmd(std::move(cmd));
-
-        }
-    }
+//    if (initialized)
+//    {
+//        if (resizeActive)
+//        {
+//            SWD_DEBUG_MSG("Resizing. Brush Size: " << painterVars.fragInput.brushSize << "\nbrushX: " << painterVars.fragInput.brushX << " brushY: " << painterVars.fragInput.brushY);
+//            auto parms = render::RenderParms(painterVars.brushStaticCmd, {0, 1});
+//            auto cmd = setRenderCommand.request(parms);
+//            pushCmd(std::move(cmd));
+//        }
+//        else
+//        {
+//            auto parms = render::RenderParms(painterVars.paintCmdId, {0, 1});
+//            auto cmd = setRenderCommand.request(parms);
+//            pushCmd(std::move(cmd));
+//
+//        }
+//    }
 }
 
 

@@ -43,7 +43,7 @@ struct FragmentInput
     float g{1.};
     float b{1.};
     float a{1.};
-    float brushSize{1.};
+    float brushSize{.1};
     float brushX; //mouseX in canvas space
     float brushY; //mouseY in canvas space
     int sampleIndex{0};
@@ -76,6 +76,9 @@ struct Matrices
     glm::mat4 scaleRotate{1.};
 };
 
+using PushDrawPool = command::Pool<command::PushDraw, 3>;
+using PopDrawPool = command::Pool<command::PopDraw, 3>;
+
 struct PainterVars
 {
     uint32_t swapWidth{S_WIDTH};
@@ -88,6 +91,8 @@ struct PainterVars
     int paintCmdId;
     int viewCmdId;
     int brushStaticCmd;
+    PushDrawPool pushDraw;
+    PopDrawPool popDraw;
 };
 
 using CopyAttachmentToImage = command::Pool<command::CopyAttachmentToImage, 2>;
@@ -151,6 +156,7 @@ public:
     void handleEvent(event::Event*) override;
 private:
     void onEnterExt() override;
+    void onExitExt() override;
     float& brushPosX;
     float& brushPosY;
     float startingDist{0};
@@ -159,6 +165,8 @@ private:
     const PainterVars& vars;
 
     float& brushSize;
+    PushDrawPool& pushDraw;
+    PopDrawPool&  popDraw;
 };
 
 class Paint : public LeafState
@@ -168,6 +176,8 @@ public:
     const char* getName() const override { return "Paint"; }
     void handleEvent(event::Event*) override;
 private:
+    void onEnterExt() override;
+    void onExitExt() override;
     glm::vec4 pos{0, 0, 1., 1.};
     float& brushPosX;
     float& brushPosY;
@@ -176,6 +186,8 @@ private:
     bool mouseDown{false};
     CopyAttachmentToImage& copyAttachmentToImage;
     render::Image& undoImage;
+    PushDrawPool& pushDraw;
+    PopDrawPool&  popDraw;
 };
 
 class SaveAttachment : public LeafState
@@ -227,8 +239,6 @@ private:
     CopyAttachmentToImage copyAttachmentToImage;
     CopyImageToAttachment copyImageToAttachment;
     render::Image undoImage;
-
-    command::Pool<command::SetRenderCommand, 2> setRenderCommand;
 
     bool paintActive{false};
     bool resizeActive{false};
