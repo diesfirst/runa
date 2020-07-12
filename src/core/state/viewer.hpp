@@ -26,6 +26,7 @@ public:
     void handleEvent(event::Event*) override;
     virtual ~Viewer() = default;
     Viewer(StateArgs, Callbacks);
+    void endFrame() override;
 private:
     enum class Op : Option {initialize, loadModel};
 

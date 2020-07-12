@@ -62,11 +62,12 @@ static float distance(float x1, float y1, float x2, float y2)
 static int findVertInRange(float x, float y)
 {
     size_t count = sizeof(vertices) / sizeof(vertices[0]);
+    SWD_DEBUG_MSG("count " << count);
     for (int i = 0; i < count; i++) 
     {
         auto pos = vertices[i].pos;
         float dist = distance(x, y, pos.x, pos.y);
-        if (dist < .2)
+        if (dist < .075)
             return i;
     }
     return -1;
@@ -74,8 +75,10 @@ static int findVertInRange(float x, float y)
 
 static float normalize(int16_t x)
 {
-    return float(x) / 800.0;
+    return (float(x) / 800.0) * 2.0 - 1.0;
 }
+
+static bool moverActive = false;
 
 void Viewer::handleEvent(event::Event* event)
 {
@@ -95,7 +98,6 @@ void Viewer::handleEvent(event::Event* event)
         static float initY = 0.0;
         static float initVertX = 0.0;
         static float initVertY = 0.0;
-        static bool mouseButtonDown = false;
         static int curVert = -1;
 
         auto we = toWindowEvent(event);
@@ -104,41 +106,46 @@ void Viewer::handleEvent(event::Event* event)
             auto mp = toMousePress(we);
             if(mp->getMouseButton() == event::symbol::MouseButton::Left)
             {
-                mouseButtonDown = true;
                 auto x = normalize(mp->getX());
                 auto y = normalize(mp->getY());
-                SWD_DEBUG_MSG("x: " << x << " y: " << y);
                 auto vert = findVertInRange(x, y);
                 if (vert == -1) return;
-                SWD_DEBUG_MSG("Selecting vert " << vert);
-                mouseButtonDown = true;
+                moverActive = true;
                 initX = x;
                 initY = y;
-                initVertX = vertices[curVert].pos.x;
-                initVertY = vertices[curVert].pos.y;
+                initVertX = vertices[vert].pos.x;
+                initVertY = vertices[vert].pos.y;
                 curVert = vert;
                 return;
             }
         }
-//        else if (we->getType() == event::WindowEventType::MouseRelease)
-//        {
-//            auto mp = toMousePress(we);
-//            if(mp->getMouseButton() == event::symbol::MouseButton::Left)
-//            {
-//                mouseButtonDown = false;
-//                return;
-//            }
-//        }
-        else if (we->getType() == event::WindowEventType::Motion && mouseButtonDown)
+        else if (we->getType() == event::WindowEventType::MouseRelease)
+        {
+            auto mp = toMousePress(we);
+            if(mp->getMouseButton() == event::symbol::MouseButton::Left)
+            {
+                moverActive = false;
+                return;
+            }
+        }
+        else if (we->getType() == event::WindowEventType::Motion && moverActive)
         {
             float diffX = normalize(we->getX()) - initX;
             float diffY = normalize(we->getY()) - initY;
             vertices[curVert].pos.x = initVertX + diffX;
             vertices[curVert].pos.y = initVertY + diffY;
-            memcpy(stagingVertBuffer->pHostMemory, vertices, sizeof(vertices));
-            SWD_DEBUG_MSG("Added an x difference of " << diffX);
             return;
         }
+    }
+}
+
+void Viewer::endFrame()
+{
+    if (moverActive)
+    {
+        //really ought to provide synchronization here. nothing is stopping us
+        //from overwrite the buffer while the draw command is reading from it
+        memcpy(stagingVertBuffer->pHostMemory, vertices, sizeof(vertices));
     }
 }
 
